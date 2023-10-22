@@ -1,0 +1,28 @@
+.mapWrapper {
+  position: relative;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.ground {
+  color: #e1e1e18e;
+}
+
+.str {
+  color: #bee0b6;
+}
+
+.liter {
+  stroke: #839c7e;
+  stroke-width: 1px;
+  color: #a9c7a2;
+}
+
+.disabled {
+  color: #cccccc;
+  stroke: transparent;
+}
+
