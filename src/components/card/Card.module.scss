@@ -1,0 +1,39 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  row-gap: 20px;
+  column-gap: 12px;
+  box-shadow: 0 0 2px 0 #ffffff44;
+  border-radius: 12px;
+  max-height: fit-content;
+  padding: 16px;
+}
+
+.header {
+  display: flex;
+  gap: 12px;
+
+  .logo {
+    max-width: 40px;
+  }
+
+  .titles {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .title {
+    font-weight: 200;
+  }
+  
+  .subtitle {
+    font-weight: 200;
+    opacity: .7;
+  }
+}
+
+.subgroup {
+  display: flex;
+  flex-direction: column;
+  row-gap: 8px;
+}

@@ -1,0 +1,30 @@
+.header {
+  grid-area: header;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 8px;
+
+  line-height: 30px;
+  
+  .logo {
+    color: crimson;
+    display: flex;
+    align-items: center;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 200;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 400;
+
+    &::before {
+        content: "\2022";
+        margin-right: 8px;
+      }
+  }
+}
