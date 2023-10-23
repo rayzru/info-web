@@ -39,12 +39,12 @@ export const Base = ({
         }>
             <Icon type={ icon } className={ styles.icon } />
             <div className={ styles.content }>
+                <div className={ styles.children }>{ children }</div>
                 <header>
                     <h5 className={ styles.title }>{ title } </h5>
                     { subtitle && <h6 className={ styles.subtitle }>{ subtitle } </h6> }
                 </header>
                 { description && <p className={ styles.description }>{ description } </p> }
-                <div className={ styles.children }>{ children }</div>
                 { tags && <p className={ styles.tags }>{ }</p> }
             </div>
             { actions && (
