@@ -7,47 +7,40 @@
     grid-template:  "icon content actions" min-content / 40px auto min-content;
   }
 
-.icon {
-  grid-area: icon;
-  width: 20px;
-  color: #d2d2d2;
-  margin-left: auto;
-}
+  .icon {
+    grid-area: icon;
+    width: 20px;
+    color: #d2d2d2;
+    margin-left: auto;
+  }
 
-.content {
-  grid-area: content;
-}
+  .content {
+    grid-area: content;
+  }
 
-.description {
+  .children {
+    display: flex;
+    justify-content: space-between;
+  }
 
-}
+  .tags {
+    grid-area: tags;
+  }
 
-.children {
-  display: flex;
-  justify-content: space-between;
-}
+  .actions {
+    grid-area: actions;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    column-gap: 8px;
+  }
 
-.tags {
-  grid-area: tags;
-}
+  .title {
+    font-weight: 200;
+  }
 
-.actions {
-  grid-area: actions;
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: start;
-  column-gap: 8px;
-}
+  .subtitle {
+    font-weight: 200;
+  }
 
-.title, .subtitle {
-  font-weight: 400;
-}
-
-.title {
-
-}
-
-.subtitle {
-
-}
 }
