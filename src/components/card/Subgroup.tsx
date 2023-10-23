@@ -6,9 +6,9 @@ interface Props extends PropsWithChildren, PropsWithStyles {
 }
 
 export const Subgroup = ({ children, className }: Props) => {
-    return (
-        <section className={ className }>
-            { children }
-        </section>
-    );
+  return (
+    <section className={ className }>
+      { children }
+    </section>
+  );
 };

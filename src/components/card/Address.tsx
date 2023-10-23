@@ -1,65 +1,67 @@
 'use client';
 
-import { AddressInfo } from '@/types';
-import styles from './Address.module.scss';
-import { Action, Base } from './Base';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { AddressInfo } from '@/types';
+
+import { Action, Base } from './Base';
+
+import styles from './Address.module.scss';
 
 interface Props extends AddressInfo {
     title: string;
 }
 
 export const Address = ({
-    address,
-    city,
-    floor,
-    office,
-    postcode,
-    maps,
-    ...baseProps
+  address,
+  city,
+  floor,
+  office,
+  postcode,
+  maps,
+  ...baseProps
 }: Props) => {
-    const [, copy] = useCopyToClipboard();
+  const [, copy] = useCopyToClipboard();
 
-    const adressString = [
-        address,
-        floor && `${floor}-й этаж`,
-        office && `оф. ${office}`,
-    ].filter(Boolean).join(', ');
+  const adressString = [
+    address,
+    floor && `${floor}-й этаж`,
+    office && `оф. ${office}`,
+  ].filter(Boolean).join(', ');
 
-    const copyString = [
-        postcode,
-        city,
-        address,
-        floor && `${floor}-й этаж`,
-        office && `оф. ${office}`,
-    ].filter(Boolean).join(', ');
+  const copyString = [
+    postcode,
+    city,
+    address,
+    floor && `${floor}-й этаж`,
+    office && `оф. ${office}`,
+  ].filter(Boolean).join(', ');
 
-    const actions: Action[] = [
-        ...getMapActions(maps),
-        {
-            icon: 'copy',
-            label: 'Скопировать',
-            callback: () => copy(copyString)
-        },
-    ];
+  const actions: Action[] = [
+    ...getMapActions(maps),
+    {
+      icon: 'copy',
+      label: 'Скопировать',
+      callback: () => copy(copyString)
+    },
+  ];
 
 
-    return (
-        <Base icon={ 'geo' } actions={ actions } { ...baseProps }>
-            { address && <p className={ styles.address }>{ adressString } </p> }
-        </Base>
-    );
+  return (
+    <Base icon={ 'geo' } actions={ actions } { ...baseProps }>
+      { address && <p className={ styles.address }>{ adressString } </p> }
+    </Base>
+  );
 
-    function getMapActions(maps: string[] = []): Action[] {
-        return maps?.reduce<Action[]>((actions: Action[], url: string) => {
-            if (url.startsWith('https://yandex.ru/maps/')) {
-                actions.push({
-                    icon: 'yandex-maps',
-                    label: 'Яндекс',
-                    callback: () => window.location.href = url
-                });
-            }
-            return actions;
-        }, []);
-    }
+  function getMapActions(maps: string[] = []): Action[] {
+    return maps?.reduce<Action[]>((actions: Action[], url: string) => {
+      if (url.startsWith('https://yandex.ru/maps/')) {
+        actions.push({
+          icon: 'yandex-maps',
+          label: 'Яндекс',
+          callback: () => window.location.href = url
+        });
+      }
+      return actions;
+    }, []);
+  }
 };

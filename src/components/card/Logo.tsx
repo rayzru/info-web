@@ -8,12 +8,12 @@ interface Props extends PropsWithStyles {
 }
 
 export const Logo = ({ type, className, alt }: Props) => {
-    return (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-            className={ className }
-            src={ `/logos/${type}.svg` }
-            alt={ alt }
-        />
-    );
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      className={ className }
+      src={ `/logos/${type}.svg` }
+      alt={ alt }
+    />
+  );
 };

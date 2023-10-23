@@ -1,4 +1,4 @@
-import { PropsWithStyles } from "@/types";
+import { PropsWithStyles } from '@/types';
 
 interface Props extends PropsWithStyles {
   size?: number;

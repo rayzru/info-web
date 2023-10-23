@@ -1,5 +1,5 @@
 import { Header } from '@/components/Header';
-import { Map } from '@/components/Map';
+import { Map } from '@/components/SR2Map';
 import { InfoGrid } from '@/components/InfoGrid';
 
 import data from '@/data';
