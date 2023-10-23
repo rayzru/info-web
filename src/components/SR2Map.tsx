@@ -13,8 +13,8 @@ const defaultViewBox = '0 0 4000 3300';
 
 export const SR2Map = ({ className }: Props) => {
   const zoomRef = useRef<SVGGElement>(null);
-  const [zoom, setZoom] = useState(1);
-  const [viewBox, setViewBox] = useState(defaultViewBox);
+  const [zoom] = useState(1);
+  const [viewBox] = useState(defaultViewBox);
 
   return (
     <div className={ clsx(styles.mapWrapper, className) }>
