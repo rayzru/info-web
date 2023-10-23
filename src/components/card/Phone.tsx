@@ -1,9 +1,10 @@
 'use client';
 
-import { PhoneInfo } from '@/types';
+import { useRef } from 'react';
+
 import { Action, Base } from '@/components/card/Base';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
-import { useRef } from 'react';
+import { PhoneInfo } from '@/types';
 
 import styles from './Phone.module.scss';
 
@@ -12,30 +13,30 @@ interface Props extends PhoneInfo {
 }
 
 export const Phone = ({ phone, ...props }: Props) => {
-    const linkRef = useRef<HTMLAnchorElement>(null);
-    const [, copy] = useCopyToClipboard();
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const [, copy] = useCopyToClipboard();
 
-    const actions: Action[] = [
+  const actions: Action[] = [
 
-        {
-            icon: 'phone',
-            label: 'Позвонить',
-            callback: () => { linkRef?.current?.click(); }
-        },
-        {
-            icon: 'copy',
-            label: 'Скопировать',
-            callback: () => copy(phone)
-        },
-    ];
+    {
+      icon: 'phone',
+      label: 'Позвонить',
+      callback: () => { linkRef?.current?.click(); }
+    },
+    {
+      icon: 'copy',
+      label: 'Скопировать',
+      callback: () => copy(phone)
+    },
+  ];
 
-    return (
-        <Base icon={ 'phone' } actions={ actions } { ...props } >
-            { phone && (
-                <>
-                    <a ref={ linkRef } className={ styles.phone } href={ `tel:${phone}` }>{ phone }</a>
-                </>
-            ) }
-        </Base>
-    );
+  return (
+    <Base icon={ 'phone' } actions={ actions } { ...props } >
+      { phone && (
+        <>
+          <a ref={ linkRef } className={ styles.phone } href={ `tel:${phone}` }>{ phone }</a>
+        </>
+      ) }
+    </Base>
+  );
 };

@@ -8,5 +8,5 @@ import styles from './InfoGrid.module.scss';
 interface Props extends PropsWithChildren, PropsWithStyles { }
 
 export const InfoGrid = ({ children, className }: Props) => {
-    return <section className={ clsx(styles.section, className) }>{ children }</section>;
+  return <section className={ clsx(styles.section, className) }>{ children }</section>;
 };
