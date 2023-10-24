@@ -10,7 +10,7 @@ export default function Home() {
 
   return (
     <main className={ styles.main }>
-      <Header subtitle={ ['Ларина, 45', 'ЖК "Сердце Ростова 2"'] } />
+      <Header subtitle={ [] } />
       <InfoGrid className={ styles.cards }>
         { data.map((el: GroupInfo) => <Card key={ el.id } info={ el } />) }
       </InfoGrid>
