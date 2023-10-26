@@ -16,6 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
+      <head>
+        <title>Справочник ЖК "Сердце Ростова 2"</title>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body className={ '' }>{ children }</body>
     </html>
   );
