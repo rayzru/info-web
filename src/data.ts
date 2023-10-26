@@ -1,11 +1,11 @@
-import { GroupInfo } from '@/types';
+import { CardColor, GroupInfo } from '@/types';
 
 export default [
   {
     id: 'root',
     rows: 2,
     title: 'Жилой комплекс',
-    // color: CardColor.red,
+    color: CardColor.white,
     subtitle: 'Сердце Ростова 2',
     logo: 'sr2',
     addresses: [
