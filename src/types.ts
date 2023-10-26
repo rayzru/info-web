@@ -15,8 +15,7 @@ type InfoTypeTag = 'phone' | 'address' | 'name';
 type Tag = ServiceTag | InfoTypeTag;
 
 export enum CardColor {
-  white = 'white',
-  red = '#ffeeee',
+  "white" = 'white',
 }
 
 export interface BaseInfo {
