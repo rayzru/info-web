@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { PropsWithStyles } from '@/types';
 
 import LogoInfo from './LogoInfo';
+import Search from './Search';
 
 import styles from './Header.module.scss';
 
@@ -26,7 +27,7 @@ export const Header = ({
       </Link>
       <h1 className={ clsx(subtitle && styles.hasSubtitle) }>{ title }</h1>
       { subtitle.map((s: string, i: number) => (<h2 key={ `subtitle-${i}` }>{ s }</h2>)) }
-
+      <Search className={ styles.search } />
     </header>
   );
 };

@@ -14,6 +14,11 @@ type ServiceTag = 'urgent' | 'regular' | 'administrative' | 'secondary';
 type InfoTypeTag = 'phone' | 'address' | 'name';
 type Tag = ServiceTag | InfoTypeTag;
 
+export enum CardColor {
+  white = 'white',
+  red = '#ffeeee',
+}
+
 export interface BaseInfo {
   title: string;
   subtitle?: string;
@@ -21,19 +26,27 @@ export interface BaseInfo {
   tags?: Tag[];
 }
 
+export interface PersonInfo extends BaseInfo {
+  phones?: PhoneInfo[];
+}
+
 export interface GroupInfo extends BaseInfo {
   id: string;
+  color: CardColor;
+  rows: number;
   child?: GroupInfo[];
   logo?: LogoType;
   phones?: PhoneInfo[];
   addresses?: AddressInfo[];
+  persons?: PersonInfo[];
   urls?: WebsiteInfo[];
   messengers?: MessengerInfo[];
 }
 
 export interface PhoneInfo extends BaseInfo {
   phone: string;
-  linkedWhatsApp?: boolean;
+  hasWhatsApp?: boolean;
+  hasTelegram?: boolean;
 }
 
 export interface WebsiteInfo extends BaseInfo {

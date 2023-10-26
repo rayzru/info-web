@@ -4,7 +4,6 @@
   flex-direction: row;
   align-items: center;
   column-gap: 8px;
-
   line-height: 30px;
   
   .logo {
@@ -26,5 +25,9 @@
         content: "\2022";
         margin-right: 8px;
       }
+  }
+  .search {
+    margin-left: auto;
+    min-width: 200px;
   }
 }

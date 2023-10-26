@@ -3,5 +3,15 @@
 }
 
 .searchInput{
-
+  background-color: transparent;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 0 2px 0 #00000044;
+  line-height: 32px;
+  height: 32px;
+  padding: 0 8px;
+  display: inline-block;
+  width: 100%;
+  opacity: .3;
+  background-color: #00000022;
 }

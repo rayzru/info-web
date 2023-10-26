@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef } from 'react';
 import { clsx } from 'clsx';
 
@@ -13,6 +15,8 @@ const Search = ({ className }: Props) => {
   return (
     <div className={ clsx(styles.component, className) }>
       <input
+        placeholder='Поиск...'
+        disabled={ true }
         className={ styles.searchInput }
         type="search"
         ref={ searchInputRef }

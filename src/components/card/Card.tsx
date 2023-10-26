@@ -18,10 +18,10 @@ interface Props extends PropsWithChildren, PropsWithStyles {
 
 export const Card = ({ className, info }: Props) => {
 
-  const { title, subtitle, logo, addresses, phones, messengers } = info;
+  const { title, subtitle, logo, addresses, phones, messengers, color, rows = 1 } = info;
 
   return (
-    <article className={ clsx(styles.card, className) }>
+    <article className={ clsx(styles.card, className) } style={ { backgroundColor: color, gridRow: `span ${rows}` } }>
       <header className={ styles.header }>
         { logo && (
           <Logo
@@ -36,17 +36,17 @@ export const Card = ({ className, info }: Props) => {
         </div>
       </header>
       { addresses && (
-        <Subgroup className={ styles.subgroup }>
+        <Subgroup icon={ 'geo' } className={ styles.subgroup }>
           { addresses.map((a: AddressInfo, i: number) => <Address key={ i } { ...a } />) }
         </Subgroup>
       ) }
       { phones && (
-        <Subgroup className={ styles.subgroup }>
+        <Subgroup icon='phone' className={ styles.subgroup }>
           { phones.map((p: PhoneInfo, i: number) => <Phone key={ i } { ...p } />) }
         </Subgroup>
       ) }
       { messengers && (
-        <Subgroup className={ styles.subgroup }>
+        <Subgroup icon='chat' className={ styles.subgroup }>
           { messengers.map((m: MessengerInfo, i: number) => <Messenger key={ i } { ...m } />) }
         </Subgroup>
       ) }

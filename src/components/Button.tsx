@@ -9,26 +9,31 @@ import styles from './Button.module.scss';
 
 interface Props extends PropsWithStyles {
     icon?: IconType;
+  href?: string;
     showLabel?: boolean;
     label?: string;
-    onClick?: ReactEventHandler<HTMLButtonElement>;
+  onClick?: ReactEventHandler<HTMLButtonElement | HTMLAnchorElement>;
 }
 
 export const Button = ({
   icon,
   label,
+  href,
   className,
   showLabel = false,
   onClick
 }: Props) => {
+  const Component = href ? 'a' : 'button';
   return (
-    <button
+    <Component
       onClick={ onClick }
       title={ label }
+      target='_blank'
+      href={ href }
       className={
         clsx(
           styles.button,
-          label && styles.hasLabel,
+          label && showLabel && styles.hasLabel,
           icon && styles.hasIcon,
           className
         )
@@ -36,6 +41,6 @@ export const Button = ({
     >
       { icon && <Icon type={ icon } /> }
       { showLabel && label }
-    </button>
+    </Component>
   );
 };

@@ -1,11 +1,17 @@
+@import '../utility';
+
 .main {
   display: grid;
   flex-direction: column;
   gap: 20px;
   grid-template: 
-    "header" 40px
+    // "header" 40px
     "cards " auto / 1fr;
-  margin: 32px 40px 0;
+  margin: 12px;
+
+  @include mq(tablet) {
+    margin: 32px;
+  }
 
   .header {
     grid-area: header;
@@ -36,6 +42,5 @@
       z-index: 1;
     }
   }
-
 }
 
