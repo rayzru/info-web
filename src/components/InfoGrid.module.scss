@@ -1,4 +1,24 @@
+@import '../utility';
+
 .section {
   display: grid;
+  grid-template-rows: masonry;
   gap: 24px;
+  grid-template-columns: repeat(1, 1fr);
+
+  @include mq(mobile) {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  @include mq(tablet-landscape) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include mq(desktop) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @include mq(desktop-large) {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }

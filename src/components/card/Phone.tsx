@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 
 import { Action, Base } from '@/components/card/Base';
+import { cleanupPhone } from '@/helpers';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { PhoneInfo } from '@/types';
 
@@ -17,11 +18,10 @@ export const Phone = ({ phone, ...props }: Props) => {
   const [, copy] = useCopyToClipboard();
 
   const actions: Action[] = [
-
     {
       icon: 'phone',
       label: 'Позвонить',
-      callback: () => { linkRef?.current?.click(); }
+      href: `tel:${cleanupPhone(phone)}`
     },
     {
       icon: 'copy',
@@ -30,11 +30,27 @@ export const Phone = ({ phone, ...props }: Props) => {
     },
   ];
 
+  if (props.hasWhatsApp) {
+    actions.unshift({
+      href: `https://wa.me/${cleanupPhone(phone)}`,
+      label: 'Telegram',
+      icon: 'whatsapp'
+    });
+  }
+
+  if (props.hasTelegram) {
+    actions.unshift({
+      href: `https://t.me/${cleanupPhone(phone)}`,
+      label: 'Telegram',
+      icon: 'telegram'
+    });
+  }
+
   return (
-    <Base icon={ 'phone' } actions={ actions } { ...props } >
+    <Base actions={ actions } { ...props } >
       { phone && (
         <>
-          <a ref={ linkRef } className={ styles.phone } href={ `tel:${phone}` }>{ phone }</a>
+          <a ref={ linkRef } target='_blank' className={ styles.phone } href={ `tel:${phone}` }>{ phone }</a>
         </>
       ) }
     </Base>

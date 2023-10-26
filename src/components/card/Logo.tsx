@@ -1,6 +1,14 @@
 import { PropsWithStyles } from '@/types';
 
-export type LogoType = 'msk' | 'sr2' | 'root' | 'teploservice' | 'tns' | 'gis';
+export type LogoType =
+  | 'rnd'
+  | 'msk'
+  | 'sr2'
+  | 'root'
+  | 'teploservice'
+  | 'tns'
+  | 'gis'
+  | 'vodokanal';
 
 interface Props extends PropsWithStyles {
     type: LogoType;

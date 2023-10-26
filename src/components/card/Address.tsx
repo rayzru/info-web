@@ -45,9 +45,8 @@ export const Address = ({
     },
   ];
 
-
   return (
-    <Base icon={ 'geo' } actions={ actions } { ...baseProps }>
+    <Base actions={ actions } { ...baseProps }>
       { address && <p className={ styles.address }>{ adressString } </p> }
     </Base>
   );
@@ -58,7 +57,7 @@ export const Address = ({
         actions.push({
           icon: 'yandex-maps',
           label: 'Яндекс',
-          callback: () => window.location.href = url
+          href: url,
         });
       }
       return actions;

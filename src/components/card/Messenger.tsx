@@ -8,12 +8,11 @@ import { MessengerInfo } from '@/types';
 
 import { IconType } from './Icon';
 
-
 interface Props extends MessengerInfo {
     title: string;
 }
 
-export const Messenger = ({ mesengerType, link, ...props }: Props) => {
+export const Messenger = ({ mesengerType, link, title, ...props }: Props) => {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const [, copy] = useCopyToClipboard();
 
@@ -31,10 +30,10 @@ export const Messenger = ({ mesengerType, link, ...props }: Props) => {
   ];
 
   return (
-    <Base icon={ 'phone' } actions={ actions } { ...props } >
+    <Base actions={ actions } { ...props } title={ '' } >
       { link && (
         <>
-          <a ref={ linkRef } href={ link }>{ link }</a>
+          <a target='_blank' ref={ linkRef } href={ link }>{ title }</a>
         </>
       ) }
     </Base>
