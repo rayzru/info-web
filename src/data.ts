@@ -3,7 +3,7 @@ import { CardColor, GroupInfo } from '@/types';
 export default [
   {
     id: 'root',
-    rows: 2,
+    rows: 5,
     title: 'Жилой комплекс',
     color: CardColor.white,
     subtitle: 'Сердце Ростова 2',
@@ -46,6 +46,7 @@ export default [
   },
   {
     id: 'liter2',
+    rows: 3,
     title: 'Литер 2',
     // color: CardColor.red,
     logo: 'root',
@@ -72,6 +73,7 @@ export default [
   },
   {
     id: 'liter3',
+    rows: 3,
     title: 'Литер 3',
     // color: CardColor.red,
     logo: 'root',
@@ -97,6 +99,7 @@ export default [
     ]
   }, {
     id: 'liter4',
+    rows: 3,
     title: 'Литер 4',
     // color: CardColor.red,
     logo: 'root',
@@ -123,6 +126,7 @@ export default [
   },
   {
     id: 'liter5',
+    rows: 3,
     title: 'Литер 5',
     // color: CardColor.red,
     logo: 'root',
@@ -149,6 +153,7 @@ export default [
   },
   {
     id: 'liter6',
+    rows: 3,
     title: 'Литер 6',
     // color: CardColor.red,
     logo: 'root',
@@ -169,6 +174,7 @@ export default [
   },
   {
     id: 'liter7',
+    rows: 3,
     title: 'Литер 7',
     // color: CardColor.red,
     logo: 'root',
@@ -195,7 +201,7 @@ export default [
   },
   {
     id: 'uk',
-    rows: 2,
+    rows: 6,
     title: 'Управляющая компания',
     subtitle: 'Сердце Ростова',
     logo: 'sr2',
@@ -248,6 +254,7 @@ export default [
   },
   {
     id: 'rnd',
+    rows: 3,
     title: 'Ростов-на-Дону',
     subtitle: '',
     logo: 'rnd',

@@ -3,12 +3,12 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  column-gap: 8px;
+  column-gap: 32px;
   line-height: 30px;
   
   .logo {
-    color: crimson;
     display: flex;
+    width: 20px;
     align-items: center;
   }
 
@@ -29,5 +29,10 @@
   .search {
     margin-left: auto;
     min-width: 200px;
+    flex: 1;
+  }
+  
+  .settings {
+    flex: 0;
   }
 }

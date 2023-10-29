@@ -2,14 +2,14 @@
 
 import { useRef } from 'react';
 
-import { Action, Base } from '@/components/card/Base';
+import { Action, Base } from '@/components/Base';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { MessengerInfo } from '@/types';
 
 import { IconType } from './Icon';
 
 interface Props extends MessengerInfo {
-    title: string;
+  title: string;
 }
 
 export const Messenger = ({ mesengerType, link, title, ...props }: Props) => {

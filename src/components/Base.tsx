@@ -4,7 +4,7 @@ import { PropsWithChildren } from 'react';
 import { clsx } from 'clsx';
 
 import { Button } from '@/components/Button';
-import { IconType } from '@/components/card/Icon';
+import { IconType } from '@/components/Icon';
 import { BaseInfo } from '@/types';
 
 import styles from './Base.module.scss';

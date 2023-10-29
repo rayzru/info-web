@@ -3,8 +3,9 @@ import Link from 'next/link';
 
 import { PropsWithStyles } from '@/types';
 
-import LogoInfo from './LogoInfo';
+import { Logo } from './Logo';
 import Search from './Search';
+import Settings from './Settings';
 
 import styles from './Header.module.scss';
 
@@ -16,18 +17,19 @@ interface Props extends PropsWithStyles {
 
 export const Header = ({
   className,
-  title = 'Информация',
+  title = 'Справочная',
   subtitle = [],
   href = '/'
 }: Props) => {
   return (
     <header className={ clsx(styles.header, className) }>
       <Link href={ href }>
-        <LogoInfo className={ styles.logo } size={ 24 } />
+        <Logo type='root' className={ styles.logo } />
       </Link>
       <h1 className={ clsx(subtitle && styles.hasSubtitle) }>{ title }</h1>
       { subtitle.map((s: string, i: number) => (<h2 key={ `subtitle-${i}` }>{ s }</h2>)) }
       <Search className={ styles.search } />
+      <Settings className={ styles.settings } />
     </header>
   );
 };
