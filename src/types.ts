@@ -1,6 +1,6 @@
 import { CSSProperties } from 'react';
 
-import { LogoType } from '@/components/card/Logo';
+import { LogoType } from '@/components/Logo';
 
 export interface PropsWithStyles {
   style?: CSSProperties;

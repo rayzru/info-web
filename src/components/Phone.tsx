@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 
-import { Action, Base } from '@/components/card/Base';
+import { Action, Base } from '@/components/Base';
 import { cleanupPhone } from '@/helpers';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { PhoneInfo } from '@/types';
@@ -10,7 +10,7 @@ import { PhoneInfo } from '@/types';
 import styles from './Phone.module.scss';
 
 interface Props extends PhoneInfo {
-    title: string;
+  title: string;
 }
 
 export const Phone = ({ phone, ...props }: Props) => {

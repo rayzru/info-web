@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 
 import { PropsWithStyles } from '@/types';
 
-import { Icon, IconType } from './card/Icon';
+import { Icon, IconType } from './Icon';
 
 import styles from './Button.module.scss';
 
