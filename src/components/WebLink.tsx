@@ -7,7 +7,7 @@ import { WebsiteInfo } from '@/types';
 import styles from './WebLink.module.scss';
 
 interface Props extends WebsiteInfo {
-  title: string;
+  title?: string;
 }
 
 export const WebLink = ({ url, title, ...props }: Props) => {
