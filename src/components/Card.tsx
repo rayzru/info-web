@@ -17,14 +17,12 @@ import styles from './Card.module.scss';
 
 interface Props extends PropsWithChildren, PropsWithStyles {
   info: GroupInfo;
-  settingsMode: boolean;
 }
 
 export const Card = ({ className, info, }: Props) => {
-  const { id, title, subtitle, logo, addresses, phones, messengers, color, urls, rows: settingsRows = 1 } = info;
+  const { id, title, subtitle, logo, addresses, phones, messengers, color, urls, rows = 1 } = info;
   const [isOpenedInitially, updateSettings] = useLocalStorage<boolean>(`card_${id}`, false);
   const [isOpened, setOpened] = useState(false);
-  const [rows] = useState(isOpened ? settingsRows : 1);
 
   useEffect(() => {
     setOpened(isOpenedInitially);
@@ -38,7 +36,7 @@ export const Card = ({ className, info, }: Props) => {
 
   return (
     <article
-      className={ clsx(styles.card, className, isOpened && styles[`span${settingsRows}`]) }
+      className={ clsx(styles.card, className, isOpened && styles[`span${rows}`]) }
       style={ { backgroundColor: color } }
     >
       <header className={ styles.header } onClick={ handleChange }>
