@@ -8,7 +8,7 @@ import { Action, Base } from './Base';
 import styles from './Address.module.scss';
 
 interface Props extends AddressInfo {
-    title: string;
+  title?: string;
 }
 
 export const Address = ({

@@ -1,7 +1,5 @@
 'use client';
 
-import { useRef } from 'react';
-
 import { Action, Base } from '@/components/Base';
 import { cleanupPhone } from '@/helpers';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
@@ -10,11 +8,10 @@ import { PhoneInfo } from '@/types';
 import styles from './Phone.module.scss';
 
 interface Props extends PhoneInfo {
-  title: string;
+  title?: string;
 }
 
 export const Phone = ({ phone, ...props }: Props) => {
-  const linkRef = useRef<HTMLAnchorElement>(null);
   const [, copy] = useCopyToClipboard();
 
   const actions: Action[] = [
@@ -33,7 +30,7 @@ export const Phone = ({ phone, ...props }: Props) => {
   if (props.hasWhatsApp) {
     actions.unshift({
       href: `https://wa.me/${cleanupPhone(phone)}`,
-      label: 'Telegram',
+      label: 'WhatsApp',
       icon: 'whatsapp'
     });
   }
@@ -49,9 +46,12 @@ export const Phone = ({ phone, ...props }: Props) => {
   return (
     <Base actions={ actions } { ...props } >
       { phone && (
-        <>
-          <a ref={ linkRef } target='_blank' className={ styles.phone } href={ `tel:${phone}` }>{ phone }</a>
-        </>
+        <a
+          target='_blank'
+          className={ styles.phone }
+          href={ `tel:${phone}` }>
+          { phone }
+        </a>
       ) }
     </Base>
   );
