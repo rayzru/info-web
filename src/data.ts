@@ -2,8 +2,66 @@ import { CardColor, GroupInfo } from '@/types';
 
 export default [
   {
+    id: 'uk',
+    rows: 7,
+    title: 'Управляющая компания',
+    subtitle: 'Сердце Ростова',
+    logo: 'sr2',
+    addresses: [
+      {
+        title: 'Головной офис',
+        city: 'г. Ростов-на-Дону',
+        address: 'пр. Михаила Нагибина, 33а/47',
+        floor: 3,
+        office: '306',
+        postcode: 344068,
+        lnglat: [47.257861, 39.715947],
+        maps: ['https://yandex.ru/maps/-/CDaKvE~D']
+      }
+    ],
+    phones: [
+      {
+        title: 'Диспетчер УК',
+        phone: '+7 (960) 448-08-18',
+        hasWhatsApp: true,
+        hasTe: true,
+      },
+      {
+        title: 'Начальник участка',
+        subtitle: 'Сергей Георгиевич Сагиров',
+        phone: '+7 (960) 461-44-60',
+        hasWhatsApp: true,
+      },
+      {
+        title: 'Главный инженер',
+        subtitle: 'Денис Михайлович Талашов',
+        phone: '+7 (960) 448-38-28',
+        hasWhatsApp: true,
+      },
+      {
+        title: 'Заместитель директора',
+        subtitle: 'Анжела Анатольевна',
+        phone: '+7 (960) 448-58-08',
+        hasWhatsApp: true,
+      }
+    ],
+    urls: [
+      {
+        title: 'Официальный сайт',
+        url: 'https://uk-sr.ru/'
+      },
+      {
+        title: 'Квартплата.Онлайн',
+        url: 'https://xn--80aaaf3bi1ahsd.xn--80asehdb/'
+      },
+
+    ],
+    messengers: [
+    ]
+  },
+  {
     id: 'root',
-    rows: 5,
+    rows: 6,
     title: 'Жилой комплекс',
     color: CardColor.white,
     subtitle: 'Сердце Ростова 2',
@@ -41,6 +99,20 @@ export default [
         title: 'Telegram - Общий чат',
         mesengerType: 'telegram',
         link: 'http://go.sr2.today/telegram'
+      }
+    ]
+  },
+  {
+    id: 'liter1',
+    rows: 2,
+    title: 'Литер 1',
+    // color: CardColor.red,
+    logo: 'root',
+    messengers: [
+      {
+        title: 'Telegram - Литер 1',
+        mesengerType: 'telegram',
+        link: 'https://t.me/sr2l1'
       }
     ]
   },
@@ -97,7 +169,8 @@ export default [
         link: 'https://t.me/sr2_l3'
       }
     ]
-  }, {
+  },
+  {
     id: 'liter4',
     rows: 3,
     title: 'Литер 4',
@@ -200,56 +273,91 @@ export default [
     ]
   },
   {
-    id: 'uk',
-    rows: 6,
-    title: 'Управляющая компания',
-    subtitle: 'Сердце Ростова',
-    logo: 'sr2',
-    addresses: [
+    id: 'liter8',
+    rows: 2,
+    title: 'Литер 8',
+    // color: CardColor.red,
+    logo: 'root',
+    messengers: [
       {
-        title: 'Головной офис',
-        city: 'г. Ростов-на-Дону',
-        address: 'пр. Михаила Нагибина, 33а/47',
-        floor: 3,
-        office: '306',
-        postcode: 344068,
-        lnglat: [47.257861, 39.715947],
-        maps: ['https://yandex.ru/maps/-/CDaKvE~D']
+        title: 'Telegram - Литер 8',
+        mesengerType: 'telegram',
+        link: 'https://t.me/sr2l8'
       }
-    ],
+    ]
+  },
+  {
+    id: 'liter9',
+    rows: 2,
+    title: 'Литер 9',
+    // color: CardColor.red,
+    logo: 'root',
+    messengers: [
+      {
+        title: 'Telegram - Литер 9',
+        mesengerType: 'telegram',
+        link: 'https://t.me/sr2_l9'
+      }
+    ]
+  },
+  {
+    id: 'domofon',
+    rows: 4,
+    logo: 'vdome',
+    title: 'Домофон',
+    phones: [{
+      title: 'Обслуживание',
+      phone: '+7 (863) 310-02-26'
+    }, {
+      phone: '+7 (928) 226-96-42'
+    }],
+    messengers: [{
+      title: 'WhatsApp робот',
+      subtitle: 'Регистрация, инструкция',
+      mesengerType: 'whatsapp',
+      link: 'https://wa.me/+79963530117?text=инструкция'
+    }],
+    urls: [
+      {
+        title: 'Приложение для Android',
+        url: 'https://play.google.com/store/apps/details?id=ru.mts.vdome.resident'
+      },
+      {
+        title: 'Приложение для iOS',
+        url: 'https://apps.apple.com/ru/app/vdome/id1491163759'
+      },
+    ]
+  },
+  {
+    id: 'vodokanal',
+    rows: 3,
+    title: 'Водоканал',
+    subtitle: '',
+    logo: 'vodokanal',
     phones: [
       {
-        title: 'Диспетчер УК',
-        phone: '+7 (960) 448-08-18',
-        hasWhatsApp: true,
-        hasTe: true,
-      },
-      {
-        title: 'Начальник участка',
-        subtitle: 'Сергей Георгиевич Сагиров',
-        phone: '+7 (960) 461-44-60',
-        hasWhatsApp: true,
-      },
-      {
-        title: 'Главный инженер',
-        subtitle: 'Денис Михайлович Талашов',
-        phone: '+7 (960) 448-38-28',
-        hasWhatsApp: true,
-      },
-      {
-        title: 'Заместитель директора',
-        subtitle: 'Анжела Анатольевна',
-        phone: '+7 (960) 448-58-08',
-        hasWhatsApp: true,
+        title: 'Передача показаний счетчиков',
+        phone: '+7 (863) 309-09-09'
       }
     ],
     urls: [
       {
-        title: 'Официальный сайт',
-        url: 'https://uk-sr.ru/'
+        title: 'Личный кабинет',
+        url: 'https://lkfl.vodokanalrnd.ru/'
       }
-    ],
-    messengers: [
+    ]
+  },
+  {
+    id: 'tns',
+    rows: 3,
+    title: 'ТНС-Энерго',
+    subtitle: '',
+    logo: 'tns',
+    urls: [
+      {
+        title: 'Личный кабинет',
+        url: 'https://lk.rostov.tns-e.ru/'
+      },
     ]
   },
   {
@@ -270,12 +378,5 @@ export default [
         phone: '+7 (863) 277-77-07'
       }
     ],
-    urls: [
-      {
-        title: 'Официальный сайт',
-        url: 'https://uk-sr.ru/'
-      }
-    ],
-
   }
 ] as GroupInfo[];

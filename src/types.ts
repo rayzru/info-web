@@ -19,7 +19,7 @@ export enum CardColor {
 }
 
 export interface BaseInfo {
-  title: string;
+  title?: string;
   subtitle?: string;
   description?: string;
   tags?: Tag[];

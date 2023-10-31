@@ -5,45 +5,33 @@
   column-gap: 12px;
   border-radius: 20px;
   max-height: fit-content;
-  padding: 16px;
   background-color: white;
   transition: all .3s;
 
   &:hover {
       box-shadow: 0 0 3px 1px #183596a2;
-
-  }
-}
-
-.headerWrapper {
-
-}
-
-.toggle {
-  position: absolute;
-  opacity: 0;
-
-  &:not(:checked) ~ .body {
-    display: none;
   }
 
-  &:checked ~ .body {
-    display: flex;
+  @for $i from 1 through 9 {
+    &.span#{$i}  {
+      grid-row: span #{$i};
+    }
   }
 }
 
 .header {
   display: flex;
+  cursor: pointer;
   align-items: center;
   gap: 12px;
-  position: relative; 
-   min-height: 45px;
-
+  position: relative;
+  min-height: 76px;
+  padding: 16px;
 
   &:after {
     position: absolute;
     content: '\22EE';
-    right: 0;
+    right: 32px;
   }
 
   .logo {
@@ -66,8 +54,14 @@
 }
 
 .body {
+  padding: 0 16px 16px 16px;
   display: flex;
   flex-direction: column;
+
+  &.hidden {
+    display: none;
+  }
+
 }
 
 .subgroup {

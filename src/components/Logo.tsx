@@ -8,6 +8,7 @@ export type LogoType =
   | 'teploservice'
   | 'tns'
   | 'gis'
+  | 'vdome'
   | 'vodokanal';
 
 interface Props extends PropsWithStyles {
