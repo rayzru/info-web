@@ -23,7 +23,7 @@ const useSessionStorage = <T>(keyName: string, defaultValue: T) => {
     setStoredValue(newValue);
   };
 
-  return [storedValue, setValue];
+  return [storedValue as T, setValue];
 };
 
-export default useSessionStorage; 
+export default useSessionStorage;
