@@ -1,6 +1,5 @@
 'use client';
 
-
 import { Action, Base } from '@/components/Base';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { MessengerInfo } from '@/types';
@@ -18,7 +17,7 @@ export const Messenger = ({ mesengerType, link, title, ...props }: Props) => {
     {
       icon: mesengerType as IconType,
       label: 'Открыть',
-      href: 'link'
+      href: link
     },
     {
       icon: 'copy',
@@ -28,7 +27,7 @@ export const Messenger = ({ mesengerType, link, title, ...props }: Props) => {
   ];
 
   return (
-    <Base actions={ actions } { ...props } title={ '' } >
+    <Base actions={ actions } { ...props } >
       { link && (
         <>
           <a target='_blank' href={ link }>{ title }</a>
