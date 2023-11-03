@@ -1,14 +1,8 @@
-@import '../../utility';
 
 .main {
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
-	margin: 12px;
-
-  @include mq(tablet) {
-		margin: 32px;
-	}
 }
 
 .labels {

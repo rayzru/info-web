@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, MouseEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/Button';
@@ -20,7 +20,7 @@ export default function Home() {
 
   return (
     <main className={ styles.main }>
-      <Header title='Настройки' subtitle={ ['Карточки на основном экране'] } showSearch={ false } showSettingsButton={ false } />
+      <Header title='Настройки' subtitle={ ['Карточки'] } showSearch={ false } showSettingsButton={ false } />
 
       <div className={ styles.wrapper }>
         <form onSubmit={ handleSubmit }>
@@ -45,12 +45,14 @@ export default function Home() {
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    e.stopPropagation();
     const formData = Object.fromEntries(new FormData(e.currentTarget));
     updateSettings(Object.keys(formData).join(','));
     router.back();
   }
 
-  function handleReset() {
+  function handleReset(e: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) {
+    e.preventDefault();
     updateSettings('');
     router.back();
   }
