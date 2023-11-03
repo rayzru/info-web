@@ -12,6 +12,7 @@ interface Props extends PropsWithStyles {
   href?: string;
   showLabel?: boolean;
   disabled?: boolean;
+  type?: HTMLButtonElement['type'];
   label?: string;
   onClick?: ReactEventHandler<HTMLButtonElement | HTMLAnchorElement>;
 }
@@ -21,6 +22,7 @@ export const Button = ({
   label,
   href,
   disabled,
+  type = 'button',
   className,
   showLabel = false,
   onClick
@@ -31,6 +33,7 @@ export const Button = ({
       onClick={ onClick }
       disabled={ disabled }
       title={ label }
+      type={ type }
       target='_blank'
       href={ href }
       className={

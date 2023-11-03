@@ -363,7 +363,88 @@ export default [
         url: 'https://lk.rostov.tns-e.ru/'
       },
     ]
+  }, {
+    id: 'ts-ug',
+    rows: 3,
+    title: 'ТеплоСервис Юг',
+    subtitle: '',
+    logo: 'ts-ug',
+    urls: [
+      {
+        title: 'Официальный сайт',
+        url: 'https://ts-ug.ru/'
+      },
+    ],
+    messengers: [
+      {
+        title: 'WhatsApp, подать показания',
+        link: 'https://wa.me/+79381009510',
+        mesengerType: 'whatsapp'
+      },
+    ]
   },
+  {
+    id: 'domru',
+    rows: 3,
+    title: 'дом.ру',
+    subtitle: '',
+    logo: 'domru',
+    phones: [
+      {
+        title: 'Горячяя линия',
+        phone: '+7 (863) 307-50-01',
+      },
+    ],
+    urls: [
+      {
+        url: 'https://dealers.dom.ru/request/widget?domain=rostov&referral_id=1000181217',
+        title: 'Быстрая заявка на подключение'
+      }
+    ]
+  },
+  {
+    id: 'beeline',
+    rows: 3,
+    title: 'билайн',
+    subtitle: '',
+    logo: 'beeline',
+    phones: [
+      {
+        title: 'Горячяя линия',
+        phone: '8 (800) 700 8000',
+      },
+    ],
+    urls: [
+      {
+        url: 'https://rostov-na-donu.beeline.ru/customers/products/home/internet/',
+        title: 'Тарифы, подключение'
+      }
+    ]
+  },
+  {
+    id: 'timer',
+    rows: 3,
+    title: 'Таймер',
+    subtitle: '',
+    logo: 'taimer',
+    phones: [
+      {
+        title: 'Техническая поддержка',
+        phone: '+7 (863) 318-00-00',
+      },
+      {
+        title: 'Клиентская служба',
+        phone: '+7 (928) 226-92-02',
+      }
+    ],
+    urls: [
+      {
+        url: 'https://timernet.ru/?city=rostov-na-donu-rostovskaya-oblast&region=11#tgroup_16_2',
+        title: 'Тарифы, подключение'
+      }
+    ]
+  },
+
   {
     id: 'rnd',
     rows: 3,

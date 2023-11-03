@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, PropsWithChildren, useEffect, useRef, useState } from 'react';
+import { PropsWithChildren, useEffect, useState } from 'react';
 import { clsx } from 'clsx';
 
 import useLocalStorage from '@/hooks/use-local-storage';

@@ -12,10 +12,10 @@ interface Props extends PropsWithStyles {
   onSettings?: () => void;
 }
 
-const Settings = ({ className, onSettings }: Props) => {
+const Settings = ({ className }: Props) => {
   return (
     <div className={ clsx(styles.component, className) }>
-      <Button label='Настройки' disabled={ true } showLabel={ true } onClick={ onSettings } />
+      <Button label='Настройки' disabled={ false } showLabel={ true } />
     </div>
   );
 };

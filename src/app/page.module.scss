@@ -5,7 +5,8 @@
   flex-direction: column;
   gap: 20px;
   grid-template:
-    "cards " auto / 1fr;
+    "header" auto
+    "cards" auto / 1fr;
   margin: 12px;
 
   @include mq(tablet) {
@@ -41,21 +42,4 @@
       z-index: 1;
     }
   }
-}
-
-.support {
-  border: 1px solid #00000011;
-  border-radius: 20px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: gray;
-  font-size: smaller;
-}
-
-.link {
-  color: var(--link-color);
-  text-decoration: underline;
 }
