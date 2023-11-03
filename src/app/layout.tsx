@@ -1,11 +1,10 @@
 import React from 'react';
 import type { Metadata } from 'next';
 
-import './globals.css';
-
+import './globals.scss';
 
 export const metadata: Metadata = {
-  title: 'Сердце Ростова 2 - Сообщество',
+  title: 'Сердце Ростова 2 - Справочная',
   description: 'Информационный центр',
 };
 
