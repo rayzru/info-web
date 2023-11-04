@@ -394,11 +394,26 @@ export default [
         title: 'Горячяя линия',
         phone: '+7 (863) 307-50-01',
       },
+      {
+        title: 'Наш персональный консультант',
+        subtitle: 'Руслан',
+        phone: '+7 (961) 269-59-43',
+      },
     ],
     urls: [
       {
+        url: 'https://rostov.dom.ru/',
+        title: 'Официальный сайт, тарифы',
+      },
+      {
+        url: 'https://forms.gle/tgDerzv4rVHES43Q6',
+        title: 'Предварительная заявка на подключение',
+        subtitle: 'Будет доступна до 15 ноября'
+      },
+      {
         url: 'https://dealers.dom.ru/request/widget?domain=rostov&referral_id=1000181217',
-        title: 'Быстрая заявка на подключение'
+        title: 'Быстрая, дилерская заявка на подключение',
+        subtitle: 'Актуальная после 15 ноября'
       }
     ]
   },
