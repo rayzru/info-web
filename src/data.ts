@@ -406,7 +406,7 @@ export default [
         title: 'Официальный сайт, тарифы',
       },
       {
-        url: 'https://forms.gle/tgDerzv4rVHES43Q6',
+        url: 'https://docs.google.com/forms/d/e/1FAIpQLSckBZKLXESkNXU_NBW8okyOm5luS1j9vwgfHtR-sTGJJSU89A/viewform?usp=sf_link',
         title: 'Предварительная заявка на подключение',
         subtitle: 'Будет доступна до 15 ноября'
       },
