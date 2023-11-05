@@ -385,7 +385,7 @@ export default [
   },
   {
     id: 'domru',
-    rows: 5,
+    rows: 3,
     title: 'дом.ру',
     subtitle: '',
     logo: 'domru',
