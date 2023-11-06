@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Tooltip } from 'react-tooltip';
 
 import { Card } from '@/components/Card';
 import { Header } from '@/components/Header';
@@ -26,6 +27,7 @@ export default function Home() {
         <SupportCard />
       </InfoGrid>
       {/* <Map className={ styles.map } /> */ }
+      <Tooltip id="tooltip" />
     </main >
   );
 }

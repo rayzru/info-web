@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import Script from 'next/script'
 
 import './globals.scss';
@@ -14,6 +15,7 @@ interface RootProps {
 }
 
 const counterId = 'G-3XKTQETQNQ';
+
 
 export default function RootLayout({ children }: RootProps) {
   return (
@@ -41,7 +43,9 @@ export default function RootLayout({ children }: RootProps) {
         </Script>
 
       </head>
-      <body>{ children }</body>
+      <body>
+        { children }
+      </body>
     </html>
   );
 }

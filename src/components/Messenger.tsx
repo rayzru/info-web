@@ -17,11 +17,13 @@ export const Messenger = ({ mesengerType, link, title, ...props }: Props) => {
     {
       icon: mesengerType as IconType,
       label: 'Открыть',
+
       href: link
     },
     {
       icon: 'copy',
       label: 'Скопировать',
+      tooltip: 'Скопировать',
       callback: () => copy(link)
     },
   ];

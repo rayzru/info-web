@@ -1,12 +1,15 @@
 'use client';
 
-import { PropsWithChildren, useEffect, useState } from 'react';
+import { MouseEvent, PropsWithChildren, useEffect, useState } from 'react';
 import { clsx } from 'clsx';
+import { useRouter } from 'next/navigation';
 
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import useLocalStorage from '@/hooks/use-local-storage';
 import { AddressInfo, GroupInfo, MessengerInfo, PhoneInfo, PropsWithStyles, WebsiteInfo } from '@/types';
 
 import { Address } from './Address';
+import { Button } from './Button';
 import { Logo } from './Logo';
 import { Messenger } from './Messenger';
 import { Phone } from './Phone';
@@ -17,42 +20,92 @@ import styles from './Card.module.scss';
 
 interface Props extends PropsWithChildren, PropsWithStyles {
   info: GroupInfo;
+  singleCard?: boolean;
 }
 
-export const Card = ({ className, info, }: Props) => {
-  const { id, title, subtitle, logo, addresses, phones, messengers, color, urls, rows = 1 } = info;
+export const Card = ({ className, info, singleCard = false }: Props) => {
+  const { id, title, subtitle, logo, addresses, phones, messengers, color, urls, rows = 1, } = info;
   const [isOpenedInitially, updateSettings] = useLocalStorage<boolean>(`card_${id}`, false);
-  const [isOpened, setOpened] = useState(false);
+  const [isOpened, setOpened] = useState(singleCard);
+  const [, copy] = useCopyToClipboard();
+  const [copiedState, setCopiedState] = useState<boolean>(false);
 
   useEffect(() => {
-    setOpened(isOpenedInitially);
+    if (copiedState) {
+      setTimeout(() => setCopiedState(false), 4000);
+    }
+  }, [copiedState]);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    setOpened(singleCard || isOpenedInitially);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = () => {
+    if (singleCard) {
+      return;
+    }
     updateSettings(!isOpened);
     setOpened(prev => !prev);
   };
 
+  const handleShare = (e: MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCopiedState(true);
+    copy(window.location.href + id);
+  };
+
+  const handleOpenPage = (e: MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push('/' + id);
+  }
+
   return (
     <article
-      className={ clsx(styles.card, className, isOpened && styles[`span${rows}`]) }
+      className={ clsx(
+        styles.card,
+        className,
+        isOpened && styles[`span${rows}`],
+        singleCard && styles.singleCard,
+      ) }
       style={ { backgroundColor: color } }
     >
-      <header className={ styles.header } onClick={ handleChange }>
-        { logo && (
-          <Logo
-            className={ styles.logo }
-            alt={ title }
-            type={ logo }
-          />
-        ) }
-        <div className={ styles.titles }>
-          <h3 className={ styles.title }>{ title }</h3>
-          { subtitle && <h4 className={ styles.subtitle }>{ subtitle }</h4> }
-        </div>
-      </header>
-      <div className={ clsx(styles.body, !isOpened && styles.hidden) }>
+      { !singleCard && (
+        <header className={ styles.header } onClick={ handleChange }>
+          { logo && (
+            <Logo
+              className={ styles.logo }
+              alt={ title }
+              type={ logo }
+            />
+          ) }
+          <div className={ styles.titles }>
+            <h3 className={ styles.title }>{ title }</h3>
+            { subtitle && <h4 className={ styles.subtitle }>{ subtitle }</h4> }
+          </div>
+          <div className={ styles.buttons }>
+            <Button
+              icon='share'
+              onClick={ handleShare }
+              data-tooltip-content={ copiedState ? '✅ Скопировано' : 'Скопровать' }
+            />
+            <Button
+              icon='arrow-up'
+              data-tooltip-content="Страница карточки"
+              onClick={ handleOpenPage }
+            />
+          </div>
+        </header>
+      ) }
+      <div className={ clsx(
+        styles.body,
+        !isOpened && styles.hidden,
+        singleCard && styles.noHeader,
+      ) }>
         { addresses && (
           <Subgroup icon={ 'geo' } className={ styles.subgroup }>
             { addresses.map((a: AddressInfo, i: number) => <Address key={ i } { ...a } />) }

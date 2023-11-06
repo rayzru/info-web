@@ -7,7 +7,9 @@ export type IconType =
     | 'copy'
     | 'yandex-maps'
     | 'telegram'
-    | 'whatsapp';
+  | 'whatsapp'
+  | 'share'
+  | 'arrow-up';
 
 interface Props extends PropsWithStyles {
   type: IconType;

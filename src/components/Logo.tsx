@@ -9,7 +9,12 @@ export type LogoType =
   | 'tns'
   | 'gis'
   | 'vdome'
-  | 'vodokanal';
+  | 'beeline'
+  | 'domru'
+  | 'taimer'
+  | 'vodokanal'
+  | 'ts-ug'
+  | 'recycle';
 
 interface Props extends PropsWithStyles {
     type: LogoType;

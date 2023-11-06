@@ -1,4 +1,5 @@
 import { ReactEventHandler } from 'react';
+import { Tooltip } from 'react-tooltip';
 import { clsx } from 'clsx';
 
 import { PropsWithStyles } from '@/types';
@@ -25,29 +26,35 @@ export const Button = ({
   type = 'button',
   className,
   showLabel = false,
-  onClick
+  onClick,
+  ...props
 }: Props) => {
   const Component = href ? 'a' : 'button';
   return (
-    <Component
-      onClick={ onClick }
-      disabled={ disabled }
-      title={ label }
-      type={ type }
-      target='_blank'
-      href={ href }
-      className={
-        clsx(
-          styles.button,
-          label && showLabel && styles.hasLabel,
-          icon && styles.hasIcon,
-          disabled && styles.disabled,
-          className
-        )
-      }
-    >
-      { icon && <Icon type={ icon } /> }
-      { showLabel && label }
-    </Component>
+    <>
+
+      <Component
+        onClick={ onClick }
+        disabled={ disabled }
+        title={ label }
+        type={ type }
+        target='_blank'
+        href={ href }
+        data-tooltip-id="tooltip"
+        className={
+          clsx(
+            styles.button,
+            label && showLabel && styles.hasLabel,
+            icon && styles.hasIcon,
+            disabled && styles.disabled,
+            className
+          )
+        }
+        { ...props }
+      >
+        { icon && <Icon type={ icon } /> }
+        { showLabel && label }
+      </Component>
+    </>
   );
 };
