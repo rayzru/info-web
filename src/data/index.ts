@@ -16,7 +16,7 @@ export default [
         office: '306',
         postcode: 344068,
         lnglat: [47.257861, 39.715947],
-        maps: ['https://yandex.ru/maps/-/CDaKvE~D']
+        maps: ['https://yandex.ru/maps/-/CDaKvE~D'],
       }
     ],
     phones: [

@@ -89,14 +89,14 @@ export const Card = ({ className, info, singleCard = false }: Props) => {
           </div>
           <div className={ styles.buttons }>
             <Button
-              icon='share'
-              onClick={ handleShare }
-              data-tooltip-content={ copiedState ? '✅ Скопировано' : 'Скопровать' }
+              icon='arrow-up'
+              data-tooltip-content={ `Открыть страницу "${title}"` }
+              onClick={ handleOpenPage }
             />
             <Button
-              icon='arrow-up'
-              data-tooltip-content="Страница карточки"
-              onClick={ handleOpenPage }
+              icon='share'
+              onClick={ handleShare }
+              data-tooltip-content={ copiedState ? '✅ Скопировано' : 'Скопровать прямую ссылку на карточку' }
             />
           </div>
         </header>
