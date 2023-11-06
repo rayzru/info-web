@@ -353,7 +353,7 @@ export default [
   },
   {
     id: 'tns',
-    rows: 3,
+    rows: 2,
     title: 'ТНС-Энерго',
     subtitle: '',
     logo: 'tns',
@@ -363,12 +363,45 @@ export default [
         url: 'https://lk.rostov.tns-e.ru/'
       },
     ]
-  }, {
+  },
+  {
+    id: 'cleancity',
+    rows: 3,
+    title: 'Чистый город',
+    subtitle: '',
+    logo: 'recycle',
+    addresses: [
+      {
+        title: 'Офис',
+        address: 'просп. Михаила Нагибина, д.27',
+        maps: ['https://yandex.ru/maps/-/CDeQI65C']
+      }
+    ],
+    phones: [
+      {
+        title: 'Горячая линия',
+        phone: '8-800-707-05-08'
+      }
+    ],
+    urls: [
+      {
+        title: 'Официальный сайт',
+        url: 'hhttps://rostov.clean-rf.ru/'
+      },
+    ]
+  },
+  {
     id: 'ts-ug',
     rows: 3,
     title: 'ТеплоСервис Юг',
     subtitle: '',
     logo: 'ts-ug',
+    phones: [
+      {
+        title: 'Аварийная служба',
+        phone: '+7 (928) 110-06-86'
+      }
+    ],
     urls: [
       {
         title: 'Официальный сайт',
@@ -393,17 +426,18 @@ export default [
       {
         title: 'Горячяя линия',
         phone: '+7 (863) 307-50-01',
+        tags: 'phone'
       },
     ],
     urls: [
       {
-        url: 'https://rostov.dom.ru/',
-        title: 'Официальный сайт, тарифы',
-      },
-      {
         url: 'https://dealers.dom.ru/request/widget?domain=rostov&referral_id=1000181217',
         title: 'Быстрая заявка на подключение',
-      }
+      },
+      {
+        url: 'https://rostov.dom.ru/',
+        title: 'Официальный сайт',
+      },
     ]
   },
   {

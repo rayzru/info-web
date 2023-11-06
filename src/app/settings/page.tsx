@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, MouseEvent, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/Button';
@@ -10,6 +11,8 @@ import useLocalStorage from '@/hooks/use-local-storage';
 import { GroupInfo } from '@/types';
 
 import styles from './page.module.scss';
+
+const TooltipLazy = dynamic(() => import('react-tooltip').then((mod) => mod.Tooltip), { ssr: false, })
 
 export default function Home() {
   const [isVisibleInitially, updateSettings] = useLocalStorage<string>('visible', '');
@@ -40,6 +43,7 @@ export default function Home() {
           </div>
         </form>
       </div>
+      <TooltipLazy id="tooltip" />
     </main >
   );
 

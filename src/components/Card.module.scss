@@ -17,6 +17,12 @@
       grid-row: span #{$i};
     }
   }
+
+  &.singleCard {
+    &:hover {
+      box-shadow: none;
+    }
+  }
 }
 
 .header {
@@ -28,12 +34,6 @@
   min-height: 76px;
   padding: 16px;
 
-  &:after {
-    position: absolute;
-    content: '\22EE';
-    right: 32px;
-  }
-
   .logo {
     max-width: 30px;
   }
@@ -41,15 +41,27 @@
   .titles {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
   }
 
   .title {
-    font-weight: 200;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 400;
   }
 
   .subtitle {
-    font-weight: 200;
+    font-weight: 400;
     opacity: 0.7;
+  }
+
+  .buttons {
+    margin-left: auto;
+    display: flex;
+    flex-direction: row;
+    column-gap: 8px;
   }
 }
 
@@ -62,9 +74,12 @@
     display: none;
   }
 
-}
+  &.noHeader {
+    padding-top: 16px;
+  }
 
-.subgroup {
-  display: flex;
-  row-gap: 8px;
+  .subgroup {
+    display: flex;
+    row-gap: 8px;
+  }
 }

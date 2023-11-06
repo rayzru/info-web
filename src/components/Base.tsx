@@ -14,6 +14,7 @@ export interface Action {
   label?: string;
   href?: string;
   callback?: () => void;
+  tooltip?: string;
 }
 
 interface Props extends BaseInfo, PropsWithChildren {
@@ -48,7 +49,18 @@ export const Base = ({
       </div>
       { actions && (
         <div className={ styles.actions }>
-          { actions.map(({ icon, label, callback, href }: Action, i: number) => <Button href={ href } key={ i } icon={ icon } label={ label } onClick={ callback } />) }
+          { actions.map(
+            ({ icon, label, callback, href, tooltip }: Action, i: number) => (
+              <Button
+                href={ href }
+                key={ i }
+                icon={ icon }
+                label={ label }
+                onClick={ callback }
+                data-tooltip-id="tooltip"
+                data-tooltip-content={ tooltip }
+              />
+            )) }
         </div>
       ) }
     </div>
