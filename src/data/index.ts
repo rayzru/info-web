@@ -431,8 +431,12 @@ export default [
     ],
     urls: [
       {
+        url: 'https://forms.gle/FHVGqTtvkTWVWNfJ6',
+        title: 'Предварительная заявка',
+      },
+      {
         url: 'https://dealers.dom.ru/request/widget?domain=rostov&referral_id=1000181217',
-        title: 'Быстрая заявка на подключение',
+        title: 'Быстрая заявка на подключение для 1, 2 строений',
       },
       {
         url: 'https://rostov.dom.ru/',
