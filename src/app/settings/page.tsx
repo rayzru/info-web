@@ -15,10 +15,8 @@ import styles from './page.module.scss';
 const TooltipLazy = dynamic(() => import('react-tooltip').then((mod) => mod.Tooltip), { ssr: false, })
 
 export default function Home() {
-  const [isVisibleInitially, updateSettings] = useLocalStorage<string>('visible', '');
-  const [checkState] = useState<string[]>(
-    isVisibleInitially === '' ? data.map(v => v.id) : isVisibleInitially.split(',')
-  );
+  const [isHidden, updateSettings] = useLocalStorage<string>('hidden', '');
+  const [checkState] = useState<string[]>(isHidden.split(',') || []);
   const router = useRouter();
 
   return (
@@ -31,7 +29,7 @@ export default function Home() {
           <div className={ styles.labels }>
             { data.map((v: GroupInfo) => (
               <label key={ v.id } className={ styles.label }>
-                <input type='checkbox' name={ v.id } defaultChecked={ checkState.includes(v.id) } className={ styles.checkbox } />
+                <input type='checkbox' name={ v.id } defaultChecked={ !checkState.includes(v.id) } className={ styles.checkbox } />
                 { v.title }
               </label>
             )) }
@@ -51,7 +49,9 @@ export default function Home() {
     e.preventDefault();
     e.stopPropagation();
     const formData = Object.fromEntries(new FormData(e.currentTarget));
-    updateSettings(Object.keys(formData).join(','));
+    const hidden = data.filter(el => !Object.keys(formData).includes(el.id));
+    console.log(hidden);
+    updateSettings(hidden.map(el => el.id).join(','));
     router.back();
   }
 
