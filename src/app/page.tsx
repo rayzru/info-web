@@ -14,16 +14,14 @@ import { GroupInfo } from '@/types';
 import styles from './page.module.scss';
 
 export default function Home() {
-  const [isVisibleInitially] = useLocalStorage<string>('visible', '');
-  const [checkState] = useState<string[]>(
-    isVisibleInitially === '' ? data.map(v => v.id) : isVisibleInitially.split(',')
-  );
+  const [isHidden] = useLocalStorage<string>('hidden', '');
+  const [checkState] = useState<string[]>(isHidden.split(',') || []);
 
   return (
     <main className={ styles.main }>
       <Header subtitle={ [] } />
       <InfoGrid className={ styles.cards }>
-        { data.map((el: GroupInfo) => checkState.includes(el.id) && <Card key={ el.id } info={ el } />) }
+        { data.map((el: GroupInfo) => !checkState.includes(el.id) && <Card key={ el.id } info={ el } />) }
         <SupportCard />
       </InfoGrid>
       {/* <Map className={ styles.map } /> */ }
