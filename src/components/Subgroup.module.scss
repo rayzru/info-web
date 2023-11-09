@@ -11,8 +11,12 @@
   display: flex;
   justify-content: center;
   color: #00000066;
+  margin-top: 6px;
 }
 
 .content {
   flex: 1 0;
+  display: flex;
+  flex-flow: column;
+  row-gap: 12px;
 }
