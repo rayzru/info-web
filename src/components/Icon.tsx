@@ -1,15 +1,16 @@
 import { PropsWithStyles } from '@/types';
 
 export type IconType =
-    | 'geo'
-    | 'phone'
-    | 'chat'
-    | 'copy'
-    | 'yandex-maps'
-    | 'telegram'
+  | 'geo'
+  | 'phone'
+  | 'chat'
+  | 'copy'
+  | 'yandex-maps'
+  | 'telegram'
   | 'whatsapp'
   | 'share'
-  | 'arrow-up';
+  | 'arrow-up'
+  | 'link';
 
 interface Props extends PropsWithStyles {
   type: IconType;

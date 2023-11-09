@@ -122,7 +122,7 @@ export const Card = ({ className, info, singleCard = false }: Props) => {
           </Subgroup>
         ) }
         { urls && (
-          <Subgroup icon='chat' className={ styles.subgroup }>
+          <Subgroup icon='link' className={ styles.subgroup }>
             { urls.map((w: WebsiteInfo, i: number) => <WebLink key={ i } { ...w } />) }
           </Subgroup>
         ) }
