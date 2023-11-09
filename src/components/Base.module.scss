@@ -2,7 +2,7 @@
   display: grid;
   column-gap: 12px;
   grid-template:  "content" min-content / auto;
-  margin-bottom: 12px;
+
   &.hasActions {
     grid-template:  "content actions" min-content / auto min-content;
   }

@@ -56,8 +56,6 @@ export default [
       },
 
     ],
-    messengers: [
-    ]
   },
   {
     id: 'root',
@@ -436,7 +434,7 @@ export default [
       },
       {
         url: 'https://dealers.dom.ru/request/widget?domain=rostov&referral_id=1000181217',
-        title: 'Быстрая заявка на подключение для 1, 2 строений',
+        title: 'Подключение (стр. 1, 2)',
       },
       {
         url: 'https://rostov.dom.ru/',
