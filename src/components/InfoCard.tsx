@@ -2,7 +2,7 @@
 
 import { MouseEvent, PropsWithChildren, useEffect, useState } from 'react';
 import { MoreVert, OpenInBrowser, OpenInBrowserOutlined, Share, ShareOutlined } from '@mui/icons-material';
-import { Avatar, Card, CardContent, CardHeader, IconButton, Menu, MenuItem } from '@mui/material';
+import { Avatar, Card, CardContent, CardHeader, IconButton, List, Menu, MenuItem } from '@mui/material';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
 
@@ -27,7 +27,7 @@ interface Props extends PropsWithChildren, PropsWithStyles {
 export const InfoCard = ({ info, singleCard = false }: Props) => {
   const { id, title, subtitle, logo, addresses, phones, messengers, urls, rows = 1, } = info;
   const [isOpenedInitially, updateSettings] = useLocalStorage<boolean>(`card_${id}`, false);
-  const [isOpened, setOpened] = useState(singleCard);
+  const [isOpened, setIsOpened] = useState(singleCard);
   const [, copy] = useCopyToClipboard();
   const [copiedState, setCopiedState] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -41,7 +41,7 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
   const router = useRouter();
 
   useEffect(() => {
-    setOpened(singleCard || isOpenedInitially);
+    setIsOpened(singleCard || isOpenedInitially);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -50,7 +50,7 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
       return;
     }
     updateSettings(!isOpened);
-    setOpened(prev => !prev);
+    setIsOpened(prev => !prev);
   };
 
   const handleMenu = (event: MouseEvent<HTMLElement>) => {
@@ -68,6 +68,7 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
     e.stopPropagation();
     setCopiedState(true);
     copy(window.location.href + id);
+    handleClose();
   };
 
   const handleOpenPage = (e: MouseEvent<HTMLElement>) => {
@@ -77,60 +78,58 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
   };
 
   return (
-    <Card style={ { gridRow: `span ${isOpened ? rows : 1}` } } >
-      { !singleCard && (
-        <CardHeader
-          avatar={ logo && (
-            <Logo alt={ title } type={ logo } />
-          ) }
-          onClick={ handleChange }
-          title={ title }
-          subheader={ subtitle }
-          action={
-            <IconButton onClick={ handleMenu }  >
-              <MoreVert />
-            </IconButton>
-          }
-        >
-          <Menu
-            anchorEl={ anchorEl }
-            open={ Boolean(anchorEl) }
-            onClose={ handleClose }
-            keepMounted
-          >
-            <MenuItem onClick={ handleOpenPage }>Открыть</MenuItem>
-            <MenuItem onClick={ handleShare }>Скопировать ссылку</MenuItem>
-          </Menu>
-        </CardHeader>
-      ) }
-      { isOpened && (<CardContent>
-        <div className={ clsx(
-          styles.body,
-          !isOpened && styles.hidden,
-          singleCard && styles.noHeader,
-        ) }>
-          { addresses && (
-            <Subgroup icon={ 'geo' } className={ styles.subgroup }>
-              { addresses.map((a: AddressInfo, i: number) => <Address key={ i } { ...a } />) }
-            </Subgroup>
-          ) }
-          { phones && (
-            <Subgroup icon='phone' className={ styles.subgroup }>
-              { phones.map((p: PhoneInfo, i: number) => <Phone key={ i } { ...p } />) }
-            </Subgroup>
-          ) }
-          { messengers && (
-            <Subgroup icon='chat' className={ styles.subgroup }>
-              { messengers.map((m: MessengerInfo, i: number) => <Messenger key={ i } { ...m } />) }
-            </Subgroup>
-          ) }
-          { urls && (
-            <Subgroup icon='link' className={ styles.subgroup }>
-              { urls.map((w: WebsiteInfo, i: number) => <WebLink key={ i } { ...w } />) }
-            </Subgroup>
-          ) }
-        </div>
-      </CardContent>) }
-    </Card>
+    <>
+      <Menu
+        anchorEl={ anchorEl }
+        open={ Boolean(anchorEl) }
+        onClose={ handleClose }
+        keepMounted
+      >
+        <MenuItem onClick={ handleOpenPage }>Открыть</MenuItem>
+        <MenuItem onClick={ handleShare }>Скопировать ссылку</MenuItem>
+      </Menu>
+      <Card style={ { gridRow: `span ${isOpened ? rows : 1}` } } >
+        { !singleCard && (
+          <CardHeader
+            avatar={ logo && (<Logo alt={ title } type={ logo } />) }
+            onClick={ handleChange }
+            title={ title }
+            subheader={ subtitle }
+            action={ (
+              <IconButton onClick={ handleMenu }  >
+                <MoreVert />
+              </IconButton>
+            ) }
+          />
+        ) }
+        { isOpened && (
+          <CardContent>
+            <List>
+              { addresses && (
+                <Subgroup icon={ 'geo' } className={ styles.subgroup }>
+                  { addresses.map((a: AddressInfo, i: number) => <Address key={ i } { ...a } />) }
+                </Subgroup>
+              ) }
+              { phones && (
+                <Subgroup icon='phone' className={ styles.subgroup }>
+                  { phones.map((p: PhoneInfo, i: number) => <Phone key={ i } { ...p } />) }
+                </Subgroup>
+              ) }
+              { messengers && (
+                <Subgroup icon='chat' className={ styles.subgroup }>
+                  { messengers.map((m: MessengerInfo, i: number) => <Messenger key={ i } { ...m } />) }
+                </Subgroup>
+              ) }
+              { urls && (
+                <Subgroup icon='link' className={ styles.subgroup }>
+                  { urls.map((w: WebsiteInfo, i: number) => <WebLink key={ i } { ...w } />) }
+                </Subgroup>
+              ) }
+            </List>
+          </CardContent>
+        ) }
+      </Card>
+    </>
+
   );
 };

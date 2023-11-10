@@ -1,61 +1,6 @@
-.header {
-  grid-area: header;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  column-gap: 30px;
-  line-height: 30px;
-  overflow: hidden;
-
-  .titleLogo {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    column-gap: 12px;
-  }
-
-  .logo {
-    display: flex;
-    width: 20px;
-    align-items: center;
-  }
-
-  .titles {
-    column-gap: 8px;
-    display: flex;
-    flex-direction: row;
-    overflow: hidden;
-
-    h1 {
-      white-space: nowrap;
-      font-size: 20px;
-      font-weight: 400;
-      text-overflow: ellipsis;
-    }
-
-    h2 {
-      min-width: 0;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: 18px;
-      font-weight: 400;
-
-      &::before {
-        content: '\2022';
-        margin-right: 8px;
-      }
-    }
-  }
-
-  .search {
-    flex: 1;
-  }
-
-  .settings {
-    flex: 0;
-  }
-
-  .back {
-    margin-left: auto;
-  }
+.subtitle {
+	&::before {
+		content: '\2022';
+		margin-right: 8px;
+	}
 }
