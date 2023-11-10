@@ -39,6 +39,7 @@ export const Base = ({
 
       <div className={ styles.content }>
         <div className={ styles.children }>{ children }</div>
+
         <header className={ styles.header }>
           <h4 className={ styles.title }>{ title } </h4>
           { subtitle && <h5 className={ styles.subtitle }>{ subtitle } </h5> }

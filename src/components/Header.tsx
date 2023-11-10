@@ -1,14 +1,14 @@
-import { ArrowBackIosNew } from '@mui/icons-material';
+import { ArrowBackIosNew, CloseFullscreen, CloseRounded } from '@mui/icons-material';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { AppBar, Box, Divider, IconButton, MenuItem, Toolbar, Typography } from '@mui/material';
-import { clsx } from 'clsx';
+import { AppBar, Box, IconButton, Toolbar, Typography } from '@mui/material';
 import Link from 'next/link'
 
 import { PropsWithStyles } from '@/types';
 
-import { Logo, LogoType } from './Logo';
+import { LogoType } from './Logo';
 import Search from './Search';
-import Settings from './Settings';
+
+import styles from './Header.module.scss';
 
 interface Props extends PropsWithStyles {
   title?: string;
@@ -33,25 +33,32 @@ export const Header = ({
     <Box sx={ { flexGrow: 1 } }>
       <AppBar component="nav" elevation={ 0 } position='relative'>
         <Toolbar>
-          <Typography variant="h5" noWrap>
+          <Typography variant="h1" noWrap fontSize={ 24 }>
             { title }
           </Typography>
-          { subtitle.map((s: string, i: number) => (<Typography key={ `subtitle-${i}` } variant="h6" noWrap>{ s }</Typography>)) }
+          { subtitle.map((s: string, i: number) => (
+            <Typography
+              className={ styles.subtitle }
+              sx={ { marginLeft: 1 } }
+              key={ `subtitle-${i}` }
+              variant="h2"
+              noWrap
+              fontSize={ 20 }
+            >
+              { s }
+            </Typography>)
+          ) }
           <Box sx={ { flexGrow: 1 } } />
           { showSettingsButton && (
-            <MenuItem component={ Link } href="/settings" >
-              <IconButton size="large" >
-                <SettingsIcon fontSize='inherit' />
-              </IconButton>
-            </MenuItem>
+            <IconButton size="large" LinkComponent={ Link } href="/settings">
+              <SettingsIcon fontSize='inherit' />
+            </IconButton>
           ) }
 
           { showBack && (
-            <MenuItem component={ Link } href="/" >
-              <IconButton size="large" >
-                <ArrowBackIosNew />
-              </IconButton>
-            </MenuItem>
+            <IconButton size="large" LinkComponent={ Link } href='/'>
+              <CloseRounded />
+            </IconButton>
           ) }
         </Toolbar>
       </AppBar>

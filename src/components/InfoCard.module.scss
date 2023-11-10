@@ -12,12 +12,6 @@
       box-shadow: 0 0 3px 1px #183596a2;
   }
 
-  @for $i from 1 through 9 {
-    &.span#{$i}  {
-      grid-row: span #{$i};
-    }
-  }
-
   &.singleCard {
     &:hover {
       box-shadow: none;

@@ -47,7 +47,7 @@ export const Address = ({
 
   return (
     <Base actions={ actions } { ...baseProps }>
-      { address && <p className={ styles.address }>{ adressString } </p> }
+      { adressString }
     </Base>
   );
 
