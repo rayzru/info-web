@@ -1,10 +1,8 @@
 import { ReactEventHandler } from 'react';
-import { Tooltip } from 'react-tooltip';
 import { clsx } from 'clsx';
 
+import { Icon, IconType } from '@/components/Icon';
 import { PropsWithStyles } from '@/types';
-
-import { Icon, IconType } from './Icon';
 
 import styles from './Button.module.scss';
 
@@ -31,30 +29,27 @@ export const Button = ({
 }: Props) => {
   const Component = href ? 'a' : 'button';
   return (
-    <>
-
-      <Component
-        onClick={ onClick }
-        disabled={ disabled }
-        title={ label }
-        type={ type }
-        target='_blank'
-        href={ href }
-        data-tooltip-id="tooltip"
-        className={
-          clsx(
-            styles.button,
-            label && showLabel && styles.hasLabel,
-            icon && styles.hasIcon,
-            disabled && styles.disabled,
-            className
-          )
-        }
-        { ...props }
-      >
-        { icon && <Icon type={ icon } /> }
-        { showLabel && label }
-      </Component>
-    </>
+    <Component
+      onClick={ onClick }
+      disabled={ disabled }
+      title={ label }
+      type={ type }
+      target='_blank'
+      href={ href }
+      data-tooltip-id="tooltip"
+      className={
+        clsx(
+          styles.button,
+          label && showLabel && styles.hasLabel,
+          icon && styles.hasIcon,
+          disabled && styles.disabled,
+          className
+        )
+      }
+      { ...props }
+    >
+      { icon && <Icon type={ icon } /> }
+      { showLabel && label }
+    </Component>
   );
 };

@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Tooltip } from 'react-tooltip';
 
-import { Card } from '@/components/Card';
 import { Header } from '@/components/Header';
+import { InfoCard } from '@/components/InfoCard';
 import { InfoGrid } from '@/components/InfoGrid';
 import { SupportCard } from '@/components/SupportCard';
 import data from '@/data';
@@ -19,13 +18,12 @@ export default function Home() {
 
   return (
     <main className={ styles.main }>
-      <Header subtitle={ [] } />
+      <Header className={ styles.header } subtitle={ [] } showSearch={ true } />
       <InfoGrid className={ styles.cards }>
-        { data.map((el: GroupInfo) => !checkState.includes(el.id) && <Card key={ el.id } info={ el } />) }
+        { data.map((el: GroupInfo) => !checkState.includes(el.id) && <InfoCard key={ el.id } info={ el } />) }
         <SupportCard />
       </InfoGrid>
       {/* <Map className={ styles.map } /> */ }
-      <Tooltip id="tooltip" />
     </main >
   );
 }

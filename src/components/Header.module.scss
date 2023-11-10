@@ -3,10 +3,16 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  column-gap: 8px;
+  column-gap: 30px;
   line-height: 30px;
   overflow: hidden;
 
+  .titleLogo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    column-gap: 12px;
+  }
 
   .logo {
     display: flex;
@@ -15,7 +21,7 @@
   }
 
   .titles {
-  column-gap: 8px;
+    column-gap: 8px;
     display: flex;
     flex-direction: row;
     overflow: hidden;
@@ -35,20 +41,21 @@
       font-weight: 400;
 
       &::before {
-          content: "\2022";
-          margin-right: 8px;
-        }
+        content: '\2022';
+        margin-right: 8px;
+      }
     }
-
   }
 
-
   .search {
-    margin-left: auto;
     flex: 1;
   }
 
   .settings {
     flex: 0;
+  }
+
+  .back {
+    margin-left: auto;
   }
 }
