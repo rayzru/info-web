@@ -58,7 +58,7 @@ export default [
     ],
   },
   {
-    id: 'root',
+    id: 'sr2',
     rows: 6,
     title: 'Жилой комплекс',
     color: CardColor.white,
@@ -245,7 +245,7 @@ export default [
   },
   {
     id: 'liter7',
-    rows: 3,
+    rows: 4,
     title: 'Литер 7',
     // color: CardColor.red,
     logo: 'root',
@@ -416,7 +416,7 @@ export default [
   },
   {
     id: 'domru',
-    rows: 3,
+    rows: 4,
     title: 'дом.ру',
     subtitle: '',
     logo: 'domru',
@@ -456,8 +456,12 @@ export default [
     ],
     urls: [
       {
+        url: 'https://forms.gle/oQhTbvd7WKMaKVub6',
+        title: 'Заявка на подключение онлайн'
+      },
+      {
         url: 'https://rostov-na-donu.beeline.ru/customers/products/home/internet/',
-        title: 'Тарифы, подключение'
+        title: 'Официальный сайт'
       }
     ]
   },

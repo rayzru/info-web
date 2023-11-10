@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 
-import { Card } from '@/components/Card';
 import { Header } from '@/components/Header';
+import { InfoCard } from '@/components/InfoCard';
 import data from '@/data';
 
 import styles from './page.module.scss';
@@ -33,9 +33,10 @@ export default async function Page({ params }: Props) {
         title={ info.title }
         subtitle={ subtitle as string[] }
         showSettingsButton={ false }
+        showSearch={ false }
         showBack={ true }
       />
-      <Card key={ info.id } info={ info } singleCard={ true } />
+      <InfoCard key={ info.id } info={ info } singleCard={ true } />
       {/* <Map className={ styles.map } /> */ }
     </main >
   );

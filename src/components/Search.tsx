@@ -16,7 +16,6 @@ const Search = ({ className }: Props) => {
     <div className={ clsx(styles.component, className) }>
       <input
         placeholder='Поиск...'
-        disabled={ true }
         className={ styles.searchInput }
         type="search"
         ref={ searchInputRef }

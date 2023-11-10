@@ -1,14 +1,14 @@
+import { ArrowBackIosNew } from '@mui/icons-material';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { AppBar, Box, Divider, IconButton, MenuItem, Toolbar, Typography } from '@mui/material';
 import { clsx } from 'clsx';
 import Link from 'next/link'
 
 import { PropsWithStyles } from '@/types';
 
-import { Button } from './Button';
 import { Logo, LogoType } from './Logo';
 import Search from './Search';
 import Settings from './Settings';
-
-import styles from './Header.module.scss';
 
 interface Props extends PropsWithStyles {
   title?: string;
@@ -23,30 +23,39 @@ export const Header = ({
   className,
   title = 'Справочная',
   subtitle = [],
-  logo = 'root',
+  logo = 'sr2',
   showSearch = true,
   showSettingsButton = true,
   showBack = false,
 
 }: Props) => {
   return (
-    <header className={ clsx(styles.header, className) }>
-      { logo && <Logo type={ logo } className={ styles.logo } /> }
-      <div className={ styles.titles }>
-        <h1 className={ clsx(subtitle && styles.hasSubtitle) }>{ title }</h1>
-        { subtitle.map((s: string, i: number) => (<h2 key={ `subtitle-${i}` }>{ s }</h2>)) }
-      </div>
-      { showSearch && <Search className={ styles.search } /> }
-      { showSettingsButton && (
-        <Link href="/settings">
-          <Settings className={ styles.settings } />
-        </Link>
-      ) }
-      { showBack && (
-        <Link href="/">
-          <Button icon={ 'arrow-up' } label={ 'Назад' } showLabel={ true } />
-        </Link>
-      ) }
-    </header>
+    <Box sx={ { flexGrow: 1 } }>
+      <AppBar component="nav" elevation={ 0 } position='relative'>
+        <Toolbar>
+          <Typography variant="h5" noWrap>
+            { title }
+          </Typography>
+          { subtitle.map((s: string, i: number) => (<Typography key={ `subtitle-${i}` } variant="h6" noWrap>{ s }</Typography>)) }
+          <Box sx={ { flexGrow: 1 } } />
+          { showSettingsButton && (
+            <MenuItem component={ Link } href="/settings" >
+              <IconButton size="large" >
+                <SettingsIcon fontSize='inherit' />
+              </IconButton>
+            </MenuItem>
+          ) }
+
+          { showBack && (
+            <MenuItem component={ Link } href="/" >
+              <IconButton size="large" >
+                <ArrowBackIosNew />
+              </IconButton>
+            </MenuItem>
+          ) }
+        </Toolbar>
+      </AppBar>
+    </Box>
+
   );
 };

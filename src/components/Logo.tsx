@@ -1,3 +1,5 @@
+import { Avatar } from '@mui/material';
+
 import { PropsWithStyles } from '@/types';
 
 export type LogoType =
@@ -21,13 +23,15 @@ interface Props extends PropsWithStyles {
     alt?: string;
 }
 
-export const Logo = ({ type, className, alt }: Props) => {
+export const Logo = ({ type, alt }: Props) => {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img
-      className={ className }
+    <Avatar
+      sx={ { bgcolor: 'transparent', width: 24, height: 24 } }
       src={ `/logos/${type}.svg` }
       alt={ alt }
-    />
+      variant="square"
+    >
+    </Avatar>
   );
 };

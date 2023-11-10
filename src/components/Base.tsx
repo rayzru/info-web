@@ -30,14 +30,13 @@ export const Base = ({
   actions = [],
 }: Props) => {
   return (
-    <div className={
-      clsx(
-        styles.component,
-        actions.length && styles.hasActions,
-        description && styles.hasDescription,
-        tags?.length && styles.hasTags,
-      )
-    }>
+    <div className={ clsx(
+      styles.component,
+      actions.length && styles.hasActions,
+      description && styles.hasDescription,
+      tags?.length && styles.hasTags,
+    ) }>
+
       <div className={ styles.content }>
         <div className={ styles.children }>{ children }</div>
         <header className={ styles.header }>
@@ -47,6 +46,7 @@ export const Base = ({
         { description && <p className={ styles.description }>{ description } </p> }
         { tags && <p className={ styles.tags }>{ }</p> }
       </div>
+
       { actions && (
         <div className={ styles.actions }>
           { actions.map(
@@ -63,6 +63,7 @@ export const Base = ({
             )) }
         </div>
       ) }
+
     </div>
   );
 };
