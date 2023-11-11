@@ -1,5 +1,4 @@
 import React, { PropsWithChildren } from 'react';
-import { CssBaseline } from '@mui/material';
 import type { Metadata } from 'next';
 import Script from 'next/script'
 
