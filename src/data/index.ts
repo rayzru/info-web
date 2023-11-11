@@ -3,7 +3,7 @@ import { CardColor, GroupInfo } from '@/types';
 export default [
   {
     id: 'uk',
-    rows: 7,
+    rows: 8,
     title: 'Управляющая компания',
     subtitle: 'Сердце Ростова',
     logo: 'sr2',
@@ -59,7 +59,7 @@ export default [
   },
   {
     id: 'sr2',
-    rows: 6,
+    rows: 7,
     title: 'Жилой комплекс',
     color: CardColor.white,
     subtitle: 'Сердце Ростова 2',
@@ -90,33 +90,33 @@ export default [
     messengers: [
       {
         title: 'WhatsApp',
-        mesengerType: 'whatsapp',
+        messengerType: 'whatsapp',
         link: 'http://go.sr2.today/whatsapp'
       },
       {
         title: 'Telegram - Общий чат',
-        mesengerType: 'telegram',
+        messengerType: 'telegram',
         link: 'http://go.sr2.today/telegram'
       }
     ]
   },
   {
     id: 'liter1',
-    rows: 2,
+    rows: 3,
     title: 'Литер 1',
     // color: CardColor.red,
     logo: 'root',
     messengers: [
       {
         title: 'Telegram - Литер 1',
-        mesengerType: 'telegram',
+        messengerType: 'telegram',
         link: 'https://t.me/sr2l1'
       }
     ]
   },
   {
     id: 'liter2',
-    rows: 3,
+    rows: 4,
     title: 'Литер 2',
     // color: CardColor.red,
     logo: 'root',
@@ -136,7 +136,7 @@ export default [
     messengers: [
       {
         title: 'Telegram - Литер 2',
-        mesengerType: 'telegram',
+        messengerType: 'telegram',
         link: 'https://t.me/sr2_l2'
       }
     ]
@@ -163,7 +163,7 @@ export default [
     messengers: [
       {
         title: 'Telegram - Литер 3',
-        mesengerType: 'telegram',
+        messengerType: 'telegram',
         link: 'https://t.me/sr2_l3'
       }
     ]
@@ -190,7 +190,7 @@ export default [
     messengers: [
       {
         title: 'Telegram - Литер 4',
-        mesengerType: 'telegram',
+        messengerType: 'telegram',
         link: 'https://t.me/sr2_l4'
       }
     ]
@@ -217,7 +217,7 @@ export default [
     messengers: [
       {
         title: 'Telegram - Литер 5',
-        mesengerType: 'telegram',
+        messengerType: 'telegram',
         link: 'https://t.me/sr2_l5'
       }
     ]
@@ -238,7 +238,7 @@ export default [
     messengers: [
       {
         title: 'Telegram - Литер 6',
-        mesengerType: 'telegram',
+        messengerType: 'telegram',
         link: 'https://t.me/sr2_l6'
       }
     ]
@@ -269,7 +269,7 @@ export default [
     messengers: [
       {
         title: 'Telegram - Литер 7',
-        mesengerType: 'telegram',
+        messengerType: 'telegram',
         link: 'https://t.me/sr2_l7'
       }
     ]
@@ -283,7 +283,7 @@ export default [
     messengers: [
       {
         title: 'Telegram - Литер 8',
-        mesengerType: 'telegram',
+        messengerType: 'telegram',
         link: 'https://t.me/sr2l8'
       }
     ]
@@ -297,14 +297,14 @@ export default [
     messengers: [
       {
         title: 'Telegram - Литер 9',
-        mesengerType: 'telegram',
+        messengerType: 'telegram',
         link: 'https://t.me/sr2_l9'
       }
     ]
   },
   {
     id: 'domofon',
-    rows: 4,
+    rows: 5,
     logo: 'vdome',
     title: 'Домофон',
     phones: [{
@@ -316,7 +316,7 @@ export default [
     messengers: [{
       title: 'WhatsApp робот',
       subtitle: 'Регистрация, инструкция',
-      mesengerType: 'whatsapp',
+      messengerType: 'whatsapp',
       link: 'https://wa.me/+79963530117?text=инструкция'
     }],
     urls: [
@@ -410,7 +410,7 @@ export default [
       {
         title: 'WhatsApp, подать показания',
         link: 'https://wa.me/+79381009510',
-        mesengerType: 'whatsapp'
+        messengerType: 'whatsapp'
       },
     ]
   },

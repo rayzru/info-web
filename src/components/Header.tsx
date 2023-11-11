@@ -1,4 +1,4 @@
-import { ArrowBackIosNew, CloseFullscreen, CloseRounded } from '@mui/icons-material';
+import { CloseRounded } from '@mui/icons-material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { AppBar, Box, IconButton, Toolbar, Typography } from '@mui/material';
 import Link from 'next/link'
@@ -17,17 +17,17 @@ interface Props extends PropsWithStyles {
   showSettingsButton?: boolean;
   showSearch?: boolean;
   showBack?: boolean;
+  onSettings?: () => void;
 }
 
 export const Header = ({
-  className,
   title = 'Справочная',
   subtitle = [],
   logo = 'sr2',
   showSearch = true,
   showSettingsButton = true,
   showBack = false,
-
+  onSettings
 }: Props) => {
   return (
     <Box sx={ { flexGrow: 1 } }>
@@ -50,7 +50,7 @@ export const Header = ({
           ) }
           <Box sx={ { flexGrow: 1 } } />
           { showSettingsButton && (
-            <IconButton size="large" LinkComponent={ Link } href="/settings">
+            <IconButton size="large" onClick={ onSettings }>
               <SettingsIcon fontSize='inherit' />
             </IconButton>
           ) }

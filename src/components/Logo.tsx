@@ -27,7 +27,7 @@ export const Logo = ({ type, alt }: Props) => {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <Avatar
-      sx={ { bgcolor: 'transparent', width: 24, height: 24 } }
+      sx={ { bgcolor: 'transparent', width: 24, height: 'fit-content' } }
       src={ `/logos/${type}.svg` }
       alt={ alt }
       variant="square"

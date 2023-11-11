@@ -1,23 +1,19 @@
 'use client';
 
 import { MouseEvent, PropsWithChildren, useEffect, useState } from 'react';
-import { MoreVert, OpenInBrowser, OpenInBrowserOutlined, Share, ShareOutlined } from '@mui/icons-material';
-import { Avatar, Card, CardContent, CardHeader, IconButton, List, Menu, MenuItem } from '@mui/material';
-import { clsx } from 'clsx';
+import { MoreVert } from '@mui/icons-material';
+import { Card, CardContent, CardHeader, IconButton, List, Menu, MenuItem } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import useLocalStorage from '@/hooks/use-local-storage';
 import { AddressInfo, GroupInfo, MessengerInfo, PhoneInfo, PropsWithStyles, WebsiteInfo } from '@/types';
 
-import { Address } from './Address';
+import { Address } from './list/Address';
+import { Messenger } from './list/Messenger';
+import { Phone } from './list/Phone';
+import { WebLink } from './list/WebLink';
 import { Logo } from './Logo';
-import { Messenger } from './Messenger';
-import { Phone } from './Phone';
-import { Subgroup } from './Subgroup';
-import { WebLink } from './WebLink';
-
-import styles from './InfoCard.module.scss';
 
 interface Props extends PropsWithChildren, PropsWithStyles {
   info: GroupInfo;
@@ -85,12 +81,13 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
         onClose={ handleClose }
         keepMounted
       >
+        <MenuItem onClick={ handleShare }>Скопировать</MenuItem>
         <MenuItem onClick={ handleOpenPage }>Открыть</MenuItem>
-        <MenuItem onClick={ handleShare }>Скопировать ссылку</MenuItem>
       </Menu>
       <Card style={ { gridRow: `span ${isOpened ? rows : 1}` } } >
         { !singleCard && (
           <CardHeader
+
             avatar={ logo && (<Logo alt={ title } type={ logo } />) }
             onClick={ handleChange }
             title={ title }
@@ -103,28 +100,12 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
           />
         ) }
         { isOpened && (
-          <CardContent>
-            <List>
-              { addresses && (
-                <Subgroup icon={ 'geo' } className={ styles.subgroup }>
-                  { addresses.map((a: AddressInfo, i: number) => <Address key={ i } { ...a } />) }
-                </Subgroup>
-              ) }
-              { phones && (
-                <Subgroup icon='phone' className={ styles.subgroup }>
-                  { phones.map((p: PhoneInfo, i: number) => <Phone key={ i } { ...p } />) }
-                </Subgroup>
-              ) }
-              { messengers && (
-                <Subgroup icon='chat' className={ styles.subgroup }>
-                  { messengers.map((m: MessengerInfo, i: number) => <Messenger key={ i } { ...m } />) }
-                </Subgroup>
-              ) }
-              { urls && (
-                <Subgroup icon='link' className={ styles.subgroup }>
-                  { urls.map((w: WebsiteInfo, i: number) => <WebLink key={ i } { ...w } />) }
-                </Subgroup>
-              ) }
+          <CardContent >
+            <List >
+              { addresses?.map((a: AddressInfo, i: number) => <Address key={ i } { ...a } />) }
+              { phones?.map((p: PhoneInfo, i: number) => <Phone key={ i } { ...p } />) }
+              { messengers?.map((m: MessengerInfo, i: number) => <Messenger key={ i } { ...m } />) }
+              { urls?.map((w: WebsiteInfo, i: number) => <WebLink key={ i } { ...w } />) }
             </List>
           </CardContent>
         ) }

@@ -4,10 +4,7 @@ import { grey, red } from '@mui/material/colors';
 const theme = createTheme({
   palette: {
     background: {
-      default: "#000"
-    },
-    primary: {
-      main: grey[100],
+      default: '#f7f8ec'
     },
   },
   components: {
@@ -18,7 +15,8 @@ const theme = createTheme({
         },
       },
       defaultProps: {
-        variant: 'outlined'
+        variant: 'elevation',
+        elevation: 0
       }
     },
   }
