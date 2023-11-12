@@ -1,6 +1,7 @@
 'use client';
 
 import { PhoneOutlined, Telegram, WhatsApp } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 
 import { Action, BaseListItem } from '@/components/list/BaseListItem';
 import { cleanupPhone } from '@/helpers';
@@ -17,7 +18,7 @@ export const Phone = ({ phone, ...props }: Props) => {
   if (props.hasWhatsApp) {
     actions.unshift({
       href: `https://wa.me/${cleanupPhone(phone)}`,
-      label: 'WhatsApp',
+      label: 'Открыть чат WhatsApp',
       icon: <WhatsApp />
     });
   }
@@ -32,9 +33,11 @@ export const Phone = ({ phone, ...props }: Props) => {
 
   return (
     <BaseListItem actions={ actions } icon={ <PhoneOutlined /> } { ...props } >
-      <a target='_blank' href={ `tel:${cleanupPhone(phone)}` }>
-        { phone }
-      </a>
+      <Tooltip title="Позвонить">
+        <a target='_blank' href={ `tel:${cleanupPhone(phone)}` }>
+          { phone }
+        </a>
+      </Tooltip >
     </BaseListItem>
   );
 };

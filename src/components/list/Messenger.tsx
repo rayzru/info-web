@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { Chat, Telegram, WhatsApp } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 
 import { BaseListItem } from '@/components/list/BaseListItem';
 import { MessengerInfo } from '@/types';
@@ -24,7 +25,9 @@ export const Messenger = ({ messengerType, link, title, ...props }: Props) => {
 
   return (
     <BaseListItem icon={ getMessengerIcon(messengerType) } { ...props } >
-      <a target='_blank' href={ link }>{ title }</a>
+      <Tooltip title={ 'Открыть чат' } >
+        <a target='_blank' href={ link }>{ title }</a>
+      </Tooltip>
     </BaseListItem>
   );
 

@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 import { PropsWithStyles } from '@/types';
 
-import { LogoType } from './Logo';
+import { Logo, LogoType } from './Logo';
 import Search from './Search';
 
 import styles from './Header.module.scss';
@@ -21,18 +21,18 @@ interface Props extends PropsWithStyles {
 }
 
 export const Header = ({
-  title = 'Справочная',
+  title = 'Справочник',
   subtitle = [],
   logo = 'sr2',
-  showSearch = true,
   showSettingsButton = true,
   showBack = false,
   onSettings
 }: Props) => {
   return (
     <Box sx={ { flexGrow: 1 } }>
-      <AppBar component="nav" elevation={ 0 } position='relative'>
+      <AppBar component="nav" color='transparent' elevation={ 0 } position='relative'>
         <Toolbar>
+          <Logo type={ logo } style={ { margin: '0 12px' } } />
           <Typography variant="h1" noWrap fontSize={ 24 }>
             { title }
           </Typography>
@@ -48,15 +48,15 @@ export const Header = ({
               { s }
             </Typography>)
           ) }
-          <Box sx={ { flexGrow: 1 } } />
+          {/* showSearch && <Search /> */ }
           { showSettingsButton && (
-            <IconButton size="large" onClick={ onSettings }>
+            <IconButton onClick={ onSettings } style={ { marginLeft: 'auto' } }>
               <SettingsIcon fontSize='inherit' />
             </IconButton>
           ) }
 
           { showBack && (
-            <IconButton size="large" LinkComponent={ Link } href='/'>
+            <IconButton LinkComponent={ Link } href='/' style={ { marginLeft: 'auto' } }>
               <CloseRounded />
             </IconButton>
           ) }

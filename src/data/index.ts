@@ -235,6 +235,16 @@ export default [
         maps: ['https://yandex.ru/maps/-/CDawbKIU']
       }
     ],
+    phones: [
+      {
+        title: 'Консьерж - подъезд 1',
+        phone: '+7 (905) 478-78-21',
+      },
+      {
+        title: 'Консьерж - подъезд 2',
+        phone: '+7 (905) 478-78-24',
+      },
+    ],
     messengers: [
       {
         title: 'Telegram - Литер 6',

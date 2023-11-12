@@ -1,6 +1,7 @@
 'use client';
 
 import { AndroidOutlined, Apple, Link } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 
 import { BaseListItem } from '@/components/list/BaseListItem';
 import { WebsiteInfo } from '@/types';
@@ -26,7 +27,9 @@ export const WebLink = ({ url, title, ...props }: Props) => {
 
   return (
     <BaseListItem actions={ [] } icon={ getItemIcon(url) } { ...props } >
-      <a target='_blank' href={ url }>{ title ?? url }</a>
+      <Tooltip title={ ['Перейти по ссылке', <div key='url'>{ url }</div>] }>
+        <a target='_blank' href={ url }>{ title ?? url }</a>
+      </Tooltip>
     </BaseListItem>
   );
 };

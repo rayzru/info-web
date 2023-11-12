@@ -2,7 +2,8 @@
 
 import { MouseEvent, PropsWithChildren, useEffect, useState } from 'react';
 import { MoreVert } from '@mui/icons-material';
-import { Card, CardContent, CardHeader, IconButton, List, Menu, MenuItem } from '@mui/material';
+import { Card, CardContent, CardHeader, IconButton, List, Menu, MenuItem, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
@@ -19,6 +20,12 @@ interface Props extends PropsWithChildren, PropsWithStyles {
   info: GroupInfo;
   singleCard?: boolean;
 }
+
+const StyledCard = styled(Card)`
+  &:hover {
+    box-shadow: 0 0 4px rgba(0,12,88,0.2);
+  }
+`;
 
 export const InfoCard = ({ info, singleCard = false }: Props) => {
   const { id, title, subtitle, logo, addresses, phones, messengers, urls, rows = 1, } = info;
@@ -84,14 +91,16 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
         <MenuItem onClick={ handleShare }>Скопировать</MenuItem>
         <MenuItem onClick={ handleOpenPage }>Открыть</MenuItem>
       </Menu>
-      <Card style={ { gridRow: `span ${isOpened ? rows : 1}` } } >
+      <StyledCard style={ { gridRow: `span ${isOpened ? rows : 1}` } } >
         { !singleCard && (
           <CardHeader
-
+            sx={ { cursor: 'pointer' } }
             avatar={ logo && (<Logo alt={ title } type={ logo } />) }
             onClick={ handleChange }
-            title={ title }
-            subheader={ subtitle }
+            title={
+              <Typography variant='h2' fontSize={ 18 }>{ title }</Typography>
+            }
+            subheader={ <Typography variant='h3' color={ 'text.secondary' } fontSize={ 16 }>{ subtitle }</Typography> }
             action={ (
               <IconButton onClick={ handleMenu }  >
                 <MoreVert />
@@ -109,8 +118,7 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
             </List>
           </CardContent>
         ) }
-      </Card>
+      </StyledCard>
     </>
-
   );
 };

@@ -1,6 +1,6 @@
 import { FormEvent, useMemo } from 'react';
-import { ChevronRight } from '@mui/icons-material';
-import { Button, Checkbox, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Paper } from '@mui/material';
+import { CloseRounded } from '@mui/icons-material';
+import { Box, Button, Checkbox, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Paper, Typography } from '@mui/material';
 
 import data from '@/data';
 import { GroupInfo } from '@/types';
@@ -12,24 +12,42 @@ interface Props {
   onUpdate: (value: string) => void;
 }
 
-export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: Readonly<Props>) {
+export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: Props) {
   const checkState = useMemo(() => value.split(',') || [], [value]);
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    const formData = Object.fromEntries(new FormData(e.currentTarget));
+    const values = data.filter(el => !Object.keys(formData).includes(el.id)).map(el => el.id).join(',');
+    onUpdate(values);
+    onClose();
+  }
 
   return (
     <Drawer
       variant="persistent"
       anchor="right"
       open={ isOpened }
+      PaperProps={ {
+        sx: { width: 350 },
+      } }
     >
-      <div>
+      <Box sx={ { padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' } }>
+        <Typography>
+          Настройки
+        </Typography>
         <IconButton onClick={ onClose }>
-          <ChevronRight />
+          <CloseRounded />
         </IconButton>
-      </div>
-      <Divider sx={ { marginTop: 2, marginBottom: 1 } } />
+      </Box>
+      <Divider sx={ { marginBottom: 1 } } />
       <Paper sx={ { paddingLeft: 3, paddingRight: 3 } }>
+        <Typography color="text.secondary" variant="body2">
+          Вы можете выводить только требуемые вам карточки
+        </Typography>
         <form onSubmit={ handleSubmit }>
-          <FormGroup>
+          <FormGroup title='asd'>
             { data.map((v: GroupInfo) => (
               <FormControlLabel
                 key={ v.id }
@@ -42,16 +60,5 @@ export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: R
         </form>
       </Paper>
     </Drawer>
-
   );
-
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    e.stopPropagation();
-    const formData = Object.fromEntries(new FormData(e.currentTarget));
-    const values = data.filter(el => !Object.keys(formData).includes(el.id)).map(el => el.id).join(',');
-    onUpdate(values);
-    onClose();
-  }
 }
-

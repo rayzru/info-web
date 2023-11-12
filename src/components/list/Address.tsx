@@ -13,8 +13,13 @@ interface Props extends AddressInfo {
 
 export const Address = ({ address, floor, office, maps, ...props }: Props) => {
 
-  const addressString = [address, floor && `${floor}-й этаж`, office && `оф. ${office}`]
-    .filter(Boolean).join(', ');
+  const addressString = [
+    address,
+    floor && `${floor}‑й этаж`,
+    office && `оф. ${office}`
+  ]
+    .filter(Boolean)
+    .map((el, i: number) => el && (<span key={ i } className='commaList'>{ el }</span>));
 
   // const fullString = [postcode, city, address, floor && `${floor}-й этаж`, office && `оф. ${office}`]
   //   .filter(Boolean).join(', ');
