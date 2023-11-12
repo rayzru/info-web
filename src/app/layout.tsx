@@ -20,7 +20,7 @@ export default function RootLayout({ children }: RootProps) {
   return (
     <html lang="ru">
       <head>
-        <title>Справочник ЖК Сердце Ростова 2</title>
+        <title>Справочник - ЖК Сердце Ростова 2</title>
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body>

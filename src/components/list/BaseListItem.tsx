@@ -1,7 +1,7 @@
 'use client';
 
 import { MouseEventHandler, PropsWithChildren, ReactNode } from 'react';
-import { IconButton, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import { IconButton, ListItem, ListItemIcon, ListItemText, Tooltip, Typography } from '@mui/material';
 
 import { BaseInfo } from '@/types';
 
@@ -32,14 +32,14 @@ export const BaseListItem = ({
       <>
         { actions.map(
           (action: Action, i: number) => (
-            <IconButton
-              href={ action.href ?? '' }
-              key={ i }
-              title={ action.label }
-              onClick={ action.callback }
-            >
-              { action.icon }
-            </IconButton>
+            <Tooltip key={ i } title={ action.label }>
+              <IconButton
+                href={ action.href ?? '' }
+                onClick={ action.callback }
+              >
+                { action.icon }
+              </IconButton>
+            </Tooltip>
           )
         ) }
       </>
@@ -49,7 +49,7 @@ export const BaseListItem = ({
       </ListItemIcon>
       <ListItemText primary={ children } secondary={ (
         <>
-          <Typography color={ 'text.secondary' }>{ title }</Typography>
+          <Typography component={ 'div' } color={ 'text.secondary' }>{ title }</Typography>
           { subtitle }
         </>
       ) } />
