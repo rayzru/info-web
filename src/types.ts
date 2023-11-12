@@ -1,6 +1,7 @@
 import { CSSProperties } from 'react';
 
 import { LogoType } from '@/components/Logo';
+import { TagProps } from './components/search/Tag';
 
 export interface PropsWithStyles {
   style?: CSSProperties;
@@ -10,19 +11,16 @@ export interface PropsWithStyles {
 
 export type MessengerType = 'telegram' | 'whatsapp';
 
-type ServiceTag = 'urgent' | 'regular' | 'administrative' | 'secondary';
-type InfoTypeTag = 'phone' | 'address' | 'name';
-type Tag = ServiceTag | InfoTypeTag;
-
 export enum CardColor {
-  "white" = 'white',
+  "complex" = '#880000',
+  "service" = '#ff8800',
 }
 
 export interface BaseInfo {
   title?: string;
   subtitle?: string;
   description?: string;
-  tags?: Tag[];
+  tags?: TagProps[];
 }
 
 export interface PersonInfo extends BaseInfo {
@@ -31,7 +29,7 @@ export interface PersonInfo extends BaseInfo {
 
 export interface GroupInfo extends BaseInfo {
   id: string;
-  color: CardColor;
+  color?: CardColor;
   rows: number;
   child?: GroupInfo[];
   logo?: LogoType;

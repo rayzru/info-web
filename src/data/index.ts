@@ -61,7 +61,7 @@ export default [
     id: 'sr2',
     rows: 7,
     title: 'Жилой комплекс',
-    color: CardColor.white,
+    color: CardColor.complex,
     subtitle: 'Сердце Ростова 2',
     logo: 'sr2',
     addresses: [
@@ -98,7 +98,8 @@ export default [
         messengerType: 'telegram',
         link: 'http://go.sr2.today/telegram'
       }
-    ]
+    ],
+    tags: ['complex']
   },
   {
     id: 'liter1',
@@ -112,7 +113,8 @@ export default [
         messengerType: 'telegram',
         link: 'https://t.me/sr2l1'
       }
-    ]
+    ],
+    tags: ['complex', 'building']
   },
   {
     id: 'liter2',
@@ -139,7 +141,8 @@ export default [
         messengerType: 'telegram',
         link: 'https://t.me/sr2_l2'
       }
-    ]
+    ],
+    tags: ['complex', 'building']
   },
   {
     id: 'liter3',
@@ -166,7 +169,8 @@ export default [
         messengerType: 'telegram',
         link: 'https://t.me/sr2_l3'
       }
-    ]
+    ],
+    tags: ['complex', 'building']
   },
   {
     id: 'liter4',
@@ -193,7 +197,8 @@ export default [
         messengerType: 'telegram',
         link: 'https://t.me/sr2_l4'
       }
-    ]
+    ],
+    tags: ['complex', 'building']
   },
   {
     id: 'liter5',
@@ -220,7 +225,8 @@ export default [
         messengerType: 'telegram',
         link: 'https://t.me/sr2_l5'
       }
-    ]
+    ],
+    tags: ['complex', 'building']
   },
   {
     id: 'liter6',
@@ -251,7 +257,8 @@ export default [
         messengerType: 'telegram',
         link: 'https://t.me/sr2_l6'
       }
-    ]
+    ],
+    tags: ['complex', 'building']
   },
   {
     id: 'liter7',
@@ -282,13 +289,14 @@ export default [
         messengerType: 'telegram',
         link: 'https://t.me/sr2_l7'
       }
-    ]
+    ],
+    tags: ['complex', 'building']
   },
+
   {
     id: 'liter8',
     rows: 2,
     title: 'Литер 8',
-    // color: CardColor.red,
     logo: 'root',
     messengers: [
       {
@@ -296,7 +304,8 @@ export default [
         messengerType: 'telegram',
         link: 'https://t.me/sr2l8'
       }
-    ]
+    ],
+    tags: ['complex', 'building']
   },
   {
     id: 'liter9',
@@ -310,6 +319,57 @@ export default [
         messengerType: 'telegram',
         link: 'https://t.me/sr2_l9'
       }
+    ],
+    tags: ['complex', 'building']
+  },
+  {
+    id: 'msk',
+    rows: 6,
+    title: 'Московская строительная компания',
+    logo: 'msk',
+    phones: [
+      {
+        title: 'Горячая линия',
+        phone: '+7 800 777-75-77',
+      },
+
+      {
+        title: 'Гарантийный отдел',
+        subtitle: 'Елена Юкина',
+        phone: '+7 (938) 175-44-81',
+        hasWhatsApp: true,
+      },
+
+    ],
+    addresses: [
+      {
+        address: 'пер. Доломановский, 70д',
+        floor: 5,
+        city: 'г. Ростов-на-Дону',
+        maps: ['https://yandex.ru/maps/-/CTqyZjq']
+      }
+    ],
+    urls: [
+      {
+        title: 'Официальный сайт',
+        url: 'https://msk-development.ru/projects/flats/serdce-rostova2'
+      },
+      {
+        title: 'Заявка на гарантийные работы',
+        url: 'https://forms.gle/umA7WHfsSs1HD6CV6'
+      },
+    ],
+    messengers: [
+      {
+        link: 'https://wa.me/+79188500955',
+        messengerType: 'whatsapp',
+        title: 'Официальный WhatsApp чат'
+      },
+      {
+        link: 'https://t.me/msk_development',
+        messengerType: 'telegram',
+        title: 'Официальный Telegram чат'
+      },
     ]
   },
   {

@@ -2,7 +2,7 @@
 
 import { MouseEvent, PropsWithChildren, useEffect, useState } from 'react';
 import { MoreVert } from '@mui/icons-material';
-import { Card, CardContent, CardHeader, IconButton, List, Menu, MenuItem, Typography } from '@mui/material';
+import { Badge, BadgeProps, Card, CardHeader, IconButton, List, Menu, MenuItem, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 
@@ -22,18 +22,21 @@ interface Props extends PropsWithChildren, PropsWithStyles {
 }
 
 const StyledCard = styled(Card)`
+  position: relative;
+
   &:hover {
     box-shadow: 0 0 4px rgba(0,12,88,0.2);
   }
 `;
 
-export const InfoCard = ({ info, singleCard = false }: Props) => {
-  const { id, title, subtitle, logo, addresses, phones, messengers, urls, rows = 1, } = info;
+export const InfoCard = ({ info, singleCard = false, style }: Props) => {
+  const { id, title, subtitle, logo, addresses, phones, messengers, urls, color, rows = 1, } = info;
   const [isOpenedInitially, updateSettings] = useLocalStorage<boolean>(`card_${id}`, false);
   const [isOpened, setIsOpened] = useState(singleCard);
   const [, copy] = useCopyToClipboard();
   const [copiedState, setCopiedState] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (copiedState) {
@@ -41,7 +44,6 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
     }
   }, [copiedState]);
 
-  const router = useRouter();
 
   useEffect(() => {
     setIsOpened(singleCard || isOpenedInitially);
@@ -81,6 +83,11 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
   };
 
   const contentStyle = singleCard ? {} : { paddingTop: 0 };
+  const wrapperStyle = {
+    gridRow: `span ${isOpened ? rows : 1}`,
+    ...contentStyle,
+    ...style
+  };
 
   return (
     <>
@@ -90,10 +97,10 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
         onClose={ handleClose }
         keepMounted
       >
-        <MenuItem onClick={ handleShare }>Скопировать</MenuItem>
-        <MenuItem onClick={ handleOpenPage }>Открыть</MenuItem>
+        <MenuItem onClick={ handleShare }>Скопировать ссылку</MenuItem>
+        <MenuItem onClick={ handleOpenPage }>Открыть в отдельном окне</MenuItem>
       </Menu>
-      <StyledCard style={ { gridRow: `span ${isOpened ? rows : 1}` } } >
+      <StyledCard style={ wrapperStyle } >
         { !singleCard && (
           <CardHeader
             sx={ { cursor: 'pointer' } }
@@ -122,3 +129,4 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
     </>
   );
 };
+
