@@ -102,7 +102,7 @@ export default [
   },
   {
     id: 'liter1',
-    rows: 3,
+    rows: 2,
     title: 'Литер 1',
     // color: CardColor.red,
     logo: 'root',
@@ -224,7 +224,7 @@ export default [
   },
   {
     id: 'liter6',
-    rows: 3,
+    rows: 5,
     title: 'Литер 6',
     // color: CardColor.red,
     logo: 'root',
@@ -374,7 +374,7 @@ export default [
   },
   {
     id: 'cleancity',
-    rows: 3,
+    rows: 4,
     title: 'Чистый город',
     subtitle: '',
     logo: 'recycle',
@@ -400,7 +400,7 @@ export default [
   },
   {
     id: 'ts-ug',
-    rows: 3,
+    rows: 4,
     title: 'ТеплоСервис Юг',
     subtitle: '',
     logo: 'ts-ug',
@@ -454,7 +454,7 @@ export default [
   },
   {
     id: 'beeline',
-    rows: 3,
+    rows: 4,
     title: 'билайн',
     subtitle: '',
     logo: 'beeline',

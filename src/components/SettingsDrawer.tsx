@@ -1,6 +1,6 @@
-import { FormEvent, useMemo } from 'react';
+import { FormEvent, useEffect, useMemo, useRef } from 'react';
 import { CloseRounded } from '@mui/icons-material';
-import { Box, Button, Checkbox, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Paper, Typography } from '@mui/material';
+import { Box, Button, Checkbox, ClickAwayListener, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Paper, Typography } from '@mui/material';
 
 import data from '@/data';
 import { GroupInfo } from '@/types';
@@ -14,14 +14,27 @@ interface Props {
 
 export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: Props) {
   const checkState = useMemo(() => value.split(',') || [], [value]);
+  const formRef = useRef<HTMLFormElement>();
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    e.stopPropagation();
-    const formData = Object.fromEntries(new FormData(e.currentTarget));
+  useEffect(() => {
+    const escapeHandler = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (isOpened) {
+          onClose();
+        }
+      }
+    };
+    document.addEventListener('keydown', escapeHandler);
+    return () => {
+      document.removeEventListener('keydown', escapeHandler);
+    };
+  }, [isOpened]);
+
+  function handleSubmit() {
+    const formData = Object.fromEntries(new FormData(formRef.current));
     const values = data.filter(el => !Object.keys(formData).includes(el.id)).map(el => el.id).join(',');
     onUpdate(values);
-    onClose();
   }
 
   return (
@@ -46,17 +59,16 @@ export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: P
         <Typography color="text.secondary" variant="body2">
           Вы можете выводить только требуемые вам карточки
         </Typography>
-        <form onSubmit={ handleSubmit }>
-          <FormGroup title='asd'>
+        <form ref={ formRef }>
+          <FormGroup>
             { data.map((v: GroupInfo) => (
               <FormControlLabel
                 key={ v.id }
-                control={ <Checkbox name={ v.id } defaultChecked={ !checkState.includes(v.id) } /> }
+                control={ <Checkbox name={ v.id } defaultChecked={ !checkState.includes(v.id) } onChange={ handleSubmit } /> }
                 label={ v.title }
               />
             )) }
           </FormGroup>
-          <Button sx={ { marginTop: 3, marginBottom: 2 } } type='submit' color='primary' variant='contained' fullWidth>Сохранить</Button>
         </form>
       </Paper>
     </Drawer>
