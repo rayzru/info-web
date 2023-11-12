@@ -80,6 +80,8 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
     router.push('/' + id);
   };
 
+  const contentStyle = singleCard ? {} : { paddingTop: 0 };
+
   return (
     <>
       <Menu
@@ -109,14 +111,12 @@ export const InfoCard = ({ info, singleCard = false }: Props) => {
           />
         ) }
         { isOpened && (
-          <CardContent >
-            <List >
-              { addresses?.map((a: AddressInfo, i: number) => <Address key={ i } { ...a } />) }
-              { phones?.map((p: PhoneInfo, i: number) => <Phone key={ i } { ...p } />) }
-              { messengers?.map((m: MessengerInfo, i: number) => <Messenger key={ i } { ...m } />) }
-              { urls?.map((w: WebsiteInfo, i: number) => <WebLink key={ i } { ...w } />) }
-            </List>
-          </CardContent>
+          <List >
+            { addresses?.map((a: AddressInfo, i: number) => <Address key={ i } { ...a } />) }
+            { phones?.map((p: PhoneInfo, i: number) => <Phone key={ i } { ...p } />) }
+            { messengers?.map((m: MessengerInfo, i: number) => <Messenger key={ i } { ...m } />) }
+            { urls?.map((w: WebsiteInfo, i: number) => <WebLink key={ i } { ...w } />) }
+          </List>
         ) }
       </StyledCard>
     </>
