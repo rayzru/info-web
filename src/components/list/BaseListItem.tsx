@@ -44,7 +44,7 @@ export const BaseListItem = ({
         ) }
       </>
     ) }>
-      <ListItemIcon color='secondary'>
+      <ListItemIcon color='secondary' style={ { minWidth: 40 } }>
         { showIcon && icon }
       </ListItemIcon>
       <ListItemText primary={ children } secondary={ (
