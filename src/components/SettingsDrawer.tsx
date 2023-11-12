@@ -14,7 +14,7 @@ interface Props {
 
 export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: Props) {
   const checkState = useMemo(() => value.split(',') || [], [value]);
-  const formRef = useRef<HTMLFormElement>();
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     const escapeHandler = (event: KeyboardEvent) => {
@@ -29,10 +29,10 @@ export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: P
     return () => {
       document.removeEventListener('keydown', escapeHandler);
     };
-  }, [isOpened]);
+  }, [isOpened, onClose]);
 
   function handleSubmit() {
-    const formData = Object.fromEntries(new FormData(formRef.current));
+    const formData = Object.fromEntries(new FormData(formRef.current as HTMLFormElement));
     const values = data.filter(el => !Object.keys(formData).includes(el.id)).map(el => el.id).join(',');
     onUpdate(values);
   }
