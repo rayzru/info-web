@@ -4,7 +4,6 @@ import { Header } from '@/components/Header';
 import { InfoCard } from '@/components/InfoCard';
 import data from '@/data';
 
-import styles from './page.module.scss';
 interface Props {
   params: {
     id: string;
@@ -27,7 +26,7 @@ export default async function Page({ params }: Props) {
   const subtitle = [info.subtitle].filter(Boolean);
 
   return (
-    <main className={ styles.main }>
+    <main>
       <Header
         logo={ info.logo }
         title={ info.title }
@@ -36,8 +35,7 @@ export default async function Page({ params }: Props) {
         showSearch={ false }
         showBack={ true }
       />
-      <InfoCard key={ info.id } info={ info } singleCard={ true } />
-      {/* <Map className={ styles.map } /> */ }
+      <InfoCard key={ info.id } info={ info } singleCard={ true } style={ { margin: '0 24px' } } />
     </main >
   );
 

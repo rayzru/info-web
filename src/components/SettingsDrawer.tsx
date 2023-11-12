@@ -1,6 +1,9 @@
-import { FormEvent, useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { CloseRounded } from '@mui/icons-material';
-import { Box, Button, Checkbox, ClickAwayListener, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Paper, Typography } from '@mui/material';
+import {
+  Box, Checkbox, Divider, Drawer,
+  FormControlLabel, FormGroup, IconButton, Typography
+} from '@mui/material';
 
 import data from '@/data';
 import { GroupInfo } from '@/types';
@@ -9,6 +12,7 @@ interface Props {
   isOpened: boolean;
   value: string;
   onClose: () => void;
+  // eslint-disable-next-line no-unused-vars
   onUpdate: (value: string) => void;
 }
 
@@ -43,7 +47,7 @@ export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: P
       anchor="right"
       open={ isOpened }
       PaperProps={ {
-        sx: { width: 350 },
+        sx: { width: 350, minHeight: '100vh' },
       } }
     >
       <Box sx={ { padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' } }>
@@ -55,14 +59,15 @@ export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: P
         </IconButton>
       </Box>
       <Divider sx={ { marginBottom: 1 } } />
-      <Paper sx={ { paddingLeft: 3, paddingRight: 3 } }>
+      <Box sx={ { paddingLeft: 3, paddingRight: 3, } }>
         <Typography color="text.secondary" variant="body2">
-          Вы можете выводить только требуемые вам карточки
+          Вы можете выбрать только требуемые карточки
         </Typography>
-        <form ref={ formRef }>
-          <FormGroup>
+        <form ref={ formRef } >
+          <FormGroup style={ { display: 'flex', flexFlow: 'row wrap' } }>
             { data.map((v: GroupInfo) => (
               <FormControlLabel
+                style={ { flex: v.id.startsWith('liter') ? '0 1 138px' : '1 0 250px', width: 'max-content' } }
                 key={ v.id }
                 control={ <Checkbox name={ v.id } defaultChecked={ !checkState.includes(v.id) } onChange={ handleSubmit } /> }
                 label={ v.title }
@@ -70,7 +75,7 @@ export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: P
             )) }
           </FormGroup>
         </form>
-      </Paper>
+      </Box>
     </Drawer>
   );
 }
