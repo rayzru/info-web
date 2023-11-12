@@ -53,7 +53,7 @@ export interface WebsiteInfo extends BaseInfo {
 }
 
 export interface MessengerInfo extends BaseInfo {
-  mesengerType: MessengerType;
+  messengerType: MessengerType;
   link: string;
 }
 
@@ -66,3 +66,15 @@ export interface AddressInfo extends BaseInfo {
   lnglat: [number, number],
   maps: string[];
 }
+
+export type IconType =
+  | 'geo'
+  | 'phone'
+  | 'chat'
+  | 'copy'
+  | 'yandex-maps'
+  | 'telegram'
+  | 'whatsapp'
+  | 'share'
+  | 'arrow-up'
+  | 'link';
