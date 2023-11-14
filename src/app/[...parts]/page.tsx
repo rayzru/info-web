@@ -3,31 +3,40 @@ import { notFound } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { InfoCard } from '@/components/InfoCard';
 import data from '@/data';
+import { pick } from '@/helpers';
 import { GroupInfo } from '@/types';
 
 interface Props {
   params: {
-    parts: string[];
-  }[],
+    parts: [
+      id: string,
+      info?: keyof GroupInfo,
+      num?: string
+    ];
+  },
   searchParams?: {
     search?: string;
   };
 }
 
+const mappableProps = [
+  'addresses',
+  'phones',
+  'messengers',
+  'urls'
+] as (keyof GroupInfo)[];
+
 export async function generateStaticParams() {
 
-  const mappableProps = [
-    'addresses' as keyof GroupInfo,
-    'phones' as keyof GroupInfo,
-    'messengers' as keyof GroupInfo,
-    'urls' as keyof GroupInfo
-  ];
   return data.reduce(
-    (acc: Props['params'], { id, ...groupData }: GroupInfo) => {
-      acc.push({ parts: [id] });
-      for (const props in mappableProps) {
-        if (groupData[props as keyof GroupInfo]) {
-          acc.push({ parts: [id, props] });
+    (acc: Props['params'][], group: GroupInfo) => {
+      acc.push({ parts: [group.id] });
+      for (const props of mappableProps) {
+        if (group[props] && (group[props] as unknown[]).length) {
+          acc.push({ parts: [group.id, props] });
+          for (let i = 0; i < (group[props] as unknown[]).length; i++) {
+            acc.push({ parts: [group.id, props, `${i + 1}`] });
+          }
         }
       }
       return acc;
@@ -36,16 +45,38 @@ export async function generateStaticParams() {
   );
 }
 
-export default async function Page({ params }: Readonly<Props>) {
-  console.log(params);
-  const info = data.find(el => el.id === params.parts[0]);
-  if (!info) {
+export default async function Page({ params: { parts: [id, group, num] } }: Readonly<Props>) {
+  const picked = data.find(el => el.id === id);
+  if (!picked) {
     notFound();
   }
 
-  const subtitle = [info.subtitle].filter(Boolean);
+  let info: GroupInfo = {
+    ...pick<GroupInfo, keyof GroupInfo>(picked, 'id', 'title', 'subtitle', 'logo')
+  };
 
-  // const ['phones']
+  if (group && mappableProps.includes(group)) {
+    for (const g of mappableProps) {
+      if (g !== group) {
+        delete picked?.[g];
+      }
+    }
+    if (num && picked[group] && (picked[group] as []).length) {
+      info = {
+        ...info,
+        [group]: [(picked[group] as unknown[])[Number(num) - 1]]
+      };
+    } else {
+      info = {
+        ...info,
+        [group]: picked[group]
+      };
+    }
+  } else {
+    info = picked;
+  }
+
+  const subtitle = [info.subtitle].filter(Boolean);
 
   return (
     <main>
@@ -57,7 +88,7 @@ export default async function Page({ params }: Readonly<Props>) {
         showSearch={ false }
         showBack={ true }
       />
-      <InfoCard key={ info.id } info={ info } singleCard={ true } style={ { margin: '0 24px' } } />
+      <InfoCard key={ info.id } info={ info } singleCard={ true } skipCopy={ true } style={ { margin: '0 24px' } } />
     </main >
   );
 
