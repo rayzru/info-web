@@ -47,10 +47,10 @@ export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: P
       anchor="right"
       open={ isOpened }
       PaperProps={ {
-        sx: { width: 350, minHeight: '100vh' },
+        sx: { width: 350, minHeight: '100vh', display: 'flex' },
       } }
     >
-      <Box sx={ { padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' } }>
+      <Box sx={ { padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 0 } }>
         <Typography>
           Настройки
         </Typography>
@@ -59,7 +59,7 @@ export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: P
         </IconButton>
       </Box>
       <Divider sx={ { marginBottom: 1 } } />
-      <Box sx={ { paddingLeft: 3, paddingRight: 3, } }>
+      <Box sx={ { paddingLeft: 3, paddingRight: 3, overflowY: 'scroll', flex: 1 } }>
         <Typography color="text.secondary" variant="body2">
           Вы можете выбрать только требуемые карточки
         </Typography>
