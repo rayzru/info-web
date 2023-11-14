@@ -2,16 +2,17 @@
 
 import { Map, Room } from '@mui/icons-material';
 
-import { AddressInfo } from '@/types';
+import { AddressInfo, IterableInfo } from '@/types';
 
+import { WrappedIcon } from '../WrappedIcon';
 import { Action, BaseListItem } from './BaseListItem';
 
 
-interface Props extends AddressInfo {
+interface Props extends AddressInfo, IterableInfo {
   title?: string;
 }
 
-export const Address = ({ address, floor, office, maps, ...props }: Props) => {
+export const Address = ({ iconUrl, onClick, address, floor, office, maps, ...props }: Props) => {
 
   const addressString = [
     address,
@@ -27,7 +28,7 @@ export const Address = ({ address, floor, office, maps, ...props }: Props) => {
   const actions: Action[] = getMapActions(maps);
 
   return (
-    <BaseListItem actions={ actions } icon={ <Room /> }   { ...props }>
+    <BaseListItem actions={ actions } icon={ iconUrl ? <WrappedIcon onClick={ onClick } path={ iconUrl }><Room /></WrappedIcon> : <Room /> }   { ...props }>
       { addressString }
     </BaseListItem >
   );

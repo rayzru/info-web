@@ -8,7 +8,6 @@ export interface PropsWithStyles {
   className?: string;
 }
 
-
 export type MessengerType = 'telegram' | 'whatsapp';
 
 export enum CardColor {
@@ -31,13 +30,17 @@ export interface GroupInfo extends BaseInfo {
   id: string;
   color?: CardColor;
   rows: number;
-  child?: GroupInfo[];
   logo?: LogoType;
+
   phones?: PhoneInfo[];
   addresses?: AddressInfo[];
-  persons?: PersonInfo[];
   urls?: WebsiteInfo[];
   messengers?: MessengerInfo[];
+}
+
+export interface IterableInfo {
+  iconUrl?: string;
+  onClick?: () => void;
 }
 
 export interface PhoneInfo extends BaseInfo {
