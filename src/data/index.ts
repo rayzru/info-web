@@ -1,62 +1,7 @@
 import { CardColor, GroupInfo } from '@/types';
 
 export default [
-  {
-    id: 'uk',
-    rows: 8,
-    title: 'Управляющая компания',
-    subtitle: 'Сердце Ростова',
-    logo: 'sr2',
-    addresses: [
-      {
-        title: 'Головной офис',
-        city: 'г. Ростов-на-Дону',
-        address: 'пр. Михаила Нагибина, 33а/47',
-        floor: 3,
-        office: '306',
-        postcode: 344068,
-        lnglat: [47.257861, 39.715947],
-        maps: ['https://yandex.ru/maps/-/CDaKvE~D'],
-      }
-    ],
-    phones: [
-      {
-        title: 'Диспетчер УК',
-        phone: '+7 (960) 448-08-18',
-        hasWhatsApp: true,
-        hasTe: true,
-      },
-      {
-        title: 'Начальник участка',
-        subtitle: 'Сергей Георгиевич Сагиров',
-        phone: '+7 (960) 461-44-60',
-        hasWhatsApp: true,
-      },
-      {
-        title: 'Главный инженер',
-        subtitle: 'Денис Михайлович Талашов',
-        phone: '+7 (960) 448-38-28',
-        hasWhatsApp: true,
-      },
-      {
-        title: 'Заместитель директора',
-        subtitle: 'Анжела Анатольевна',
-        phone: '+7 (960) 448-58-08',
-        hasWhatsApp: true,
-      }
-    ],
-    urls: [
-      {
-        title: 'Официальный сайт',
-        url: 'https://uk-sr.ru/'
-      },
-      {
-        title: 'Квартплата.Онлайн',
-        url: 'https://xn--80aaaf3bi1ahsd.xn--80asehdb/'
-      },
 
-    ],
-  },
   {
     id: 'sr2',
     rows: 7,
@@ -101,6 +46,7 @@ export default [
     ],
     tags: ['complex']
   },
+
   {
     id: 'liter1',
     rows: 2,
@@ -323,9 +269,66 @@ export default [
     tags: ['complex', 'building']
   },
   {
+    id: 'uk',
+    rows: 8,
+    title: 'Управляющая компания',
+    subtitle: 'Сердце Ростова',
+    logo: 'sr2',
+    addresses: [
+      {
+        title: 'Головной офис',
+        city: 'г. Ростов-на-Дону',
+        address: 'пр. Михаила Нагибина, 33а/47',
+        floor: 3,
+        office: '306',
+        postcode: 344068,
+        lnglat: [47.257861, 39.715947],
+        maps: ['https://yandex.ru/maps/-/CDaKvE~D'],
+      }
+    ],
+    phones: [
+      {
+        title: 'Диспетчер УК',
+        phone: '+7 (960) 448-08-18',
+        hasWhatsApp: true,
+        hasTe: true,
+      },
+      {
+        title: 'Начальник участка',
+        subtitle: 'Сергей Георгиевич Сагиров',
+        phone: '+7 (960) 461-44-60',
+        hasWhatsApp: true,
+      },
+      {
+        title: 'Главный инженер',
+        subtitle: 'Денис Михайлович Талашов',
+        phone: '+7 (960) 448-38-28',
+        hasWhatsApp: true,
+      },
+      {
+        title: 'Заместитель директора',
+        subtitle: 'Анжела Анатольевна',
+        phone: '+7 (960) 448-58-08',
+        hasWhatsApp: true,
+      }
+    ],
+    urls: [
+      {
+        title: 'Официальный сайт',
+        url: 'https://uk-sr.ru/'
+      },
+      {
+        title: 'Квартплата.Онлайн',
+        url: 'https://xn--80aaaf3bi1ahsd.xn--80asehdb/'
+      },
+
+    ],
+  },
+  {
     id: 'msk',
     rows: 6,
-    title: 'Московская строительная компания',
+    title: 'Застройщик',
+    subtitle: 'Московская строительная компания',
     logo: 'msk',
     phones: [
       {

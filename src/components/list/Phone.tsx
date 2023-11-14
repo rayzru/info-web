@@ -5,13 +5,15 @@ import { Tooltip } from '@mui/material';
 
 import { Action, BaseListItem } from '@/components/list/BaseListItem';
 import { cleanupPhone } from '@/helpers';
-import { PhoneInfo } from '@/types';
+import { IterableInfo, PhoneInfo } from '@/types';
 
-interface Props extends PhoneInfo {
+import { WrappedIcon } from '../WrappedIcon';
+
+interface Props extends PhoneInfo, IterableInfo {
   title?: string;
 }
 
-export const Phone = ({ phone, ...props }: Props) => {
+export const Phone = ({ onClick, iconUrl, phone, ...props }: Props) => {
 
   const actions: Action[] = [];
 
@@ -32,7 +34,7 @@ export const Phone = ({ phone, ...props }: Props) => {
   }
 
   return (
-    <BaseListItem actions={ actions } icon={ <PhoneOutlined /> } { ...props } >
+    <BaseListItem actions={ actions } icon={ iconUrl ? <WrappedIcon onClick={ onClick } path={ iconUrl }><PhoneOutlined /></WrappedIcon> : <PhoneOutlined /> } { ...props } >
       <Tooltip title="Позвонить">
         <a target='_blank' href={ `tel:${cleanupPhone(phone)}` }>
           { phone }
