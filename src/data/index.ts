@@ -238,7 +238,6 @@ export default [
     ],
     tags: ['complex', 'building']
   },
-
   {
     id: 'liter8',
     rows: 2,
@@ -380,6 +379,7 @@ export default [
     rows: 5,
     logo: 'vdome',
     title: 'Домофон',
+    subtitle: 'VDome',
     phones: [{
       title: 'Обслуживание',
       phone: '+7 (863) 310-02-26'
@@ -407,7 +407,7 @@ export default [
     id: 'vodokanal',
     rows: 3,
     title: 'Водоканал',
-    subtitle: '',
+    subtitle: 'Холодная вода',
     logo: 'vodokanal',
     phones: [
       {
@@ -426,7 +426,7 @@ export default [
     id: 'tns',
     rows: 2,
     title: 'ТНС-Энерго',
-    subtitle: '',
+    subtitle: 'Электричество',
     logo: 'tns',
     urls: [
       {
@@ -439,7 +439,7 @@ export default [
     id: 'cleancity',
     rows: 4,
     title: 'Чистый город',
-    subtitle: '',
+    subtitle: 'ТКО',
     logo: 'recycle',
     addresses: [
       {
@@ -465,7 +465,7 @@ export default [
     id: 'ts-ug',
     rows: 4,
     title: 'ТеплоСервис Юг',
-    subtitle: '',
+    subtitle: 'Отопление',
     logo: 'ts-ug',
     phones: [
       {
@@ -491,7 +491,7 @@ export default [
     id: 'domru',
     rows: 4,
     title: 'дом.ру',
-    subtitle: '',
+    subtitle: 'Интернет-провайдер',
     logo: 'domru',
     phones: [
       {
@@ -521,7 +521,7 @@ export default [
     id: 'beeline',
     rows: 4,
     title: 'билайн',
-    subtitle: '',
+    subtitle: 'Интернет-провайдер',
     logo: 'beeline',
     phones: [
       {
@@ -544,7 +544,7 @@ export default [
     id: 'timer',
     rows: 3,
     title: 'Таймер',
-    subtitle: '',
+    subtitle: 'Интернет-провайдер',
     logo: 'taimer',
     phones: [
       {
