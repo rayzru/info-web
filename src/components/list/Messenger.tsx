@@ -8,7 +8,6 @@ import { BaseListItem } from '@/components/list/BaseListItem';
 import { IterableInfo, MessengerInfo } from '@/types';
 
 import { IconType } from '../Icon';
-import { WrappedIcon } from '../WrappedIcon';
 
 interface Props extends MessengerInfo, IterableInfo {
   title?: string;
@@ -24,10 +23,10 @@ function getMessengerIcon(type: IconType): ReactNode {
 
 }
 
-export const Messenger = ({ onClick, iconUrl, messengerType, link, title, ...props }: Props) => {
+export const Messenger = ({ messengerType, link, title, ...props }: Props) => {
 
   return (
-    <BaseListItem icon={ iconUrl ? <WrappedIcon onClick={ onClick } path={ iconUrl }>{ getMessengerIcon(messengerType) }</WrappedIcon> : getMessengerIcon(messengerType) } { ...props } >
+    <BaseListItem icon={ getMessengerIcon(messengerType) } { ...props } >
       <Tooltip title={ 'Открыть чат' } >
         <a target='_blank' href={ link }>{ title }</a>
       </Tooltip>

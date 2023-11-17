@@ -7,13 +7,11 @@ import { Action, BaseListItem } from '@/components/list/BaseListItem';
 import { cleanupPhone } from '@/helpers';
 import { IterableInfo, PhoneInfo } from '@/types';
 
-import { WrappedIcon } from '../WrappedIcon';
-
 interface Props extends PhoneInfo, IterableInfo {
   title?: string;
 }
 
-export const Phone = ({ onClick, iconUrl, phone, ...props }: Props) => {
+export const Phone = ({ phone, ...props }: Props) => {
 
   const actions: Action[] = [];
 
@@ -34,7 +32,7 @@ export const Phone = ({ onClick, iconUrl, phone, ...props }: Props) => {
   }
 
   return (
-    <BaseListItem actions={ actions } icon={ iconUrl ? <WrappedIcon onClick={ onClick } path={ iconUrl }><PhoneOutlined /></WrappedIcon> : <PhoneOutlined /> } { ...props } >
+    <BaseListItem actions={ actions } icon={ <PhoneOutlined /> } { ...props } >
       <Tooltip title="Позвонить">
         <a target='_blank' href={ `tel:${cleanupPhone(phone)}` }>
           { phone }

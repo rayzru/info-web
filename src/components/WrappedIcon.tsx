@@ -16,7 +16,7 @@ export const WrappedIcon: React.FC<Props> = ({ children, path, onClick }) => {
     onClick && onClick();
   };
   return (
-    <Tooltip title={ <>Скопировать</> }>
+    <Tooltip title={ 'Скопировать' }>
       <div onClick={ handleClick } style={ { cursor: 'pointer' } }>
         { children }
       </div>
