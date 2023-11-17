@@ -6,8 +6,6 @@ import { Tooltip } from '@mui/material';
 import { BaseListItem } from '@/components/list/BaseListItem';
 import { IterableInfo, WebsiteInfo } from '@/types';
 
-import { WrappedIcon } from '../WrappedIcon';
-
 interface Props extends WebsiteInfo, IterableInfo {
   title?: string;
 }
@@ -23,9 +21,9 @@ function getItemIcon(url: string) {
   return <Link />;
 }
 
-export const WebLink = ({ onClick, iconUrl, url, title, ...props }: Props) => {
+export const WebLink = ({ url, title, ...props }: Props) => {
   return (
-    <BaseListItem actions={ [] } icon={ iconUrl ? <WrappedIcon onClick={ onClick } path={ iconUrl }>{ getItemIcon(url) }</WrappedIcon> : getItemIcon(url) } { ...props } >
+    <BaseListItem actions={ [] } icon={ getItemIcon(url) } { ...props } >
       <Tooltip title={ ['Перейти по ссылке', <div key='url'>{ url }</div>] }>
         <a target='_blank' href={ url }>{ title ?? url }</a>
       </Tooltip>
