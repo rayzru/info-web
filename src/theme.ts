@@ -18,6 +18,11 @@ const theme = createTheme({
         disableRipple: true,
       },
     },
+    MuiCheckbox: {
+      defaultProps: {
+        disableRipple: true,
+      },
+    },
     MuiCard: {
       styleOverrides: {
         root: {
