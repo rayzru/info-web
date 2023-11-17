@@ -46,7 +46,6 @@ export default [
     ],
     tags: ['complex']
   },
-
   {
     id: 'liter1',
     rows: 2,
@@ -64,14 +63,14 @@ export default [
   },
   {
     id: 'liter2',
-    rows: 4,
+    rows: 3,
     title: 'Литер 2',
     // color: CardColor.red,
     logo: 'root',
     addresses: [
       {
         city: 'г. Ростов-на-Дону',
-        address: 'ул. Ларина, д.45, строение 2, подъезд 1',
+        address: 'ул. Ларина, 45, стр. 2, подъезд 1',
         maps: ['https://yandex.ru/maps/-/CDawbV4v']
       }
     ],
@@ -99,13 +98,14 @@ export default [
     addresses: [
       {
         city: 'г. Ростов-на-Дону',
-        address: 'ул. Ларина, д.45, строение 2, подъезд 2',
+        address: 'ул. Ларина, 45, стр. 2, подъезд 2',
         maps: ['https://yandex.ru/maps/-/CDawbV4v']
       }
     ],
     phones: [
       {
         title: 'Консьерж',
+        subtitle: 'подъезд 2',
         phone: '+7 (960) 461-44-32',
       }
     ],
@@ -503,11 +503,13 @@ export default [
     urls: [
       {
         url: 'https://forms.gle/FHVGqTtvkTWVWNfJ6',
-        title: 'Предварительная заявка',
+        title: 'Предварительная заявка (строения 1, 3-9)',
+        subtitle: 'Дома планируется подключить'
       },
       {
         url: 'https://dealers.dom.ru/request/widget?domain=rostov&referral_id=1000181217',
-        title: 'Подключение (стр. 1, 2)',
+        title: 'Подключение (строение 2)',
+        subtitle: 'В домах введено оборудование'
       },
       {
         url: 'https://rostov.dom.ru/',
