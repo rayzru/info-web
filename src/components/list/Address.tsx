@@ -4,7 +4,6 @@ import { Map, Room } from '@mui/icons-material';
 
 import { AddressInfo, IterableInfo } from '@/types';
 
-import { WrappedIcon } from '../WrappedIcon';
 import { Action, BaseListItem } from './BaseListItem';
 
 
@@ -12,7 +11,7 @@ interface Props extends AddressInfo, IterableInfo {
   title?: string;
 }
 
-export const Address = ({ iconUrl, onClick, address, floor, office, maps, ...props }: Props) => {
+export const Address = ({ address, floor, office, maps, ...props }: Props) => {
 
   const addressString = [
     address,
@@ -22,13 +21,10 @@ export const Address = ({ iconUrl, onClick, address, floor, office, maps, ...pro
     .filter(Boolean)
     .map((el, i: number) => el && (<span key={ i } className='commaList'>{ el }</span>));
 
-  // const fullString = [postcode, city, address, floor && `${floor}-й этаж`, office && `оф. ${office}`]
-  //   .filter(Boolean).join(', ');
-
   const actions: Action[] = getMapActions(maps);
 
   return (
-    <BaseListItem actions={ actions } icon={ iconUrl ? <WrappedIcon onClick={ onClick } path={ iconUrl }><Room /></WrappedIcon> : <Room /> }   { ...props }>
+    <BaseListItem actions={ actions } icon={ <Room /> }   { ...props }>
       { addressString }
     </BaseListItem >
   );
