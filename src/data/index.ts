@@ -367,7 +367,7 @@ export default [
         hasWhatsApp: true,
       },
       {
-        title: 'Дежурный прораю',
+        title: 'Дежурный прораб',
         subtitle: 'Игорь Стрекалов',
         phone: '+7 (928) 152-12-12',
         hasWhatsApp: true,
