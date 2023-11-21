@@ -36,6 +36,7 @@ export interface GroupInfo extends BaseInfo {
   addresses?: AddressInfo[];
   urls?: WebsiteInfo[];
   messengers?: MessengerInfo[];
+  texts?: TextInfo[];
 }
 
 export interface IterableInfo {
@@ -56,6 +57,10 @@ export interface WebsiteInfo extends BaseInfo {
 export interface MessengerInfo extends BaseInfo {
   messengerType: MessengerType;
   link: string;
+}
+
+export interface TextInfo extends BaseInfo {
+  text: string;
 }
 
 export interface AddressInfo extends BaseInfo {
