@@ -4,7 +4,7 @@ export default [
 
   {
     id: 'sr2',
-    rows: 7,
+    rows: 9,
     title: 'Жилой комплекс',
     color: CardColor.complex,
     subtitle: 'Сердце Ростова 2',
@@ -22,9 +22,24 @@ export default [
         phone: '+7 (960) 448-00-98',
       },
       {
-        title: 'Дежурный сантехник',
+        title: 'Электрик',
+        subtitle: 'Павел Джумак',
+        phone: '+7 (999) 692-63-77',
+      },
+      {
+        title: 'Сантехник',
         subtitle: 'Михаил',
         phone: '+7 (961) 402-84-63',
+      },
+      {
+        title: 'Cантехник',
+        subtitle: 'Павел Косухин',
+        phone: '+7 (999) 697-46-09',
+      },
+      {
+        title: 'Cантехник',
+        subtitle: 'Вячеслав Хавренко',
+        phone: '+7 (918) 598-98-02',
       },
       {
         title: 'Лифтовая диспетчерская',
@@ -269,7 +284,7 @@ export default [
   },
   {
     id: 'uk',
-    rows: 8,
+    rows: 9,
     title: 'Управляющая компания',
     subtitle: 'Сердце Ростова',
     logo: 'sr2',
@@ -299,6 +314,12 @@ export default [
         hasWhatsApp: true,
       },
       {
+        title: 'Мастер участка',
+        subtitle: 'Даниил Лукашов',
+        phone: '+7 (905) 478-76-99',
+        hasWhatsApp: true,
+      },
+      {
         title: 'Главный инженер',
         subtitle: 'Денис Михайлович Талашов',
         phone: '+7 (960) 448-38-28',
@@ -306,8 +327,13 @@ export default [
       },
       {
         title: 'Заместитель директора',
-        subtitle: 'Анжела Анатольевна',
+        subtitle: 'Анжела Анатольевна Башкирова',
         phone: '+7 (960) 448-58-08',
+        hasWhatsApp: true,
+      },
+      {
+        title: 'Бухгалтерия',
+        phone: '+7 (960) 448-78-18',
         hasWhatsApp: true,
       }
     ],
@@ -334,11 +360,16 @@ export default [
         title: 'Горячая линия',
         phone: '+7 800 777-75-77',
       },
-
       {
         title: 'Гарантийный отдел',
         subtitle: 'Елена Юкина',
         phone: '+7 (938) 175-44-81',
+        hasWhatsApp: true,
+      },
+      {
+        title: 'Дежурный прораю',
+        subtitle: 'Игорь Стрекалов',
+        phone: '+7 (928) 152-12-12',
         hasWhatsApp: true,
       },
 
@@ -372,19 +403,33 @@ export default [
         messengerType: 'telegram',
         title: 'Официальный Telegram чат'
       },
-    ]
+    ],
+    texts: [{
+      title: 'Реквизиты',
+      text: `Общество с ограниченной отвественностью "МСК-СТРОЙ" (ООО "МСК-СТРОЙ")
+344011, Ростовская область, город Ростов-на-Дону, Доломановский пер., д. 70д этаж 5, ком. 11
+ИНН: 7729482490, КПП: 616401001
+ОГРН: 5157746058620
+р/с: 40702810552090020807
+в Юго-Западном банке ПАО «Сбербанк» г. Ростов-на-Дону
+к/с 30101810600000000602
+БИК 046015602
+`
+    }]
   },
   {
     id: 'domofon',
     rows: 5,
     logo: 'vdome',
-    title: 'Домофон',
+    title: 'Домофоны',
     subtitle: 'VDome',
     phones: [{
-      title: 'Обслуживание',
+      title: 'Диспетчерская',
       phone: '+7 (863) 310-02-26'
     }, {
-      phone: '+7 (928) 226-96-42'
+      title: 'Мастер',
+      subtitle: 'Алексей',
+      phone: '+7 (999) 481-38-68'
     }],
     messengers: [{
       title: 'WhatsApp робот',
@@ -407,7 +452,6 @@ export default [
     id: 'vodokanal',
     rows: 3,
     title: 'Водоканал',
-    subtitle: 'Холодная вода',
     logo: 'vodokanal',
     phones: [
       {
@@ -465,7 +509,7 @@ export default [
     id: 'ts-ug',
     rows: 4,
     title: 'ТеплоСервис Юг',
-    subtitle: 'Отопление',
+    subtitle: 'Отопление и горячая вода',
     logo: 'ts-ug',
     phones: [
       {

@@ -5,11 +5,12 @@ import { Card, CardHeader, List } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 import useLocalStorage from '@/hooks/use-local-storage';
-import { AddressInfo, GroupInfo, MessengerInfo, PhoneInfo, PropsWithStyles, WebsiteInfo } from '@/types';
+import { AddressInfo, GroupInfo, MessengerInfo, PhoneInfo, PropsWithStyles, TextInfo, WebsiteInfo } from '@/types';
 
 import { Address } from './list/Address';
 import { Messenger } from './list/Messenger';
 import { Phone } from './list/Phone';
+import { Text } from './list/Text';
 import { WebLink } from './list/WebLink';
 import { Logo } from './Logo';
 
@@ -29,7 +30,7 @@ const StyledCard = styled(Card)`
 `;
 
 export const InfoCard = ({ info, singleCard = false, style }: Props) => {
-  const { id, title, subtitle, logo, addresses, phones, messengers, urls, rows = 1, } = info;
+  const { id, title, subtitle, logo, addresses, phones, messengers, urls, texts, rows = 1, } = info;
   const [isOpenedInitially, updateSettings] = useLocalStorage<boolean>(`card_${id}`, false);
   const [isOpened, setIsOpened] = useState(singleCard);
   const [copiedState, setCopiedState] = useState<boolean>(false);
@@ -95,6 +96,7 @@ export const InfoCard = ({ info, singleCard = false, style }: Props) => {
           { phones?.map((p: PhoneInfo, i: number) => <Phone key={ i } { ...p } />) }
           { messengers?.map((m: MessengerInfo, i: number) => <Messenger key={ i } { ...m } />) }
           { urls?.map((w: WebsiteInfo, i: number) => <WebLink key={ i } { ...w } />) }
+          { texts?.map((t: TextInfo, i: number) => <Text key={ i } { ...t } />) }
         </List>
       ) }
     </StyledCard>
