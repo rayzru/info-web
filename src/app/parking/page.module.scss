@@ -1,0 +1,18 @@
+.main {
+  display: grid;
+  flex-direction: column;
+  gap: 20px;
+  grid-template:
+    "header" auto
+    "cards" auto / 1fr;
+
+  .header {
+    grid-area: header;
+  }
+
+  .cards {
+    grid-area: cards;
+    margin: 0 20px;
+  }
+
+}
