@@ -4,7 +4,7 @@ export default [
 
   {
     id: 'sr2',
-    rows: 9,
+    rows: 6,
     title: 'Жилой комплекс',
     color: CardColor.complex,
     subtitle: 'Сердце Ростова 2',
@@ -25,6 +25,7 @@ export default [
         title: 'Электрик',
         subtitle: 'Павел Джумак',
         phone: '+7 (999) 692-63-77',
+        visible: false,
       },
       {
         title: 'Сантехник',
@@ -35,11 +36,13 @@ export default [
         title: 'Cантехник',
         subtitle: 'Павел Косухин',
         phone: '+7 (999) 697-46-09',
+        visible: false,
       },
       {
         title: 'Cантехник',
         subtitle: 'Вячеслав Хавренко',
         phone: '+7 (918) 598-98-02',
+        visible: false,
       },
       {
         title: 'Лифтовая диспетчерская',
@@ -318,6 +321,7 @@ export default [
         subtitle: 'Даниил Лукашов',
         phone: '+7 (905) 478-76-99',
         hasWhatsApp: true,
+        visible: false,
       },
       {
         title: 'Главный инженер',

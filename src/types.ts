@@ -20,6 +20,7 @@ export interface BaseInfo {
   subtitle?: string;
   description?: string;
   tags?: TagProps[];
+  visible?: boolean;
 }
 
 export interface PersonInfo extends BaseInfo {
