@@ -5,7 +5,7 @@ import { Card, CardHeader, List } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 import useLocalStorage from '@/hooks/use-local-storage';
-import { AddressInfo, GroupInfo, MessengerInfo, PhoneInfo, PropsWithStyles, TextInfo, WebsiteInfo } from '@/types';
+import { AddressInfo, BaseInfo, GroupInfo, MessengerInfo, PhoneInfo, PropsWithStyles, TextInfo, WebsiteInfo } from '@/types';
 
 import { Address } from './list/Address';
 import { Messenger } from './list/Messenger';
@@ -55,6 +55,8 @@ export const InfoCard = ({ info, singleCard = false, style }: Props) => {
     setIsOpened(prev => !prev);
   };
 
+  const filterVisible = (el: BaseInfo) => el.visible === undefined || el.visible !== false;
+
   const contentStyle = singleCard ? {} : { paddingTop: 0 };
   const wrapperStyle = {
     gridRow: `span ${isOpened ? rows : 1}`,
@@ -92,11 +94,11 @@ export const InfoCard = ({ info, singleCard = false, style }: Props) => {
       ) }
       { isOpened && (
         <List >
-          { addresses?.map((a: AddressInfo, i: number) => <Address key={ i } { ...a } />) }
-          { phones?.map((p: PhoneInfo, i: number) => <Phone key={ i } { ...p } />) }
-          { messengers?.map((m: MessengerInfo, i: number) => <Messenger key={ i } { ...m } />) }
-          { urls?.map((w: WebsiteInfo, i: number) => <WebLink key={ i } { ...w } />) }
-          { texts?.map((t: TextInfo, i: number) => <Text key={ i } { ...t } />) }
+          { addresses?.filter(filterVisible).map((a: AddressInfo, i: number) => <Address key={ i } { ...a } />) }
+          { phones?.filter(filterVisible).map((p: PhoneInfo, i: number) => <Phone key={ i } { ...p } />) }
+          { messengers?.filter(filterVisible).map((m: MessengerInfo, i: number) => <Messenger key={ i } { ...m } />) }
+          { urls?.filter(filterVisible).map((w: WebsiteInfo, i: number) => <WebLink key={ i } { ...w } />) }
+          { texts?.filter(filterVisible).map((t: TextInfo, i: number) => <Text key={ i } { ...t } />) }
         </List>
       ) }
     </StyledCard>
