@@ -94,7 +94,7 @@ export const ParkingCard = ({ info, singleCard = false }: Props) => {
             ...acc,
             p.phone && <Button variant='text' color='inherit' sx={ { marginRight: 'auto', whiteSpace: 'nowrap' } } href={ `tel:${cleanupPhone(p.phone)}` }>{ formatPhone(p.phone) }</Button>,
             p.hasWhatsApp && <IconButton size='small' href={ `https://wa.me/${cleanupPhone(p.phone)}` }><WhatsApp /></IconButton>,
-            p.hasTelegram && <IconButton size='small' href={ `https://wa.me/${cleanupPhone(p.phone)}` }><Telegram /></IconButton>
+            p.hasTelegram && <IconButton size='small' href={ `https://t.me/${cleanupPhone(p.phone)}` }><Telegram /></IconButton>
           ]
         ), []) }
         { messengers?.reduce((acc: ReactNode[], m: MessengerInfo) => (
