@@ -2,7 +2,7 @@
 
 import { MouseEvent, useEffect, useState } from 'react';
 import { ApartmentOutlined } from '@mui/icons-material';
-import { Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
 
 import { Header } from '@/components/Header';
 import { ParkingCard } from '@/components/ParkingCard';
@@ -39,36 +39,39 @@ export default function Home() {
     <main className={ styles.main }>
       <Header className={ styles.header } showSearch={ false } showSettingsButton={ false } />
       <Stack direction="row" spacing={ 2 } className={ styles.filters }>
-        <ToggleButtonGroup
-          size='small'
-          value={ typeFilter }
-          onChange={ handleTypes }
-        >
-          { ['rent', 'sell'].map(
-            (t: string) => (
-              <ToggleButton key={ t } value={ t }>
-                <Typography fontSize={ 13 } >
-                  { t === 'rent' && 'Аренда' }
-                  { t === 'sell' && 'Продажа' }
-                </Typography>
+        <Tooltip title="Фильтрация по типу объявления">
+          <ToggleButtonGroup
+            size='small'
+            value={ typeFilter }
+            onChange={ handleTypes }
+          >
+            { ['rent', 'sell'].map(
+              (t: string) => (
+                <ToggleButton key={ t } value={ t }>
+                  <Typography fontSize={ 13 } >
+                    { t === 'rent' && 'Аренда' }
+                    { t === 'sell' && 'Продажа' }
+                  </Typography>
+                </ToggleButton>
+              )) }
+          </ToggleButtonGroup>
+        </Tooltip>
+        <Tooltip title="Фильтрация по номеру строения">
+          <ToggleButtonGroup
+            size='small'
+            value={ buildingsFilter }
+            onChange={ handleBuildings }
+          >
+            <ToggleButton value={ '-' } disabled key={ 'i' }>
+              <ApartmentOutlined fontSize='inherit' />
+            </ToggleButton>
+            { [1, 2, 6, 7].map((building: number) => (
+              <ToggleButton key={ String(building) } value={ String(building) }>
+                <Typography fontSize={ 13 } fontWeight={ 600 }>{ building }</Typography>
               </ToggleButton>
             )) }
-        </ToggleButtonGroup>
-
-        <ToggleButtonGroup
-          size='small'
-          value={ buildingsFilter }
-          onChange={ handleBuildings }
-        >
-          <ToggleButton value={ '-' } disabled key={ 'i' }>
-            <ApartmentOutlined fontSize='inherit' />
-          </ToggleButton>
-          { [1, 2, 6, 7].map((building: number) => (
-            <ToggleButton key={ String(building) } value={ String(building) }>
-              <Typography fontSize={ 13 } fontWeight={ 600 }>{ building }</Typography>
-            </ToggleButton>
-          )) }
-        </ToggleButtonGroup>
+          </ToggleButtonGroup>
+        </Tooltip>
       </Stack>
       <ParkingGrid className={ styles.cards }>
         { data.map((el: ParkingOfferInfo, index: number) => <ParkingCard key={ index } info={ el } />) }
