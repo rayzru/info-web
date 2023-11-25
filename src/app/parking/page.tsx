@@ -15,7 +15,13 @@ import styles from './page.module.scss';
 export default function Home() {
   const [buildingsFilter, setBuildingsFilter] = useState<string[]>([]);
   const [typeFilter, setTypeFilter] = useState<string[]>([]);
-  const [data, setData] = useState<ParkingOfferInfo[]>(parking);
+
+  const sorted = parking
+    .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.parkingNumber - b.parkingNumber)
+    .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.building - b.building)
+    ;
+
+  const [data, setData] = useState<ParkingOfferInfo[]>(sorted);
 
   const handleBuildings = (e: MouseEvent<HTMLElement>, newValue: string[]) => setBuildingsFilter(() => newValue || []);
   const handleTypes = (e: MouseEvent<HTMLElement>, newValue: string[]) => setTypeFilter(() => newValue || []);
