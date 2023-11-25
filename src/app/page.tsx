@@ -38,7 +38,7 @@ export default function Home() {
 
   return (
     <main className={ styles.main }>
-      <Header className={ styles.header } subtitle={ [] } showSearch={ false } onSettings={ handleToggleSettings } />
+      <Header className={ styles.header } showSearch={ false } onSettings={ handleToggleSettings } />
       <InfoGrid className={ styles.cards }>
         { data.map((el: GroupInfo) => !checkState.includes(el.id) && <InfoCard onCopyUrl={ handleCopyUrl } key={ el.id } info={ el } />) }
         <SupportCard />
