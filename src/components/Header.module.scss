@@ -1,6 +1,15 @@
-.subtitle {
-	&::before {
-		content: '\2022';
-		margin-right: 8px;
-	}
+.nav {
+  font-size: 20px;
+  line-height: 1.4em;
+  color: red;
+
+  &.active {
+    text-decoration: none;
+    color: #000;
+  }
+}
+
+.navWrapper {
+  display: flex;
+  column-gap: 12px;
 }

@@ -37,7 +37,7 @@ export const Phone = ({ phone, ...props }: Props) => {
         <a target='_blank' href={ `tel:${cleanupPhone(phone)}` }>
           { phone }
         </a>
-      </Tooltip >
+      </Tooltip>
     </BaseListItem>
   );
 };

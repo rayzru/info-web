@@ -85,3 +85,26 @@ export type IconType =
   | 'share'
   | 'arrow-up'
   | 'link';
+
+
+export interface ParkingOfferInfo extends BaseInfo {
+  building: Building;
+  level: ParkingLevel;
+  variant: ParkingVariant;
+  offers: Offer[];
+  phones: PhoneInfo[];
+  messengers: MessengerInfo[];
+  dateUpdated: number;
+  parkingNumber: number;
+  visible?: boolean;
+}
+
+type ParkingVariant = 'comfort' | 'regular';
+type ParkingLevel = -1 | -2;
+type Building = 1 | 2 | 6 | 7;
+
+export interface Offer {
+  type: 'rent' | 'sell';
+  price?: number;
+  perTimeRange: 'year' | 'month' | 'week' | 'once';
+}
