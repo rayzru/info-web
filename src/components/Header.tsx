@@ -1,7 +1,10 @@
+'use client';
+
 import { CloseRounded, FilterList } from '@mui/icons-material';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { AppBar, Box, IconButton, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, IconButton, Toolbar } from '@mui/material';
+import { clsx } from 'clsx';
 import Link from 'next/link'
+import { usePathname } from 'next/navigation';
 
 import { PropsWithStyles } from '@/types';
 
@@ -10,9 +13,12 @@ import { Logo, LogoType } from './Logo';
 
 import styles from './Header.module.scss';
 
+interface NavInterface {
+  title: string;
+  href: string;
+}
+
 interface Props extends PropsWithStyles {
-  title?: string;
-  subtitle?: string[];
   logo?: LogoType;
   showSettingsButton?: boolean;
   showSearch?: boolean;
@@ -21,34 +27,40 @@ interface Props extends PropsWithStyles {
 }
 
 export const Header = ({
-  title = 'Справочник',
-  subtitle = [],
-  logo = 'sr2',
   showSearch = false,
   showSettingsButton = true,
   showBack = false,
   onSettings
 }: Props) => {
+
+  const pathname = usePathname();
+
+  const navigation: NavInterface[] = [
+    {
+      title: 'Справочник',
+      href: '/'
+    },
+    {
+      title: 'Парковки',
+      href: '/parking'
+    },
+  ]
+
   return (
     <Box sx={ { flexGrow: 1 } }>
       <AppBar component="nav" color='transparent' elevation={ 0 } position='relative'>
         <Toolbar>
-          <Logo type={ logo } style={ { margin: '0 12px' } } />
-          <Typography variant="h1" noWrap fontSize={ 20 }>
-            { title }
-          </Typography>
-          { subtitle.map((s: string, i: number) => (
-            <Typography
-              className={ styles.subtitle }
-              sx={ { marginLeft: 1 } }
-              key={ `subtitle-${i}` }
-              variant="h2"
-              noWrap
-              fontSize={ 18 }
-            >
-              { s }
-            </Typography>)
-          ) }
+          <div className={ styles.navWrapper }>
+            { navigation.map(({ title, href }: NavInterface, i: number) => (
+              <Link
+                href={ href }
+                className={ clsx(styles.nav, pathname === href && styles.active) }
+                key={ `nav-${i}` }
+              >
+                { title }
+              </Link>)
+            ) }
+          </div>
           { showSearch && <Search /> }
           { showSettingsButton && (
             <IconButton onClick={ onSettings } style={ { marginLeft: 'auto' } }>
@@ -64,6 +76,5 @@ export const Header = ({
         </Toolbar>
       </AppBar>
     </Box>
-
   );
 };

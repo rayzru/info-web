@@ -8,7 +8,7 @@ import styles from './page.module.scss';
 export default function NotFound() {
   return (
     <main className={ styles.main }>
-      <Header className={ styles.header } subtitle={ [] } showSearch={ false } showBack={ true } showSettingsButton={ false } />
+      <Header className={ styles.header } showSearch={ false } showBack={ true } showSettingsButton={ false } />
       <InfoGrid className={ styles.cards }>
         <div>
           <h2>Потрачено</h2>

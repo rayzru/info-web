@@ -4,10 +4,16 @@
   gap: 20px;
   grid-template:
     "header" auto
+    "filters" auto
     "cards" auto / 1fr;
 
   .header {
     grid-area: header;
+  }
+
+  .filters {
+    grid-area: filters;
+    margin: 8px 20px;
   }
 
   .cards {

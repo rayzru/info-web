@@ -10,3 +10,7 @@ export const pick = <T extends {}, K extends keyof T>(obj: T, ...keys: K[]) => (
   ) as Pick<T, K>
 );
 
+export function formatPhone(source: string): string {
+  const p = cleanupPhone(source);
+  return `${p.substring(0, 2)} (${p.substring(2, 5)}) ${p.substring(5, 8)}-${p.substring(8, 10)}-${p.substring(10, 12)}`;
+}

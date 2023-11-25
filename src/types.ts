@@ -87,19 +87,22 @@ export type IconType =
 
 
 export interface ParkingOfferInfo extends BaseInfo {
-  building: number;
-  parkingNumber: number;
-  level: number;
-  dateUpdated: number;
+  building: Building;
+  level: ParkingLevel;
   variant: ParkingVariant;
   offers: Offer[];
   phones: PhoneInfo[];
   messengers: MessengerInfo[];
+  dateUpdated: number;
+  parkingNumber: number;
+  visible?: boolean;
 }
 
 type ParkingVariant = 'comfort' | 'regular';
+type ParkingLevel = -1 | -2;
+type Building = 1 | 2 | 6 | 7;
 
-interface Offer {
+export interface Offer {
   type: 'rent' | 'sell';
   price?: number;
   perTimeRange: 'year' | 'month' | 'week' | 'once';
