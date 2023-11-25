@@ -2,7 +2,7 @@ import { ParkingOfferInfo } from '@/types';
 
 export default [
   {
-    building: 2,
+    building: 1,
     level: -2,
     parkingNumber: 80,
     variant: 'comfort',
@@ -74,6 +74,63 @@ export default [
         type: 'rent',
         price: 4000,
         description: 'При одновременной аренде соседнего паркоместа 120, скидка 500 рублей за каждое место'
+      },
+    ]
+  },
+  {
+    building: 6,
+    level: -1,
+    parkingNumber: 67,
+    variant: 'comfort',
+    phones: [
+      {
+        phone: '+79515117025',
+        hasWhatsApp: true,
+        hasTelegram: true,
+      }
+    ],
+    offers: [
+      {
+        type: 'rent',
+        price: 3000,
+      },
+    ]
+  },
+  {
+    building: 6,
+    level: -1,
+    parkingNumber: 183,
+    variant: 'comfort',
+    phones: [
+      {
+        phone: '+79515117025',
+        hasWhatsApp: true,
+        hasTelegram: true,
+      }
+    ],
+    offers: [
+      {
+        type: 'rent',
+        price: 3000,
+      },
+    ]
+  },
+  {
+    building: 6,
+    level: -1,
+    parkingNumber: 19,
+    variant: 'regular',
+    phones: [
+      {
+        phone: '+79185201981',
+        hasTelegram: true,
+      }
+    ],
+    offers: [
+      {
+        type: 'rent',
+        price: 3600,
+        description: 'Аренда на 6 месяцев'
       },
     ]
   },
