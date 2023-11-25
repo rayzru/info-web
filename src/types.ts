@@ -107,4 +107,5 @@ export interface Offer {
   type: 'rent' | 'sell';
   price?: number;
   perTimeRange: 'year' | 'month' | 'week' | 'once';
+  description: string;
 }
