@@ -1,8 +1,8 @@
 'use client';
 
 import { PropsWithChildren, ReactNode } from 'react';
-import { CurrencyRubleOutlined, Telegram, WhatsApp } from '@mui/icons-material';
-import { Button, Card, CardActions, CardContent, CardHeader, Chip, Divider, IconButton, List, Typography } from '@mui/material';
+import { CurrencyRubleOutlined, Info, InfoOutlined, Telegram, WhatsApp } from '@mui/icons-material';
+import { Badge, Box, Button, Card, CardActions, CardContent, CardHeader, Chip, Divider, Icon, IconButton, List, Tooltip, Typography } from '@mui/material';
 
 import { cleanupPhone, formatPhone } from '@/helpers';
 import { MessengerInfo, Offer, ParkingOfferInfo, PhoneInfo } from '@/types';
@@ -19,12 +19,16 @@ export const ParkingCard = ({ info, singleCard = false }: Props) => {
   const subtitle = `Cтр. ${building}, этаж ${level}, место ${parkingNumber}`;
 
   return (
-    <Card sx={ { position: 'relative' } }>
+    <Card sx={ {
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+    } }>
       <Chip
         size='small'
         variant='outlined'
         color='default'
-        label={ `#P${building}${level}${String(parkingNumber).padStart(3, '0')}` }
+        label={ `${building}${level.toString().slice(1, 2)}${String(parkingNumber).padStart(3, '0')}` }
         sx={ { position: 'absolute', right: '8px', top: '8px', opacity: .3 } }
       />
       { !singleCard && (
@@ -57,34 +61,40 @@ export const ParkingCard = ({ info, singleCard = false }: Props) => {
 
       { offers.map((offer: Offer) => (
         <>
-          <Divider sx={ { marginTop: 2 } } />
           <CardContent sx={ { paddingBottom: 0 } }>
-            <Chip
-              sx={ { position: 'absolute', marginTop: '-28px' } }
-              label={ offer.type === 'rent' ? 'Аренда' : 'Продажа' }
-              size='small'
-              color={ offer.type === 'rent' ? 'success' : 'warning' }
-            />
-            <Typography fontSize={ 33 } sx={ { marginTop: '20px' } }>
-              { offer.price }<CurrencyRubleOutlined fontSize={ 'small' } />
+            <Box sx={ { display: 'flex', alignItems: 'center' } }>
+              <Chip
+                variant='outlined'
+                label={ offer.type === 'rent' ? 'Аренда' : 'Продажа' }
+                size='small'
+                color={ offer.type === 'rent' ? 'success' : 'warning' }
+              />
               { offer.type === 'rent' && (
-                <Typography color={ 'text.secondary' } variant='caption' fontSize={ 16 }>
-                  { offer.perTimeRange === 'month' && 'в месяц' }
-                  { offer.perTimeRange === 'year' && 'в год' }
-                </Typography>
+                <Tooltip title={ 'Стоимость аренды включает в себя оплату коммунальных платежей' }>
+                  <InfoOutlined color='disabled' sx={ { marginLeft: 1 } } />
+                </Tooltip>
               ) }
+            </Box>
+            <Typography fontSize={ 33 } sx={ { marginTop: 1 } }>
+              { offer.price }
+              <CurrencyRubleOutlined fontSize={ 'small' } />
             </Typography>
+            { offer.description && (
+              <Typography variant='body2' color={ 'text.secondary ' }>
+                { offer.description }
+              </Typography>
+            ) }
+
           </CardContent>
         </>
       )) }
-
-      <CardActions>
+      <CardActions sx={ { marginTop: 'auto' } }>
         { phones?.reduce((acc: ReactNode[], p: PhoneInfo) => (
           [
             ...acc,
-            p.phone && <Button variant='text' color='inherit' sx={ { marginRight: 'auto' } } href={ `tel:${cleanupPhone(p.phone)}` }>{ formatPhone(p.phone) }</Button>,
-            p.hasWhatsApp && <IconButton href={ `https://wa.me/${cleanupPhone(p.phone)}` }><WhatsApp /></IconButton>,
-            p.hasTelegram && <IconButton href={ `https://wa.me/${cleanupPhone(p.phone)}` }><Telegram /></IconButton>
+            p.phone && <Button variant='text' color='inherit' sx={ { marginRight: 'auto', whiteSpace: 'nowrap' } } href={ `tel:${cleanupPhone(p.phone)}` }>{ formatPhone(p.phone) }</Button>,
+            p.hasWhatsApp && <IconButton size='small' href={ `https://wa.me/${cleanupPhone(p.phone)}` }><WhatsApp /></IconButton>,
+            p.hasTelegram && <IconButton size='small' href={ `https://wa.me/${cleanupPhone(p.phone)}` }><Telegram /></IconButton>
           ]
         ), []) }
         { messengers?.reduce((acc: ReactNode[], m: MessengerInfo) => (
