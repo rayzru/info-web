@@ -19,6 +19,7 @@ const useSessionStorage = <T>(keyName: string, defaultValue: T) => {
   const setValue = (newValue: T) => {
     try {
       window.sessionStorage.setItem(keyName, JSON.stringify(newValue));
+      // eslint-disable-next-line no-empty
     } catch (err) { }
     setStoredValue(newValue);
   };

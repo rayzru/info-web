@@ -1,8 +1,12 @@
 'use client';
 
-import React, { ChangeEvent, CSSProperties, FormEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { CurrencyRuble } from '@mui/icons-material';
-import { Box, Button, Card, CardActions, CardContent, FormControl, FormControlLabel, FormGroup, Input, InputAdornment, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, Switch, SxProps, TextField, Theme, Typography } from '@mui/material';
+import {
+  Box, Button, FormControl, FormControlLabel, FormGroup, Input,
+  InputAdornment, InputLabel, MenuItem, Modal, Select, SelectChangeEvent,
+  Switch, SxProps, TextField, Theme, Typography
+} from '@mui/material';
 
 import { Header } from '@/components/Header';
 import PhoneInput from '@/components/PhoneInput';
@@ -25,11 +29,6 @@ export default function Parking() {
     if (reason !== 'backdropClick') {
       setOpen(false);
     }
-  };
-
-  const handleCloseAndReset = () => {
-    setData({});
-    setOpen(false);
   };
 
   useEffect(() => {
