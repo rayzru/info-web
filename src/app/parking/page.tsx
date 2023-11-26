@@ -12,7 +12,7 @@ import { Offer, ParkingOfferInfo } from '@/types';
 
 import styles from './page.module.scss';
 
-export default function Home() {
+export default function Parking() {
   const [buildingsFilter, setBuildingsFilter] = useState<string[]>([]);
   const [typeFilter, setTypeFilter] = useState<string[]>([]);
 
