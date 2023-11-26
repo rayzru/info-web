@@ -9,7 +9,7 @@ import { ParkingCard } from '@/components/ParkingCard';
 import { ParkingCardNew } from '@/components/ParkingCardNew';
 import { ParkingGrid } from '@/components/ParkingGrid';
 import parking from '@/data/parking';
-import { Offer, ParkingOfferInfo } from '@/types';
+import { ParkingOfferInfo } from '@/types';
 
 import styles from './page.module.scss';
 

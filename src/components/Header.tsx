@@ -9,7 +9,6 @@ import { usePathname } from 'next/navigation';
 import { PropsWithStyles } from '@/types';
 
 import Search from './search/Search';
-import { Logo, LogoType } from './Logo';
 
 import styles from './Header.module.scss';
 
@@ -19,7 +18,6 @@ interface NavInterface {
 }
 
 interface Props extends PropsWithStyles {
-  logo?: LogoType;
   showSettingsButton?: boolean;
   showSearch?: boolean;
   showBack?: boolean;

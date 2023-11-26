@@ -1,11 +1,14 @@
 'use client';
 
-import { PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren, } from 'react';
 import { CurrencyRubleOutlined, InfoOutlined, Telegram, WhatsApp } from '@mui/icons-material';
-import { Box, Button, Card, CardActions, CardContent, CardHeader, Chip, IconButton, Tooltip, Typography } from '@mui/material';
+import {
+  Box, Button, Card, CardActions, CardContent,
+  CardHeader, Chip, IconButton, Tooltip, Typography
+} from '@mui/material';
 
 import { cleanupPhone, formatPhone } from '@/helpers';
-import { MessengerInfo, Offer, ParkingOfferInfo, PhoneInfo } from '@/types';
+import { ParkingOfferInfo, } from '@/types';
 
 interface Props extends PropsWithChildren {
   info: ParkingOfferInfo;
