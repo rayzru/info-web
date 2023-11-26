@@ -11,8 +11,10 @@ export interface PropsWithStyles {
 export type MessengerType = 'telegram' | 'whatsapp';
 
 export enum CardColor {
-  "complex" = '#880000',
-  "service" = '#ff8800',
+  // eslint-disable-next-line no-unused-vars
+  complex = '#880000',
+  // eslint-disable-next-line no-unused-vars
+  service = '#ff8800',
 }
 
 export interface BaseInfo {
