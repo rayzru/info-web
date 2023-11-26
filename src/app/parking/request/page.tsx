@@ -251,7 +251,6 @@ export default function Parking() {
       <div className={ styles.form }>
         <Button variant='outlined' color='secondary' href='/parking'  >Отмена</Button>
         <Button onClick={ handleSend } variant='contained' disabled={ !sendEnabled }>Отправить заявку</Button>
-        <Button onClick={ handleCloseAndReset } >Сброс</Button>
       </div>
     </main >
   );
