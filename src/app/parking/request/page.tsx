@@ -59,7 +59,7 @@ export default function Parking() {
       ...data,
       contact: {
         ...data.contact,
-        phone: e.target.value as string,
+        phone: e.target.value,
       }
     });
   };
@@ -79,7 +79,7 @@ export default function Parking() {
       ...data,
       offer: {
         ...data.offer,
-        description: e.target.value as Offer['description']
+        description: e.target.value
       } as Offer
     });
   };

@@ -29,11 +29,8 @@ export default function Parking() {
 
   const filterFn = (el: ParkingOfferInfo) => {
     return true
-      && (typeFilter.length == 0 || typeFilter.length == 2) || typeFilter.includes(el.offer.type)
-      && (
-        (buildingsFilter.length == 0 || buildingsFilter.length == 4) ||
-        buildingsFilter.includes(String(el.building))
-      );
+      && ([0, 2].includes(typeFilter.length) || typeFilter.includes(el.offer.type))
+      && ([0, 4].includes(buildingsFilter.length) || buildingsFilter.includes(String(el.building)));
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
