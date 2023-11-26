@@ -14,7 +14,7 @@ interface Props extends PropsWithChildren {
 }
 
 export const ParkingCard = ({ info }: Props) => {
-  const { building, level, offers, parkingNumber, phones, messengers } = info;
+  const { building, level, offer, parkingNumber, contact } = info;
 
   const subtitle = `Cтр. ${building}, этаж ${level}, место ${parkingNumber}`;
 
@@ -57,50 +57,36 @@ export const ParkingCard = ({ info }: Props) => {
         } }
       />
 
-      { offers.map((offer: Offer) => (
-        <>
-          <CardContent sx={ { paddingBottom: 0 } }>
-            <Box sx={ { display: 'flex', alignItems: 'center' } }>
-              <Chip
-                variant='outlined'
-                label={ offer.type === 'rent' ? 'Аренда' : 'Продажа' }
-                size='small'
-                color={ offer.type === 'rent' ? 'success' : 'warning' }
-              />
-              { offer.type === 'rent' && (
-                <Tooltip title={ 'Стоимость аренды включает в себя оплату коммунальных платежей' }>
-                  <InfoOutlined color='disabled' sx={ { marginLeft: 1 } } />
-                </Tooltip>
-              ) }
-            </Box>
-            <Typography fontSize={ 33 } sx={ { marginTop: 1 } }>
-              { offer.price }
-              <CurrencyRubleOutlined fontSize={ 'small' } />
-            </Typography>
-            { offer.description && (
-              <Typography variant='body2' color={ 'text.secondary ' }>
-                { offer.description }
-              </Typography>
+      <>
+        <CardContent sx={ { paddingBottom: 0 } }>
+          <Box sx={ { display: 'flex', alignItems: 'center' } }>
+            <Chip
+              variant='outlined'
+              label={ offer.type === 'rent' ? 'Аренда' : 'Продажа' }
+              size='small'
+              color={ offer.type === 'rent' ? 'success' : 'warning' }
+            />
+            { offer.type === 'rent' && (
+              <Tooltip title={ 'Стоимость аренды включает в себя оплату коммунальных платежей' }>
+                <InfoOutlined color='disabled' sx={ { marginLeft: 1 } } />
+              </Tooltip>
             ) }
-          </CardContent>
-        </>
-      )) }
+          </Box>
+          <Typography fontSize={ 33 } sx={ { marginTop: 1 } }>
+            { offer.price }
+            <CurrencyRubleOutlined fontSize={ 'small' } />
+          </Typography>
+          { offer.description && (
+            <Typography variant='body2' color={ 'text.secondary ' }>
+              { offer.description }
+            </Typography>
+          ) }
+        </CardContent>
+      </>
       <CardActions sx={ { marginTop: 'auto' } }>
-        { phones?.reduce((acc: ReactNode[], p: PhoneInfo) => (
-          [
-            ...acc,
-            p.phone && <Button variant='text' key='phone' color='inherit' sx={ { marginRight: 'auto', whiteSpace: 'nowrap' } } href={ `tel:${cleanupPhone(p.phone)}` }>{ formatPhone(p.phone) }</Button>,
-            p.hasWhatsApp && <IconButton key='whatsapp' size='small' href={ `https://wa.me/${cleanupPhone(p.phone)}` }><WhatsApp /></IconButton>,
-            p.hasTelegram && <IconButton key='telegram' size='small' href={ `https://t.me/${cleanupPhone(p.phone)}` }><Telegram /></IconButton>
-          ]
-        ), []) }
-        { messengers?.reduce((acc: ReactNode[], m: MessengerInfo) => (
-          [
-            ...acc,
-            m.messengerType === 'telegram' && <IconButton key='messenger_telegram' href={ m.link }><Telegram /></IconButton>,
-            m.messengerType === 'whatsapp' && <IconButton key='messenger_whatsapp' href={ m.link }><WhatsApp /></IconButton>,
-          ]
-        ), []) }
+        { contact.phone && <Button variant='text' key='phone' color='inherit' sx={ { marginRight: 'auto', whiteSpace: 'nowrap' } } href={ `tel:${cleanupPhone(contact.phone)}` }>{ formatPhone(contact.phone) }</Button> }
+        { contact.hasWhatsApp && <IconButton key='whatsapp' size='small' href={ `https://wa.me/${cleanupPhone(contact.phone)}` }><WhatsApp /></IconButton> }
+        { contact.hasTelegram && <IconButton key='telegram' size='small' href={ `https://t.me/${cleanupPhone(contact.phone)}` }><Telegram /></IconButton> }
       </CardActions>
     </Card>
   );
