@@ -16,6 +16,7 @@ import styles from './page.module.scss';
 
 const initData: Partial<ParkingOfferInfo> = {
   variant: 'standard',
+  level: -1,
 };
 
 export default function Parking() {
@@ -172,20 +173,18 @@ export default function Parking() {
               <MenuItem value={ 7 }>Строение 7 (литеры 6)</MenuItem>
             </Select>
           </FormControl>
-          { data?.building && [1, 2].includes(data?.building) && (
-            <FormControl variant='standard'>
-              <InputLabel>Этаж</InputLabel>
-              <Select
-                value={ data?.level?.toString() }
-                onChange={ handleLevelChange }
-                defaultValue={ '-1' }
-                placeholder='Выберите этаж парковки'
-              >
-                <MenuItem value={ -1 }>-1 Этаж</MenuItem>
-                <MenuItem value={ -2 }>-2 Этаж</MenuItem>
-              </Select>
-            </FormControl>
-          ) }
+          <FormControl variant='standard'>
+            <InputLabel>Этаж</InputLabel>
+            <Select
+              value={ data?.level?.toString() }
+              onChange={ handleLevelChange }
+              defaultValue={ '-1' }
+              placeholder='Выберите этаж парковки'
+            >
+              <MenuItem value={ -1 }>-1 Этаж</MenuItem>
+              <MenuItem value={ -2 }>-2 Этаж</MenuItem>
+            </Select>
+          </FormControl>
           <TextField
             required={ true }
             InputProps={ {
