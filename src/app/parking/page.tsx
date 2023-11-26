@@ -29,10 +29,7 @@ export default function Parking() {
 
   const filterFn = (el: ParkingOfferInfo) => {
     return true
-      && (
-        (typeFilter.length == 0 || typeFilter.length == 2) ||
-        el.offers.some((o: Offer) => typeFilter.includes(o.type))
-      )
+      && (typeFilter.length == 0 || typeFilter.length == 2) || typeFilter.includes(el.offer.type)
       && (
         (buildingsFilter.length == 0 || buildingsFilter.length == 4) ||
         buildingsFilter.includes(String(el.building))
