@@ -6,6 +6,7 @@ import { Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mu
 
 import { Header } from '@/components/Header';
 import { ParkingCard } from '@/components/ParkingCard';
+import { ParkingCardNew } from '@/components/ParkingCardNew';
 import { ParkingGrid } from '@/components/ParkingGrid';
 import parking from '@/data/parking';
 import { Offer, ParkingOfferInfo } from '@/types';
@@ -81,6 +82,7 @@ export default function Parking() {
       </Stack>
       <ParkingGrid className={ styles.cards }>
         { data.map((el: ParkingOfferInfo, index: number) => <ParkingCard key={ index } info={ el } />) }
+        <ParkingCardNew />
       </ParkingGrid>
     </main >
   );
