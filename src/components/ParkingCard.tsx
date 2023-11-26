@@ -17,7 +17,7 @@ interface Props extends PropsWithChildren {
 }
 
 export const ParkingCard = ({ info }: Props) => {
-  const { building, level, offer, parkingNumber, contact } = info;
+  const { building, level = -1, offer, parkingNumber, contact } = info;
 
   const subtitle = `Cтр. ${building}, этаж ${level}, место ${parkingNumber}`;
 
