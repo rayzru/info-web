@@ -1,0 +1,43 @@
+{
+  "id": "parkingadvertisement",
+  "label": "ParkingAdvertisement",
+  "format": "custom",
+  "repeatable": true,
+  "status": true,
+  "json": {
+    "Main": {
+      "uid": {
+        "config": {
+          "label": "UID"
+        },
+        "type": "UID"
+      },
+      "building": {
+        "type": "Select",
+        "config": {
+          "label": "Building",
+          "placeholder": "",
+          "options": ["Строение 1", "Строение 2", "Строение 6", "Строение 7"]
+        }
+      },
+      "level": {
+        "type": "Select",
+        "config": {
+          "label": "Level",
+          "placeholder": "Этаж",
+          "options": ["-1 Этаж", "-2 Этаж"],
+          "default_value": "-1 Этаж"
+        }
+      },
+      "parkingnumber": {
+        "type": "Number",
+        "config": {
+          "label": "ParkingNumber",
+          "placeholder": ""
+        }
+      }
+    },
+    "Offers": {},
+    "Contacts": {}
+  }
+}

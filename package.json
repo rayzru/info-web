@@ -3,13 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"npm:next:dev\" \"npm:slicemachine\" --names \"next,slicemachine\" --prefix-colors blue,magenta",
+    "next:dev": "next dev",
     "build": "next build",
     "export": "next export",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "slicemachine": "start-slicemachine",
+    "format": "prettier --write ."
   },
   "dependencies": {
+    "@prismicio/client": "^7.3.1",
+    "@prismicio/next": "^1.5.0",
+    "@prismicio/react": "^2.7.3",
     "@emotion/cache": "^11.11.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
@@ -19,9 +25,10 @@
     "@mui/material-next": "^6.0.0-alpha.110",
     "clsx": "^2.0.0",
     "next": "^13",
-    "react": "^18",
-    "react-dom": "^18",
-    "sass": "^1.69.5"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sass": "^1.69.5",
+    "typescript": "^5.2.2"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -35,6 +42,8 @@
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "eslint-plugin-sonarjs": "^0.23.0",
     "prettier": "3.1.0",
-    "typescript": "^5"
+    "@slicemachine/adapter-next": "^0.3.27",
+    "concurrently": "^8.2.2",
+    "slice-machine-ui": "^1.21.1"
   }
 }

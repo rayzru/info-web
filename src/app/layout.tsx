@@ -1,7 +1,9 @@
 import React, { PropsWithChildren } from 'react';
+import { PrismicPreview } from '@prismicio/next';
 import type { Metadata } from 'next';
 import Script from 'next/script'
 
+import { repositoryName } from '@/prismicio';
 import ThemeRegistry from '@/themeRegistry';
 
 import '@fontsource/roboto/400.css';
@@ -37,7 +39,10 @@ export default function RootLayout({ children }: RootProps) {
           gtag('config', '${counterId}', { page_path: window.location.pathname });
         `}
         </Script>
-        <ThemeRegistry options={ { key: 'mui' } }>{ children }</ThemeRegistry>
+        <ThemeRegistry options={ { key: 'mui' } }>
+          { children }
+          <PrismicPreview repositoryName={ repositoryName } />
+        </ThemeRegistry>
       </body>
     </html>
   );

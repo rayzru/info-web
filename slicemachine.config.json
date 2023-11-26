@@ -1,0 +1,6 @@
+{
+  "libraries": ["./src/slices"],
+  "adapter": "@slicemachine/adapter-next",
+  "repositoryName": "info-sr2-today",
+  "localSliceSimulatorURL": "http://localhost:3000/slice-simulator"
+}
