@@ -8,8 +8,8 @@ import '@fontsource/roboto/400.css';
 import './globals.scss';
 
 export const metadata: Metadata = {
-  title: 'Сердце Ростова 2 - Справочная',
-  description: 'Информационный центр',
+  title: 'Справочная, информационный центр',
+  description: 'Сердце Ростова 2',
 };
 
 export interface RootProps extends PropsWithChildren { }
@@ -26,8 +26,6 @@ export default function RootLayout({ children }: RootProps) {
         <link rel="manifest" href="/manifest.json" />
         <link rel="shortcut icon" href="/logos/root.svg" />
         <link rel="icon" href="/logos/root.svg" sizes="any" />
-
-        <title>Справочник - ЖК Сердце Ростова 2</title>
       </head>
       <body>
         <Script id="load-ga" strategy="lazyOnload" src={ `https://www.googletagmanager.com/gtag/js?id=${counterId}` } />

@@ -1,7 +1,7 @@
 import { CSSProperties } from 'react';
 
 import { LogoType } from '@/components/Logo';
-import { TagProps } from './components/search/Tag';
+import { TagProps } from '@/components/search/Tag';
 
 export interface PropsWithStyles {
   style?: CSSProperties;
