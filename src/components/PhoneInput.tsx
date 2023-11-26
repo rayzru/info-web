@@ -1,4 +1,4 @@
-import { ChangeEventHandler, forwardRef } from 'react';
+import { ChangeEvent, ChangeEventHandler, forwardRef } from 'react';
 import { IMaskInput } from 'react-imask';
 
 interface CustomProps {
@@ -17,7 +17,7 @@ const PhoneInput = forwardRef<HTMLInputElement, CustomProps>(
           '#': /[1-9]/,
         } }
         inputRef={ ref }
-        onAccept={ (value: any) => onChange({ target: { name: props.name, value } }) }
+        onAccept={ (value: any) => onChange({ target: { name: props.name, value } } as ChangeEvent<HTMLInputElement>) }
         overwrite
       />
     );
