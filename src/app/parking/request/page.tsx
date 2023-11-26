@@ -1,8 +1,8 @@
 'use client';
 
-import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, CSSProperties, FormEvent, useEffect, useState } from 'react';
 import { CurrencyRuble } from '@mui/icons-material';
-import { Box, Button, Card, CardActions, CardContent, FormControl, FormControlLabel, FormGroup, Input, InputAdornment, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, Switch, TextField, Typography } from '@mui/material';
+import { Box, Button, Card, CardActions, CardContent, FormControl, FormControlLabel, FormGroup, Input, InputAdornment, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, Switch, SxProps, TextField, Theme, Typography } from '@mui/material';
 
 import { Header } from '@/components/Header';
 import PhoneInput from '@/components/PhoneInput';
@@ -123,7 +123,7 @@ export default function Parking() {
     });
   };
 
-  const style = {
+  const style: SxProps<Theme> = {
     position: 'absolute' as 'absolute',
     top: '50%',
     left: '50%',
@@ -133,6 +133,9 @@ export default function Parking() {
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    display: 'flex',
+    flexDirection: 'column',
+    rowGap: 2
   };
 
   return (
@@ -148,8 +151,9 @@ export default function Parking() {
           <Typography sx={ { mt: 2 } }>
             Рассмотрение заявки может занять какое-то время. Как правило это не более 1 суток.
           </Typography>
-          <Button href='/parking'>Закрыть</Button>
-          <Button onClick={ handleCloseAndReset }>Составить еще одну заявку</Button>
+          <div>
+            <Button variant='outlined' href='/parking'>Закрыть</Button>
+          </div>
         </Box>
       </Modal>
       <Header className={ styles.header } showSearch={ false } showSettingsButton={ false } />
