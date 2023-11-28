@@ -22,6 +22,7 @@ export default function RootLayout({ children }: RootProps) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="robots" content="noindex" />
         <meta name="theme-color" content="#000000" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="shortcut icon" href="/logos/root.svg" />
