@@ -3,11 +3,11 @@
 import { ReactNode, useMemo, useState } from 'react';
 import { Snackbar } from '@mui/material';
 
+import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { InfoCard } from '@/components/InfoCard';
 import { InfoGrid } from '@/components/InfoGrid';
 import SettingsDrawer from '@/components/SettingsDrawer';
-import { SupportCard } from '@/components/SupportCard';
 import data from '@/data';
 import useLocalStorage from '@/hooks/use-local-storage';
 import { GroupInfo } from '@/types';
@@ -37,20 +37,22 @@ export default function Home() {
   }
 
   return (
-    <main className={ styles.main }>
-      <Header className={ styles.header } showSearch={ false } onSettings={ handleToggleSettings } />
-      <InfoGrid className={ styles.cards }>
-        { data.map((el: GroupInfo) => !checkState.includes(el.id) && <InfoCard onCopyUrl={ handleCopyUrl } key={ el.id } info={ el } />) }
-        <SupportCard />
-      </InfoGrid>
-      {/* <Map className={ styles.map } /> */ }
-      <SettingsDrawer value={ hidden } onUpdate={ handleUpdate } onClose={ handleToggleSettings } isOpened={ openSettings } />
-      <Snackbar
-        open={ Boolean(snack) }
-        autoHideDuration={ 2000 }
-        onClose={ handleCloseSnackbar }
-        message={ snack }
-      />
-    </main >
+    <>
+      <main className={ styles.main }>
+        <Header className={ styles.header } showSearch={ false } onSettings={ handleToggleSettings } />
+        <InfoGrid className={ styles.cards }>
+          { data.map((el: GroupInfo) => !checkState.includes(el.id) && <InfoCard onCopyUrl={ handleCopyUrl } key={ el.id } info={ el } />) }
+        </InfoGrid>
+        {/* <Map className={ styles.map } /> */ }
+        <SettingsDrawer value={ hidden } onUpdate={ handleUpdate } onClose={ handleToggleSettings } isOpened={ openSettings } />
+        <Snackbar
+          open={ Boolean(snack) }
+          autoHideDuration={ 2000 }
+          onClose={ handleCloseSnackbar }
+          message={ snack }
+        />
+      </main >
+      <Footer />
+    </>
   );
 }

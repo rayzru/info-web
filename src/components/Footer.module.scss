@@ -1,0 +1,35 @@
+.footer {
+  font-size: smaller;
+  color: #00000088;
+  display: flex;
+  flex-flow: row wrap;
+  margin-top: auto;
+  padding: 74px 1em 1em 1em;
+  gap: 20px;
+
+  & > section {
+    flex: 0;
+    min-width: 130px;
+    row-gap: 4px;
+    flex: 0;
+    display: flex;
+    flex-flow: column;
+  }
+
+  .wide {
+    flex: 1;
+    min-width: 320px;
+  }
+
+  .link {
+    color: #00000088;
+  }
+
+  .donate {
+    font-size: 24px;
+    color: #00000011;
+    white-space: nowrap;
+  }
+
+}
+
