@@ -121,5 +121,21 @@ export default [
     },
     level: -1,
     dateUpdated: 1701019163091
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 31,
+    offer: {
+      type: 'rent',
+      price: 5000
+    },
+    contact: {
+      hasTelegram: true,
+      phone: '+7 (989) 502-60-97'
+    },
+    dateUpdated: 1701175341351
   }
+
 ] as ParkingOfferInfo[];
