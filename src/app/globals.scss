@@ -4,6 +4,8 @@ html, body {
 
 body {
   min-width: 320px;
+  display: flex;
+  flex-flow: column;
 }
 
 .commaList:not(:first-child) {
