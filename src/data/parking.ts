@@ -153,6 +153,22 @@ export default [
       hasWhatsApp: true
     },
     dateUpdated: 1701201784319
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 42,
+    offer: {
+      type: 'rent',
+      price: 6000,
+      description: 'Удобное место рядом с лифтом'
+    },
+    contact: {
+      phone: '+7 (989) 637-97-19',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1701252401509
   }
-
 ] as ParkingOfferInfo[];
