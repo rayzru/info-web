@@ -170,5 +170,22 @@ export default [
       hasWhatsApp: true
     },
     dateUpdated: 1701252401509
-  }
+  },
+  // {
+  //   variant: 'standard',
+  //   level: -1,
+  //   building: 6,
+  //   parkingNumber: 67,
+  //   offer: {
+  //     type: 'sell',
+  //     price: 1000000
+  //   },
+  //   contact: {
+  //     phone: '+7 (891) 851-38-41',
+  //     hasWhatsApp: true,
+  //     hasTelegram: true
+  //   },
+  //   dateUpdated: 1701257390227
+  // }
+
 ] as ParkingOfferInfo[];
