@@ -238,7 +238,6 @@ export default function Parking() {
               <InputLabel htmlFor="contact-phone">Контактный телефон</InputLabel>
               <Input
                 onChange={ handlePhoneChange }
-                id="contact-phone"
                 inputComponent={ PhoneInput as any }
               />
             </FormControl>
