@@ -287,7 +287,7 @@ export default [
   },
   {
     id: 'uk',
-    rows: 9,
+    rows: 11,
     title: 'Управляющая компания',
     subtitle: 'Сердце Ростова',
     logo: 'sr2',
