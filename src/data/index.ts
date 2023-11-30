@@ -348,17 +348,17 @@ export default [
       },
       {
         title: 'Квартплата.Онлайн',
-        title: 'Приложение для регистрации показаний счетчиков и оплаты',
+        subtitle: 'Регистрации показаний и оплата',
         url: 'https://xn--80aaaf3bi1ahsd.xn--80asehdb/'
       },
       {
         title: 'Госуслуги.Дом - Android',
-        title: 'Решение всех вопросов ЖКХ в одном приложении',
+        subtitle: 'Решение всех вопросов ЖКХ в одном приложении',
         url: 'https://play.google.com/store/apps/details?id=ru.sigma.gisgkh'
       },
       {
         title: 'Госуслуги.Дом - iOS',
-        title: 'Решение всех вопросов ЖКХ в одном приложении',
+        subtitle: 'Решение всех вопросов ЖКХ в одном приложении',
         url: 'https://apps.apple.com/ru/app/%D0%B3%D0%BE%D1%81%D1%83%D1%81%D0%BB%D1%83%D0%B3%D0%B8-%D0%B4%D0%BE%D0%BC/id1616550510'
       },
 
