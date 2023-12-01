@@ -561,14 +561,14 @@ export default [
     ],
     urls: [
       {
-        url: 'https://forms.gle/FHVGqTtvkTWVWNfJ6',
-        title: 'Предварительная заявка (строения 3-9)',
-        subtitle: 'Дома планируется подключить'
-      },
-      {
         url: 'https://dealers.dom.ru/request/widget?domain=rostov&referral_id=1000181217',
         title: 'Подключение (строения 1, 2)',
         subtitle: 'В домах введено оборудование'
+      },
+      {
+        url: 'https://forms.gle/FHVGqTtvkTWVWNfJ6',
+        title: 'Предварительная заявка (строения 3-9)',
+        subtitle: 'Дома планируется подключить'
       },
       {
         url: 'https://rostov.dom.ru/',
