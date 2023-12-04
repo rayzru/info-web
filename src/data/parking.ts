@@ -13,7 +13,7 @@ export default [
     },
     offer: {
       type: 'sell',
-      price: 1100000
+      price: 950000
     }
   },
   {
