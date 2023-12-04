@@ -17,7 +17,7 @@ export const SR2Map = ({ className }: Props) => {
   const zoomRef = useRef<SVGGElement>(null);
   const [zoom] = useState(1);
   const [viewBox] = useState(defaultViewBox);
-  const [mode, setMode] = useState<ModeType>('ground');
+  const [mode] = useState<ModeType>('ground');
 
   return (
     <div className={ clsx(styles.mapWrapper, className) }>
