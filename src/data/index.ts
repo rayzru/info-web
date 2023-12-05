@@ -622,7 +622,39 @@ export default [
       }
     ]
   },
-
+  {
+    id: 'medical',
+    rows: 5,
+    title: 'Поликлиника № 5',
+    subtitle: '',
+    addresses: [
+      {
+        address: 'Оренбургский переулок, 22/1'
+      }
+    ],
+    phones: [
+      {
+        title: 'Неотложная помощь',
+        phone: '+7 (961) 277‒66‒07'
+      },
+      {
+        title: 'Регистратура',
+        subtitle: 'Взрослая поликлиника',
+        phone: '+7 (863) 243‒64‒11'
+      },
+      {
+        title: 'Регистратура',
+        subtitle: 'Детская поликлиника',
+        phone: '+7 (863) 243‒68‒66'
+      },
+    ],
+    urls: [
+      {
+        url: 'https://www.policlinic5.ru',
+        title: 'Официальный сайт'
+      }
+    ]
+  },
   {
     id: 'rnd',
     rows: 3,
@@ -643,3 +675,13 @@ export default [
     ],
   }
 ] as GroupInfo[];
+
+
+
+
+
+
+
+
+
+
