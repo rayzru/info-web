@@ -629,7 +629,8 @@ export default [
     subtitle: '',
     addresses: [
       {
-        address: 'Оренбургский переулок, 22/1'
+        address: 'Оренбургский переулок, 22/1',
+        maps: ['https://yandex.ru/maps/-/CDq4YBzO']
       }
     ],
     phones: [
