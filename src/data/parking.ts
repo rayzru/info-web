@@ -171,6 +171,21 @@ export default [
     },
     dateUpdated: 1701252401509
   },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 61,
+    offer: {
+      type: 'rent',
+      price: 4000
+    },
+    contact: {
+      phone: '+8 (900) 136-21-11'
+    },
+    dateUpdated: 1701879650097
+  }
+
   // {
   //   variant: 'standard',
   //   level: -1,
