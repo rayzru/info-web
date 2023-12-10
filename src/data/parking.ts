@@ -184,7 +184,25 @@ export default [
       phone: '+8 (900) 136-21-11'
     },
     dateUpdated: 1701879650097
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 43,
+    contact: {
+      hasTelegram: true,
+      hasWhatsApp: true,
+      phone: '+7 (928) 296-85-04'
+    },
+    offer: {
+      description: 'Размер 15 м',
+      type: 'rent',
+      price: 4300
+    },
+    dateUpdated: 1702101861957
   }
+
 
   // {
   //   variant: 'standard',
