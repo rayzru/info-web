@@ -201,7 +201,25 @@ export default [
       price: 4300
     },
     dateUpdated: 1702101861957
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    offer: {
+      type: 'rent',
+      price: 4000,
+      description: 'Рядом с лифтом'
+    },
+    contact: {
+      phone: '+7 (926) 611-42-28',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    building: 6,
+    parkingNumber: 168,
+    dateUpdated: 1702397342913
   }
+
 
 
   // {
