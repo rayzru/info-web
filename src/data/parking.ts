@@ -201,7 +201,24 @@ export default [
     building: 6,
     parkingNumber: 168,
     dateUpdated: 1702397342913
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 42,
+    offer: {
+      type: 'sell',
+      price: 1050000,
+    },
+    contact: {
+      phone: '+7(989)6379719',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1703152689149
   }
+
 
 
 
