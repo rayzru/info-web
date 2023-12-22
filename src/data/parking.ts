@@ -217,8 +217,21 @@ export default [
       hasWhatsApp: true
     },
     dateUpdated: 1703152689149
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 43,
+    offer: {
+      type: 'rent',
+      price: 4000
+    },
+    contact: {
+      phone: '+7 (928) 296-85-04'
+    },
+    dateUpdated: 1703241327334
   }
-
 
 
 
