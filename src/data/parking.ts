@@ -206,7 +206,7 @@ export default [
   {
     variant: 'standard',
     level: -1,
-    building: 7,
+    building: 6,
     parkingNumber: 43,
     offer: {
       type: 'rent',
