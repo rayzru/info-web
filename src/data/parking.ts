@@ -232,7 +232,25 @@ export default [
       hasWhatsApp: true
     },
     dateUpdated: 1703509169012
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 1,
+    offer: {
+      type: 'rent',
+      price: 5500,
+      description: 'Место под 5 литером. Легко заехать/выехать. Лифт близко. Сдается на длительный период.'
+    },
+    contact: {
+      hasTelegram: true,
+      hasWhatsApp: true,
+      phone: '+7 (903) 486-20-40'
+    },
+    parkingNumber: 73,
+    dateUpdated: 1704576127571
   }
+
 
 
 
