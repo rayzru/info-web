@@ -124,23 +124,6 @@ export default [
   },
   {
     variant: 'standard',
-    level: -2,
-    building: 1,
-    parkingNumber: 45,
-    offer: {
-      type: 'rent',
-      price: 5000,
-      description: 'Место широкое, под 5 литером на длительный период'
-    },
-    contact: {
-      phone: '+7 (928) 226-55-56',
-      hasTelegram: true,
-      hasWhatsApp: true
-    },
-    dateUpdated: 1701201784319
-  },
-  {
-    variant: 'standard',
     level: -1,
     building: 7,
     parkingNumber: 42,
