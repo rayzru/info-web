@@ -232,27 +232,20 @@ export default [
     },
     parkingNumber: 73,
     dateUpdated: 1704576127571
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    offer: {
+      type: 'rent',
+      price: 6000
+    },
+    contact: {
+      hasTelegram: true,
+      phone: '+7 (918) 585-89-61'
+    },
+    dateUpdated: 1704735827592
   }
-
-
-
-
-
-  // {
-  //   variant: 'standard',
-  //   level: -1,
-  //   building: 6,
-  //   parkingNumber: 67,
-  //   offer: {
-  //     type: 'sell',
-  //     price: 1000000
-  //   },
-  //   contact: {
-  //     phone: '+7 (891) 851-38-41',
-  //     hasWhatsApp: true,
-  //     hasTelegram: true
-  //   },
-  //   dateUpdated: 1701257390227
-  // }
 
 ] as ParkingOfferInfo[];
