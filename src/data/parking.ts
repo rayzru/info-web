@@ -203,22 +203,6 @@ export default [
   {
     variant: 'standard',
     level: -1,
-    building: 2,
-    parkingNumber: 73,
-    offer: {
-      type: 'rent',
-      price: 6000,
-      description: 'Рядом с лифтом. Сдается на пол года. (12 этажный дом)'
-    },
-    contact: {
-      phone: '+7 (928) 602-79-31',
-      hasWhatsApp: true
-    },
-    dateUpdated: 1703509169012
-  },
-  {
-    variant: 'standard',
-    level: -1,
     building: 1,
     offer: {
       type: 'rent',
