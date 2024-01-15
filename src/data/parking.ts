@@ -230,6 +230,37 @@ export default [
       phone: '+7 (918) 585-89-61'
     },
     dateUpdated: 1704735827592
+  }, {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 44,
+    offer: {
+      type: 'sell',
+      price: 1250000,
+      description: 'Продажа только вместе с 45 местом (за два места 2.500.000₽)'
+    },
+    contact: {
+      phone: '+7 (903) 405-29-95'
+    },
+    dateUpdated: 1705330814473
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 45,
+    offer: {
+      type: 'sell',
+      price: 1250000,
+      description: 'Продажа только вместе с 44 местом (за два места 2.500.000₽)'
+    },
+    contact: {
+      phone: '+7 (903) 405-29-95'
+    },
+    dateUpdated: 1705330861122
   }
+
+
 
 ] as ParkingOfferInfo[];
