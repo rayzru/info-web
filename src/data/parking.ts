@@ -259,8 +259,22 @@ export default [
       phone: '+7 (903) 405-29-95'
     },
     dateUpdated: 1705330861122
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 53,
+    offer: {
+      type: 'rent',
+      price: 5000,
+      description: 'Удобный заезд'
+    },
+    contact: {
+      phone: '+8 (928) 751-77-14',
+      hasWhatsApp: true,
+      hasTelegram: true
+    },
+    dateUpdated: 1705578096351
   }
-
-
-
 ] as ParkingOfferInfo[];

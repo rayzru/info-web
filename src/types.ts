@@ -91,7 +91,7 @@ export type IconType =
 
 export interface ParkingOfferInfo extends BaseInfo {
   building: Building;
-  level?: ParkingLevel;
+  level: ParkingLevel;
   variant: ParkingVariant;
   offer: Offer;
   contact: PhoneInfo;
