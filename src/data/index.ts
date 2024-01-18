@@ -624,7 +624,7 @@ export default [
   },
   {
     id: 'medical',
-    rows: 5,
+    rows: 9,
     title: 'Поликлиника № 5',
     subtitle: '',
     addresses: [
