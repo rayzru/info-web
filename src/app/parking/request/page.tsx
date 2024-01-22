@@ -11,6 +11,7 @@ import {
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import PhoneInput from '@/components/PhoneInput';
+import { cleanupPhone } from '@/helpers';
 import { Building, Offer, ParkingLevel, ParkingOfferInfo, PhoneInfo } from '@/types';
 
 import styles from './page.module.scss';
@@ -37,8 +38,15 @@ export default function Parking() {
     const state = Boolean(
       data.building
       && data.level
+      && data.parkingNumber
+      && data.parkingNumber > 0
       && data.contact
-      && data.offer,
+      && data.contact.phone
+      && cleanupPhone(data.contact.phone).length === 12
+      && data.offer
+      && data.offer.type
+      && data.offer.price
+      && data.offer.price > 0
     );
     setSendEnabled(state);
   }, [data]);
@@ -148,10 +156,14 @@ export default function Parking() {
         >
           <Box sx={ style }>
             <Typography variant="h6" component="h2">
-            Ваша заявка оформлена и отправлена администратору на рассмотрение
+              Ваша заявка оформлена и отправлена администратору на рассмотрение
             </Typography>
             <Typography sx={ { mt: 2 } }>
-            Рассмотрение заявки может занять какое-то время. Как правило это не более 1 суток.
+              Рассмотрение заявки может занять какое-то время. Как правило это не более 1 суток.
+            </Typography>
+            <Typography sx={ { mt: 2 } }>
+              Далнейшие изменения или удаления вашей заявки выполняются на данный момент администратором.
+              Пишите в <a href='https://t.me/rayzru'>Telegram</a>
             </Typography>
             <div>
               <Button variant='outlined' href='/parking'>Закрыть</Button>
@@ -246,8 +258,8 @@ export default function Parking() {
               <FormControlLabel control={ <Switch onChange={ handleHasWhatsApp } /> } label="WhatsApp" name='hasWhatsApp' />
             </FormGroup>
             <Typography variant='body2'>
-            Если к вашему контактному телефону привязаны аккаунты месседжеров,
-            их так же можно указать в качестве альтернативных способов связи
+              Если к вашему контактному телефону привязаны аккаунты месседжеров,
+              их так же можно указать в качестве альтернативных способов связи
             </Typography>
           </div>
         </form>
