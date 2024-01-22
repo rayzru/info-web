@@ -1,0 +1,27 @@
+.main {
+  .header {
+
+  }
+
+  .pageLayout {
+    padding: 24px;
+    display: flex;
+    gap: 24px;
+    flex-direction: row;
+  }
+
+  .chatsSection {
+    flex: 1;
+  }
+
+  .chats {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .infoSection {
+    flex: 1;
+  }
+}
