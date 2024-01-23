@@ -42,6 +42,10 @@ export const Header = ({
       title: 'Парковки',
       href: '/parking'
     },
+    {
+      title: 'Чаты',
+      href: '/chats'
+    },
   ]
 
   return (
