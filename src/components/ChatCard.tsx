@@ -3,7 +3,6 @@
 import { Telegram, WhatsApp } from '@mui/icons-material';
 import { Avatar, Card, CardHeader } from '@mui/material';
 import { blue, green } from '@mui/material/colors';
-import Link from 'next/link';
 
 
 interface Props {
