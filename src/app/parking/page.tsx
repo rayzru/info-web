@@ -1,8 +1,9 @@
 'use client';
 
 import { MouseEvent, useEffect, useState } from 'react';
-import { ApartmentOutlined } from '@mui/icons-material';
-import { Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { ApartmentOutlined, Cancel, CancelOutlined } from '@mui/icons-material';
+import { Button, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { parseAsArrayOf, parseAsInteger, parseAsNumberLiteral, parseAsString, useQueryState } from 'next-usequerystate';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -14,9 +15,10 @@ import { ParkingOfferInfo } from '@/types';
 
 import styles from './page.module.scss';
 
+
 export default function Parking() {
-  const [buildingsFilter, setBuildingsFilter] = useState<string[]>([]);
-  const [typeFilter, setTypeFilter] = useState<string[]>([]);
+  const [typeFilter, setTypeFilter] = useQueryState<string[]>('type', parseAsArrayOf(parseAsString).withDefault([]));
+  const [buildingsFilter, setBuildingsFilter] = useQueryState<string[]>('buildings', parseAsArrayOf(parseAsString).withDefault([]));
 
   const sorted = parking
     .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.parkingNumber - b.parkingNumber)
@@ -25,13 +27,19 @@ export default function Parking() {
 
   const [data, setData] = useState<ParkingOfferInfo[]>(sorted);
 
-  const handleBuildings = (e: MouseEvent<HTMLElement>, newValue: string[]) => setBuildingsFilter(() => newValue || []);
-  const handleTypes = (e: MouseEvent<HTMLElement>, newValue: string[]) => setTypeFilter(() => newValue || []);
+  const handleBuildings = (e: MouseEvent<HTMLElement>, newValue: string[]) => setBuildingsFilter(newValue);
+  const handleTypes = (e: MouseEvent<HTMLElement>, newValue: string[]) => setTypeFilter(newValue);
+
+  const resetFilters = (e: MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    setBuildingsFilter([]);
+    setTypeFilter([]);
+  }
 
   const filterFn = (el: ParkingOfferInfo) => {
     return true
-      && ([0, 2].includes(typeFilter.length) || typeFilter.includes(el.offer.type))
-      && ([0, 4].includes(buildingsFilter.length) || buildingsFilter.includes(String(el.building)));
+      && typeFilter && ([0, 2].includes(typeFilter.length) || typeFilter.includes(el.offer.type))
+      && buildingsFilter && ([0, 4].includes(buildingsFilter.length) || buildingsFilter.includes(String(el.building)));
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -42,7 +50,7 @@ export default function Parking() {
       <main className={ styles.main }>
         <Header className={ styles.header } showSearch={ false } showSettingsButton={ false } />
         <Stack direction="row" spacing={ 2 } className={ styles.filters }>
-          <Tooltip title="Фильтрация по типу объявления">
+          <Tooltip title="Фильтрация по типу">
             <ToggleButtonGroup
               size='small'
               value={ typeFilter }
@@ -66,15 +74,25 @@ export default function Parking() {
               onChange={ handleBuildings }
             >
               <ToggleButton value={ '-' } disabled key={ 'i' }>
-                <ApartmentOutlined fontSize='inherit' />
+                <ApartmentOutlined sx={ { fontSize: 20, opacity: .5 } } />
               </ToggleButton>
               { [1, 2, 6, 7].map((building: number) => (
-                <ToggleButton key={ String(building) } value={ String(building) }>
-                  <Typography fontSize={ 13 } fontWeight={ 600 }>{ building }</Typography>
+                <ToggleButton key={ String(building) } value={ String(building) } >
+                  <Typography fontSize={ 16 } fontWeight={ 600 }>{ building }</Typography>
                 </ToggleButton>
               )) }
             </ToggleButtonGroup>
           </Tooltip>
+          { (typeFilter.length > 0 || buildingsFilter.length > 0) && (<IconButton size='small' onClick={ resetFilters }   >
+            <CancelOutlined />
+          </IconButton>) }
+
+          <Button
+            href='/parking/request' color='primary' variant='outlined'
+            className={ styles.requestButton }
+          >
+            Добавить свое объявление
+          </Button>
         </Stack>
         <ParkingGrid className={ styles.cards }>
           { data.map((el: ParkingOfferInfo, index: number) => <ParkingCard key={ index } info={ el } />) }
