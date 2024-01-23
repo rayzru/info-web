@@ -1,3 +1,5 @@
+@import '../../utility';
+
 .main {
   .header {
 
@@ -7,7 +9,11 @@
     padding: 24px;
     display: flex;
     gap: 24px;
-    flex-direction: row;
+    flex-direction: column;
+
+    @include mq(desktop) {
+      flex-direction: row;
+    }
   }
 
   .chatsSection {
