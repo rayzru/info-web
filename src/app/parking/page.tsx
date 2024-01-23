@@ -83,9 +83,13 @@ export default function Parking() {
               )) }
             </ToggleButtonGroup>
           </Tooltip>
-          { (typeFilter.length > 0 || buildingsFilter.length > 0) && (<IconButton size='small' onClick={ resetFilters }   >
-            <CancelOutlined />
-          </IconButton>) }
+          { (typeFilter.length > 0 || buildingsFilter.length > 0) && (
+            <Tooltip title="Сбросить фильтры">
+              <IconButton size='small' onClick={ resetFilters }   >
+                <CancelOutlined />
+              </IconButton>
+            </Tooltip>
+          ) }
 
           <Button
             href='/parking/request' color='primary' variant='outlined'
