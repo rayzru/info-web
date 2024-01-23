@@ -276,5 +276,37 @@ export default [
       hasTelegram: true
     },
     dateUpdated: 1705578096351
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 1,
+    parkingNumber: 70,
+    offer: {
+      type: 'sell',
+      price: 900000
+    },
+    contact: {
+      phone: '+7 (988) 563-46-82',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1705993357955
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 1,
+    parkingNumber: 71,
+    offer: {
+      type: 'rent',
+      price: 3000,
+    },
+    contact: {
+      phone: '+7 (988) 563-46-82',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1705993443049
   }
 ] as ParkingOfferInfo[];
