@@ -276,5 +276,23 @@ export default [
       hasTelegram: true
     },
     dateUpdated: 1705578096351
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 22,
+    offer: {
+      type: 'rent',
+      price: 3500,
+      description: 'Стандартное место под первым подъездом напротив лифта.'
+    },
+    contact: {
+      phone: '+7 (909) 417-38-69',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1706898169643
   }
+
 ] as ParkingOfferInfo[];
