@@ -3,7 +3,7 @@
 import { CloseRounded, FilterList } from '@mui/icons-material';
 import { AppBar, Box, IconButton, Toolbar } from '@mui/material';
 import { clsx } from 'clsx';
-import Link from 'next/link'
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { PropsWithStyles } from '@/types';
@@ -28,7 +28,7 @@ export const Header = ({
   showSearch = false,
   showSettingsButton = true,
   showBack = false,
-  onSettings
+  onSettings,
 }: Props) => {
 
   const pathname = usePathname();
@@ -36,31 +36,33 @@ export const Header = ({
   const navigation: NavInterface[] = [
     {
       title: 'Справочник',
-      href: '/'
+      href: '/',
     },
     {
       title: 'Парковки',
-      href: '/parking'
+      href: '/parking',
     },
     {
-      title: 'Чаты',
-      href: '/chats'
+      title: 'Сообщество',
+      href: '/about',
     },
-  ]
+  ];
 
   return (
     <Box sx={ { flexGrow: 1 } }>
       <AppBar component="nav" color='transparent' elevation={ 0 } position='relative'>
-        <Toolbar>
+        <Toolbar variant="dense">
           <div className={ styles.navWrapper }>
-            { navigation.map(({ title, href }: NavInterface, i: number) => (
-              <Link
-                href={ href }
-                className={ clsx(styles.nav, pathname === href && styles.active) }
-                key={ `nav-${i}` }
-              >
-                { title }
-              </Link>)
+            { navigation.map(({ title, href }: NavInterface, i: number) => (pathname === href)
+              ? (<span key={ title } className={ clsx(styles.nav, styles.active) }>{ title }</span>)
+              : (
+                <Link
+                  href={ href }
+                  className={ styles.nav }
+                  key={ title }
+                >
+                  { title }
+                </Link>),
             ) }
           </div>
           { showSearch && <Search /> }

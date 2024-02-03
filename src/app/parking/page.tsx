@@ -3,7 +3,7 @@
 import { MouseEvent, useEffect, useState } from 'react';
 import { ApartmentOutlined, CancelOutlined } from '@mui/icons-material';
 import { Button, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
-import { parseAsArrayOf, parseAsString, useQueryState } from 'next-usequerystate';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -15,94 +15,128 @@ import { ParkingOfferInfo } from '@/types';
 
 import styles from './page.module.scss';
 
+interface ParkingFilters {
+  type: string[];
+  buildings: string[];
+}
 
 export default function Parking() {
-  const [typeFilter, setTypeFilter] = useQueryState<string[]>('type', parseAsArrayOf(parseAsString).withDefault([]));
-  const [buildingsFilter, setBuildingsFilter] = useQueryState<string[]>('buildings', parseAsArrayOf(parseAsString).withDefault([]));
+  const initFilterState: ParkingFilters = { type: [], buildings: [] };
+  const [filter, setFilter] = useState<ParkingFilters>(initFilterState);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathName = usePathname() || '/'
+
 
   const sorted = parking
     .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.parkingNumber - b.parkingNumber)
-    .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.building - b.building)
-    ;
-
+    .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.building - b.building);
   const [data, setData] = useState<ParkingOfferInfo[]>(sorted);
 
-  const handleBuildings = (e: MouseEvent<HTMLElement>, newValue: string[]) => setBuildingsFilter(newValue);
-  const handleTypes = (e: MouseEvent<HTMLElement>, newValue: string[]) => setTypeFilter(newValue);
+  const handleBuildings = (_e: MouseEvent<HTMLElement>, newValue: string[]) => setFilter({ ...filter, buildings: newValue });
+  const handleTypes = (_e: MouseEvent<HTMLElement>, newValue: string[]) => setFilter({ ...filter, type: newValue });
 
-  const resetFilters = (e: MouseEvent<HTMLElement>) => {
+  async function resetFilters(e: MouseEvent<HTMLElement>) {
     e.preventDefault();
-    setBuildingsFilter([]);
-    setTypeFilter([]);
+    setFilter(initFilterState);
   }
 
   const filterFn = (el: ParkingOfferInfo) => {
-    return true
-      && typeFilter && ([0, 2].includes(typeFilter.length) || typeFilter.includes(el.offer.type))
-      && buildingsFilter && ([0, 4].includes(buildingsFilter.length) || buildingsFilter.includes(String(el.building)));
+    return (
+      filter.type && ([0, 2].includes(filter.type.length) || filter.type.includes(el.offer.type)) &&
+      filter.buildings && ([0, 4].includes(filter.buildings.length) || filter.buildings.includes(String(el.building)))
+    );
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setData(parking.filter(filterFn)), [buildingsFilter, typeFilter])
+  useEffect(
+    () => {
+      setData(parking.filter(filterFn));
+      if (filter.type.length === 0 && filter.buildings.length === 0) {
+        router.push(pathName, { scroll: false });
+      } else {
+        const serializedFilter = Object.entries(filter)
+          .map(([key, val]) => val.length !== 0 ? `${key}=${val}` : undefined)
+          .filter(Boolean).join('&');
+        router.push(`${pathName}?${serializedFilter}`, { scroll: false });
+      }
+    }, // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filter],
+  );
 
   return (
     <>
       <main className={ styles.main }>
-        <Header className={ styles.header } showSearch={ false } showSettingsButton={ false } />
+        <Header
+          className={ styles.header }
+          showSearch={ false }
+          showSettingsButton={ false }
+        />
         <Stack direction="row" spacing={ 2 } className={ styles.filters }>
           <Tooltip title="Фильтрация по типу">
             <ToggleButtonGroup
-              size='small'
-              value={ typeFilter }
+              size="small"
+              value={ filter.type }
               onChange={ handleTypes }
             >
-              { ['rent', 'sell'].map(
-                (t: string) => (
-                  <ToggleButton key={ t } value={ t }>
-                    <Typography fontSize={ 13 } >
-                      { t === 'rent' && 'Аренда' }
-                      { t === 'sell' && 'Продажа' }
-                    </Typography>
-                  </ToggleButton>
-                )) }
-            </ToggleButtonGroup>
-          </Tooltip>
-          <Tooltip title="Фильтрация по номеру строения">
-            <ToggleButtonGroup
-              size='small'
-              value={ buildingsFilter }
-              onChange={ handleBuildings }
-            >
-              <ToggleButton value={ '-' } disabled key={ 'i' }>
-                <ApartmentOutlined sx={ { fontSize: 20, opacity: .5 } } />
-              </ToggleButton>
-              { [1, 2, 6, 7].map((building: number) => (
-                <ToggleButton key={ String(building) } value={ String(building) } >
-                  <Typography fontSize={ 16 } fontWeight={ 600 }>{ building }</Typography>
+              { ['rent', 'sell'].map((t: string) => (
+                <ToggleButton key={ t } value={ t }>
+                  <Typography fontSize={ 13 }>
+                    { t === 'rent' && 'Аренда' }
+                    { t === 'sell' && 'Продажа' }
+                  </Typography>
                 </ToggleButton>
               )) }
             </ToggleButtonGroup>
           </Tooltip>
-          { (typeFilter.length > 0 || buildingsFilter.length > 0) && (
-            <Tooltip title="Сбросить фильтры">
-              <IconButton size='small' onClick={ resetFilters }   >
-                <CancelOutlined />
-              </IconButton>
-            </Tooltip>
-          ) }
+          <Tooltip title="Фильтрация по номеру строения">
+            <ToggleButtonGroup
+              size="small"
+              value={ filter.buildings }
+              onChange={ handleBuildings }
+            >
+              <ToggleButton value={ '-' } disabled key={ 'i' }>
+                <ApartmentOutlined sx={ { fontSize: 20, opacity: 0.5 } } />
+              </ToggleButton>
+              { [1, 2, 6, 7].map((building: number) => (
+                <ToggleButton key={ String(building) } value={ String(building) }>
+                  <Typography fontSize={ 16 } fontWeight={ 600 }>
+                    { building }
+                  </Typography>
+                </ToggleButton>
+              )) }
+            </ToggleButtonGroup>
+          </Tooltip>
+          <Tooltip title="Сбросить фильтры">
+            <IconButton
+              color="error"
+              size="small"
+              disabled={ filter.type.length === 0 && filter.buildings.length === 0 }
+              onClick={ resetFilters }
+              sx={ { width: 32, height: 32 } }
+            >
+              <CancelOutlined fontSize='small' />
+            </IconButton>
+          </Tooltip>
 
           <Button
-            href='/parking/request' color='primary' variant='outlined'
+            href="/parking/request"
+            color="primary"
+            variant="outlined"
             className={ styles.requestButton }
           >
-            Добавить свое объявление
+            Добавить
           </Button>
         </Stack>
         <ParkingGrid className={ styles.cards }>
-          { data.map((el: ParkingOfferInfo, index: number) => <ParkingCard key={ index } info={ el } />) }
-          <ParkingCardNew />
+          { data.map((el: ParkingOfferInfo) => (
+            <ParkingCard
+              key={ el.offer.type + el.building.toString() + el.parkingNumber.toString() + el.level.toString() }
+              info={ el }
+            />
+          )) }
+          <ParkingCardNew key={ 'newCard' } />
         </ParkingGrid>
-      </main >
+      </main>
       <Footer />
     </>
   );

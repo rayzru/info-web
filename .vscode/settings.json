@@ -1,7 +1,18 @@
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   "editor.tabSize": 2,
+  "typescript.tsdk": "./node_modules/typescript/lib",
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "always"
+  },
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.validate": [
+    "typescript",
+    "javascript"
+  ],
+  "editor.fontVariations": false,
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
   }
 }

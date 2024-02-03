@@ -2,14 +2,27 @@
   font-size: 20px;
   line-height: 1.4em;
   color: red;
+  padding: 10px 20px;
+  border-radius: 0 0 20px 20px;
+
+  transition: all 0.3s;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
 
   &.active {
+    background-color: #fff;
     text-decoration: none;
     color: #000;
+  }
+
+  &:not(.active):hover {
+    background-color: #fff;
+    box-shadow: 0 0 4px rgba(0,12,88,0.2);
   }
 }
 
 .navWrapper {
   display: flex;
-  column-gap: 12px;
+  column-gap: 4px;
 }

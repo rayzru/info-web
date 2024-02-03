@@ -1,14 +1,16 @@
 'use client';
 
-import { PropsWithChildren, } from 'react';
+import { PropsWithChildren } from 'react';
 import { CurrencyRubleOutlined, InfoOutlined, Telegram, WhatsApp } from '@mui/icons-material';
 import {
   Box, Button, Card, CardActions, CardContent,
-  CardHeader, Chip, IconButton, Tooltip, Typography
+  CardHeader, Chip, IconButton, Tooltip, Typography,
 } from '@mui/material';
 
 import { cleanupPhone, formatPhone } from '@/helpers';
-import { ParkingOfferInfo, } from '@/types';
+import { ParkingOfferInfo } from '@/types';
+
+import s from './ParkingCard.module.scss';
 
 interface Props extends PropsWithChildren {
   info: ParkingOfferInfo;
@@ -17,29 +19,21 @@ interface Props extends PropsWithChildren {
 export const ParkingCard = ({ info }: Props) => {
   const { building, level = -1, offer, parkingNumber, contact } = info;
 
-  const subtitle = `Cтр. ${building}, этаж ${level}, место ${parkingNumber}`;
-
+  const subtitle = `Cтроение ${building}, ${level} этаж, №${parkingNumber}`;
+  const label = `${building}${level.toString().slice(1, 2)}${String(parkingNumber).padStart(3, '0')}`;
   return (
-    <Card sx={ {
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-    } }>
+    <Card className={ s.card }>
       <Chip
         size='small'
         variant='outlined'
         color='default'
-        label={ `${building}${level.toString().slice(1, 2)}${String(parkingNumber).padStart(3, '0')}` }
+        label={ label }
         sx={ { position: 'absolute', right: '8px', top: '8px', opacity: .3 } }
       />
       <CardHeader
         title={
           <div>
-              P{ building }
-            <span style={ { opacity: .3, fontWeight: 100 } }> / </span>
-            { level }
-            <span style={ { opacity: .3, fontWeight: 100 } }> / </span>
-            { String(parkingNumber).padStart(3, '0') }
+            P{ building }
           </div>
         }
         titleTypographyProps={ {
