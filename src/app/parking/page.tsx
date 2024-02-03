@@ -1,9 +1,9 @@
 'use client';
 
 import { MouseEvent, useEffect, useState } from 'react';
-import { ApartmentOutlined, Cancel, CancelOutlined } from '@mui/icons-material';
+import { ApartmentOutlined, CancelOutlined } from '@mui/icons-material';
 import { Button, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
-import { parseAsArrayOf, parseAsInteger, parseAsNumberLiteral, parseAsString, useQueryState } from 'next-usequerystate';
+import { parseAsArrayOf, parseAsString, useQueryState } from 'next-usequerystate';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';

@@ -12,8 +12,6 @@ import { ParkingOfferInfo, } from '@/types';
 
 interface Props extends PropsWithChildren {
   info: ParkingOfferInfo;
-  skipCopy?: boolean;
-  singleCard?: boolean;
 }
 
 export const ParkingCard = ({ info }: Props) => {

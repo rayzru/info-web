@@ -1,6 +1,6 @@
 import { ParkingOfferInfo } from '@/types';
 
-export default [
+const parkingData: ParkingOfferInfo[] = [
   {
     building: 1,
     level: -2,
@@ -221,19 +221,6 @@ export default [
     variant: 'standard',
     level: -1,
     building: 7,
-    offer: {
-      type: 'rent',
-      price: 6000
-    },
-    contact: {
-      hasTelegram: true,
-      phone: '+7 (918) 585-89-61'
-    },
-    dateUpdated: 1704735827592
-  }, {
-    variant: 'standard',
-    level: -1,
-    building: 7,
     parkingNumber: 44,
     offer: {
       type: 'sell',
@@ -308,5 +295,24 @@ export default [
       hasWhatsApp: true
     },
     dateUpdated: 1705993443049
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 22,
+    offer: {
+      type: 'rent',
+      price: 3500,
+      description: 'Cтандартное место под первым подъездом напротив лифта.'
+    },
+    contact: {
+      phone: '+7 (909) 417-38-69',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1706898169643
   }
-] as ParkingOfferInfo[];
+];
+
+export default parkingData;

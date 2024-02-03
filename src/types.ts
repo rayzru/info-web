@@ -106,7 +106,7 @@ export type Building = 1 | 2 | 6 | 7;
 
 export interface Offer {
   type: 'rent' | 'sell';
-  price?: number;
-  perTimeRange: 'year' | 'month' | 'week' | 'once';
-  description: string;
+  price: number;
+  perTimeRange?: 'year' | 'month' | 'week' | 'once';
+  description?: string;
 }
