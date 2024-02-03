@@ -3,7 +3,7 @@
 import { MouseEvent, useEffect, useState } from 'react';
 import { ApartmentOutlined, CancelOutlined } from '@mui/icons-material';
 import { Button, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -24,7 +24,6 @@ export default function Parking() {
   const initFilterState: ParkingFilters = { type: [], buildings: [] };
   const [filter, setFilter] = useState<ParkingFilters>(initFilterState);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const pathName = usePathname() || '/'
 
 

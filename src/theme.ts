@@ -51,13 +51,6 @@ const theme = createTheme({
         },
       }
     },
-    MuiTabPanel: {
-      styleOverrides: {
-        root: {
-          padding: 0
-        },
-      }
-    }
   }
 });
 

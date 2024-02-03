@@ -30,7 +30,7 @@ export default function About() {
               <Tab label="Наши чаты и ресурсы" value="chats" />
               <Tab label="Правила" value="rules" />
             </TabList>
-            <TabPanel value="project">
+            <TabPanel value="project" className={ styles.tabPanel }>
 
               <article className={ styles.article }>
                 <h2>Сообщество соседей ЖК Сердце Ростова 2</h2>
@@ -40,7 +40,7 @@ export default function About() {
 
                 <p>История сообщества началась в 2019 году с открытия <a href='https://go.sr2.today/telegram' target='_blank'>основного чата в Telegram</a>, открытый вскоре <a href='https://go.sr2.today/whatsapp' target='_blank'>после группы в WhatsApp</a>. В 2020 году были созданы отдельные чаты для обсуждения событий, происходящих в каждом из зданий нашего ЖК (литерные/строений). Примерно через год-полтора стало понятно, что информацию необходимо систематизировать, и был создан <a href='https://sr2.today' target='_blank'>сайт сообщества</a>. <a href='https://go.sr2.today/vk' target='_blank'>Группа ВК</a> не является популярной, однако с 2022 года там иногда публикуются объявления о происходящих событиях и происшествиях.</p>
 
-                <p>На данный момент самым популярным ресурсом, помимо чатов, является <a href='https://info.sr2.today' target='_blank'>Справочник</a>, собирающий самую востребованную и полезную информацию о жилом комплексе "Сердце Ростова 2".</p>
+                <p>На данный момент самым популярным ресурсом, помимо чатов, является <a href='https://info.sr2.today' target='_blank'>Справочник</a>, собирающий самую востребованную и полезную информацию о жилом комплексе &quot;Сердце Ростова 2&quot;.</p>
 
                 <p>Проект развивается абсолютно бесплатно, собственными силами. Любая помощь в модерировании, информационном сопровождении, и конструктивные предложения приветствуется.</p>
 
@@ -49,7 +49,7 @@ export default function About() {
                 <p>Направленные <a href='https://www.tinkoff.ru/rm/rumm.andrey1/iLjWk37710/'>материальные средства взаимопомощи</a> будут направляться на оплату хостинга, ботов, доменов и на дальнейшее развитие.</p>
               </article>
             </TabPanel>
-            <TabPanel value="chats" className={ styles.chatsTab }>
+            <TabPanel value="chats" className={ styles.tabPanel }>
               <section className={ styles.chatsSection }>
                 <h2>Главные общие чаты</h2>
                 <p>Общие чаты сообщества соседей</p>
@@ -127,7 +127,7 @@ export default function About() {
                 </div>
               </section>
             </TabPanel>
-            <TabPanel value="rules">
+            <TabPanel value="rules" className={ styles.tabPanel }>
               <h2>Правила</h2>
               <p>Основные правила едины в каждом чате.</p>
               <p>Чаты ведут активные жильцы — ваши соседи — на добровольных началах в интересах своих семей и соседей.</p>
