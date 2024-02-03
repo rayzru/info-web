@@ -1,11 +1,19 @@
 module.exports = {
+  root: true,
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: 'tsconfig.json',
+  },
+  plugins: ['react', 'react-hooks', 'simple-import-sort', 'import'],
   extends: [
     'next/core-web-vitals',
-    'prettier',
     'plugin:react-hooks/recommended',
     'eslint:recommended',
-    'plugin:@typescript-eslint/recommended-type-checked',
-    'plugin:@typescript-eslint/stylistic-type-checked',
+    // 'airbnb-typescript',
+    // 'plugin:@typescript-eslint/recommended-type-checked',
+    // 'plugin:@typescript-eslint/stylistic-type-checked',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
   ],
   rules: {
     indent: ['error', 2, { SwitchCase: 1 }],
@@ -32,8 +40,9 @@ module.exports = {
     'simple-import-sort/exports': 'error',
     'sort-imports': 'off',
     'import/order': 'off',
+    'import/first': 'error',
+    'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
     'no-duplicate-imports': 'error',
   },
-  plugins: ['import', 'simple-import-sort', 'react', 'react-hooks', 'sonarjs'],
 };
