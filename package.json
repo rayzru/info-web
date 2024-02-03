@@ -14,11 +14,11 @@
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@fontsource/roboto": "^5.0.8",
-    "@mui/icons-material": "^5.15.5",
-    "@mui/material": "^5.15.5",
-    "clsx": "^2.0.0",
+    "@mui/icons-material": "^5.15.7",
+    "@mui/material": "^5.15.7",
+    "clsx": "^2.1.0",
     "next": "^13",
-    "next-usequerystate": "^1.15.4",
+    "next-usequerystate": "^1.16.1",
     "react": "^18",
     "react-dom": "^18",
     "react-imask": "^7.3.0",
@@ -28,7 +28,9 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "eslint": "^8",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "eslint": "^8.56.0",
     "eslint-config-next": "^13",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
@@ -36,6 +38,6 @@
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "eslint-plugin-sonarjs": "^0.23.0",
     "prettier": "3.2.4",
-    "typescript": "^5"
+    "typescript": "^5.3.3"
   }
 }

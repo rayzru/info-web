@@ -4,6 +4,8 @@ module.exports = {
     'prettier',
     'plugin:react-hooks/recommended',
     'eslint:recommended',
+    'plugin:@typescript-eslint/recommended-type-checked',
+    'plugin:@typescript-eslint/stylistic-type-checked',
   ],
   rules: {
     indent: ['error', 2, { SwitchCase: 1 }],
