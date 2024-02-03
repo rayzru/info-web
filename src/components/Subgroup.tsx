@@ -6,6 +6,7 @@ import { PropsWithStyles } from '@/types';
 import { Icon, IconType } from './Icon';
 
 import styles from './Subgroup.module.scss';
+
 interface Props extends PropsWithChildren, PropsWithStyles {
   icon: IconType;
 }

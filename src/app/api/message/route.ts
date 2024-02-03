@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 const DEFAULT_TELEGRAM_API_URL = 'https://api.telegram.org/';
 
 export async function POST(request: NextRequest) {

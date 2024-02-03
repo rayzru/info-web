@@ -53,7 +53,7 @@ export const Header = ({
       <AppBar component="nav" color='transparent' elevation={ 0 } position='relative'>
         <Toolbar variant="dense">
           <div className={ styles.navWrapper }>
-            { navigation.map(({ title, href }: NavInterface, i: number) => (pathname === href)
+            { navigation.map(({ title, href }: NavInterface) => (pathname === href)
               ? (<span key={ title } className={ clsx(styles.nav, styles.active) }>{ title }</span>)
               : (
                 <Link

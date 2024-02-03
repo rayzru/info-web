@@ -1,7 +1,7 @@
 'use client';
 
 import { Telegram, WhatsApp } from '@mui/icons-material';
-import { Avatar, Card, CardHeader } from '@mui/material';
+import { Avatar, CardHeader } from '@mui/material';
 import { blue, green } from '@mui/material/colors';
 
 import styles from './ChatCard.module.scss';
