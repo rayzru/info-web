@@ -3,7 +3,7 @@
 import { MouseEvent, useEffect, useState } from 'react';
 import { AddOutlined, CancelOutlined, RestoreOutlined, Sell } from '@mui/icons-material';
 import { Box, Button, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -21,11 +21,20 @@ interface ParkingFilters {
 }
 
 export default function Parking() {
-  const initFilterState: ParkingFilters = { type: [], buildings: [] };
-  const [filter, setFilter] = useState<ParkingFilters>(initFilterState);
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const pathName = usePathname() || '/'
+  const router = useRouter();
 
+  const initialType: string[] = searchParams.get('type') !== null
+    ? searchParams.get('type')?.split(',') as string[]
+    : [];
+  const initialBuilding: string[] = searchParams.get('buildings') !== null
+    ? searchParams.get('buildings')?.split(',') as string[]
+    : [];
+
+  const initFilterState: ParkingFilters = { type: [], buildings: [] };
+  console.log(searchParams.get('type'), searchParams.get('buildings'));
+  const [filter, setFilter] = useState<ParkingFilters>({ type: initialType, buildings: initialBuilding });
 
   const sorted = parking
     .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.parkingNumber - b.parkingNumber)
