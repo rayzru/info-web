@@ -2,6 +2,7 @@
 
 import { MouseEvent, useEffect, useState } from 'react';
 import { AddOutlined, CancelOutlined, RestoreOutlined, Sell } from '@mui/icons-material';
+import { LoadingButton } from '@mui/lab';
 import { Box, Button, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
@@ -32,9 +33,12 @@ export default function Parking() {
     ? searchParams.get('buildings')?.split(',') as string[]
     : [];
 
+  const hasInitialFilters = initialType.length > 0 || initialBuilding.length > 0;
+
   const initFilterState: ParkingFilters = { type: [], buildings: [] };
   console.log(searchParams.get('type'), searchParams.get('buildings'));
   const [filter, setFilter] = useState<ParkingFilters>({ type: initialType, buildings: initialBuilding });
+  const [overlay, setOverlay] = useState<boolean>(hasInitialFilters);
 
   const sorted = parking
     .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.parkingNumber - b.parkingNumber)
@@ -67,6 +71,7 @@ export default function Parking() {
           .filter(Boolean).join('&');
         router.push(`${pathName}?${serializedFilter}`, { scroll: false });
       }
+      setOverlay(false);
     }, // eslint-disable-next-line react-hooks/exhaustive-deps
     [filter],
   );
@@ -79,6 +84,7 @@ export default function Parking() {
           showSearch={ false }
           showSettingsButton={ false }
         />
+
         <Stack direction="row" spacing={ 2 } className={ styles.filters }>
           <Tooltip title="Фильтрация по типу объявления">
             <ToggleButtonGroup
@@ -156,6 +162,11 @@ export default function Parking() {
 
         </Stack>
         <ParkingGrid className={ styles.cards }>
+          { overlay && (
+            <div className={ styles.overlay }>
+              <LoadingButton loading size='large' />
+            </div>
+          ) }
           { data.map((el: ParkingOfferInfo) => (
             <ParkingCard
               key={ el.offer.type + el.building.toString() + el.parkingNumber.toString() + el.level.toString() }

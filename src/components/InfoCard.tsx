@@ -4,7 +4,7 @@ import { PropsWithChildren, useEffect, useState } from 'react';
 import { Card, CardHeader, List } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-import useLocalStorage from '@/hooks/use-local-storage';
+// import useLocalStorage from '@/hooks/use-local-storage';
 import { AddressInfo, BaseInfo, GroupInfo, MessengerInfo, PhoneInfo, PropsWithStyles, TextInfo, WebsiteInfo } from '@/types';
 
 import { Address } from './list/Address';
@@ -30,8 +30,8 @@ const StyledCard = styled(Card)`
 `;
 
 export const InfoCard = ({ info, singleCard = false, style }: Props) => {
-  const { id, title, subtitle, logo, addresses, phones, messengers, urls, texts, rows = 1, } = info;
-  const [isOpenedInitially, updateSettings] = useLocalStorage<boolean>(`card_${id}`, false);
+  const { title, subtitle, logo, addresses, phones, messengers, urls, texts, rows = 1, } = info;
+  // const [isOpenedInitially, updateSettings] = useLocalStorage<boolean>(`card_${id}`, false);
   const [isOpened, setIsOpened] = useState(singleCard);
   const [copiedState, setCopiedState] = useState<boolean>(false);
 
@@ -43,7 +43,7 @@ export const InfoCard = ({ info, singleCard = false, style }: Props) => {
 
 
   useEffect(() => {
-    setIsOpened(singleCard || isOpenedInitially);
+    setIsOpened(singleCard);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -51,7 +51,7 @@ export const InfoCard = ({ info, singleCard = false, style }: Props) => {
     if (singleCard) {
       return;
     }
-    updateSettings(!isOpened);
+    // updateSettings(!isOpened);
     setIsOpened(prev => !prev);
   };
 
