@@ -38,7 +38,9 @@ export default function RootLayout({ children }: RootProps) {
           gtag('config', '${counterId}', { page_path: window.location.pathname });
         `}
         </Script>
-        <ThemeRegistry options={ { key: 'mui' } }>{ children }</ThemeRegistry>
+        <ThemeRegistry options={ { key: 'mui' } }>
+          { children }
+        </ThemeRegistry>
       </body>
     </html>
   );
