@@ -554,7 +554,7 @@ export default [
     logo: 'domru',
     phones: [
       {
-        title: 'Горячяя линия',
+        title: 'Техническая поддержка',
         phone: '+7 (863) 307-50-01',
         tags: 'phone'
       },
