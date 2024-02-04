@@ -1,9 +1,17 @@
+@import '../utility';
+
 .nav {
-  font-size: 20px;
   line-height: 1.4em;
-  color: red;
-  padding: 10px 20px;
-  border-radius: 0 0 20px 20px;
+  font-size: 16px;
+    padding: 3px 8px;
+  border-radius: 10px;
+  color: #00000088;
+
+  @include mq(tablet-landscape) {
+    font-size: 18px;
+    padding: 4px 10px;
+    border-radius: 16px;
+  }
 
   transition: all 0.3s;
   text-decoration: none;
@@ -18,11 +26,16 @@
 
   &:not(.active):hover {
     background-color: #fff;
-    box-shadow: 0 0 4px rgba(0,12,88,0.2);
+    box-shadow: 0 0 4px rgba(0, 12, 88, 0.2);
   }
 }
 
 .navWrapper {
   display: flex;
   column-gap: 4px;
+}
+
+.logo {
+  margin-right: 20px;
+  align-self: center;
 }

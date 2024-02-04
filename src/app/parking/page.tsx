@@ -1,8 +1,8 @@
 'use client';
 
 import { MouseEvent, useEffect, useState } from 'react';
-import { ApartmentOutlined, CancelOutlined } from '@mui/icons-material';
-import { Button, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { AddOutlined, CancelOutlined, RestoreOutlined, Sell } from '@mui/icons-material';
+import { Box, Button, IconButton, Stack, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { Footer } from '@/components/Footer';
@@ -71,18 +71,26 @@ export default function Parking() {
           showSettingsButton={ false }
         />
         <Stack direction="row" spacing={ 2 } className={ styles.filters }>
-          <Tooltip title="Фильтрация по типу">
+          <Tooltip title="Фильтрация по типу объявления">
             <ToggleButtonGroup
               size="small"
               value={ filter.type }
               onChange={ handleTypes }
             >
               { ['rent', 'sell'].map((t: string) => (
-                <ToggleButton key={ t } value={ t }>
-                  <Typography fontSize={ 13 }>
+                <ToggleButton
+                  key={ t }
+                  value={ t }
+                  color={ t === 'rent' ? 'success' : 'warning' }
+                >
+                  <Box sx={ { display: { xs: 'none', sm: 'flex' } } }>
                     { t === 'rent' && 'Аренда' }
                     { t === 'sell' && 'Продажа' }
-                  </Typography>
+                  </Box>
+                  <Box sx={ { display: { xs: 'flex', sm: 'none' } } }>
+                    { t === 'rent' && <RestoreOutlined fontSize={ 'small' } /> }
+                    { t === 'sell' && <Sell fontSize={ 'small' } /> }
+                  </Box>
                 </ToggleButton>
               )) }
             </ToggleButtonGroup>
@@ -93,14 +101,12 @@ export default function Parking() {
               value={ filter.buildings }
               onChange={ handleBuildings }
             >
-              <ToggleButton value={ '-' } disabled key={ 'i' }>
-                <ApartmentOutlined sx={ { fontSize: 20, opacity: 0.5 } } />
-              </ToggleButton>
               { [1, 2, 6, 7].map((building: number) => (
-                <ToggleButton key={ String(building) } value={ String(building) }>
-                  <Typography fontSize={ 16 } fontWeight={ 600 }>
-                    { building }
-                  </Typography>
+                <ToggleButton
+                  key={ String(building) }
+                  value={ String(building) }
+                >
+                  { building }
                 </ToggleButton>
               )) }
             </ToggleButtonGroup>
@@ -111,20 +117,34 @@ export default function Parking() {
               size="small"
               disabled={ filter.type.length === 0 && filter.buildings.length === 0 }
               onClick={ resetFilters }
-              sx={ { width: 32, height: 32 } }
+              sx={ { width: 32, height: 32, marginLeft: '0!important' } }
             >
               <CancelOutlined fontSize='small' />
             </IconButton>
           </Tooltip>
 
-          <Button
-            href="/parking/request"
-            color="primary"
-            variant="outlined"
-            className={ styles.requestButton }
-          >
-            Добавить
-          </Button>
+          <Box sx={ { display: { xs: 'none', sm: 'block', marginLeft: 'auto!important' } } }>
+            <Tooltip title="Добавить объявление">
+              <Button
+                href="/parking/request"
+                color="primary"
+                variant="outlined"
+              >
+                Добавить
+              </Button>
+            </Tooltip>
+          </Box>
+          <Box sx={ { display: { xs: 'block', sm: 'none', marginLeft: 'auto!important' } } }>
+            <Tooltip title="Добавить объявление">
+              <IconButton
+                href="/parking/request"
+                color="primary"
+              >
+                <AddOutlined fontSize='small' />
+              </IconButton>
+            </Tooltip>
+          </Box>
+
         </Stack>
         <ParkingGrid className={ styles.cards }>
           { data.map((el: ParkingOfferInfo) => (

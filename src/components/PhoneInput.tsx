@@ -12,7 +12,8 @@ const PhoneInput = forwardRef<HTMLInputElement, CustomProps>(
     return (
       <IMaskInput
         { ...other }
-        mask="+0 (000) 000-00-00"
+        mask="+{7} (000) 000-00-00"
+        lazy={ false }
         inputRef={ ref }
         onAccept={ (value: any) => onChange({ target: { name: props.name, value } } as ChangeEvent<HTMLInputElement>) }
         overwrite

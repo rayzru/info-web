@@ -4,6 +4,7 @@
   "typescript.tsdk": "./node_modules/typescript/lib",
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
+    "source.fixAll.css": "explicit",
     "source.fixAll.eslint": "always"
   },
   "eslint.codeActionsOnSave.mode": "all",
@@ -13,6 +14,9 @@
   ],
   "editor.fontVariations": false,
   "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css,scss,less,pcss]": {
+    "editor.defaultFormatter": "stylelint.vscode-stylelint"
   }
 }

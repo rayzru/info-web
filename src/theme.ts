@@ -3,11 +3,14 @@ import { createTheme } from '@mui/material';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#ff0000',
-      dark: '#ff0000',
+      main: '#595f6d',
+    },
+    secondary: {
+      main: '#00466f',
     },
     background: {
-      default: '#f7f8ec'
+      default: '#f7f8ec',
+      paper: '#ffffff',
     },
   },
   components: {
@@ -35,13 +38,6 @@ const theme = createTheme({
       defaultProps: {
         variant: 'elevation',
         elevation: 0
-      }
-    },
-    MuiTabs: {
-      styleOverrides: {
-        indicator: {
-          backgroundColor: '#00000033',
-        },
       }
     },
     MuiTab: {
