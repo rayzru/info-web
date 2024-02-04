@@ -33,7 +33,7 @@ export const Footer = () => {
       </section>
 
       <section className={ styles.wide } style={ { display: 'block' } }>
-        Не хватает информации или нашли ошибку - пишите&nbsp;в&nbsp;<a target='_blank' className={ styles.link } href='https://t.me/rayzru' >Telegram</a>
+        <a className={ styles.link } onClick={ handleOpen10x } href="#">Не хватает информации или нашли ошибку?</a>
         <br />
         <a target='_blank' className={ clsx(styles.link, styles.donate) } href={ 'https://www.tinkoff.ru/rm/rumm.andrey1/iLjWk37710/' }>
         Поддержать проект материально
