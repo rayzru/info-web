@@ -5,6 +5,10 @@
   gap: 24px;
   grid-template-columns: repeat(1, 1fr);
 
+  @include mq(mobile) {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
   @include mq(mobile-landscape) {
     grid-template-columns: repeat(2, 1fr);
   }

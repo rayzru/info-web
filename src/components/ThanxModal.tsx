@@ -27,7 +27,6 @@ export function ThanxModal(props: Props) {
     '/api/thankyou',
     { method: 'POST', body: JSON.stringify({ message }) }
   ).then((res) => {
-    console.log(res);
     props.closeHandler?.();
   });
 

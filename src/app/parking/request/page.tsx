@@ -136,7 +136,6 @@ export default function Parking() {
     });
     fetch('/api/message', { method: 'POST', body }).then((res) => {
       setOpen(true);
-      console.log(res);
     });
   };
 

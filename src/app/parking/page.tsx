@@ -36,7 +36,6 @@ export default function Parking() {
   const hasInitialFilters = initialType.length > 0 || initialBuilding.length > 0;
 
   const initFilterState: ParkingFilters = { type: [], buildings: [] };
-  console.log(searchParams.get('type'), searchParams.get('buildings'));
   const [filter, setFilter] = useState<ParkingFilters>({ type: initialType, buildings: initialBuilding });
   const [overlay, setOverlay] = useState<boolean>(hasInitialFilters);
 
