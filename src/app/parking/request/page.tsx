@@ -134,9 +134,7 @@ export default function Parking() {
       ...data,
       dateUpdated: new Date().getTime()
     });
-    fetch('/api/message', { method: 'POST', body }).then((res) => {
-      setOpen(true);
-    });
+    fetch('/api/message', { method: 'POST', body }).then(() => setOpen(true));
   };
 
   return (
