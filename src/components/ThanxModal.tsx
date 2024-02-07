@@ -26,9 +26,7 @@ export function ThanxModal(props: Props) {
   const handleSend = () => fetch(
     '/api/thankyou',
     { method: 'POST', body: JSON.stringify({ message }) }
-  ).then((res) => {
-    props.closeHandler?.();
-  });
+  ).then(() => props.closeHandler?.());
 
   return (
     <Modal open={ props.open } onClose={ props.closeHandler } disableEnforceFocus >
