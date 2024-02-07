@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { CloseRounded } from '@mui/icons-material';
-import {
-  Box, Checkbox, Divider, Drawer,
-  FormControlLabel, FormGroup, IconButton, Typography
-} from '@mui/material';
+import { Box, Checkbox, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Typography } from '@mui/material';
 
 import data from '@/data';
 import { GroupInfo } from '@/types';
@@ -16,7 +13,7 @@ interface Props {
   onUpdate: (value: string) => void;
 }
 
-export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: Props) {
+export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: Readonly<Props>) {
   const checkState = useMemo(() => value.split(',') || [], [value]);
   const formRef = useRef<HTMLFormElement>(null);
 
