@@ -16,7 +16,7 @@ import styles from './page.module.scss';
 
 export default function Home() {
   const [hidden, setHidden] = useLocalStorage<string>('hidden', '');
-  const checkState = useMemo(() => hidden.split(',') || [], []);
+  const checkState = hidden.split(',');
   const [openSettings, setOpenSettings] = useState(false);
   const [snack, setSnack] = useState<ReactNode | string>('');
 
