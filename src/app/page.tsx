@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { Snackbar } from '@mui/material';
 
 import { Footer } from '@/components/Footer';
@@ -44,7 +44,7 @@ export default function Home() {
           { data.map((el: GroupInfo) => !checkState.includes(el.id) && <InfoCard onCopyUrl={ handleCopyUrl } key={ el.id } info={ el } />) }
         </InfoGrid>
         {/* <Map className={ styles.map } /> */ }
-        <SettingsDrawer value={ hidden } onUpdate={ handleUpdate } onClose={ handleToggleSettings } isOpened={ openSettings } />
+        <SettingsDrawer value={ checkState } onUpdate={ handleUpdate } onClose={ handleToggleSettings } isOpened={ openSettings } />
         <Snackbar
           open={ Boolean(snack) }
           autoHideDuration={ 2000 }

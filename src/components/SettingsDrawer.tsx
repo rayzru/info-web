@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { CloseRounded } from '@mui/icons-material';
 import { Box, Checkbox, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Typography } from '@mui/material';
 
@@ -7,14 +7,13 @@ import { GroupInfo } from '@/types';
 
 interface Props {
   isOpened: boolean;
-  value: string;
+  value: string[];
   onClose: () => void;
   // eslint-disable-next-line no-unused-vars
   onUpdate: (value: string) => void;
 }
 
-export default function SettingsDrawer({ isOpened, value, onClose, onUpdate }: Readonly<Props>) {
-  const checkState = useMemo(() => value.split(',') || [], [value]);
+export default function SettingsDrawer({ isOpened, value: checkState, onClose, onUpdate }: Readonly<Props>) {
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
