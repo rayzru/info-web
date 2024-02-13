@@ -381,6 +381,36 @@ const parkingData: ParkingOfferInfo[] = [
     },
     level: -1,
     dateUpdated: 1707587232747
+  },
+  {
+    variant: 'standard',
+    building: 7,
+    level: -1,
+    parkingNumber: 44,
+    offer: {
+      type: 'rent',
+      price: 6000
+    },
+    contact: {
+      phone: '+7 (903) 405-29-95',
+      hasWhatsApp: true
+    },
+    dateUpdated: 1707762123469
+  },
+  {
+    variant: 'standard',
+    building: 7,
+    level: -1,
+    parkingNumber: 45,
+    offer: {
+      type: 'rent',
+      price: 6000
+    },
+    contact: {
+      phone: '+7 (903) 405-29-95',
+      hasWhatsApp: true
+    },
+    dateUpdated: 1707762156871
   }
 
 ];
