@@ -379,7 +379,24 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true
     },
     dateUpdated: 1707762156871
+  },
+  {
+    variant: 'standard',
+    building: 1,
+    parkingNumber: 70,
+    level: -1,
+    contact: {
+      phone: '+7 (919) 878-18-48',
+      hasWhatsApp: true
+    },
+    offer: {
+      type: 'sell',
+      price: 990000,
+      description: 'Труб сверху нет, не на проезде, удачное сухое место!'
+    },
+    dateUpdated: 1707981480108
   }
+
 
 ];
 
