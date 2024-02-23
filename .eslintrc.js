@@ -9,7 +9,6 @@ module.exports = {
     'next/core-web-vitals',
     'plugin:react-hooks/recommended',
     'eslint:recommended',
-    // 'airbnb-typescript',
     // 'plugin:@typescript-eslint/recommended-type-checked',
     // 'plugin:@typescript-eslint/stylistic-type-checked',
     'plugin:import/recommended',
