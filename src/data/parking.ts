@@ -412,10 +412,41 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: true
     },
     dateUpdated: 1708108846183
+  },
+  {
+    variant: 'standard',
+    building: 7,
+    level: -1,
+    parkingNumber: 9,
+    offer: {
+      type: 'rent',
+      price: 5000,
+      description: 'Удачное расположение рядом с выездом и с лифтами'
+    },
+    contact: {
+      phone: '+7 (961) 316-93-13',
+      hasWhatsApp: true,
+      hasTelegram: true
+    },
+    dateUpdated: 1708680836828
+  },
+  {
+    variant: 'standard',
+    building: 7,
+    level: -1,
+    parkingNumber: 10,
+    offer: {
+      type: 'rent',
+      price: 5000,
+      description: 'Удачное расположение рядом с выездом и с лифтами'
+    },
+    contact: {
+      phone: '+7 (961) 316-93-13',
+      hasWhatsApp: true,
+      hasTelegram: true
+    },
+    dateUpdated: 1708680836828
   }
-
-
-
 ];
 
 export default parkingData;
