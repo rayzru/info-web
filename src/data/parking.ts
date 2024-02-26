@@ -63,21 +63,21 @@ const parkingData: ParkingOfferInfo[] = [
         'При одновременной аренде соседнего паркоместа 120, скидка 500 рублей за каждое место',
     },
   },
-  {
-    building: 6,
-    level: -1,
-    parkingNumber: 183,
-    variant: 'comfort',
-    contact: {
-      phone: '+79515117025',
-      hasWhatsApp: true,
-      hasTelegram: true,
-    },
-    offer: {
-      type: 'rent',
-      price: 3000,
-    },
-  },
+  // {
+  //   building: 6,
+  //   level: -1,
+  //   parkingNumber: 183,
+  //   variant: 'comfort',
+  //   contact: {
+  //     phone: '+79515117025',
+  //     hasWhatsApp: true,
+  //     hasTelegram: true,
+  //   },
+  //   offer: {
+  //     type: 'rent',
+  //     price: 3000,
+  //   },
+  // },
   {
     building: 6,
     level: -1,
