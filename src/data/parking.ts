@@ -289,22 +289,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    building: 6,
-    level: -1,
-    parkingNumber: 38,
-    offer: {
-      type: 'rent',
-      price: 5000
-    },
-    contact: {
-      phone: '+7 (911) 884-10-85',
-      hasTelegram: false,
-      hasWhatsApp: false
-    },
-    dateUpdated: 1707321551879
-  },
-  {
-    variant: 'standard',
     building: 2,
     level: -2,
     parkingNumber: 40,

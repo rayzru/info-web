@@ -49,7 +49,6 @@ export default function ParkingFilter(props: Props): React.JSX.Element {
   useEffect(
     () => {
       onFilter && onFilter(filterFn);
-      onOverlay && onOverlay(false);
       if (filter.type.length === 0 && filter.buildings.length === 0) {
         router.push(pathName, { scroll: false });
       } else {
