@@ -1,7 +1,6 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import { LoadingButton } from '@mui/lab';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -22,11 +21,9 @@ export default function Parking() {
     .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.building - b.building);
 
   const [data, setData] = useState<ParkingOfferInfo[]>(sorted);
-  const [overlay, setOverlay] = useState<boolean>(false);
 
   function onFilter(fn: FilterFn): void {
     setData(sorted.filter(fn))
-    setOverlay(false);
   }
 
   return (
@@ -39,14 +36,9 @@ export default function Parking() {
         />
 
         <Suspense>
-          <ParkingFilter onFilter={ onFilter } onOverlay={ (o: boolean) => setOverlay(o) } />
+          <ParkingFilter onFilter={ onFilter } />
         </Suspense>
         <ParkingGrid className={ styles.cards }>
-          { overlay && (
-            <div className={ styles.overlay }>
-              <LoadingButton loading size='large' />
-            </div>
-          ) }
           { data.map((el: ParkingOfferInfo) => (
             <ParkingCard
               key={ el.offer.type + el.building.toString() + el.parkingNumber.toString() + el.level.toString() }
