@@ -11,18 +11,6 @@
     grid-area: header;
   }
 
-  .filters {
-    grid-area: filters;
-    margin: 8px 20px;
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-  }
-
-  .requestButton {
-    margin-left: auto;
-  }
-
   .cards {
     grid-area: cards;
     margin: 0 20px;
