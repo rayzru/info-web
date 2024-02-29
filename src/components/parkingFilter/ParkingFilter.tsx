@@ -7,19 +7,17 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { ParkingOfferInfo } from '@/types';
 
-import { FilterFn, OverlayFn, ParkingFilters } from './tyles';
+import { FilterFn, ParkingFilters } from './tyles';
 
 import styles from './ParkingFilter.module.scss';
 
 interface Props {
   // eslint-disable-next-line no-unused-vars
   onFilter: (fn: FilterFn) => void;
-  onOverlay: OverlayFn;
 }
 
-
 export default function ParkingFilter(props: Props): React.JSX.Element {
-  const { onFilter, onOverlay } = props;
+  const { onFilter } = props;
   const searchParams = useSearchParams();
   const pathName = usePathname() || '/';
   const router = useRouter();
