@@ -449,7 +449,6 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1709228229108
   }
-
 ];
 
 export default parkingData;
