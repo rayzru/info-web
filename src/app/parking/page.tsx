@@ -26,6 +26,7 @@ export default function Parking() {
 
   function onFilter(fn: FilterFn): void {
     setData(sorted.filter(fn))
+    setOverlay(false);
   }
 
   return (
