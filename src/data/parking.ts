@@ -34,38 +34,6 @@ const parkingData: ParkingOfferInfo[] = [
   {
     building: 6,
     level: -1,
-    parkingNumber: 120,
-    variant: 'standard',
-    contact: {
-      phone: '+79198999311',
-      hasWhatsApp: true,
-    },
-    offer: {
-      type: 'rent',
-      price: 4000,
-      description:
-        'При одновременной аренде соседнего паркоместа 121, скидка 500 рублей за каждое место',
-    },
-  },
-  {
-    building: 6,
-    level: -1,
-    parkingNumber: 121,
-    variant: 'standard',
-    contact: {
-      phone: '+79198999311',
-      hasWhatsApp: true,
-    },
-    offer: {
-      type: 'rent',
-      price: 4000,
-      description:
-        'При одновременной аренде соседнего паркоместа 120, скидка 500 рублей за каждое место',
-    },
-  },
-  {
-    building: 6,
-    level: -1,
     parkingNumber: 19,
     variant: 'standard',
     contact: {
