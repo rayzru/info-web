@@ -399,7 +399,25 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: true
     },
     dateUpdated: 1709645840577
+  },
+  {
+    variant: 'standard',
+    building: 6,
+    level: -1,
+    parkingNumber: 186,
+    offer: {
+      type: 'rent',
+      price: 6000,
+      description: '1 подъезд. Очень удачное место, удобно парковаться. Лифт очень близко. Залог за ключ и пульт 2000р.'
+    },
+    contact: {
+      phone: '+7 (908) 197-47-67',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1709721097669
   }
+
 ];
 
 export default parkingData;
