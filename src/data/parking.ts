@@ -416,7 +416,23 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true
     },
     dateUpdated: 1709721097669
+  },
+  {
+    variant: 'standard',
+    building: 7,
+    level: -1,
+    parkingNumber: 37,
+    offer: {
+      type: 'rent',
+      price: 5500,
+      description: 'Между двух подъездов, большая площадь, на полгода'
+    },
+    contact: {
+      phone: '+7 (918) 850-50-14'
+    },
+    dateUpdated: 1709805010287
   }
+
 
 ];
 
