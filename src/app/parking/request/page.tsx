@@ -60,7 +60,12 @@ export default function Parking() {
   }, [data]);
 
   const handleBuildingChange = (e: SelectChangeEvent) => {
-    setData({ ...data, building: Number(e.target.value) as Building });
+    const building = Number(e.target.value) as Building;
+    setData({
+      ...data,
+      building,
+      level: !['1', '2'].includes(building.toString()) ? -1 : data.level,
+    });
   };
 
   const handleLevelChange = (e: SelectChangeEvent) => {
@@ -175,40 +180,44 @@ export default function Parking() {
           </div>
           <Paper className={ styles.form }>
             <div className={ styles.column1 }>
-              <FormControl variant='standard' required={ true }>
-                <InputLabel>Ларина 45, Строение ...</InputLabel>
-                <Select
-                  value={ data?.building?.toString() }
-                  onChange={ handleBuildingChange }
-                  placeholder='Выберите строение'
-                >
-                  <MenuItem value={ 1 }>Строение 1 (литеры 4, 5)</MenuItem>
-                  <MenuItem value={ 2 }>Строение 2 (литеры 2, 3)</MenuItem>
-                  <MenuItem value={ 6 }>Строение 6 (литеры 7)</MenuItem>
-                  <MenuItem value={ 7 }>Строение 7 (литеры 6)</MenuItem>
-                </Select>
-              </FormControl>
               <Box display={ 'flex' } gap={ 2 }>
-                <FormControl variant='standard' sx={ { flex: 1 } }>
-                  <InputLabel>Этаж</InputLabel>
+                <FormControl variant='standard' required={ true } sx={ { flex: 2 } }>
+                  <InputLabel>Ларина 45, Строение ...</InputLabel>
                   <Select
-                    value={ data?.level?.toString() }
-                    onChange={ handleLevelChange }
-                    placeholder='Выберите этаж парковки'
+                    value={ data?.building?.toString() }
+                    onChange={ handleBuildingChange }
+                    placeholder='Выберите строение'
                   >
-                    <MenuItem value={ -1 }>-1 Этаж</MenuItem>
-                    <MenuItem value={ -2 }>-2 Этаж</MenuItem>
+                    <MenuItem value={ 1 }>Строение 1 (литеры 4, 5)</MenuItem>
+                    <MenuItem value={ 2 }>Строение 2 (литеры 2, 3)</MenuItem>
+                    <MenuItem value={ 6 }>Строение 6 (литеры 7)</MenuItem>
+                    <MenuItem value={ 7 }>Строение 7 (литеры 6)</MenuItem>
                   </Select>
                 </FormControl>
-                <TextField
-                  sx={ { flex: 1 } }
-                  required={ true }
-                  InputProps={ {
-                    startAdornment: <InputAdornment position="start">№</InputAdornment>,
-                  } }
-                  label="Номер" variant='standard' onChange={ handleParkingChange } type='number'
-                />
+                { ['1', '2'].includes(data?.building?.toString()) && (
+                  <FormControl variant='standard' sx={ { flex: 1 } }>
+                    <InputLabel>Этаж</InputLabel>
+                    <Select
+                      defaultValue={ '-1' }
+                      value={ data?.level?.toString() }
+                      onChange={ handleLevelChange }
+                      placeholder='Выберите этаж парковки'
+                    >
+                      <MenuItem value={ -1 }>-1 Этаж</MenuItem>
+                      <MenuItem value={ -2 }>-2 Этаж</MenuItem>
+                    </Select>
+                  </FormControl>
+                ) }
               </Box>
+              <TextField
+                sx={ { flex: 1 } }
+                required={ true }
+                InputProps={ {
+                  startAdornment: <InputAdornment position="start">№</InputAdornment>,
+                } }
+                label="Номер" variant='standard' onChange={ handleParkingChange } type='number'
+              />
+
               <FormControl variant='standard'>
                 <InputLabel>Тип объявления</InputLabel>
                 <Select
