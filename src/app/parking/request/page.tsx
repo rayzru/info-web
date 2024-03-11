@@ -194,7 +194,7 @@ export default function Parking() {
                     <MenuItem value={ 7 }>Строение 7 (литеры 6)</MenuItem>
                   </Select>
                 </FormControl>
-                { ['1', '2'].includes(data?.building?.toString()) && (
+                { ['1', '2'].includes(data?.building?.toString() ?? '0') && (
                   <FormControl variant='standard' sx={ { flex: 1 } }>
                     <InputLabel>Этаж</InputLabel>
                     <Select
