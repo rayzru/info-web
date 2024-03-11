@@ -431,8 +431,21 @@ const parkingData: ParkingOfferInfo[] = [
       phone: '+7 (918) 850-50-14'
     },
     dateUpdated: 1709805010287
+  }, {
+    variant: 'standard',
+    building: 1,
+    level: -2,
+    parkingNumber: 9,
+    offer: {
+      type: 'sell',
+      price: 750000,
+    },
+    contact: {
+      phone: '+7 (906) 428-84-25',
+      hasWhatsApp: true
+    },
+    dateUpdated: 1710160650783
   }
-
 
 ];
 
