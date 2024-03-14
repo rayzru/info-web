@@ -20,6 +20,7 @@ import styles from './page.module.scss';
 
 const initData: Partial<ParkingOfferInfo> = {
   variant: 'standard',
+  level: -1,
 };
 
 export default function Parking() {
@@ -50,11 +51,11 @@ export default function Parking() {
       && data.parkingNumber > 0
       && data.contact
       && data.contact.phone
-      && cleanupPhone(data.contact.phone).length === 12
       && data.offer
       && data.offer.type
       && data.offer.price
       && data.offer.price > 0
+      && cleanupPhone(data.contact.phone).length === 12
     );
     setSendEnabled(state);
   }, [data]);
@@ -68,8 +69,8 @@ export default function Parking() {
     });
   };
 
-  const handleLevelChange = (e: SelectChangeEvent) => {
-    setData({ ...data, level: Number(e.target.value) as ParkingLevel });
+  const handleLevelChange = (e?: SelectChangeEvent) => {
+    setData({ ...data, level: Number(e?.target.value) as ParkingLevel ?? -1 });
   };
 
   const handleParkingChange = (e: ChangeEvent<HTMLInputElement>) => {
