@@ -104,7 +104,7 @@ const parkingData: ParkingOfferInfo[] = [
       price: 4000,
     },
     contact: {
-      phone: '+8 (900) 136-21-11',
+      phone: '+7 (900) 136-21-11',
     },
     dateUpdated: 1701879650097,
   },
@@ -216,7 +216,7 @@ const parkingData: ParkingOfferInfo[] = [
       description: 'Удобный заезд',
     },
     contact: {
-      phone: '+8 (928) 751-77-14',
+      phone: '+7 (928) 751-77-14',
       hasWhatsApp: true,
       hasTelegram: true,
     },
