@@ -462,7 +462,22 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true
     },
     dateUpdated: 1710399128576
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    contact: {
+      phone: '+7 (928) 954-09-28'
+    },
+    offer: {
+      type: 'rent',
+      price: 5500
+    },
+    parkingNumber: 5,
+    building: 1,
+    dateUpdated: 1711225965644
   }
+
 
 ];
 
