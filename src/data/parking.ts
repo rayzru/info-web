@@ -445,23 +445,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    building: 2,
-    level: -1,
-    parkingNumber: 1,
-    offer: {
-      type: 'rent',
-      price: 6000,
-      description: 'Удобное угловое место возле лифта. Широкий заезд без колонн. Залог за пульт 2000р'
-    },
-    contact: {
-      phone: '+7 (909) 403-03-03',
-      hasTelegram: true,
-      hasWhatsApp: true
-    },
-    dateUpdated: 1710399128576
-  },
-  {
-    variant: 'standard',
     level: -1,
     contact: {
       phone: '+7 (928) 954-09-28'
