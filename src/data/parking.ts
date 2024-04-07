@@ -471,8 +471,24 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true
     },
     dateUpdated: 1711712402272
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 12,
+    offer: {
+      type: 'sell',
+      price: 1250000,
+      description: 'Одно из лучших паркомест в паркинге. Без коммуникаций сверху, нестандартно большого размера и с одним соседом.'
+    },
+    contact: {
+      phone: '+7 (909) 470-19-06',
+      hasWhatsApp: true,
+      hasTelegram: true
+    },
+    dateUpdated: 1712477068407
   }
-
 ];
 
 export default parkingData;
