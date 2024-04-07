@@ -65,137 +65,164 @@ export default [
     tags: ['complex']
   },
   {
-    id: 'liter1',
-    rows: 2,
-    title: 'Литер 1',
-    // color: CardColor.red,
-    logo: 'root',
-    messengers: [
-      {
-        title: 'Telegram - Литер 1',
-        messengerType: 'telegram',
-        link: 'https://t.me/sr2l1'
-      }
-    ],
-    tags: ['complex', 'building']
-  },
-  {
-    id: 'liter2',
-    rows: 3,
-    title: 'Литер 2',
-    // color: CardColor.red,
+    id: 'building1',
+    rows: 5,
+    title: 'Строение 1',
     logo: 'root',
     addresses: [
       {
         city: 'г. Ростов-на-Дону',
-        address: 'ул. Ларина, 45, стр. 2, подъезд 1',
-        maps: ['https://yandex.ru/maps/-/CDawbV4v']
+        address: 'ул. Ларина, д.45, строение 1',
+        maps: ['https://yandex.ru/maps/-/CDRsJJ3r']
       }
     ],
     phones: [
       {
         title: 'Консьерж',
-        phone: '+7 (960) 461-44-21',
-      }
-    ],
-    messengers: [
-      {
-        title: 'Telegram - Литер 2',
-        messengerType: 'telegram',
-        link: 'https://t.me/sr2_l2'
-      }
-    ],
-    tags: ['complex', 'building']
-  },
-  {
-    id: 'liter3',
-    rows: 3,
-    title: 'Литер 3',
-    // color: CardColor.red,
-    logo: 'root',
-    addresses: [
-      {
-        city: 'г. Ростов-на-Дону',
-        address: 'ул. Ларина, 45, стр. 2, подъезд 2',
-        maps: ['https://yandex.ru/maps/-/CDawbV4v']
-      }
-    ],
-    phones: [
+        subtitle: 'подъезд 1',
+        phone: '+7 (960) 461-44-24',
+      },
       {
         title: 'Консьерж',
         subtitle: 'подъезд 2',
-        phone: '+7 (960) 461-44-32',
-      }
-    ],
-    messengers: [
-      {
-        title: 'Telegram - Литер 3',
-        messengerType: 'telegram',
-        link: 'https://t.me/sr2_l3'
-      }
-    ],
-    tags: ['complex', 'building']
-  },
-  {
-    id: 'liter4',
-    rows: 3,
-    title: 'Литер 4',
-    // color: CardColor.red,
-    logo: 'root',
-    addresses: [
-      {
-        city: 'г. Ростов-на-Дону',
-        address: 'ул. Ларина, д.45, строение 1, подъезд 1',
-        maps: ['https://yandex.ru/maps/-/CDawbZ8~']
-      }
-    ],
-    phones: [
-      {
-        title: 'Консьерж',
-        phone: '+7 (960) 461-44-24',
-      }
-    ],
-    messengers: [
-      {
-        title: 'Telegram - Литер 4',
-        messengerType: 'telegram',
-        link: 'https://t.me/sr2_l4'
-      }
-    ],
-    tags: ['complex', 'building']
-  },
-  {
-    id: 'liter5',
-    rows: 3,
-    title: 'Литер 5',
-    // color: CardColor.red,
-    logo: 'root',
-    addresses: [
-      {
-        city: 'г. Ростов-на-Дону',
-        address: 'ул. Ларина, д.45, строение 1, подъезд 2',
-        maps: ['https://yandex.ru/maps/-/CDawbZ8~']
-      }
-    ],
-    phones: [
-      {
-        title: 'Консьерж',
         phone: '+7 (960) 461-44-25',
       }
     ],
     messengers: [
       {
-        title: 'Telegram - Литер 5',
+        title: 'Telegram - Cтроение 1',
         messengerType: 'telegram',
-        link: 'https://t.me/sr2_l5'
+        link: 'https://t.me/sr2_s1'
       }
     ],
     tags: ['complex', 'building']
   },
   {
-    id: 'liter6',
+    id: 'building2',
     rows: 5,
-    title: 'Литер 6',
+    title: 'Строение 2',
+    logo: 'root',
+    addresses: [
+      {
+        city: 'г. Ростов-на-Дону',
+        address: 'ул. Ларина, 45, строение 2',
+        maps: ['https://yandex.ru/maps/-/CDRsF-Ix']
+      }
+    ],
+    phones: [
+      {
+        title: 'Консьерж',
+        subtitle: 'Подъезд 1',
+        phone: '+7 (960) 461-44-21',
+      },
+      {
+        title: 'Консьерж',
+        subtitle: 'Подъезд 2',
+        phone: '+7 (960) 461-44-32',
+      }
+    ],
+    messengers: [
+      {
+        title: 'Telegram - Строение 2',
+        messengerType: 'telegram',
+        link: 'https://t.me/sr2_s2'
+      }
+    ],
+    tags: ['complex', 'building']
+  },
+  // {
+  //   id: 'liter3',
+  //   rows: 3,
+  //   title: 'Литер 3',
+  //   // color: CardColor.red,
+  //   logo: 'root',
+  //   addresses: [
+  //     {
+  //       city: 'г. Ростов-на-Дону',
+  //       address: 'ул. Ларина, 45, стр. 2, подъезд 2',
+  //       maps: ['https://yandex.ru/maps/-/CDawbV4v']
+  //     }
+  //   ],
+  //   phones: [
+  //     {
+  //       title: 'Консьерж',
+  //       subtitle: 'подъезд 2',
+  //       phone: '+7 (960) 461-44-32',
+  //     }
+  //   ],
+  //   messengers: [
+  //     {
+  //       title: 'Telegram - Литер 3',
+  //       messengerType: 'telegram',
+  //       link: 'https://t.me/sr2_l3'
+  //     }
+  //   ],
+  //   tags: ['complex', 'building']
+  // },
+
+  // {
+  //   id: 'liter5',
+  //   rows: 3,
+  //   title: 'Литер 5',
+  //   // color: CardColor.red,
+  //   logo: 'root',
+  //   addresses: [
+  //     {
+  //       city: 'г. Ростов-на-Дону',
+  //       address: 'ул. Ларина, д.45, строение 1, подъезд 2',
+  //       maps: ['https://yandex.ru/maps/-/CDawbZ8~']
+  //     }
+  //   ],
+  //   phones: [
+  //     {
+  //       title: 'Консьерж',
+  //       phone: '+7 (960) 461-44-25',
+  //     }
+  //   ],
+  //   messengers: [
+  //     {
+  //       title: 'Telegram - Литер 5',
+  //       messengerType: 'telegram',
+  //       link: 'https://t.me/sr2_l5'
+  //     }
+  //   ],
+  //   tags: ['complex', 'building']
+  // },
+  {
+    id: 'building6',
+    rows: 5,
+    title: 'Строение 6',
+    logo: 'root',
+    addresses: [
+      {
+        city: 'г. Ростов-на-Дону',
+        address: 'ул. Ларина, д.45, строение 6',
+        maps: ['https://yandex.ru/maps/-/CDawbKob']
+      }
+    ],
+    phones: [
+      {
+        title: 'Консьерж - подъезд 1',
+        phone: '+7 (906) 425-93-86',
+      },
+      {
+        title: 'Консьерж - подъезд 2',
+        phone: '+7 (906) 425-94-39',
+      },
+    ],
+    messengers: [
+      {
+        title: 'Telegram - Строение 6',
+        messengerType: 'telegram',
+        link: 'https://t.me/sr2_s6'
+      }
+    ],
+    tags: ['complex', 'building']
+  },
+  {
+    id: 'building7',
+    rows: 5,
+    title: 'Строение 7',
     // color: CardColor.red,
     logo: 'root',
     addresses: [
@@ -217,41 +244,24 @@ export default [
     ],
     messengers: [
       {
-        title: 'Telegram - Литер 6',
+        title: 'Telegram - Строение 7',
         messengerType: 'telegram',
-        link: 'https://t.me/sr2_l6'
+        link: 'https://t.me/sr2_s7'
       }
     ],
     tags: ['complex', 'building']
   },
   {
-    id: 'liter7',
-    rows: 4,
-    title: 'Литер 7',
+    id: 'liter1',
+    rows: 2,
+    title: 'Литер 1',
     // color: CardColor.red,
     logo: 'root',
-    addresses: [
-      {
-        city: 'г. Ростов-на-Дону',
-        address: 'ул. Ларина, д.45, строение 6',
-        maps: ['https://yandex.ru/maps/-/CDawbKob']
-      }
-    ],
-    phones: [
-      {
-        title: 'Консьерж - подъезд 1',
-        phone: '+7 (906) 425-93-86',
-      },
-      {
-        title: 'Консьерж - подъезд 2',
-        phone: '+7 (906) 425-94-39',
-      },
-    ],
     messengers: [
       {
-        title: 'Telegram - Литер 7',
+        title: 'Telegram - Литер 1',
         messengerType: 'telegram',
-        link: 'https://t.me/sr2_l7'
+        link: 'https://t.me/sr2l1'
       }
     ],
     tags: ['complex', 'building']
