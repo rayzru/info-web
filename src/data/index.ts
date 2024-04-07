@@ -146,6 +146,7 @@ export default [
     id: 'building1',
     rows: 5,
     title: 'Строение 1',
+    subtitle: 'Литеры 4, 5',
     logo: 'root',
     addresses: [
       {
@@ -179,6 +180,7 @@ export default [
     id: 'building2',
     rows: 5,
     title: 'Строение 2',
+    subtitle: 'Литеры 2, 3',
     logo: 'root',
     addresses: [
       {
@@ -270,6 +272,7 @@ export default [
     id: 'building6',
     rows: 5,
     title: 'Строение 6',
+    subtitle: 'Литер 7',
     logo: 'root',
     addresses: [
       {
@@ -301,7 +304,7 @@ export default [
     id: 'building7',
     rows: 5,
     title: 'Строение 7',
-    // color: CardColor.red,
+    subtitle: 'Литер 6',
     logo: 'root',
     addresses: [
       {
@@ -333,7 +336,7 @@ export default [
     id: 'liter1',
     rows: 2,
     title: 'Литер 1',
-    // color: CardColor.red,
+    subtitle: 'Ведется строительство',
     logo: 'root',
     messengers: [
       {
@@ -348,6 +351,7 @@ export default [
     id: 'liter8',
     rows: 2,
     title: 'Литер 8',
+    subtitle: 'Ведется строительство',
     logo: 'root',
     messengers: [
       {
@@ -362,7 +366,7 @@ export default [
     id: 'liter9',
     rows: 2,
     title: 'Литер 9',
-    // color: CardColor.red,
+    subtitle: 'Ведется строительство',
     logo: 'root',
     messengers: [
       {
