@@ -402,20 +402,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -1,
-    building: 6,
-    parkingNumber: 186,
-    offer: {
-      type: 'rent',
-      description: '1 подъезд. Удачное место рядом с лифтом, удобно парковаться. Залог за ключ и пульт 1500р. Рассмотриваем аренду на сроки от 10 дней при условии залога за пульт.',
-      price: 5000
-    },
-    contact: {
-      phone: '+7 (908) 197-47-67'
-    },
-    dateUpdated: 1711599189646
-  }, {
-    variant: 'standard',
     building: 7,
     level: -1,
     parkingNumber: 37,
