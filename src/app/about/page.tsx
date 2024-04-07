@@ -62,13 +62,11 @@ export default function About() {
 
                 <h3 className={ styles.chatsSectionTitle }>Чаты строений/литеров</h3>
                 <div className={ styles.chats }>
+                  <ChatCard url='https://t.me/sr2_s1' title={ 'Строение 1' } subtitle='Литер 4, 5' />
+                  <ChatCard url='https://t.me/sr2_s2' title={ 'Строение 2' } subtitle='Литер 2, 3' />
+                  <ChatCard url='https://t.me/sr2_s6' title={ 'Строение 6' } subtitle='Литер 7' />
+                  <ChatCard url='https://t.me/sr2_s7' title={ 'Строение 7' } subtitle='Литер 6' />
                   <ChatCard url='https://t.me/sr2l1' title={ 'Литер 1' } subtitle='Ведется строительство' />
-                  <ChatCard url='https://t.me/sr2_l2' title={ 'Литер 2' } subtitle='Строение 2, подъезд 1' />
-                  <ChatCard url='https://t.me/sr2_l3' title={ 'Литер 3' } subtitle='Строение 2, подъезд 2' />
-                  <ChatCard url='https://t.me/sr2_l4' title={ 'Литер 4' } subtitle='Строение 1, подъезд 1' />
-                  <ChatCard url='https://t.me/sr2_l5' title={ 'Литер 5' } subtitle='Строение 1, подъезд 2' />
-                  <ChatCard url='https://t.me/sr2_l6' title={ 'Строение 7' } subtitle='Литер 6' />
-                  <ChatCard url='https://t.me/sr2_l7' title={ 'Строение 6' } subtitle='Литер 7' />
                   <ChatCard url='https://t.me/sr2l8' title={ 'Литер 8' } subtitle='Ведется строительство' />
                   <ChatCard url='https://t.me/sr2_l9' title={ 'Литер 9' } subtitle='Ведется строительство' />
                 </div>

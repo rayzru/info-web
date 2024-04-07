@@ -27,12 +27,12 @@ export const ChatCard = ({ title, subtitle, url }: Props) => {
       avatar={
         <Avatar
           sizes='small'
-          variant='rounded'
+          variant='circular'
           sx={ { bgcolor: isTelegram ? blue[500] : green[500], marginRight: 0 } }
         >
           { isTelegram
-            ? <Telegram fontSize='small' />
-            : <WhatsApp fontSize='small' />
+            ? <Telegram fontSize='small' sx={ { color: 'white' } } />
+            : <WhatsApp fontSize='small' sx={ { color: 'white' } } />
           }
         </Avatar>
       }
