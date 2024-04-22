@@ -472,7 +472,25 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true
     },
     dateUpdated: 1713109097122
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 123,
+    offer: {
+      type: 'rent',
+      price: 5500,
+      description: 'Место около лифта, под вторым литером, одиночное место без соседних автомобилей'
+    },
+    contact: {
+      phone: '+7 (908) 177-79-28',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1713765678240
   }
+
 
 ];
 
