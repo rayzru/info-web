@@ -1,5 +1,5 @@
-import React, { PropsWithChildren } from 'react';
-import { AppBar, Box, CssBaseline, Divider, Drawer, List, Toolbar, Typography } from '@mui/material';
+import React from 'react';
+import { Box, CssBaseline, Divider, Drawer, List, Toolbar } from '@mui/material';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -7,11 +7,9 @@ export const metadata: Metadata = {
   description: 'Сердце Ростова 2',
 };
 
-export interface Props extends PropsWithChildren { }
-
 const drawerWidth = 250;
 
-export default function Admin({ children }: Props) {
+export default function Admin() {
   return (
     <Box sx={ { display: 'flex' } }>
       <CssBaseline />

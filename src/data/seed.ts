@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
-import { apartments, buildings, users } from '@/schema';
+import { apartments, buildings } from '@/schema';
 
 dotenv.config({ path: './.env.development' });
 
