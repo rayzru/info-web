@@ -7,7 +7,10 @@
     "build": "next build",
     "export": "next export",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate": "drizzle-kit generate:pg",
+    "drizzle:seed": "node --loader esbuild-register/loader -r esbuild-register ./src/db/seed.ts",
+    "syncdb": "drizzle-kit db:sync"
   },
   "dependencies": {
     "@emotion/cache": "^11.11.0",
@@ -17,8 +20,12 @@
     "@mui/icons-material": "^5.15.16",
     "@mui/lab": "^5.0.0-alpha.170",
     "@mui/material": "^5.15.16",
+    "@vercel/postgres": "^0.8.0",
     "clsx": "^2.1.1",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.30.10",
     "next": "^14",
+    "postgres": "^3.4.4",
     "react": "^18",
     "react-dom": "^18",
     "react-imask": "^7.6.0",
@@ -30,6 +37,7 @@
     "@types/react-dom": "^18",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
+    "drizzle-kit": "^0.20.17",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14",
     "eslint-plugin-import": "^2.29.1",
