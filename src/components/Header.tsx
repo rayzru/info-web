@@ -43,7 +43,15 @@ export const Header = ({
       href: '/parking',
     },
     {
-      title: 'Сообщество',
+      title: 'Чаты',
+      href: '/chats',
+    },
+    {
+      title: 'Правила',
+      href: '/rules',
+    },
+    {
+      title: 'О нас',
       href: '/about',
     },
   ];

@@ -1,0 +1,22 @@
+@import '../../utility';
+
+.main {
+  .pageLayout {
+    padding: 24px;
+  }
+  .chats {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .section {
+    max-width: 600px;
+    padding: 24px;
+  }
+
+  .chatsSectionTitle  {
+    margin-top: 1.7em;
+  }
+}
