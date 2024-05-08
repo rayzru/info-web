@@ -17,7 +17,7 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@fontsource/roboto": "^5.0.13",
-    "@mui/icons-material": "^5.15.16",
+    "@mui/icons-material": "^5.15.17",
     "@mui/lab": "^5.0.0-alpha.170",
     "@mui/material": "^5.15.16",
     "@vercel/postgres": "^0.8.0",
@@ -29,7 +29,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-imask": "^7.6.0",
-    "sass": "^1.76.0"
+    "sass": "^1.77.0"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -42,7 +42,7 @@
     "eslint-config-next": "^14",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-simple-import-sort": "^12.1.0",
-    "eslint-plugin-sonarjs": "^1.0.0",
+    "eslint-plugin-sonarjs": "^1.0.3",
     "typescript": "^5.4.5"
   }
 }
