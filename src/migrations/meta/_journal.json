@@ -4,16 +4,9 @@
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1714905822321,
-      "tag": "0000_sour_ben_urich",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1714931103940,
-      "tag": "0001_lyrical_smasher",
+      "version": "6",
+      "when": 1715361219414,
+      "tag": "0000_faulty_tombstone",
       "breakpoints": true
     }
   ]

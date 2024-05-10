@@ -16,8 +16,8 @@ let db:
 if (process.env.NODE_ENV === 'production') {
   db = VercelDrizzle(sql);
 } else {
-  const migrationClient = postgres(process.env.POSTGRES_URL as string);
-  db = LocalDrizzle(migrationClient);
+  const client = postgres(process.env.POSTGRES_URL as string);
+  db = LocalDrizzle(client);
 }
 
 export { db };
