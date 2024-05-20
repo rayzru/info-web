@@ -1,21 +1,15 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import { Container, Grid } from '@mui/material';
 
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
 import { ParkingCard } from '@/components/ParkingCard';
 import { ParkingCardNew } from '@/components/ParkingCardNew';
-import ParkingFilter from '@/components/parkingFilter/ParkingFilter';
-import { FilterFn } from '@/components/parkingFilter/tyles';
-import { ParkingGrid } from '@/components/ParkingGrid';
+import ParkingFilter, { FilterFn } from '@/components/parkingFilter/ParkingFilter';
 import parking from '@/data/parking';
 import { ParkingOfferInfo } from '@/types';
 
-import styles from './page.module.scss';
-
 export default function Parking() {
-
   const sorted = parking
     .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.parkingNumber - b.parkingNumber)
     .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.building - b.building);
@@ -27,28 +21,25 @@ export default function Parking() {
   }
 
   return (
-    <>
-      <main className={ styles.main }>
-        <Header
-          className={ styles.header }
-          showSearch={ false }
-          showSettingsButton={ false }
-        />
-
-        <Suspense>
-          <ParkingFilter onFilter={ onFilter } />
-        </Suspense>
-        <ParkingGrid className={ styles.cards }>
-          { data.map((el: ParkingOfferInfo) => (
+    <Container maxWidth="lg">
+      <Suspense>
+        <ParkingFilter onFilter={ onFilter } />
+      </Suspense>
+      <Grid container spacing={ 2 } sx={ { mt: 2 } }>
+        { data.map((el: ParkingOfferInfo) => (
+          <Grid
+            key={ el.offer.type + el.building.toString() + el.parkingNumber.toString() + el.level.toString() }
+            item
+            xs={ 12 }
+            sm={ 6 }
+            md={ 4 }
+          >
             <ParkingCard
-              key={ el.offer.type + el.building.toString() + el.parkingNumber.toString() + el.level.toString() }
               info={ el }
             />
-          )) }
-          <ParkingCardNew key={ 'newCard' } />
-        </ParkingGrid>
-      </main>
-      <Footer />
-    </>
+          </Grid>
+        )) }
+      </Grid>
+    </Container>
   );
 }

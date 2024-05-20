@@ -7,9 +7,16 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { ParkingOfferInfo } from '@/types';
 
-import { FilterFn, ParkingFilters } from './tyles';
+export interface ParkingFilters {
+  type: string[];
+  buildings: string[];
+}
 
-import styles from './ParkingFilter.module.scss';
+// eslint-disable-next-line no-unused-vars
+export type FilterFn = (el: ParkingOfferInfo) => boolean;
+// eslint-disable-next-line no-unused-vars
+export type OverlayFn = (overlay: boolean) => void;
+
 
 interface Props {
   // eslint-disable-next-line no-unused-vars
@@ -64,7 +71,7 @@ export default function ParkingFilter(props: Props): React.JSX.Element {
   const handleTypes = (_e: MouseEvent<HTMLElement>, newValue: string[]) => setFilter({ ...filter, type: newValue });
 
   return (
-    <Stack direction="row" spacing={ 2 } className={ styles.filters }>
+    <Stack direction="row" spacing={ 2 }>
       <Tooltip title="Фильтрация по типу объявления">
         <ToggleButtonGroup
           size="small"
@@ -108,12 +115,10 @@ export default function ParkingFilter(props: Props): React.JSX.Element {
       <Tooltip title="Сбросить фильтры">
         <IconButton
           color="error"
-          size="small"
           disabled={ filter.type.length === 0 && filter.buildings.length === 0 }
           onClick={ resetFilters }
-          sx={ { width: 32, height: 32, marginLeft: '0!important' } }
         >
-          <CancelOutlined fontSize='small' />
+          <CancelOutlined />
         </IconButton>
       </Tooltip>
 
@@ -121,10 +126,12 @@ export default function ParkingFilter(props: Props): React.JSX.Element {
         <Tooltip title="Добавить объявление">
           <Button
             href="/parking/request"
-            color="primary"
+            color="success"
             variant="outlined"
+            startIcon={ <AddOutlined fontSize='small' /> }
+
           >
-            Добавить
+            Разместить объявление
           </Button>
         </Tooltip>
       </Box>

@@ -1,10 +1,8 @@
 .footer {
-  font-size: smaller;
   color: #00000088;
   display: flex;
+  font-size: 12px;
   flex-flow: row wrap;
-  margin-top: auto;
-  padding: 74px 20px 20px 20px;
   gap: 20px;
 
   & > section {

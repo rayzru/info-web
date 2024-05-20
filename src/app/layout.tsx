@@ -1,11 +1,16 @@
 import React, { PropsWithChildren } from 'react';
+import { Container } from '@mui/material';
 import type { Metadata } from 'next';
 import Script from 'next/script'
+import { SessionProvider } from 'next-auth/react';
 
+import { Footer } from '@/components/Footer';
+import { Header } from '@/components/Header';
 import ThemeRegistry from '@/themeRegistry';
 
 import '@fontsource/roboto/400.css';
 import './globals.scss';
+import styles from './layout.module.scss';
 
 export const metadata: Metadata = {
   title: 'Справочная, информационный центр',
@@ -39,7 +44,13 @@ export default function RootLayout({ children }: RootProps) {
         `}
         </Script>
         <ThemeRegistry options={ { key: 'mui' } }>
-          { children }
+          <SessionProvider>
+            <Header className={ styles.header } />
+            <Container maxWidth="lg">
+              { children }
+            </Container>
+            <Footer />
+          </SessionProvider>
         </ThemeRegistry>
       </body>
     </html>

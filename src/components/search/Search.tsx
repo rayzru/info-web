@@ -32,6 +32,7 @@ const Search = () => {
             <StyledTag label={ option } { ...getTagProps({ index }) } />
           )) }
           <input
+            disabled={ true }
             name='srch'
             { ...getInputProps() }
             autoComplete="new-password"
