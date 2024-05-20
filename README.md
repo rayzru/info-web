@@ -1,4 +1,4 @@
-# Проект
+# SR2.ru
 
 Стек: NextJS, Drizzle, Docker, Postgres
 
