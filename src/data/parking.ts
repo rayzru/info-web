@@ -301,23 +301,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -1,
-    building: 7,
-    parkingNumber: 68,
-    offer: {
-      type: 'rent',
-      price: 5000,
-      description: 'Под первым подъездом рядом с лифтом.'
-    },
-    contact: {
-      phone: '+7 (928) 125-44-75',
-      hasWhatsApp: true,
-      hasTelegram: true
-    },
-    dateUpdated: 1708108846183
-  },
-  {
-    variant: 'standard',
     building: 7,
     level: -1,
     parkingNumber: 9,
