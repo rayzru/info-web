@@ -1,21 +1,21 @@
 import { ParkingOfferInfo } from '@/types';
 
 const parkingData: ParkingOfferInfo[] = [
-  {
-    building: 1,
-    level: -2,
-    parkingNumber: 80,
-    variant: 'comfort',
-    contact: {
-      phone: '+79526551111',
-      hasTelegram: true,
-      hasWhatsApp: true,
-    },
-    offer: {
-      type: 'sell',
-      price: 950000,
-    },
-  },
+  // {
+  //   building: 1,
+  //   level: -2,
+  //   parkingNumber: 80,
+  //   variant: 'comfort',
+  //   contact: {
+  //     phone: '+79526551111',
+  //     hasTelegram: true,
+  //     hasWhatsApp: true,
+  //   },
+  //   offer: {
+  //     type: 'sell',
+  //     price: 950000,
+  //   },
+  // },
   {
     building: 6,
     level: -1,
