@@ -6,13 +6,6 @@ body {
   min-width: 320px;
   display: flex;
   flex-flow: column;
-   background: linear-gradient(
-        to bottom,
-        #d2cca9 0%,
-        #efecdc 10px,
-        #efecdc 90%,
-        #d2cca9 100%,
-    );
 }
 
 .commaList:not(:first-child) {

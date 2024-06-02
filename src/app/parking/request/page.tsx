@@ -9,8 +9,6 @@ import {
   Switch, TextField, Typography
 } from '@mui/material';
 
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
 import PhoneInput from '@/components/PhoneInput';
 import { modalStyles, ThanxModal } from '@/components/ThanxModal';
 import { cleanupPhone } from '@/helpers';
@@ -165,130 +163,126 @@ export default function Parking() {
           </div>
         </Box>
       </Modal>
-      <main className={ styles.main }>
-        <Header className={ styles.header } showSearch={ false } showSettingsButton={ false } />
 
-        <form className={ styles.wrapper }>
-          <div className={ styles.info }>
-            <h1 className={ styles.title }>Добавление нового объявления</h1>
-            <p>На сегодняшний день добавление информации в раздел Парковка производится вручную через форму.</p>
-            <p>Дальнейшее сопровождение, обновление информации, изменение цены или сняние объявление производится по прямому обращению к администратору в месседжерах или по телефону.</p>
-            <p>В случае удачной сделки, успешной сдачи в аренду или продажи, не забывайте, пожалуйств, изменять статус вашего объявления.</p>
-            <p>Если вы хотели бы выразить благодарность, <a href="#" onClick={ handleOpen10x }>скажите спасибо</a> и/или
-              <a href='https://www.tinkoff.ru/rm/rumm.andrey1/iLjWk37710/'>поддержите разработчиков в виде посильного пожертвования</a>.
-            </p>
-            <ThanxModal closeHandler={ () => setOpen10x(false) } open={ open10x } />
-          </div>
-          <Paper className={ styles.form }>
-            <div className={ styles.column1 }>
-              <Box display={ 'flex' } gap={ 2 }>
-                <FormControl variant='standard' required={ true } sx={ { flex: 2 } }>
-                  <InputLabel>Ларина 45, Строение ...</InputLabel>
-                  <Select
-                    value={ data?.building?.toString() }
-                    onChange={ handleBuildingChange }
-                    placeholder='Выберите строение'
-                  >
-                    <MenuItem value={ 1 }>Строение 1 (литеры 4, 5)</MenuItem>
-                    <MenuItem value={ 2 }>Строение 2 (литеры 2, 3)</MenuItem>
-                    <MenuItem value={ 6 }>Строение 6 (литеры 7)</MenuItem>
-                    <MenuItem value={ 7 }>Строение 7 (литеры 6)</MenuItem>
-                  </Select>
-                </FormControl>
-                { ['1', '2'].includes(data?.building?.toString() ?? '0') && (
-                  <FormControl variant='standard' sx={ { flex: 1 } }>
-                    <InputLabel>Этаж</InputLabel>
-                    <Select
-                      defaultValue={ '-1' }
-                      value={ data?.level?.toString() }
-                      onChange={ handleLevelChange }
-                      placeholder='Выберите этаж парковки'
-                    >
-                      <MenuItem value={ -1 }>-1 Этаж</MenuItem>
-                      <MenuItem value={ -2 }>-2 Этаж</MenuItem>
-                    </Select>
-                  </FormControl>
-                ) }
-              </Box>
-              <TextField
-                sx={ { flex: 1 } }
-                required={ true }
-                InputProps={ {
-                  startAdornment: <InputAdornment position="start">№</InputAdornment>,
-                } }
-                label="Номер" variant='standard' onChange={ handleParkingChange } type='number'
-              />
-
-              <FormControl variant='standard'>
-                <InputLabel>Тип объявления</InputLabel>
+      <form className={ styles.wrapper }>
+        <div className={ styles.info }>
+          <h1 className={ styles.title }>Добавление нового объявления</h1>
+          <p>На сегодняшний день добавление информации в раздел Парковка производится вручную через форму.</p>
+          <p>Дальнейшее сопровождение, обновление информации, изменение цены или сняние объявление производится по прямому обращению к администратору в месседжерах или по телефону.</p>
+          <p>В случае удачной сделки, успешной сдачи в аренду или продажи, не забывайте, пожалуйств, изменять статус вашего объявления.</p>
+          <p>Если вы хотели бы выразить благодарность, <a href="#" onClick={ handleOpen10x }>скажите спасибо</a> и/или
+            <a href='https://www.tinkoff.ru/rm/rumm.andrey1/iLjWk37710/'>поддержите разработчиков в виде посильного пожертвования</a>.
+          </p>
+          <ThanxModal closeHandler={ () => setOpen10x(false) } open={ open10x } />
+        </div>
+        <Paper className={ styles.form }>
+          <div className={ styles.column1 }>
+            <Box display={ 'flex' } gap={ 2 }>
+              <FormControl variant='standard' required={ true } sx={ { flex: 2 } }>
+                <InputLabel>Ларина 45, Строение ...</InputLabel>
                 <Select
-                  onChange={ handleOfferTypeChange }
-                  defaultValue={ '-' }
-                  placeholder='Выберите этаж парковки'
+                  value={ data?.building?.toString() }
+                  onChange={ handleBuildingChange }
+                  placeholder='Выберите строение'
                 >
-                  <MenuItem value={ 'rent' }>Сдаю в аренду</MenuItem>
-                  <MenuItem value={ 'sell' }>Продаю</MenuItem>
+                  <MenuItem value={ 1 }>Строение 1 (литеры 4, 5)</MenuItem>
+                  <MenuItem value={ 2 }>Строение 2 (литеры 2, 3)</MenuItem>
+                  <MenuItem value={ 6 }>Строение 6 (литеры 7)</MenuItem>
+                  <MenuItem value={ 7 }>Строение 7 (литеры 6)</MenuItem>
                 </Select>
               </FormControl>
-
-              { data.offer?.type && (
-                <TextField
-                  InputProps={ {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <CurrencyRuble />
-                      </InputAdornment>
-                    ),
-                  } }
-                  label={ data.offer?.type === 'sell' ? 'Стоимость сделки' : 'Стоимость аренды в месяц' }
-                  variant='standard'
-                  onChange={ handleOfferPriceChange }
-                  type='tel'
-                  helperText={ data.offer?.type === 'rent' ? 'Стоимость указывается с учетом коммунальных платежей' : '' }
-                />
+              { ['1', '2'].includes(data?.building?.toString() ?? '0') && (
+                <FormControl variant='standard' sx={ { flex: 1 } }>
+                  <InputLabel>Этаж</InputLabel>
+                  <Select
+                    defaultValue={ '-1' }
+                    value={ data?.level?.toString() }
+                    onChange={ handleLevelChange }
+                    placeholder='Выберите этаж парковки'
+                  >
+                    <MenuItem value={ -1 }>-1 Этаж</MenuItem>
+                    <MenuItem value={ -2 }>-2 Этаж</MenuItem>
+                  </Select>
+                </FormControl>
               ) }
+            </Box>
+            <TextField
+              sx={ { flex: 1 } }
+              required={ true }
+              InputProps={ {
+                startAdornment: <InputAdornment position="start">№</InputAdornment>,
+              } }
+              label="Номер" variant='standard' onChange={ handleParkingChange } type='number'
+            />
+
+            <FormControl variant='standard'>
+              <InputLabel>Тип объявления</InputLabel>
+              <Select
+                onChange={ handleOfferTypeChange }
+                defaultValue={ '-' }
+                placeholder='Выберите этаж парковки'
+              >
+                <MenuItem value={ 'rent' }>Сдаю в аренду</MenuItem>
+                <MenuItem value={ 'sell' }>Продаю</MenuItem>
+              </Select>
+            </FormControl>
+
+            { data.offer?.type && (
               <TextField
-                label={ 'Дополнительная информация' }
+                InputProps={ {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <CurrencyRuble />
+                    </InputAdornment>
+                  ),
+                } }
+                label={ data.offer?.type === 'sell' ? 'Стоимость сделки' : 'Стоимость аренды в месяц' }
                 variant='standard'
-                minRows={ 2 }
-                multiline={ true }
-                onChange={ handleOfferDescriptionChange }
+                onChange={ handleOfferPriceChange }
+                type='tel'
+                helperText={ data.offer?.type === 'rent' ? 'Стоимость указывается с учетом коммунальных платежей' : '' }
               />
-            </div>
-            <div className={ styles.column2 }>
-              <FormControl variant="standard" required={ true }>
-                <InputLabel htmlFor="contact-phone">Контактный телефон</InputLabel>
-                <Input
-                  required={ true }
-                  onChange={ handlePhoneChange }
-                  inputComponent={ PhoneInput as any }
-                />
-                <FormHelperText>
-                  <Alert severity='warning'>
+            ) }
+            <TextField
+              label={ 'Дополнительная информация' }
+              variant='standard'
+              minRows={ 2 }
+              multiline={ true }
+              onChange={ handleOfferDescriptionChange }
+            />
+          </div>
+          <div className={ styles.column2 }>
+            <FormControl variant="standard" required={ true }>
+              <InputLabel htmlFor="contact-phone">Контактный телефон</InputLabel>
+              <Input
+                required={ true }
+                onChange={ handlePhoneChange }
+                inputComponent={ PhoneInput as any }
+              />
+              <FormHelperText>
+                <Alert severity='warning'>
                     Внимательно проверьте правильность номера. Этот номер будет использоваться в качестве вашего контактного телефона.
-                  </Alert>
-                </FormHelperText>
-              </FormControl>
-              <Typography variant='body2'>
+                </Alert>
+              </FormHelperText>
+            </FormControl>
+            <Typography variant='body2'>
               Если к вашему контактному телефону привязаны аккаунты месседжеров,
                 они будут указаны в качестве альтернативных способов связи.
-              </Typography>
-              <FormGroup row >
-                <FormControlLabel
-                  control={ <Switch onChange={ handleHasTelegram } /> }
-                  label={ 'Telegram' }
-                  name='hasTelegram'
-                />
-                <FormControlLabel control={ <Switch onChange={ handleHasWhatsApp } /> } label="WhatsApp" name='hasWhatsApp' />
-              </FormGroup>
-            </div>
-            <div className={ styles.buttons }>
-              <Button onClick={ handleSend } variant='contained' disabled={ !sendEnabled } sx={ { width: '200px' } }>Отправить заявку</Button>
-            </div>
-          </Paper>
-        </form>
-      </main >
-      <Footer />
+            </Typography>
+            <FormGroup row >
+              <FormControlLabel
+                control={ <Switch onChange={ handleHasTelegram } /> }
+                label={ 'Telegram' }
+                name='hasTelegram'
+              />
+              <FormControlLabel control={ <Switch onChange={ handleHasWhatsApp } /> } label="WhatsApp" name='hasWhatsApp' />
+            </FormGroup>
+          </div>
+          <div className={ styles.buttons }>
+            <Button onClick={ handleSend } variant='contained' disabled={ !sendEnabled } sx={ { width: '200px' } }>Отправить заявку</Button>
+          </div>
+        </Paper>
+      </form>
     </>
   );
 }

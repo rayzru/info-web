@@ -1,0 +1,66 @@
+[
+  {
+    "name": "guest",
+    "description": "Гостевой аккаунт"
+  },
+  {
+    "name": "root",
+    "description": "Корневой аккаунт"
+  },
+  {
+    "name": "superadmin",
+    "description": "Суперадминистратор"
+  },
+  {
+    "name": "admin",
+    "description": "Администратор"
+  },
+  {
+    "name": "editor",
+    "description": "Редактор"
+  },
+  {
+    "name": "moderator",
+    "description": "Модератор"
+  },
+  {
+    "name": "building_chairman",
+    "description": "Председатель"
+  },
+  {
+    "name": "building_initiative",
+    "description": "Инициативный участник"
+  },
+  {
+    "name": "apartment_owner",
+    "description": "Собственник квартиры"
+  },
+  {
+    "name": "apartment_resident",
+    "description": "Резидент квартиры"
+  },
+  {
+    "name": "parking_owner",
+    "description": "Собственник парковки"
+  },
+  {
+    "name": "parking_resident",
+    "description": "Резидент парковки"
+  },
+  {
+    "name": "service",
+    "description": "Сервисный аккаунт"
+  },
+  {
+    "name": "represenative",
+    "description": "represenative"
+  },
+  {
+    "name": "administrative",
+    "description": "Представитель Управляющей компании"
+  },
+  {
+    "name": "system",
+    "description": "Система"
+  }
+]

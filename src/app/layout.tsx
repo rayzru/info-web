@@ -1,7 +1,11 @@
 import React, { PropsWithChildren } from 'react';
+import { Container } from '@mui/material';
 import type { Metadata } from 'next';
 import Script from 'next/script'
+import { SessionProvider } from 'next-auth/react';
 
+import { Footer } from '@/components/Footer';
+import { Navigation } from '@/components/Navigation';
 import ThemeRegistry from '@/themeRegistry';
 
 import '@fontsource/roboto/400.css';
@@ -39,7 +43,13 @@ export default function RootLayout({ children }: RootProps) {
         `}
         </Script>
         <ThemeRegistry options={ { key: 'mui' } }>
-          { children }
+          <SessionProvider>
+            <Navigation />
+            <Container maxWidth="lg">
+              { children }
+            </Container>
+            <Footer />
+          </SessionProvider>
         </ThemeRegistry>
       </body>
     </html>

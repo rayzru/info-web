@@ -36,6 +36,7 @@ module.exports = {
         ],
       },
     ],
+    'max-len': ['error', { code: 140 }],
     'simple-import-sort/exports': 'error',
     'sort-imports': 'off',
     'import/order': 'off',

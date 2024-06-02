@@ -1,38 +1,22 @@
 @import '../utility';
 
 .nav {
-  line-height: 1.4em;
-  font-size: 16px;
-    padding: 3px 8px;
-  border-radius: 10px;
-  color: #00000088;
-
-  @include mq(tablet-landscape) {
-    font-size: 18px;
-    padding: 4px 10px;
-    border-radius: 16px;
-  }
-
-  transition: all 0.3s;
+  color: #000;
+  white-space: nowrap;
+  padding: 10px;
   text-decoration: none;
   cursor: pointer;
   user-select: none;
+  border-bottom: 1px solid transparent;
 
   &.active {
-    background-color: #fff;
-    text-decoration: none;
-    color: #000;
+    border-bottom-color: black;
   }
 
-  &:not(.active):hover {
-    background-color: #fff;
-    box-shadow: 0 0 4px rgba(0, 12, 88, 0.2);
-  }
 }
 
 .navWrapper {
   display: flex;
-  column-gap: 4px;
 }
 
 .logo {

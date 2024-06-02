@@ -63,9 +63,19 @@ export default function SettingsDrawer({ isOpened, value: checkState, onClose, o
           <FormGroup style={ { display: 'flex', flexFlow: 'row wrap' } }>
             { data.map((v: GroupInfo) => (
               <FormControlLabel
-                style={ { flex: v.id.startsWith('liter') || v.id.startsWith('building') ? '0 1 138px' : '1 0 250px', width: 'max-content' } }
+                style={ {
+                  flex: v.id.startsWith('liter') || v.id.startsWith('building')
+                    ? '0 1 138px'
+                    : '1 0 250px',
+                  width: 'max-content'
+                } }
                 key={ v.id }
-                control={ <Checkbox name={ v.id } defaultChecked={ !checkState.includes(v.id) } onChange={ handleSubmit } /> }
+                control={ (
+                  <Checkbox
+                    name={ v.id }
+                    defaultChecked={ !checkState.includes(v.id) }
+                    onChange={ handleSubmit } />
+                ) }
                 label={ v.title }
               />
             )) }
