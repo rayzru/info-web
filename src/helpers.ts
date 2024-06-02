@@ -1,6 +1,4 @@
-export function cleanupPhone(source: string) {
-  return source.replace(/[^+\d]/g, '');
-}
+
 
 export const pick = <T extends {}, K extends keyof T>(obj: T, ...keys: K[]) => (
   Object.fromEntries(
@@ -10,8 +8,16 @@ export const pick = <T extends {}, K extends keyof T>(obj: T, ...keys: K[]) => (
   ) as Pick<T, K>
 );
 
+export function cleanupPhone(source: string) {
+  return source.replace(/[^+\d]/g, '');
+}
+
 export function formatPhone(source: string): string {
   const p = cleanupPhone(source);
-  // eslint-disable-next-line no-irregular-whitespace
-  return `${p.substring(0, 2)} (${p.substring(2, 5)}) ${p.substring(5, 8)}-${p.substring(8, 10)}-${p.substring(10, 12)}`;
+  var match = p.match(/^(\d{2})(\d{3})(\d{3})(\d{2})(\d{2})$/);
+  if (!match) {
+    return source;
+  }
+  const [code, a, b, c, d] = match;
+  return `${code}\u2009(${a})\u2009${b}-${c}-${d}`;
 }

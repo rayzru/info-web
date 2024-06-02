@@ -67,8 +67,8 @@ export default function ParkingFilter(props: Props): React.JSX.Element {
     [filter],
   );
 
-  const handleBuildings = (_e: MouseEvent<HTMLElement>, newValue: string[]) => setFilter({ ...filter, buildings: newValue });
-  const handleTypes = (_e: MouseEvent<HTMLElement>, newValue: string[]) => setFilter({ ...filter, type: newValue });
+  const handleBuildings = (_e: MouseEvent<HTMLElement>, b: string[]) => setFilter({ ...filter, buildings: b });
+  const handleTypes = (_e: MouseEvent<HTMLElement>, t: string[]) => setFilter({ ...filter, type: t });
 
   return (
     <Stack direction="row" spacing={ 2 }>

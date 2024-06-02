@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { Icon } from '@mui/material';
 
 const VkIcon = () => (

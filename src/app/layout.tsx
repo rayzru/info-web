@@ -5,12 +5,11 @@ import Script from 'next/script'
 import { SessionProvider } from 'next-auth/react';
 
 import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
+import { Navigation } from '@/components/Navigation';
 import ThemeRegistry from '@/themeRegistry';
 
 import '@fontsource/roboto/400.css';
 import './globals.scss';
-import styles from './layout.module.scss';
 
 export const metadata: Metadata = {
   title: 'Справочная, информационный центр',
@@ -45,7 +44,7 @@ export default function RootLayout({ children }: RootProps) {
         </Script>
         <ThemeRegistry options={ { key: 'mui' } }>
           <SessionProvider>
-            <Header className={ styles.header } />
+            <Navigation />
             <Container maxWidth="lg">
               { children }
             </Container>

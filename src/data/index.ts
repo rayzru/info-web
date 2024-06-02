@@ -77,7 +77,6 @@ export default [
         subtitle: 'Решение всех вопросов ЖКХ в одном приложении',
         url: 'https://apps.apple.com/ru/app/%D0%B3%D0%BE%D1%81%D1%83%D1%81%D0%BB%D1%83%D0%B3%D0%B8-%D0%B4%D0%BE%D0%BC/id1616550510'
       },
-
     ],
   },
   {

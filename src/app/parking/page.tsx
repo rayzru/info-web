@@ -4,7 +4,6 @@ import { Suspense, useState } from 'react';
 import { Container, Grid } from '@mui/material';
 
 import { ParkingCard } from '@/components/ParkingCard';
-import { ParkingCardNew } from '@/components/ParkingCardNew';
 import ParkingFilter, { FilterFn } from '@/components/parkingFilter/ParkingFilter';
 import parking from '@/data/parking';
 import { ParkingOfferInfo } from '@/types';
@@ -34,9 +33,7 @@ export default function Parking() {
             sm={ 6 }
             md={ 4 }
           >
-            <ParkingCard
-              info={ el }
-            />
+            <ParkingCard info={ el } />
           </Grid>
         )) }
       </Grid>

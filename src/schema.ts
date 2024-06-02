@@ -1,22 +1,27 @@
 import { relations } from 'drizzle-orm';
-import { boolean, integer, pgEnum, pgTable, primaryKey, serial, smallint, text, timestamp, unique, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
+import {
+  boolean, integer, pgEnum, pgTable, primaryKey, serial,
+  smallint, text, timestamp, unique, uniqueIndex
+} from 'drizzle-orm/pg-core';
 import type { AdapterAccount } from 'next-auth/adapters';
 
-export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  email: text('email').notNull().unique(),
-  emailVerified: timestamp('emailVerified', { mode: 'date' }),
-  name: text('name'),
-  image: text('image'),
-  password: text('password'),
-  createdAt: timestamp('created_at'),
-  updatedAt: timestamp('updated_at'),
-  verifiedAt: timestamp('verified_at', { mode: 'date' }),
-}, (user) => {
-  return {
+export const users = pgTable(
+  'users',
+  {
+    id: serial('id').primaryKey(),
+    email: text('email').notNull().unique(),
+    emailVerified: timestamp('emailVerified', { mode: 'date' }),
+    name: text('name'),
+    image: text('image'),
+    password: text('password'),
+    createdAt: timestamp('created_at'),
+    updatedAt: timestamp('updated_at'),
+    verifiedAt: timestamp('verified_at', { mode: 'date' }),
+  },
+  (user) => ({
     emailIdx: uniqueIndex('email_idx').on(user.email),
-  };
-});
+  })
+);
 
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -24,12 +29,16 @@ export const roles = pgTable('roles', {
   description: text('description')
 });
 
-export const usersToRoles = pgTable('users_roles', {
-  roleId: integer('role_id').notNull().references(() => roles.id),
-  userId: integer('user_id').notNull().references(() => users.id),
-}, (t) => ({
-  userRoleIdx: unique().on(t.userId, t.roleId),
-}));
+export const usersToRoles = pgTable(
+  'users_roles',
+  {
+    roleId: integer('role_id').notNull().references(() => roles.id),
+    userId: integer('user_id').notNull().references(() => users.id),
+  },
+  (t) => ({
+    userRoleIdx: unique().on(t.userId, t.roleId),
+  })
+);
 
 export const rolesRelations = relations(roles, ({ many }) => ({
   users: many(usersToRoles),

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { PropsWithStyles } from '@/types';
 
 interface Props extends PropsWithStyles {

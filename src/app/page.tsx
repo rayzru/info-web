@@ -2,19 +2,14 @@
 
 import { ReactNode, useState } from 'react';
 import { FilterList } from '@mui/icons-material';
-import { Container, IconButton, Snackbar, TextField, Toolbar } from '@mui/material';
+import { IconButton, Snackbar, Toolbar, } from '@mui/material';
 
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
 import { InfoCard } from '@/components/InfoCard';
 import { InfoGrid } from '@/components/InfoGrid';
-import Search from '@/components/search/Search';
 import SettingsDrawer from '@/components/SettingsDrawer';
 import data from '@/data';
 import useLocalStorage from '@/hooks/use-local-storage';
 import { GroupInfo } from '@/types';
-
-import styles from './page.module.scss';
 
 export default function Home() {
   const [hidden, setHidden] = useLocalStorage<string>('hidden', '');
@@ -47,11 +42,20 @@ export default function Home() {
       </Toolbar>
 
       <InfoGrid>
-        { data.map((el: GroupInfo) => !checkState.includes(el.id) && <InfoCard onCopyUrl={ handleCopyUrl } key={ el.id } info={ el } />) }
+        { data.map(
+          (el: GroupInfo) => !checkState.includes(el.id) && (
+            <InfoCard onCopyUrl={ handleCopyUrl } key={ el.id } info={ el } />
+          ))
+        }
       </InfoGrid>
 
       {/* <Map className={ styles.map } /> */ }
-      <SettingsDrawer value={ checkState } onUpdate={ handleUpdate } onClose={ handleToggleSettings } isOpened={ openSettings } />
+      <SettingsDrawer
+        value={ checkState }
+        onUpdate={ handleUpdate }
+        onClose={ handleToggleSettings }
+        isOpened={ openSettings }
+      />
       <Snackbar
         open={ Boolean(snack) }
         autoHideDuration={ 2000 }

@@ -13,10 +13,9 @@ export const createUserSchema = object({
     .max(32, 'Пароль не должен превышать 32 символа.'),
   passwordConfirm: string({ required_error: 'Пожалуйста, подтвердите ваш пароль' })
     .min(1, 'Пожалуйста, подтвердите ваш пароль'),
-})
-  .refine(
-    (data) => data.password === data.passwordConfirm,
-    { path: ['passwordConfirm'], message: 'Пароли не совпадают' }
+}).refine(
+  (data) => data.password === data.passwordConfirm,
+  { path: ['passwordConfirm'], message: 'Пароли не совпадают' }
 );
 
 export const loginUserSchema = object({

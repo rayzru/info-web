@@ -1,6 +1,7 @@
+'use client';
 
-import React from 'react';
-import { Menu } from '@mui/icons-material';
+import React, { ReactNode } from 'react';
+import { Help, Info, ListAlt, Menu, ParkOutlined } from '@mui/icons-material';
 import {
   AppBar, Box, Button, Container, Drawer, Icon,
   IconButton, List, ListItem, ListItemButton, ListItemText, Toolbar
@@ -16,25 +17,30 @@ import styles from './Header.module.scss';
 
 interface NavInterface {
   title: string;
+  icon?: ReactNode;
   href: string;
 }
 
 const navigation: NavInterface[] = [
   {
     title: 'Справка',
+    icon: <Help />,
     href: '/',
   },
   {
     title: 'Парковки',
+    icon: <ParkOutlined />,
     href: '/parking',
   },
   {
-    title: 'Правила',
-    href: '/rules',
+    title: '',
+    icon: <Info />,
+    href: '/about',
   },
   {
-    title: 'Сообщество',
-    href: '/about',
+    title: 'Правила',
+    icon: <ListAlt />,
+    href: '/rules',
   },
 ];
 
@@ -42,7 +48,7 @@ interface Props extends PropsWithStyles {
   window?: () => Window;
 }
 
-export const Header = async ({ window }: Props) => {
+export const NavigationImpl = async ({ window }: Props) => {
   // const { data: session, status } = useSession();
 
   // console.log(session, status);

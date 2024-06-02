@@ -73,9 +73,35 @@ export const ParkingCard = ({ info }: Props) => {
         />
       </CardContent>
       <CardActions sx={ { marginTop: 'auto' } }>
-        { contact.phone && <Button variant='text' key='phone' color='inherit' sx={ { marginRight: 'auto', whiteSpace: 'nowrap' } } href={ `tel:${cleanupPhone(contact.phone)}` }>{ formatPhone(contact.phone) }</Button> }
-        { contact.hasWhatsApp && <IconButton key='whatsapp' size='small' href={ `https://wa.me/${cleanupPhone(contact.phone)}` }><WhatsApp /></IconButton> }
-        { contact.hasTelegram && <IconButton key='telegram' size='small' href={ `https://t.me/${cleanupPhone(contact.phone)}` }><Telegram /></IconButton> }
+        { contact.phone && (
+          <Button
+            variant='text'
+            key='phone'
+            color='inherit'
+            sx={ { marginRight: 'auto', whiteSpace: 'nowrap' } }
+            href={ `tel:${cleanupPhone(contact.phone)}` }
+          >
+            { formatPhone(contact.phone) }
+          </Button>
+        ) }
+        { contact.hasWhatsApp && (
+          <IconButton
+            key='whatsapp'
+            size='small'
+            href={ `https://wa.me/${cleanupPhone(contact.phone)}` }
+          >
+            <WhatsApp />
+          </IconButton>
+        ) }
+        { contact.hasTelegram && (
+          <IconButton
+            key='telegram'
+            size='small'
+            href={ `https://t.me/${cleanupPhone(contact.phone)}` }
+          >
+            <Telegram />
+          </IconButton>
+        ) }
       </CardActions>
     </Card>
   );
