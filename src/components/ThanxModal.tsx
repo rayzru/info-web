@@ -32,8 +32,9 @@ export function ThanxModal(props: Props) {
   return (
     <Modal open={ props.open } onClose={ props.closeHandler } disableEnforceFocus >
       <Box sx={ modalStyles } >
-        <p>Ваши благодарности, просьбы, предложения или критику можно выразить абсолютно анонимно.
-          Сообщение моментально будет отправлено в личные сообщения через Телеграмм.</p>
+        <p>Ваши предложения, новости, благодарности, просьбы или критику можно выразить абсолютно анонимно,
+          написав и отправив сообщение, которое тут же будет отправлено администратору.
+        </p>
         <TextField variant='filled' label="Сообщение" multiline rows={ 4 } onChange={ (e) => setMessage(e.target.value) } />
         <Button onClick={ handleSend } disabled={ message.length === 0 } variant='contained'>Отправить</Button>
         <Button onClick={ props.closeHandler } variant='outlined'>Закрыть</Button>
