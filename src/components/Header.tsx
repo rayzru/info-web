@@ -83,11 +83,11 @@ export const Header = ({
           </Icon>
           <div className={ styles.navWrapper }>
             { navigation.map(({ title, href, icon }: NavInterface) => (pathname === href || (pathname.startsWith(href) && href !== '/'))
-              ? (<span key={ title } className={ clsx(styles.nav, styles.active) }>
+              ? (<span key={ href } className={ clsx(styles.nav, styles.active) }>
                 <Box sx={ { display: { xs: 'none', sm: 'block' } } }>{ title }</Box>
                 <Box sx={ { display: { xs: 'block', sm: 'none' } } }>{ icon }</Box>
               </span>)
-              : (<Link href={ href } className={ styles.nav } key={ title }>
+              : (<Link href={ href } className={ styles.nav } key={ href }>
                 <Box sx={ { display: { xs: 'none', sm: 'block' } } }>{ title }</Box>
                 <Box sx={ { display: { xs: 'block', sm: 'none' } } }>{ icon }</Box>
               </Link>),
