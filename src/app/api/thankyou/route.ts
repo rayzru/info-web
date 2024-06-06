@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
 
   const apiUrl = `${DEFAULT_TELEGRAM_API_URL}bot${process.env.BOT_TOKEN}/sendMessage`;
   const body = await request.json();
-  const formattedText = `<b>Благодарность</b>
+  const formattedText = `<b>Сообщение</b>
   <pre>${body.message}</pre>`;
 
   const payload = {

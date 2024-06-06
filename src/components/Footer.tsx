@@ -17,16 +17,6 @@ export const Footer = () => {
   return (
     <footer className={ styles.footer }>
 
-      {/* <section className={ styles.linksSection }>
-      <Link target='_blank' className={ styles.link } href={ 'https://sr2.today' }>Сайт Сообщества</Link>
-      <Link target='_blank' className={ styles.link } href={ 'https://go.sr2.today/vk' }>Вконтакте</Link>
-    </section>
-
-    <section className={ styles.linksSection }>
-      <Link target='_blank' className={ styles.link } href={ 'https://go.sr2.today/telegram' }>Чат Telegram</Link>
-      <Link target='_blank' className={ styles.link } href={ 'https://go.sr2.today/whatsapp' }>Чат WhatsApp</Link>
-    </section> */}
-
       <section className={ styles.wide }>
         Проект разработан для сообщества соседей, собственников ЖК&nbsp;&laquo;Сердце&nbsp;Ростова&nbsp;2&raquo;.<br />
         Информация взята из открытых источников
