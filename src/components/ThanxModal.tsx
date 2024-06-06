@@ -7,7 +7,7 @@ export const modalStyles: SxProps<Theme> = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
   maxWidth: 600,
-  minWidth: 375,
+  minWidth: 320,
   bgcolor: 'background.paper',
   borderRadius: 2,
   boxShadow: 24,
