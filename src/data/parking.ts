@@ -474,7 +474,25 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true
     },
     dateUpdated: 1718009359085
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 1,
+    parkingNumber: 33,
+    offer: {
+      type: 'rent',
+      price: 5500,
+      description: 'Очень широкое место, встанет любая машина, не проходное.'
+    },
+    contact: {
+      phone: '+7 (918) 575-34-99',
+      hasWhatsApp: true,
+      hasTelegram: false
+    },
+    dateUpdated: 1719138486105
   }
+
 ];
 
 export default parkingData;
