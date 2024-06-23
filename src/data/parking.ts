@@ -491,8 +491,24 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: false
     },
     dateUpdated: 1719138486105
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 167,
+    offer: {
+      type: 'rent',
+      price: 5000,
+      description: 'Находится около лифта'
+    },
+    contact: {
+      phone: '+7 (929) 820-76-73',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1719165314671
   }
-
 ];
 
 export default parkingData;
