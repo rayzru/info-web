@@ -1,21 +1,6 @@
 import { ParkingOfferInfo } from '@/types';
 
 const parkingData: ParkingOfferInfo[] = [
-  // {
-  //   building: 1,
-  //   level: -2,
-  //   parkingNumber: 80,
-  //   variant: 'comfort',
-  //   contact: {
-  //     phone: '+79526551111',
-  //     hasTelegram: true,
-  //     hasWhatsApp: true,
-  //   },
-  //   offer: {
-  //     type: 'sell',
-  //     price: 950000,
-  //   },
-  // },
   {
     building: 6,
     level: -1,
@@ -432,24 +417,7 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'rent',
       price: 4500,
-      description: 'Рядом с выездом и лифтом '
-    },
-    contact: {
-      phone: '+7 (918) 513-13-75',
-      hasTelegram: true,
-      hasWhatsApp: true
-    },
-    dateUpdated: 1718009304485
-  },
-  {
-    variant: 'standard',
-    level: -1,
-    building: 6,
-    parkingNumber: 37,
-    offer: {
-      type: 'rent',
-      price: 4500,
-      description: 'Рядом с выездом и лифтом '
+      description: 'Рядом с выездом и лифтом'
     },
     contact: {
       phone: '+7 (918) 513-13-75',
