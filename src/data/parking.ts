@@ -508,7 +508,25 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true
     },
     dateUpdated: 1719165314671
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 164,
+    offer: {
+      type: 'rent',
+      price: 4000,
+      description: 'На длительный срок'
+    },
+    contact: {
+      phone: '+7 (918) 508-25-88',
+      hasWhatsApp: true,
+      hasTelegram: false
+    },
+    dateUpdated: 1719203359162
   }
+
 ];
 
 export default parkingData;
