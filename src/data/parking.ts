@@ -17,21 +17,6 @@ const parkingData: ParkingOfferInfo[] = [
     },
   },
   {
-    building: 6,
-    level: -1,
-    parkingNumber: 19,
-    variant: 'standard',
-    contact: {
-      phone: '+79185201981',
-      hasTelegram: true,
-    },
-    offer: {
-      type: 'rent',
-      price: 3600,
-      description: 'Аренда на 6 месяцев',
-    },
-  },
-  {
     variant: 'standard',
     level: -1,
     building: 6,
