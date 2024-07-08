@@ -462,8 +462,23 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: false
     },
     dateUpdated: 1719203359162
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 1,
+    parkingNumber: 67,
+    offer: {
+      type: 'rent',
+      price: 5000
+    },
+    contact: {
+      phone: '+7 (928) 153-51-01',
+      hasWhatsApp: true,
+      hasTelegram: false
+    },
+    dateUpdated: 1720418750180
   }
-
 ];
 
 export default parkingData;
