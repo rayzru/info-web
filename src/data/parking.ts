@@ -19,21 +19,6 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -1,
-    building: 6,
-    parkingNumber: 31,
-    offer: {
-      type: 'rent',
-      price: 5000,
-    },
-    contact: {
-      hasTelegram: true,
-      phone: '+7 (989) 502-60-97',
-    },
-    dateUpdated: 1701175341351,
-  },
-  {
-    variant: 'standard',
-    level: -1,
     building: 7,
     parkingNumber: 61,
     offer: {
@@ -464,6 +449,22 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: false
     },
     dateUpdated: 1720418750180
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 31,
+    offer: {
+      type: 'rent',
+      price: 4000,
+      description: 'Недалеко от лифта'
+    },
+    contact: {
+      phone: '+7 (989) 502-60-97',
+      hasTelegram: true
+    },
+    dateUpdated: 1722066961572
   }
 ];
 
