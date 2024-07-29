@@ -368,23 +368,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -1,
-    building: 6,
-    parkingNumber: 42,
-    offer: {
-      type: 'rent',
-      price: 4500,
-      description: 'Рядом с выездом и лифтом '
-    },
-    contact: {
-      phone: '+7 (918) 513-13-75',
-      hasTelegram: true,
-      hasWhatsApp: true
-    },
-    dateUpdated: 1718009359085
-  },
-  {
-    variant: 'standard',
     level: -2,
     building: 1,
     parkingNumber: 33,
