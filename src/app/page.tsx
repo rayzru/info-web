@@ -1,58 +1,68 @@
-'use client';
+import Link from "next/link";
 
-import { ReactNode, useState } from 'react';
-import { Snackbar } from '@mui/material';
+import { LatestPost } from "@sr2/app/_components/post";
+import { getServerAuthSession } from "@sr2/server/auth";
+import { api, HydrateClient } from "@sr2/trpc/server";
+import styles from "./index.module.css";
 
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
-import { InfoCard } from '@/components/InfoCard';
-import { InfoGrid } from '@/components/InfoGrid';
-import SettingsDrawer from '@/components/SettingsDrawer';
-import data from '@/data';
-import useLocalStorage from '@/hooks/use-local-storage';
-import { GroupInfo } from '@/types';
+export default async function Home() {
+  const hello = await api.post.hello({ text: "from tRPC" });
+  const session = await getServerAuthSession();
 
-import styles from './page.module.scss';
-
-export default function Home() {
-  const [hidden, setHidden] = useLocalStorage<string>('hidden', '');
-  const checkState = hidden.split(',');
-  const [openSettings, setOpenSettings] = useState(false);
-  const [snack, setSnack] = useState<ReactNode | string>('');
-
-  function handleToggleSettings() {
-    setOpenSettings(prev => !prev);
-  }
-
-  function handleUpdate(value: string) {
-    setHidden(value);
-  }
-
-  function handleCloseSnackbar() {
-    setSnack('');
-  }
-
-  function handleCopyUrl() {
-    setSnack(<>Ссылка на информацию скопирована</>);
-  }
+  void api.post.getLatest.prefetch();
 
   return (
-    <>
-      <main className={ styles.main }>
-        <Header className={ styles.header } showSearch={ false } onSettings={ handleToggleSettings } />
-        <InfoGrid className={ styles.cards }>
-          { data.map((el: GroupInfo) => !checkState.includes(el.id) && <InfoCard onCopyUrl={ handleCopyUrl } key={ el.id } info={ el } />) }
-        </InfoGrid>
-        {/* <Map className={ styles.map } /> */ }
-        <SettingsDrawer value={ checkState } onUpdate={ handleUpdate } onClose={ handleToggleSettings } isOpened={ openSettings } />
-        <Snackbar
-          open={ Boolean(snack) }
-          autoHideDuration={ 2000 }
-          onClose={ handleCloseSnackbar }
-          message={ snack }
-        />
-      </main >
-      <Footer />
-    </>
+    <HydrateClient>
+      <main className={styles.main}>
+        <div className={styles.container}>
+          <h1 className={styles.title}>
+            Create <span className={styles.pinkSpan}>T3</span> App
+          </h1>
+          <div className={styles.cardRow}>
+            <Link
+              className={styles.card}
+              href="https://create.t3.gg/en/usage/first-steps"
+              target="_blank"
+            >
+              <h3 className={styles.cardTitle}>First Steps →</h3>
+              <div className={styles.cardText}>
+                Just the basics - Everything you need to know to set up your
+                database and authentication.
+              </div>
+            </Link>
+            <Link
+              className={styles.card}
+              href="https://create.t3.gg/en/introduction"
+              target="_blank"
+            >
+              <h3 className={styles.cardTitle}>Documentation →</h3>
+              <div className={styles.cardText}>
+                Learn more about Create T3 App, the libraries it uses, and how
+                to deploy it.
+              </div>
+            </Link>
+          </div>
+          <div className={styles.showcaseContainer}>
+            <p className={styles.showcaseText}>
+              {hello ? hello.greeting : "Loading tRPC query..."}
+            </p>
+
+            <div className={styles.authContainer}>
+              <p className={styles.showcaseText}>
+                {session && <span>Logged in as {session.user?.name}</span>}
+              </p>
+              <Link
+                href={session ? "/api/auth/signout" : "/api/auth/signin"}
+                className={styles.loginButton}
+              >
+                {session ? "Sign out" : "Sign in"}
+              </Link>
+            </div>
+          </div>
+
+          {session?.user && <LatestPost />}
+        </div>
+      </main>
+    </HydrateClient>
   );
 }
