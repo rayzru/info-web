@@ -5,9 +5,7 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import { type Adapter } from "next-auth/adapters";
-import DiscordProvider from "next-auth/providers/discord";
 
-import { env } from "@sr2/env";
 import { db } from "@sr2/server/db";
 import {
   accounts,
@@ -15,6 +13,9 @@ import {
   users,
   verificationTokens,
 } from "@sr2/server/db/schema";
+import Google from "next-auth/providers/google";
+import VkProvider from "next-auth/providers/vk";
+import YandexProvider from "next-auth/providers/yandex";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -63,6 +64,20 @@ export const authOptions: NextAuthOptions = {
     //   clientId: env.DISCORD_CLIENT_ID,
     //   clientSecret: env.DISCORD_CLIENT_SECRET,
     // }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    VkProvider({
+      clientId: process.env.VK_CLIENT_ID!,
+      clientSecret: process.env.VK_CLIENT_SECRET!,
+      checks: ['none'],
+    }),
+    YandexProvider({
+      clientId: process.env.YANDEX_CLIENT_ID!,
+      clientSecret: process.env.YANDEX_CLIENT_SECRET!,
+    })
+
     /**
      * ...add more providers here.
      *

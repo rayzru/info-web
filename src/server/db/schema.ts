@@ -24,15 +24,9 @@ export const posts = createTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 256 }),
-    createdById: varchar("created_by", { length: 255 })
-      .notNull()
-      .references(() => users.id),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-      () => new Date()
-    ),
+    createdById: varchar("created_by", { length: 255 }).notNull().references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(() => new Date()),
   },
   (example) => ({
     createdByIdIdx: index("created_by_idx").on(example.createdById),
@@ -41,16 +35,10 @@ export const posts = createTable(
 );
 
 export const users = createTable("user", {
-  id: varchar("id", { length: 255 })
-    .notNull()
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+  id: varchar("id", { length: 255 }).notNull().primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 255 }).notNull(),
-  emailVerified: timestamp("email_verified", {
-    mode: "date",
-    withTimezone: true,
-  }).default(sql`CURRENT_TIMESTAMP`),
+  emailVerified: timestamp("email_verified", { mode: "date", withTimezone: true, }).default(sql`CURRENT_TIMESTAMP`),
   image: varchar("image", { length: 255 }),
 });
 
@@ -94,20 +82,11 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const sessions = createTable(
   "session",
   {
-    sessionToken: varchar("session_token", { length: 255 })
-      .notNull()
-      .primaryKey(),
-    userId: varchar("user_id", { length: 255 })
-      .notNull()
-      .references(() => users.id),
-    expires: timestamp("expires", {
-      mode: "date",
-      withTimezone: true,
-    }).notNull(),
+    sessionToken: varchar("session_token", { length: 255 }).notNull().primaryKey(),
+    userId: varchar("user_id", { length: 255 }).notNull().references(() => users.id),
+    expires: timestamp("expires", { mode: "date", withTimezone: true }).notNull(),
   },
-  (session) => ({
-    userIdIdx: index("session_user_id_idx").on(session.userId),
-  })
+  (session) => ({ userIdIdx: index("session_user_id_idx").on(session.userId), })
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -119,10 +98,7 @@ export const verificationTokens = createTable(
   {
     identifier: varchar("identifier", { length: 255 }).notNull(),
     token: varchar("token", { length: 255 }).notNull(),
-    expires: timestamp("expires", {
-      mode: "date",
-      withTimezone: true,
-    }).notNull(),
+    expires: timestamp("expires", { mode: "date", withTimezone: true }).notNull(),
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
