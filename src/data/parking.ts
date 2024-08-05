@@ -1,4 +1,4 @@
-import { ParkingOfferInfo } from "@/types";
+import { ParkingOfferInfo } from '@/types';
 
 const parkingData: ParkingOfferInfo[] = [
   {
