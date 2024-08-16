@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { api } from "@sr2/trpc/react";
-import styles from "../index.module.css";
+import styles from "../index.module.scss";
 
 export function LatestPost() {
   const [latestPost] = api.post.getLatest.useSuspenseQuery();
