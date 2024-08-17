@@ -482,6 +482,23 @@ const parkingData: ParkingOfferInfo[] = [
       phone: '+7 (909) 440-90-51'
     },
     dateUpdated: 1723799800235
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 23,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Широкое машиноместо, рядом с лифтом 2-го подъезда'
+    },
+    contact: {
+      phone: '+7 (918) 538-30-08',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1723895844613
   }
 ];
 
