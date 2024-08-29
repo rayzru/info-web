@@ -471,12 +471,12 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -1,
-    building: 6,
+    building: 7,
     parkingNumber: 36,
     offer: {
       type: 'rent',
       price: 7000,
-      description: 'Класс комфорт. Широкое место.'
+      description: 'Шикарное машиноместо классом комфорт. На 2 машины.'
     },
     contact: {
       phone: '+7 (909) 440-90-51'
