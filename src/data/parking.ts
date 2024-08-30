@@ -499,25 +499,7 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true
     },
     dateUpdated: 1723895844613
-  },
-  {
-    variant: 'standard',
-    level: -1,
-    building: 1,
-    parkingNumber: 65,
-    offer: {
-      type: 'rent',
-      price: 5000,
-      description: 'Возле лифта'
-    },
-    contact: {
-      phone: '+7 (914) 993-09-74',
-      hasWhatsApp: true,
-      hasTelegram: true
-    },
-    dateUpdated: 1724321525045
   }
-
 ];
 
 export default parkingData;
