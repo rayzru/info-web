@@ -1,15 +1,16 @@
-import { type Config } from "drizzle-kit";
+import { type Config, defineConfig } from "drizzle-kit";
 
 import { env } from "@sr2/env";
 
 console.log('DB:', env.DATABASE_URL);
-export default {
+export default defineConfig({
   schema: "./src/server/db/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
+    database: env.DATABASE_NAME,
     url: env.DATABASE_URL,
   },
   verbose: true,
   strict: false,
   tablesFilter: ["sr2-community_*"],
-} satisfies Config;
+} satisfies Config);
