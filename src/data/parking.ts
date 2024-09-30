@@ -33,19 +33,19 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -1,
+    building: 6,
+    parkingNumber: 168,
     offer: {
       type: 'rent',
-      price: 4000,
-      description: 'Рядом с лифтом',
+      price: 5000,
+      description: 'Напротив лифта 1 и 2 подъезда, не узкое, не проходное.',
     },
     contact: {
       phone: '+7 (926) 611-42-28',
       hasTelegram: true,
       hasWhatsApp: true,
     },
-    building: 6,
-    parkingNumber: 168,
-    dateUpdated: 1702397342913,
+    dateUpdated: 1727708170004,
   },
   {
     variant: 'standard',
