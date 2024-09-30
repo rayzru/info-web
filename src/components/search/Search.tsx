@@ -25,15 +25,15 @@ const Search = () => {
 
   return (
     <SearchRoot>
-      <div { ...getRootProps() }>
-        <InputWrapper ref={ setAnchorEl } className={ focused ? 'focused' : '' }>
-          { value.map((option: TagOptionType, index: number) => (
+      <div {...getRootProps()}>
+        <InputWrapper ref={setAnchorEl} className={focused ? 'focused' : ''}>
+          {value.map((option: TagOptionType, index: number) => (
             // eslint-disable-next-line react/jsx-key
-            <StyledTag label={ option } { ...getTagProps({ index }) } />
-          )) }
+            <StyledTag label={option} {...getTagProps({ index })} />
+          ))}
           <input
-            name='srch'
-            { ...getInputProps() }
+            name="srch"
+            {...getInputProps()}
             autoComplete="new-password"
             autoCapitalize="none"
             autoCorrect="off"
@@ -41,17 +41,18 @@ const Search = () => {
         </InputWrapper>
       </div>
 
-      { groupedOptions.length > 0 ? (
-        <Listbox { ...getListboxProps() } >
-          { (groupedOptions as TagOptionType[]).map((option: TagOptionType, index: number) => (
-            <li key={ index } { ...getOptionProps({ option, index }) }>
-              <span>{ option }</span>
-              <CheckIcon fontSize="small" />
-            </li>
-          )) }
+      {groupedOptions.length > 0 ? (
+        <Listbox {...getListboxProps()}>
+          {(groupedOptions as TagOptionType[]).map(
+            (option: TagOptionType, index: number) => (
+              <li {...getOptionProps({ option, index })} key={index}>
+                <span>{option}</span>
+                <CheckIcon fontSize="small" />
+              </li>
+            )
+          )}
         </Listbox>
-      ) : null }
-
+      ) : null}
     </SearchRoot>
   );
 };
