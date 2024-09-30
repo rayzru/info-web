@@ -10,31 +10,31 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@emotion/cache": "^11.11.0",
-    "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.5",
-    "@fontsource/roboto": "^5.0.13",
-    "@mui/icons-material": "^5.15.20",
-    "@mui/lab": "^5.0.0-alpha.170",
-    "@mui/material": "^5.15.20",
+    "@emotion/cache": "^11.13.1",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@fontsource/roboto": "^5.1.0",
+    "@mui/icons-material": "^6.1.1",
+    "@mui/lab": "^6.0.0-beta.10",
+    "@mui/material": "^6.1.1",
     "clsx": "^2.1.1",
     "next": "^14",
     "react": "^18",
     "react-dom": "^18",
     "react-imask": "^7.6.1",
-    "sass": "^1.77.6"
+    "sass": "^1.79.4"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@typescript-eslint/eslint-plugin": "^7.13.1",
-    "@typescript-eslint/parser": "^7.13.1",
-    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7",
+    "@typescript-eslint/parser": "^7",
+    "eslint": "^8.57.1",
     "eslint-config-next": "^14",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-simple-import-sort": "^12.1.0",
-    "eslint-plugin-sonarjs": "^1.0.3",
-    "typescript": "^5.5.2"
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-sonarjs": "^2.0.3",
+    "typescript": "^5.6.2"
   }
 }

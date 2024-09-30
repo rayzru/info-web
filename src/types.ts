@@ -95,7 +95,7 @@ export interface ParkingOfferInfo extends BaseInfo {
   variant: ParkingVariant;
   offer: Offer;
   contact: PhoneInfo;
-  dateUpdated?: number;
+  dateUpdated: number;
   parkingNumber: number;
   visible?: boolean;
 }

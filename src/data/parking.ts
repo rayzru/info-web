@@ -15,6 +15,7 @@ const parkingData: ParkingOfferInfo[] = [
       type: 'rent',
       price: 3700,
     },
+    dateUpdated: 1701879650097,
   },
   {
     variant: 'standard',

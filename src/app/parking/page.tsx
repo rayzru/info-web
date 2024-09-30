@@ -10,42 +10,61 @@ import ParkingFilter from '@/components/parkingFilter/ParkingFilter';
 import { FilterFn } from '@/components/parkingFilter/tyles';
 import { ParkingGrid } from '@/components/ParkingGrid';
 import parking from '@/data/parking';
+import { monthDiff } from '@/helpers';
 import { ParkingOfferInfo } from '@/types';
 
 import styles from './page.module.scss';
 
+type POI = ParkingOfferInfo;
+
 export default function Parking() {
+  const now = new Date();
 
   const sorted = parking
-    .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.parkingNumber - b.parkingNumber)
-    .sort((a: ParkingOfferInfo, b: ParkingOfferInfo) => a.building - b.building);
+    .sort((a: POI, b: POI) => a.parkingNumber - b.parkingNumber)
+    .sort((a: POI, b: POI) => a.building - b.building);
 
-  const [data, setData] = useState<ParkingOfferInfo[]>(sorted);
+  const regrouped = [
+    ...sorted.filter(
+      (el: POI) => monthDiff(now, new Date(el.dateUpdated)) <= 1
+    ),
+    ...sorted.filter((el: POI) => {
+      const d = new Date(el.dateUpdated);
+      return monthDiff(now, d) > 1 && monthDiff(now, d) <= 3;
+    }),
+  ];
+
+  const [data, setData] = useState<POI[]>(regrouped);
 
   function onFilter(fn: FilterFn): void {
-    setData(sorted.filter(fn))
+    setData(regrouped.filter(fn));
   }
 
   return (
     <>
-      <main className={ styles.main }>
+      <main className={styles.main}>
         <Header
-          className={ styles.header }
-          showSearch={ false }
-          showSettingsButton={ false }
+          className={styles.header}
+          showSearch={false}
+          showSettingsButton={false}
         />
 
         <Suspense>
-          <ParkingFilter onFilter={ onFilter } />
+          <ParkingFilter onFilter={onFilter} />
         </Suspense>
-        <ParkingGrid className={ styles.cards }>
-          { data.map((el: ParkingOfferInfo) => (
+        <ParkingGrid className={styles.cards}>
+          {data.map((el: ParkingOfferInfo) => (
             <ParkingCard
-              key={ el.offer.type + el.building.toString() + el.parkingNumber.toString() + el.level.toString() }
-              info={ el }
+              key={
+                el.offer.type +
+                el.building.toString() +
+                el.parkingNumber.toString() +
+                el.level.toString()
+              }
+              info={el}
             />
-          )) }
-          <ParkingCardNew key={ 'newCard' } />
+          ))}
+          <ParkingCardNew key={'newCard'} />
         </ParkingGrid>
       </main>
       <Footer />
