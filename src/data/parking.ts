@@ -81,20 +81,19 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -1,
-    building: 1,
-    offer: {
-      type: 'rent',
-      price: 5500,
-      description:
-        'Место под 5 литером. Легко заехать/выехать. Лифт близко. Сдается на длительный период.',
-    },
     contact: {
       hasTelegram: true,
       hasWhatsApp: true,
       phone: '+7 (903) 486-20-40',
     },
+    building: 1,
     parkingNumber: 73,
-    dateUpdated: 1704576127571,
+    offer: {
+      type: 'rent',
+      price: 4500,
+      description: 'Место под 5м литером. Лифт близко',
+    },
+    dateUpdated: 1727782092476,
   },
   {
     variant: 'standard',
