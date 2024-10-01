@@ -147,19 +147,18 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
+    level: -1,
     building: 6,
     parkingNumber: 41,
     offer: {
       type: 'rent',
       price: 5000,
-      description: 'Размер стандартный, без колонн. Недалеко от въезда.',
+      description: 'Место недалеко от въезда, без колонн, очень удобное. ',
     },
     contact: {
-      phone: '+7 (905) 486-11-16',
-      hasTelegram: true,
+      phone: '+7 (903) 486-11-16',
     },
-    level: -1,
-    dateUpdated: 1707317690878,
+    dateUpdated: 1727758783717,
   },
   {
     variant: 'standard',
