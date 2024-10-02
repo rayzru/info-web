@@ -341,15 +341,15 @@ const parkingData: ParkingOfferInfo[] = [
     parkingNumber: 37,
     offer: {
       type: 'rent',
-      price: 4500,
-      description: 'Рядом с выездом и лифтом',
+      price: 5000,
+      description: 'Рядом с выездом и лифтом, широкое удобное место',
     },
     contact: {
       phone: '+7 (918) 513-13-75',
       hasTelegram: true,
       hasWhatsApp: true,
     },
-    dateUpdated: 1718009304485,
+    dateUpdated: 1727871860187,
   },
   {
     variant: 'standard',
