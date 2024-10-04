@@ -436,21 +436,20 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -2,
+    level: -1,
     building: 1,
     parkingNumber: 45,
     offer: {
       type: 'rent',
-      price: 6000,
-      description:
-        'Изолированное широкое место, удобный заезд. На длительный срок.',
+      price: 7000,
+      description: 'На длительный период',
     },
     contact: {
       phone: '+7 (928) 226-55-56',
       hasTelegram: true,
       hasWhatsApp: true,
     },
-    dateUpdated: 1722849336211,
+    dateUpdated: 1727973759391,
   },
   {
     variant: 'standard',
