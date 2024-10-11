@@ -539,14 +539,15 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'rent',
       price: 5000,
+      description: 'Удобное место недалеко от лифта'
     },
     contact: {
-      phone: '+7 (904) 445-63-53',
-      hasWhatsApp: true
+      phone: '+7 (900) 137-28-57',
+      hasWhatsApp: true,
+      hasTelegram: true
     },
-    dateUpdated: 1728647165020
+    dateUpdated: 1728647365370
   }
-
 ];
 
 export default parkingData;
