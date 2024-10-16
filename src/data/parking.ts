@@ -485,22 +485,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -2,
-    parkingNumber: 9,
-    offer: {
-      type: 'sell',
-      price: 800000,
-      description: 'Место возле лифта',
-    },
-    contact: {
-      phone: '+7 (909) 438-12-19',
-      hasWhatsApp: true,
-    },
-    building: 1,
-    dateUpdated: 1725536043449,
-  },
-  {
-    variant: 'standard',
     level: -1,
     building: 6,
     offer: {
@@ -547,7 +531,24 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: true
     },
     dateUpdated: 1728647365370
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 1,
+    parkingNumber: 9,
+    offer: {
+      type: 'rent',
+      price: 7000
+    },
+    contact: {
+      phone: '+7 (928) 175-11-55',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1729056403006
   }
+
 ];
 
 export default parkingData;
