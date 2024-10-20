@@ -454,38 +454,6 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -1,
-    building: 7,
-    parkingNumber: 36,
-    offer: {
-      type: 'rent',
-      price: 7000,
-      description: 'Шикарное машиноместо классом комфорт. На 2 машины.',
-    },
-    contact: {
-      phone: '+7 (909) 440-90-51',
-    },
-    dateUpdated: 1723799800235,
-  },
-  {
-    variant: 'standard',
-    level: -1,
-    building: 7,
-    parkingNumber: 23,
-    offer: {
-      type: 'rent',
-      price: 7000,
-      description: 'Широкое машиноместо, рядом с лифтом 2-го подъезда',
-    },
-    contact: {
-      phone: '+7 (918) 538-30-08',
-      hasTelegram: true,
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1723895844613,
-  },
-  {
-    variant: 'standard',
-    level: -1,
     building: 6,
     offer: {
       type: 'sell',
@@ -547,7 +515,40 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true
     },
     dateUpdated: 1729056403006
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 23,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Широкое машиноместо, рядом со 2-м подъездом'
+    },
+    contact: {
+      phone: '+7 (918) 538-30-08',
+      hasTelegram: true,
+      hasWhatsApp: true
+    },
+    dateUpdated: 1729254488983
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 36,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Шикарное машиноместо классом комфорт, около лифта.'
+    },
+    contact: {
+      phone: '+7 (909) 440-90-51'
+    },
+    dateUpdated: 1729254959823
   }
+
 
 ];
 
