@@ -547,9 +547,24 @@ const parkingData: ParkingOfferInfo[] = [
       phone: '+7 (909) 440-90-51'
     },
     dateUpdated: 1729254959823
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    parkingNumber: 19,
+    offer: {
+      type: 'rent',
+      price: 8000,
+      description: 'На длительный срок'
+    },
+    contact: {
+      phone: '+7 (928) 954-09-28',
+      hasWhatsApp: true,
+      hasTelegram: true
+    },
+    building: 1,
+    dateUpdated: 1730538447893
   }
-
-
 ];
 
 export default parkingData;
