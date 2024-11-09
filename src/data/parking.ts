@@ -319,40 +319,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -1,
-    building: 6,
-    parkingNumber: 36,
-    offer: {
-      type: 'rent',
-      price: 4500,
-      description: 'Рядом с въездом и лифтом',
-    },
-    contact: {
-      phone: '+7 (918) 513-13-75',
-      hasTelegram: true,
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1718009235886,
-  },
-  {
-    variant: 'standard',
-    level: -1,
-    building: 6,
-    parkingNumber: 37,
-    offer: {
-      type: 'rent',
-      price: 5000,
-      description: 'Рядом с выездом и лифтом, широкое удобное место',
-    },
-    contact: {
-      phone: '+7 (918) 513-13-75',
-      hasTelegram: true,
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1727871860187,
-  },
-  {
-    variant: 'standard',
     level: -2,
     building: 1,
     parkingNumber: 33,
@@ -470,18 +436,19 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -2,
+    building: 2,
     parkingNumber: 17,
     offer: {
       type: 'rent',
       price: 7000,
-      description: '',
+      description: 'Широкое место с удобным въездом'
     },
     contact: {
       phone: '+7 (989) 579-24-29',
-      hasWhatsApp: false,
+      hasTelegram: true,
+      hasWhatsApp: true
     },
-    building: 2,
-    dateUpdated: 1727265620118,
+    dateUpdated: 1731158981936
   },
   {
     variant: 'standard',
