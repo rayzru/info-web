@@ -518,19 +518,19 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -1,
+    building: 1,
     parkingNumber: 19,
     offer: {
       type: 'rent',
-      price: 8000,
-      description: 'На длительный срок'
+      price: 7000,
+      description: 'На 1 год'
     },
     contact: {
       phone: '+7 (928) 954-09-28',
-      hasWhatsApp: true,
-      hasTelegram: true
+      hasTelegram: true,
+      hasWhatsApp: true
     },
-    building: 1,
-    dateUpdated: 1730538447893
+    dateUpdated: 1731253904300
   }
 ];
 
