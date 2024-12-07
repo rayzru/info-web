@@ -546,7 +546,24 @@ const parkingData: ParkingOfferInfo[] = [
       phone: '+7 (950) 866-33-99'
     },
     dateUpdated: 1733483539518
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    parkingNumber: 150,
+    building: 6,
+    offer: {
+      type: 'rent',
+      price: 6000,
+      description: 'Широкое место, удобный заезд'
+    },
+    contact: {
+      phone: '+7 (918) 530-80-17',
+      hasWhatsApp: true
+    },
+    dateUpdated: 1733555199431
   }
+
 
 ];
 
