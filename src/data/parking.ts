@@ -535,21 +535,6 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -1,
-    building: 7,
-    parkingNumber: 27,
-    offer: {
-      type: 'rent',
-      price: 6500,
-      description: 'Удобно расположена от выезда/въезда'
-    },
-    contact: {
-      phone: '+7 (950) 866-33-99'
-    },
-    dateUpdated: 1733483539518
-  },
-  {
-    variant: 'standard',
-    level: -1,
     parkingNumber: 150,
     building: 6,
     offer: {
@@ -562,9 +547,7 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true
     },
     dateUpdated: 1733555199431
-  }
-
-
+  },
 ];
 
 export default parkingData;
