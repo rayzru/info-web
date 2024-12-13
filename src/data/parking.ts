@@ -441,14 +441,14 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'rent',
       price: 7000,
-      description: 'Широкое место с удобным въездом'
+      description: 'Широкое место с удобным въездом',
     },
     contact: {
       phone: '+7 (989) 579-24-29',
       hasTelegram: true,
-      hasWhatsApp: true
+      hasWhatsApp: true,
     },
-    dateUpdated: 1731158981936
+    dateUpdated: 1731158981936,
   },
   {
     variant: 'standard',
@@ -458,14 +458,14 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'rent',
       price: 5000,
-      description: 'Удобное место недалеко от лифта'
+      description: 'Удобное место недалеко от лифта',
     },
     contact: {
       phone: '+7 (900) 137-28-57',
       hasWhatsApp: true,
-      hasTelegram: true
+      hasTelegram: true,
     },
-    dateUpdated: 1728647365370
+    dateUpdated: 1728647365370,
   },
   {
     variant: 'standard',
@@ -474,14 +474,14 @@ const parkingData: ParkingOfferInfo[] = [
     parkingNumber: 9,
     offer: {
       type: 'rent',
-      price: 7000
+      price: 7000,
     },
     contact: {
       phone: '+7 (928) 175-11-55',
       hasTelegram: true,
-      hasWhatsApp: true
+      hasWhatsApp: true,
     },
-    dateUpdated: 1729056403006
+    dateUpdated: 1729056403006,
   },
   {
     variant: 'standard',
@@ -491,14 +491,14 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'rent',
       price: 7000,
-      description: 'Широкое машиноместо, рядом со 2-м подъездом'
+      description: 'Широкое машиноместо, рядом со 2-м подъездом',
     },
     contact: {
       phone: '+7 (918) 538-30-08',
       hasTelegram: true,
-      hasWhatsApp: true
+      hasWhatsApp: true,
     },
-    dateUpdated: 1729254488983
+    dateUpdated: 1729254488983,
   },
   {
     variant: 'standard',
@@ -508,12 +508,12 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'rent',
       price: 7000,
-      description: 'Шикарное машиноместо классом комфорт, около лифта.'
+      description: 'Шикарное машиноместо классом комфорт, около лифта.',
     },
     contact: {
-      phone: '+7 (909) 440-90-51'
+      phone: '+7 (909) 440-90-51',
     },
-    dateUpdated: 1729254959823
+    dateUpdated: 1729254959823,
   },
   {
     variant: 'standard',
@@ -523,14 +523,14 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'rent',
       price: 7000,
-      description: 'На 1 год'
+      description: 'На 1 год',
     },
     contact: {
       phone: '+7 (928) 954-09-28',
       hasTelegram: true,
-      hasWhatsApp: true
+      hasWhatsApp: true,
     },
-    dateUpdated: 1731253904300
+    dateUpdated: 1731253904300,
   },
   {
     variant: 'standard',
@@ -540,13 +540,29 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'rent',
       price: 6000,
-      description: 'Широкое место, удобный заезд'
+      description: 'Широкое место, удобный заезд',
     },
     contact: {
       phone: '+7 (918) 530-80-17',
-      hasWhatsApp: true
+      hasWhatsApp: true,
     },
-    dateUpdated: 1733555199431
+    dateUpdated: 1733555199431,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 155,
+    offer: {
+      type: 'rent',
+      price: 5500,
+      description: 'Удобный подъезд',
+    },
+    contact: {
+      phone: '+7 (928) 754-68-79',
+      hasTelegram: true,
+    },
+    dateUpdated: 1734077914578,
   },
 ];
 
