@@ -146,21 +146,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -1,
-    building: 6,
-    parkingNumber: 41,
-    offer: {
-      type: 'rent',
-      price: 5000,
-      description: 'Место недалеко от въезда, без колонн, очень удобное. ',
-    },
-    contact: {
-      phone: '+7 (903) 486-11-16',
-    },
-    dateUpdated: 1727758783717,
-  },
-  {
-    variant: 'standard',
     building: 2,
     level: -2,
     parkingNumber: 40,
@@ -567,7 +552,7 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -1,
-    building: 7,
+    building: 6,
     parkingNumber: 41,
     offer: {
       type: 'rent',
