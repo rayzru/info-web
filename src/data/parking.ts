@@ -508,14 +508,13 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'rent',
       price: 7000,
-      description: 'На 1 год',
     },
     contact: {
       phone: '+7 (928) 954-09-28',
       hasTelegram: true,
       hasWhatsApp: true,
     },
-    dateUpdated: 1731253904300,
+    dateUpdated: 1736519135699,
   },
   {
     variant: 'standard',
