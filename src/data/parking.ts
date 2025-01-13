@@ -595,6 +595,23 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1736784680952,
   },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 67,
+    offer: {
+      type: 'sell',
+      price: 1600000,
+      description: 'Очень большое парковочное место',
+    },
+    contact: {
+      phone: '+7 (951) 511-70-25',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1736784814357,
+  },
 ];
 
 export default parkingData;
