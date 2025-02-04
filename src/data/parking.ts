@@ -645,24 +645,6 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1737806296191,
   },
-  {
-    variant: 'standard',
-    level: -1,
-    building: 6,
-    parkingNumber: 36,
-    offer: {
-      type: 'rent',
-      price: 6000,
-      description:
-        'Удобное широкое место рядом с выездом и лифтом второго подъезда.',
-    },
-    contact: {
-      phone: '+7 (918) 513-13-75',
-      hasTelegram: true,
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1737976783911,
-  },
 ];
 
 export default parkingData;
