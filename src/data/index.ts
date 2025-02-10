@@ -1,9 +1,9 @@
-import { CardColor, GroupInfo } from '@/types';
+import { GroupInfo } from '@/types';
 
 export default [
   {
     id: 'uk',
-    rows: 11,
+    rows: 9,
     title: 'Управляющая компания',
     subtitle: 'Сердце Ростова',
     logo: 'sr2',
@@ -21,38 +21,58 @@ export default [
     ],
     phones: [
       {
-        title: 'Диспетчер УК',
+        title: 'Диспетчерcкая УК',
         phone: '+7 (960) 448-08-18',
         hasWhatsApp: true,
-        hasTe: true,
       },
       {
         title: 'Начальник участка',
         subtitle: 'Наталья Вячеславовна Волошина',
         phone: '+7 (960) 454-35-48',
-        hasWhatsApp: true,
+        // hasWhatsApp: true,
+      },
+      {
+        title: 'Начальник участка',
+        subtitle: 'Карпова Екатерина Александровна',
+        phone: '+7 (906) 453-40-97',
       },
       {
         title: 'Мастер участка',
-        subtitle: 'Даниил Лукашов',
-        phone: '+7 (905) 478-76-99',
-        hasWhatsApp: true,
-        visible: false,
+        subtitle: 'Алина Гамзатхановна Гаджиева',
+        phone: '+7 (905) 478-77-83',
       },
+      // {
+      //   title: 'Мастер участка',
+      //   subtitle: 'Даниил Лукашов',
+      //   phone: '+7 (905) 478-76-99',
+      // },
       {
-        title: 'Главный инженер',
+        title: 'Технический директор',
         subtitle: 'Денис Михайлович Талашов',
         phone: '+7 (960) 448-38-28',
         hasWhatsApp: true,
       },
       {
-        title: 'Заместитель директора',
+        title: 'Главный инженер',
+        subtitle: 'Андрей Вадимович Нестеренко',
+        phone: '+7 (905) 429-09-02',
+        hasWhatsApp: true,
+      },
+      {
+        title: 'Директор по работе с населением',
+        subtitle: 'Сергей Григорьевич Сагиров',
+        phone: '+7 (960) 461-44-60',
+        hasWhatsApp: true,
+      },
+      {
+        title: 'Директор',
         subtitle: 'Анжела Анатольевна Башкирова',
         phone: '+7 (960) 448-58-08',
         hasWhatsApp: true,
       },
       {
-        title: 'Бухгалтерия',
+        title: 'Расчетный отдел',
+        subtitle: 'Бухгалтерия',
         phone: '+7 (960) 448-78-18',
         hasWhatsApp: true,
       },
@@ -62,28 +82,12 @@ export default [
         title: 'Официальный сайт',
         url: 'https://uk-sr.ru/',
       },
-      {
-        title: 'Квартплата.Онлайн',
-        subtitle: 'Регистрации показаний и оплата',
-        url: 'https://xn--80aaaf3bi1ahsd.xn--80asehdb/',
-      },
-      {
-        title: 'Госуслуги.Дом - Android',
-        subtitle: 'Решение всех вопросов ЖКХ в одном приложении',
-        url: 'https://play.google.com/store/apps/details?id=ru.sigma.gisgkh',
-      },
-      {
-        title: 'Госуслуги.Дом - iOS',
-        subtitle: 'Решение всех вопросов ЖКХ в одном приложении',
-        url: 'https://apps.apple.com/ru/app/%D0%B3%D0%BE%D1%81%D1%83%D1%81%D0%BB%D1%83%D0%B3%D0%B8-%D0%B4%D0%BE%D0%BC/id1616550510',
-      },
     ],
   },
   {
     id: 'sr2',
-    rows: 6,
-    title: 'Жилой комплекс',
-    color: CardColor.complex,
+    rows: 12,
+    title: 'Аварийные службы',
     subtitle: 'Сердце Ростова 2',
     logo: 'sr2',
     addresses: [
@@ -100,26 +104,53 @@ export default [
       },
       {
         title: 'Электрик',
-        subtitle: 'Павел Джумак',
-        phone: '+7 (999) 692-63-77',
-        visible: false,
+        subtitle: 'Андрей Сергеевич',
+        phone: '+7 (961) 435-56-59',
+      },
+      {
+        title: 'Электрик',
+        subtitle: 'Тагир',
+        phone: '+7 (908) 194-24-08',
+      },
+      {
+        title: 'Сантехник',
+        subtitle: 'Андрей Юрьевич',
+        phone: '+7 (938) 155-22-37',
+      },
+      {
+        title: 'Сантехник',
+        subtitle: 'Михаил Евгеньевич',
+        phone: '+7 (961) 402-84-63',
       },
       {
         title: 'Сантехник',
         subtitle: 'Михаил',
-        phone: '+7 (961) 402-84-63',
+        phone: '+7 (952) 415-21-95',
       },
       {
         title: 'Cантехник',
-        subtitle: 'Павел Косухин',
-        phone: '+7 (999) 697-46-09',
-        visible: false,
+        subtitle: 'Анатолий',
+        phone: '+7 (908) 506-57-16',
       },
       {
-        title: 'Cантехник',
-        subtitle: 'Вячеслав Хавренко',
-        phone: '+7 (918) 598-98-02',
-        visible: false,
+        title: 'Тепловой пункт',
+        subtitle: 'ИП Малов С.А.',
+        phone: '+7 (989) 518-97-37',
+      },
+      {
+        title: 'Застройщик - ООО МСК-СТРОЙ',
+        subtitle: 'Прораб Стрекалов Игорь',
+        phone: '+7 (928) 152-12-12',
+      },
+      {
+        title: 'Ворота',
+        subtitle: 'ООО ГостСервис',
+        phone: '+7 (863) 297-56-01',
+      },
+      {
+        title: 'Домофон',
+        subtitle: 'ООО ПрофДелоДон',
+        phone: '+7 (928) 296-31-49',
       },
       {
         title: 'Лифтовая диспетчерская',
@@ -140,6 +171,30 @@ export default [
       },
     ],
     tags: ['complex'],
+  },
+  {
+    id: 'zhkh',
+    rows: 4,
+    title: 'Службы ЖКХ',
+    subtitle: 'Ресурсы и службы ЖКХ',
+    logo: '',
+    urls: [
+      {
+        title: 'Квартплата.Онлайн',
+        subtitle: 'Регистрации показаний и оплата',
+        url: 'https://xn--80aaaf3bi1ahsd.xn--80asehdb/',
+      },
+      {
+        title: 'Госуслуги.Дом - Android',
+        subtitle: 'Решение всех вопросов ЖКХ в одном приложении',
+        url: 'https://play.google.com/store/apps/details?id=ru.sigma.gisgkh',
+      },
+      {
+        title: 'Госуслуги.Дом - iOS',
+        subtitle: 'Решение всех вопросов ЖКХ в одном приложении',
+        url: 'https://apps.apple.com/ru/app/%D0%B3%D0%BE%D1%81%D1%83%D1%81%D0%BB%D1%83%D0%B3%D0%B8-%D0%B4%D0%BE%D0%BC/id1616550510',
+      },
+    ],
   },
   {
     id: 'building1',
@@ -657,13 +712,3 @@ export default [
     ],
   },
 ] as GroupInfo[];
-
-
-
-
-
-
-
-
-
-
