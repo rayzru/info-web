@@ -1,7 +1,5 @@
 {
-  "id": "df87adf5-6a2d-45f7-a590-66cb6a6be4dd",
-  "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "6",
+  "version": "7",
   "dialect": "postgresql",
   "tables": {
     "public.sr2-community_account": {
@@ -77,26 +75,34 @@
       },
       "indexes": {
         "account_user_id_idx": {
-          "name": "account_user_id_idx",
           "columns": [
-            "user_id"
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "account_user_id_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "sr2-community_account_user_id_sr2-community_user_id_fk": {
           "name": "sr2-community_account_user_id_sr2-community_user_id_fk",
           "tableFrom": "sr2-community_account",
-          "tableTo": "sr2-community_user",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "sr2-community_user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -108,7 +114,10 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.sr2-community_post": {
       "name": "sr2-community_post",
@@ -148,37 +157,56 @@
       },
       "indexes": {
         "created_by_idx": {
-          "name": "created_by_idx",
           "columns": [
-            "created_by"
+            {
+              "expression": "created_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "created_by_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "name_idx": {
-          "name": "name_idx",
           "columns": [
-            "name"
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "name_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "sr2-community_post_created_by_sr2-community_user_id_fk": {
           "name": "sr2-community_post_created_by_sr2-community_user_id_fk",
           "tableFrom": "sr2-community_post",
-          "tableTo": "sr2-community_user",
           "columnsFrom": [
             "created_by"
           ],
+          "tableTo": "sr2-community_user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.sr2-community_session": {
       "name": "sr2-community_session",
@@ -205,30 +233,41 @@
       },
       "indexes": {
         "session_user_id_idx": {
-          "name": "session_user_id_idx",
           "columns": [
-            "user_id"
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "session_user_id_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "sr2-community_session_user_id_sr2-community_user_id_fk": {
           "name": "sr2-community_session_user_id_sr2-community_user_id_fk",
           "tableFrom": "sr2-community_session",
-          "tableTo": "sr2-community_user",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "sr2-community_user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.sr2-community_user": {
       "name": "sr2-community_user",
@@ -269,7 +308,10 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.sr2-community_verification_token": {
       "name": "sr2-community_verification_token",
@@ -305,14 +347,23 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     }
   },
   "enums": {},
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "df87adf5-6a2d-45f7-a590-66cb6a6be4dd",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "sequences": {},
+  "policies": {},
+  "views": {},
+  "roles": {}
 }

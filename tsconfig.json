@@ -10,11 +10,7 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "checkJs": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "ES2022"
-    ],
+    "lib": ["dom", "dom.iterable", "ES2022"],
     "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -27,13 +23,12 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@sr2/*": [
-        "./src/*"
-      ]
+      "@sr2/*": ["./src/*"]
     }
   },
   "include": [
     ".eslintrc.cjs",
+    "postcss.config.mjs",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
@@ -41,7 +36,5 @@
     "**/*.js",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules", "_legacy?"]
 }

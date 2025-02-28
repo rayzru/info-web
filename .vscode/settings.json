@@ -8,10 +8,7 @@
     "source.fixAll.eslint": "always"
   },
   "eslint.codeActionsOnSave.mode": "all",
-  "eslint.validate": [
-    "typescript",
-    "javascript"
-  ],
+  "eslint.validate": ["typescript", "javascript"],
   "editor.fontVariations": false,
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

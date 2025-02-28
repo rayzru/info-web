@@ -24,9 +24,6 @@ export default function RootLayout({ children }: RootProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="robots" content="noindex" />
         <meta name="theme-color" content="#000000" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="shortcut icon" href="/logos/root.svg" />
-        <link rel="icon" href="/logos/root.svg" sizes="any" />
       </head>
       <body>
         <Script id="load-ga" strategy="lazyOnload" src={ `https://www.googletagmanager.com/gtag/js?id=${counterId}` } />
