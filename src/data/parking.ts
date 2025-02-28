@@ -668,7 +668,7 @@ const parkingData: ParkingOfferInfo[] = [
     parkingNumber: 101,
     offer: {
       type: 'rent',
-      price: 5500,
+      price: 5000,
       description: '',
     },
     contact: {
