@@ -548,22 +548,22 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1734077914578,
   },
-  {
-    variant: 'standard',
-    level: -1,
-    building: 6,
-    parkingNumber: 41,
-    offer: {
-      type: 'rent',
-      price: 6000,
-      description:
-        'Близко к въезду, широкое, без колонн, коммуникаций и стен. Залог за ключ 3000. На длительный срок.',
-    },
-    contact: {
-      phone: '+7 (905) 486-11-16',
-    },
-    dateUpdated: 1735977313834,
-  },
+  // {
+  //   variant: 'standard',
+  //   level: -1,
+  //   building: 6,
+  //   parkingNumber: 41,
+  //   offer: {
+  //     type: 'rent',
+  //     price: 6000,
+  //     description:
+  //       'Близко к въезду, широкое, без колонн, коммуникаций и стен. Залог за ключ 3000. На длительный срок.',
+  //   },
+  //   contact: {
+  //     phone: '+7 (905) 486-11-16',
+  //   },
+  //   dateUpdated: 1735977313834,
+  // },
   {
     variant: 'standard',
     level: -2,
