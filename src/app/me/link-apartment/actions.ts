@@ -1,6 +1,6 @@
 "use server";
 
-// import { models } from "@sr2/server/db/model";
+// import { models } from "~/server/db/model";
 
 export async function submitLinkApartment(data: {
   buildingId: string;

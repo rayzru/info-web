@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { Button } from "./ui/button";
 
 export function MainNavItem({
@@ -20,7 +21,7 @@ export function MainNavItem({
       >
         <Link
           href={link}
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
         >
           {icon}
         </Link>
@@ -28,7 +29,7 @@ export function MainNavItem({
       <Button variant="ghost" asChild className="hidden md:inline-flex">
         <Link
           href={link}
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
         >
           {title}
         </Link>

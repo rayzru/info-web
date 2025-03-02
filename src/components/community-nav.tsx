@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 import ResponsiveWrapper from "./responsive-wrapper";
 
@@ -21,7 +22,7 @@ export function CommunityNav() {
 
   return (
     <ResponsiveWrapper>
-      <ScrollArea className="flex flex-col gap-2 my-6 ">
+      <ScrollArea className="my-6 flex flex-col gap-2">
         <div className="flex items-center">
           <CommunityNavLink
             category={{ name: "О проекте", slug: "" }}
@@ -52,7 +53,7 @@ function CommunityNavLink({
     <Link
       href={`/community/${category.slug}`}
       key={category.slug}
-      className="flex h-7 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-4 text-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[active=true]:bg-muted data-[active=true]:text-foreground"
+      className="text-muted-foreground hover:text-foreground data-[active=true]:bg-muted data-[active=true]:text-foreground flex h-7 shrink-0 items-center justify-center rounded-full px-4 text-center text-sm font-medium whitespace-nowrap transition-colors"
       data-active={isActive}
     >
       {category.name}

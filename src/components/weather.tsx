@@ -1,5 +1,3 @@
-import { type WeatherData } from "@sr2/lib/weather";
-import { Card } from "./ui/card";
 import {
   CloudDrizzle,
   CloudFog,
@@ -15,6 +13,10 @@ import {
   SunIcon,
   Wind,
 } from "lucide-react";
+
+import { type WeatherData } from "~/lib/weather";
+
+import { Card } from "./ui/card";
 import { DirectionArrow } from "./direction-arrow";
 
 // Создаем Map с расшифровкой WMO кодов погоды на русском языке
@@ -54,43 +56,43 @@ export default function Weather(props: WeatherData) {
   const isDay = props.current.isDay;
 
   return (
-    <Card className="w-[300px] flex flex-col gap-4 p-4">
-        <div className="flex flex-row items-center gap-2 ">
-          <div>
-            {wmo === 0 && (isDay ? <SunIcon /> : <MoonIcon />)}
-            {wmo === 1 && (isDay ? <CloudSun /> : <CloudMoon />)}
-            {wmo === 3 && <Cloudy />}
-            {(wmo === 45 || wmo === 48) && <CloudFog />}
-            {wmo >= 50 && wmo < 60 && <CloudDrizzle />}
-            {wmo >= 60 && wmo < 70 && <CloudSnow />}
-            {(wmo === 80 || wmo === 81 || wmo === 82) && <CloudRain />}
-            {(wmo === 85 || wmo === 86) && <CloudHail />}
-            {(wmo === 95 || wmo === 96 || wmo === 99) && <CloudLightning />}
-          </div>
-          <div className="font-extrabold tracking-tight">
-            <span>{Math.floor(props.current.temperature2m)}</span>
-            <span className="font-light">&deg;C</span>
-          </div>
-          <span>{wmoWeatherCodes.get(wmo)}</span>
+    <Card className="flex w-[300px] flex-col gap-4 p-4">
+      <div className="flex flex-row items-center gap-2">
+        <div>
+          {wmo === 0 && (isDay ? <SunIcon /> : <MoonIcon />)}
+          {wmo === 1 && (isDay ? <CloudSun /> : <CloudMoon />)}
+          {wmo === 3 && <Cloudy />}
+          {(wmo === 45 || wmo === 48) && <CloudFog />}
+          {wmo >= 50 && wmo < 60 && <CloudDrizzle />}
+          {wmo >= 60 && wmo < 70 && <CloudSnow />}
+          {(wmo === 80 || wmo === 81 || wmo === 82) && <CloudRain />}
+          {(wmo === 85 || wmo === 86) && <CloudHail />}
+          {(wmo === 95 || wmo === 96 || wmo === 99) && <CloudLightning />}
         </div>
-        <div className="flex flex-row gap-2 items-center">
-          <Wind className=" text-neutral-400" />
-          <div className="text-nowrap flex flex-row items-center gap-2">
-            Ветер
-            <DirectionArrow
-              degrees={props.current.windDirection10m}
-              className="w-[12px] h-[12px]"
-            />
-            <span>{Math.round(props.current.windSpeed10m)}&nbsp;м/с</span>
-          </div>
+        <div className="font-extrabold tracking-tight">
+          <span>{Math.floor(props.current.temperature2m)}</span>
+          <span className="font-light">&deg;C</span>
         </div>
-        <div className="flex flex-row gap-2 items-center">
-          <Droplet className="text-neutral-400" />
-          <div className="text-nowrap flex flex-row items-center gap-2">
-            Влажность
-            <span>{Math.round(props.current.relativeHumidity2m)}%</span>
-          </div>
+        <span>{wmoWeatherCodes.get(wmo)}</span>
+      </div>
+      <div className="flex flex-row items-center gap-2">
+        <Wind className="text-neutral-400" />
+        <div className="flex flex-row items-center gap-2 text-nowrap">
+          Ветер
+          <DirectionArrow
+            degrees={props.current.windDirection10m}
+            className="h-[12px] w-[12px]"
+          />
+          <span>{Math.round(props.current.windSpeed10m)}&nbsp;м/с</span>
         </div>
+      </div>
+      <div className="flex flex-row items-center gap-2">
+        <Droplet className="text-neutral-400" />
+        <div className="flex flex-row items-center gap-2 text-nowrap">
+          Влажность
+          <span>{Math.round(props.current.relativeHumidity2m)}%</span>
+        </div>
+      </div>
     </Card>
   );
 }

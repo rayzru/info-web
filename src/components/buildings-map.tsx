@@ -1,6 +1,8 @@
 "use client";
-import Image from "next/image";
 import React from "react";
+
+import Image from "next/image";
+
 import { Badge } from "./ui/badge";
 
 interface Building {
@@ -66,7 +68,11 @@ export function BuildingsMap() {
   const [composition, setComposition] = React.useState<React.ReactNode[]>([]);
   const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
 
-  const hasSizes = imageSize.width > 0 && imageSize.height > 0 && svgSize.width > 0 && svgSize.height > 0;
+  const hasSizes =
+    imageSize.width > 0 &&
+    imageSize.height > 0 &&
+    svgSize.width > 0 &&
+    svgSize.height > 0;
 
   React.useEffect(() => {
     const handleResize = () => {
@@ -91,58 +97,53 @@ export function BuildingsMap() {
   }, []);
 
   React.useEffect(() => {
-
     if (!hasSizes) return;
 
-      imageRef?.current?.addEventListener("click", (e) => {
-        const target = e.currentTarget;
-        if (!(target instanceof HTMLImageElement)) return;
+    imageRef?.current?.addEventListener("click", (e) => {
+      const target = e.currentTarget;
+      if (!(target instanceof HTMLImageElement)) return;
 
-        const rect = target.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+      const rect = target.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
-        const xPos = (x / rect.width) * 100;
-        const yPos = (y / rect.height) * 100;
-        setMousePos({ x: xPos, y: yPos });
+      const xPos = (x / rect.width) * 100;
+      const yPos = (y / rect.height) * 100;
+      setMousePos({ x: xPos, y: yPos });
 
-        const newPath = createBezierPath(
-          {
-            ...convertCoords(
-              svgSize.width,
-              svgSize.height,
-              imageSize.width,
-              imageSize.height,
-              xPos,
-              yPos
-            ),
-            order: 0,
-            title: "",
-          },
-          0
-        );
-        setComposition([...composition, newPath]);
-      });
+      const newPath = createBezierPath(
+        {
+          ...convertCoords(
+            svgSize.width,
+            svgSize.height,
+            imageSize.width,
+            imageSize.height,
+            xPos,
+            yPos,
+          ),
+          order: 0,
+          title: "",
+        },
+        0,
+      );
+      setComposition([...composition, newPath]);
+    });
   }, [hasSizes]);
 
-
   return (
-    <div
-      className="w-full min-h-[250px]
-      relative
-      bg-radial from-gray-200 dark:from-gray-800 to-white dark:to-black
-      mx-auto py-8 mt-8"
-    >
+    <div className="relative mx-auto mt-8 min-h-[250px] w-full bg-radial from-gray-200 to-white py-8 dark:from-gray-800 dark:to-black">
       <Image
         ref={imageRef}
         width={800}
         height={600}
         src="/sr2-map.png"
         alt="Cхема"
-        className="max-h-[650px] mx-auto my-8 z-10"
+        className="z-10 mx-auto my-8 max-h-[650px]"
       />
-      <div className="absolute top-[40px] flex flex-col gap-[8px] left-0 h-ful pointer-events-none w-[120px]">
-        { buildings.map((b: Building, index: number) =>createBuildingLabel(b, index)) }
+      <div className="h-ful pointer-events-none absolute top-[40px] left-0 flex w-[120px] flex-col gap-[8px]">
+        {buildings.map((b: Building, index: number) =>
+          createBuildingLabel(b, index),
+        )}
       </div>
       <svg
         ref={svgRef as unknown as React.RefObject<SVGSVGElement>}
@@ -151,21 +152,23 @@ export function BuildingsMap() {
         height={svgSize.height}
         preserveAspectRatio={"none"}
         fill="none"
-        className="absolute bottom-0 right-0 w-full h-full pointer-events-none text-red-600 dark:text-red-400"
+        className="pointer-events-none absolute right-0 bottom-0 h-full w-full text-red-600 dark:text-red-400"
       >
         <g stroke="currentColor" strokeWidth="2">
-          { hasSizes && buildings.map((b: Building) => ({
-          ...b,
-          ...convertCoords(
-            svgSize.width,
-            svgSize.height,
-            imageSize.width,
-            imageSize.height,
-            b.x,
-            b.y
-          ),
-        }))
-        .map(createBezierPath)}
+          {hasSizes &&
+            buildings
+              .map((b: Building) => ({
+                ...b,
+                ...convertCoords(
+                  svgSize.width,
+                  svgSize.height,
+                  imageSize.width,
+                  imageSize.height,
+                  b.x,
+                  b.y,
+                ),
+              }))
+              .map(createBezierPath)}
         </g>
       </svg>
     </div>
@@ -178,7 +181,7 @@ function convertCoords(
   imgWidth: number,
   imgHeight: number,
   xPercent: number,
-  yPercent: number
+  yPercent: number,
 ) {
   const offsetX = (divWidth - imgWidth) / 2;
   const offsetY = (divHeight - imgHeight) / 2;
@@ -190,33 +193,53 @@ function convertCoords(
 }
 
 function createBuildingLabel(building: Building, index: number) {
-  return (<div className="flex flex-row"><Badge variant="default" className="ml-auto">{building.title}</Badge></div>);
+  return (
+    <div className="flex flex-row" key={building.title}>
+      <Badge variant="default" className="ml-auto">
+        {building.title}
+      </Badge>
+    </div>
+  );
 }
 
-
 function createBezierPath(
-    building: Building,
-    index: number
-  ): React.ReactElement<SVGElement[]> {
-
-    const yDelta = index * 30 + 50;
-    return (
-      <>
-
-        <path key={index} d={
-          `
+  building: Building,
+  index: number,
+): React.ReactElement<SVGElement[]> {
+  const yDelta = index * 30 + 50;
+  return (
+    <g key={"group-" + building.title}>
+      <path
+        key={"shape-" + building.title}
+        d={`
           M ${building.x} ${building.y}
-          C ${building.x/2} ${building.y/2},
+          C ${building.x / 2} ${building.y / 2},
           180 ${yDelta},
           130 ${yDelta}
           `}
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeDasharray="0 4"
-          strokeDashoffset={index * 10}
-        />
-        <circle cx={building.x} cy={building.y} r="3" fill="#800" stroke="#000" strokeWidth="2" />
-        <circle cx={130} cy={index * 30 + 50} r="1" fill="#800" stroke="currentColor" strokeWidth="2" />
-      </>
-    );
-  }
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeDasharray="0 4"
+        strokeDashoffset={index * 10}
+      />
+      <circle
+        key={"circle-start-" + building.title}
+        cx={building.x}
+        cy={building.y}
+        r="3"
+        fill="#800"
+        stroke="#000"
+        strokeWidth="2"
+      />
+      <circle
+        key={"circle-end-" + building.title}
+        cx={130}
+        cy={index * 30 + 50}
+        r="1"
+        fill="#800"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+    </g>
+  );
+}

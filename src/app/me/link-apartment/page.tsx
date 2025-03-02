@@ -1,16 +1,17 @@
 import { redirect } from "next/navigation";
 
-import { LinkApartmentForm } from "@sr2/components/link-apartment-form";
-import ResponsiveWrapper from "@sr2/components/responsive-wrapper";
+import { LinkApartmentForm } from "~/components/link-apartment-form";
+import ResponsiveWrapper from "~/components/responsive-wrapper";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from "@sr2/components/ui/breadcrumb";
-import { auth } from "@sr2/server/auth";
-import { models } from "@sr2/server/db/model";
+} from "~/components/ui/breadcrumb";
+import { auth } from "~/server/auth";
+import { models } from "~/server/db/model";
+
 import { submitLinkApartment } from "./actions";
 
 export default async function AddFlatPage() {

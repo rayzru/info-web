@@ -4,7 +4,7 @@ import * as React from "react";
 
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 
-import { cn } from "@sr2/lib/utils";
+import { cn } from "~/lib/utils";
 
 const ButtonGroup = React.forwardRef<
   React.ComponentRef<typeof RadioGroupPrimitive.Root>,
@@ -31,16 +31,8 @@ const ButtonGroupItem = React.forwardRef<
     <RadioGroupPrimitive.Item
       ref={ref}
       className={cn(
-        `border
-        data-[state=checked]:bg-red-600
-        data-[state=checked]:text-white
-        text-center
-        rounded-md focus:outline-none 2
-        focus-visible:ring-ring
-        focus-visible:ring-offset-2
-        disabled:cursor-not-allowed
-        disabled:opacity-50`,
-        className
+        `2 focus-visible:ring-ring rounded-md border text-center focus:outline-none focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-red-600 data-[state=checked]:text-white`,
+        className,
       )}
       {...props}
     >

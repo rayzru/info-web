@@ -1,10 +1,10 @@
+import Link from "next/link";
 
-import { cn } from "@sr2/lib/utils";
-import { Button } from "@sr2/components/ui/button";
+import { Button } from "~/components/ui/button";
+import { cn } from "~/lib/utils";
 
 import { TelegramLogo } from "./social-icons/telegram";
 import { WhatsappLogo } from "./social-icons/whatsapp";
-import Link from "next/link";
 
 interface ChatButtonProps {
   url: string;
@@ -26,11 +26,11 @@ export async function ChatButton({
       <Button
         variant="outline"
         type="button"
-        className={cn("w-full min-h-[65px] rounded-md", className)}
+        className={cn("min-h-[65px] w-full rounded-md", className)}
       >
-        <div className="flex flex-row gap-2 [&>svg]:size-8 items-center">
-        {type === "telegram" && <TelegramLogo />}
-        {type === "whatsapp" && <WhatsappLogo />}
+        <div className="flex flex-row items-center gap-2 [&>svg]:size-8">
+          {type === "telegram" && <TelegramLogo />}
+          {type === "whatsapp" && <WhatsappLogo />}
           <div className="flex flex-col text-left">
             <p>{title}</p>
             <p className="text-muted-foreground">{description}</p>

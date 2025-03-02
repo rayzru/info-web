@@ -1,11 +1,11 @@
-import { ImageResponse } from 'next/og'
+import { ImageResponse } from "next/og";
 
 // Image metadata
 export const size = {
   width: 32,
   height: 32,
-}
-export const contentType = 'image/png'
+};
+export const contentType = "image/png";
 
 // Image generation
 export default function Icon() {
@@ -15,14 +15,14 @@ export default function Icon() {
         style={{
           fontSize: 26,
           fontWeight: 700,
-          background: 'transparent',
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'red',
-          borderRadius: '5%',
+          background: "transparent",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "red",
+          borderRadius: "5%",
         }}
       >
         ❤️
@@ -32,6 +32,6 @@ export default function Icon() {
       // For convenience, we can re-use the exported icons size metadata
       // config to also set the ImageResponse's width and height.
       ...size,
-    }
-  )
+    },
+  );
 }
