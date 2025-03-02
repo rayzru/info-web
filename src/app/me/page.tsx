@@ -1,9 +1,10 @@
 import { Avatar } from "@radix-ui/react-avatar";
+import { Edit, HomeIcon, ParkingCircleIcon, PlusIcon } from "lucide-react";
+
 import ResponsiveWrapper from "@sr2/components/responsive-wrapper";
 import { AvatarFallback, AvatarImage } from "@sr2/components/ui/avatar";
 import { Button } from "@sr2/components/ui/button";
 import { auth } from "@sr2/server/auth";
-import { Edit, HomeIcon, HousePlusIcon, ParkingCircleIcon, Plus, PlusIcon } from "lucide-react";
 
 export default async function ProfilePage() {
   const session = await auth();
