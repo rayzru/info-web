@@ -593,7 +593,7 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: true,
       hasWhatsApp: true,
     },
-    dateUpdated: 1736784680952,
+    dateUpdated: 1740908974136,
   },
   {
     variant: 'standard',
@@ -610,7 +610,7 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: true,
       hasWhatsApp: true,
     },
-    dateUpdated: 1736784814357,
+    dateUpdated: 1740908974136,
   },
   {
     variant: 'standard',
@@ -626,7 +626,7 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: true,
       hasWhatsApp: true,
     },
-    dateUpdated: 1736784713222,
+    dateUpdated: 1740908974136,
   },
   {
     variant: 'standard',
