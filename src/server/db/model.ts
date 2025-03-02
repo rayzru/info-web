@@ -1,4 +1,5 @@
 import { buildings } from "./models/buildings";
+import { users } from "./models/users";
 import { db } from "./index";
 
 export * from "./schemas/buildings";
@@ -10,4 +11,5 @@ export * from "./schemas/users";
 
 export const models = {
   buildings: buildings({ db }),
+  users: users({ db }),
 };

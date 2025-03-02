@@ -1,12 +1,9 @@
 import { BuildingsMap } from "@sr2/components/buildings-map";
 import Weather from "@sr2/components/weather";
 import { fetchWeather } from "@sr2/lib/weather";
-import { api, HydrateClient } from "@sr2/trpc/server";
-
 
 async function getWeather() {
   const res = await fetchWeather();
-  console.log(res);
   return res;
 }
 
@@ -17,12 +14,11 @@ export default async function Home() {
 
 
   return (
-    <HydrateClient>
-      <>
+    // <HydrateClient>
+    <>
       <Weather {...weather} />
       <BuildingsMap />
-
-      </>
-    </HydrateClient>
+    </>
+    // </HydrateClient>
   );
 }

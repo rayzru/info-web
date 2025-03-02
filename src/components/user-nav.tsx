@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 import { auth, signOut } from "@sr2/server/auth";
+
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
@@ -11,7 +14,6 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import Link from "next/link";
 
 export async function UserNav() {
   const session = await auth();
@@ -55,8 +57,8 @@ export async function UserNav() {
                   href="/me"
                   className="text-sm font-medium leading-none text-muted-foreground transition-colors hover:text-primary"
                 >
-                Профиль
-                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                  Профиль
+                  <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

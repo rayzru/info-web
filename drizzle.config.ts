@@ -2,9 +2,8 @@ import { type Config, defineConfig } from "drizzle-kit";
 
 import { env } from "@sr2/env";
 
-console.log('DB:', env.DATABASE_URL, env.DATABASE_NAME);
 export default defineConfig({
-  out: './drizzle',
+  out: "./drizzle",
   schema: "./src/server/db/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
@@ -13,5 +12,5 @@ export default defineConfig({
   },
   verbose: true,
   strict: false,
-  tablesFilter: ["sr2-community_*"],
+  tablesFilter: ["*"],
 } satisfies Config);

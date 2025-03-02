@@ -1,40 +1,19 @@
 {
-  "version": "6",
+  "version": "7",
   "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "6",
-      "when": 1722495843542,
-      "tag": "0000_premium_argent",
+      "version": "7",
+      "when": 1740933783396,
+      "tag": "0000_tense_white_queen",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1740340069063,
-      "tag": "0001_chunky_mongoose",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1740341662733,
-      "tag": "0002_tired_dragon_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1740342221367,
-      "tag": "0003_seed-buildings",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1740876648031,
-      "tag": "0004_seed-parkings",
+      "when": 1740933832905,
+      "tag": "0001_seed-data",
       "breakpoints": true
     }
   ]

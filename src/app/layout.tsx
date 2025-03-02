@@ -40,7 +40,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TRPCReactProvider>
-            <div data-wrapper="" className="border-grid flex flex-1 flex-col min-w-[378px]">
+            <div
+              data-wrapper=""
+              className="border-grid flex flex-1 flex-col min-w-[378px]"
+            >
               <main className="flex flex-1 flex-col pb-8">
                 <Navigation />
                 {children}
