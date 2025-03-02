@@ -2,9 +2,50 @@ import { type Database } from "../index";
 import * as schema from "../schema";
 
 export const buildings = ({ db }: { db: Database }) => ({
+  count: async () => {
+    return await db.$count(schema.buildings);
+  },
   create: async (building: typeof schema.buildings.$inferInsert) => {
     const [b] = await db.insert(schema.buildings).values(building).returning();
     return b;
+  },
+  summary: async () => {
+    const buildingsWithMaxApartment = await db.query.buildings.findMany({
+      columns: {
+        id: true,
+        number: true,
+        title: true,
+        liter: true,
+        active: true,
+      },
+      with: {
+        entrances: {
+          with: {
+            floors: {
+              with: {
+                apartments: {
+                  columns: {
+                    number: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      where: (table, { eq }) => eq(table.active, true),
+    });
+
+    return buildingsWithMaxApartment.map((building) => ({
+      ...building,
+      maxApartmentNumber: Math.max(
+        ...building.entrances.flatMap((entrance) =>
+          entrance.floors.flatMap((floor) =>
+            floor.apartments.map((apartment) => Number(apartment.number))
+          )
+        )
+      ),
+    }));
   },
   findMany: async () => {
     return await db.query.buildings.findMany();

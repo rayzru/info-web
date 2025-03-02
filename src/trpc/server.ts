@@ -8,8 +8,8 @@ import { createCaller, type AppRouter } from "@sr2/server/api/root";
 import { createTRPCContext } from "@sr2/server/api/trpc";
 import { createQueryClient } from "./query-client";
 
-const createContext = cache(() => {
-  const heads = new Headers(headers());
+const createContext = cache(async () => {
+  const heads = new Headers(await headers());
   heads.set("x-trpc-source", "rsc");
 
   return createTRPCContext({

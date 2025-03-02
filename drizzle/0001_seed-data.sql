@@ -1,6 +1,6 @@
 -- Custom SQL migration file, put your code below! --
 
-INSERT INTO "sr2-community_building" ("id", "number", "title", "liter", "active")
+INSERT INTO "building" ("id", "number", "title", "liter", "active")
 VALUES
     (gen_random_uuid(), 1, 'Строение 1', 'Литер 4, 5', true),
     (gen_random_uuid(), 2, 'Строение 2', 'Литер 2, 3', true),
@@ -12,43 +12,43 @@ VALUES
 
 -- Building 1 and 2
 
-INSERT INTO "sr2-community_entrance" ("id", "building_id", "entrance_number")
-SELECT gen_random_uuid(), "sr2-community_building"."id", entrance_number
-FROM "sr2-community_building",
+INSERT INTO "entrance" ("id", "building_id", "entrance_number")
+SELECT gen_random_uuid(), "building"."id", entrance_number
+FROM "building",
 LATERAL (VALUES (1), (2)) AS e(entrance_number);
 
-INSERT INTO "sr2-community_floor" ("id", "entrance_id", "floor_number")
+INSERT INTO "floor" ("id", "entrance_id", "floor_number")
 SELECT
     gen_random_uuid(),
-    "sr2-community_entrance"."id",
+    "entrance"."id",
     floor_number
-FROM "sr2-community_entrance"
-JOIN "sr2-community_building" ON "sr2-community_entrance"."building_id" = "sr2-community_building"."id"
+FROM "entrance"
+JOIN "building" ON "entrance"."building_id" = "building"."id"
 CROSS JOIN LATERAL (
     SELECT generate_series(1,
         CASE
-            WHEN "sr2-community_building"."number" = 2 AND "sr2-community_entrance"."entrance_number" IN (1, 2)
+            WHEN "building"."number" = 2 AND "entrance"."entrance_number" IN (1, 2)
             THEN 12
             ELSE 24
         END
     ) AS floor_number
 ) AS floors
-WHERE "sr2-community_building"."number" IN (1, 2, 6, 7);
+WHERE "building"."number" IN (1, 2, 6, 7);
 
 
 -- Building 1 and 2
 
 WITH numbered_floors AS (
     SELECT
-        "sr2-community_floor"."id" AS floor_id,
-        "sr2-community_floor"."floor_number",
-        "sr2-community_entrance"."entrance_number",
-        "sr2-community_building"."number" AS building_number
-    FROM "sr2-community_floor"
-    JOIN "sr2-community_entrance" ON "sr2-community_floor"."entrance_id" = "sr2-community_entrance"."id"
-    JOIN "sr2-community_building" ON "sr2-community_entrance"."building_id" = "sr2-community_building"."id"
-    WHERE "sr2-community_building"."number" IN (1, 2)
-    AND "sr2-community_floor"."floor_number" >= 3
+        "floor"."id" AS floor_id,
+        "floor"."floor_number",
+        "entrance"."entrance_number",
+        "building"."number" AS building_number
+    FROM "floor"
+    JOIN "entrance" ON "floor"."entrance_id" = "entrance"."id"
+    JOIN "building" ON "entrance"."building_id" = "building"."id"
+    WHERE "building"."number" IN (1, 2)
+    AND "floor"."floor_number" >= 3
 ),
 apartments AS (
     SELECT
@@ -59,7 +59,7 @@ apartments AS (
         generate_series(1, 11) AS apartment_offset
     FROM numbered_floors
 )
-INSERT INTO "sr2-community_apartment" ("id", "floor_id", "number", "type")
+INSERT INTO "apartment" ("id", "floor_id", "number", "type")
 SELECT
     gen_random_uuid(),
     floor_id,
@@ -88,15 +88,15 @@ FROM apartments;
 
 WITH numbered_floors AS (
     SELECT
-        "sr2-community_floor"."id" AS floor_id,
-        "sr2-community_floor"."floor_number",
-        "sr2-community_entrance"."entrance_number",
-        "sr2-community_building"."number" AS building_number
-    FROM "sr2-community_floor"
-    JOIN "sr2-community_entrance" ON "sr2-community_floor"."entrance_id" = "sr2-community_entrance"."id"
-    JOIN "sr2-community_building" ON "sr2-community_entrance"."building_id" = "sr2-community_building"."id"
-    WHERE "sr2-community_building"."number" IN (6, 7)
-    AND "sr2-community_floor"."floor_number" BETWEEN 2 AND 24
+        "floor"."id" AS floor_id,
+        "floor"."floor_number",
+        "entrance"."entrance_number",
+        "building"."number" AS building_number
+    FROM "floor"
+    JOIN "entrance" ON "floor"."entrance_id" = "entrance"."id"
+    JOIN "building" ON "entrance"."building_id" = "building"."id"
+    WHERE "building"."number" IN (6, 7)
+    AND "floor"."floor_number" BETWEEN 2 AND 24
 ),
 apartments AS (
     SELECT
@@ -109,7 +109,7 @@ apartments AS (
         ) AS apartment_offset
     FROM numbered_floors
 )
-INSERT INTO "sr2-community_apartment" ("id", "floor_id", "number", "type")
+INSERT INTO "apartment" ("id", "floor_id", "number", "type")
 SELECT
     gen_random_uuid(),
     floor_id,
@@ -151,3 +151,46 @@ SELECT
     END AS apartment_type
 FROM apartments;
 
+
+-- Добавляем парковки
+INSERT INTO "parking" ("id", "building_id", "name")
+SELECT
+    gen_random_uuid(),
+    b.id,
+    'Подземная парковка ' || b."number"
+FROM "building" b
+WHERE b."number" IN (1, 2, 6, 7);
+
+-- Добавляем этажи парковок (-1 этаж)
+INSERT INTO "parking_floor" ("id", "parking_id", "floor_number")
+SELECT
+    gen_random_uuid(),
+    p.id,
+    -1
+FROM "parking" p
+JOIN "building" b ON p."building_id" = b."id"
+WHERE b."number" IN (1, 2, 6, 7);
+
+-- Добавляем паркоместа
+WITH parking_data AS (
+    SELECT
+        pf.id AS floor_id,
+        b."number" AS building_number,
+        CASE b."number"
+            WHEN 1 THEN 210
+            WHEN 2 THEN 259
+            WHEN 6 THEN 99
+            WHEN 7 THEN 226
+        END AS total_spots
+    FROM "parking_floor" pf
+    JOIN "parking" p ON pf."parking_id" = p."id"
+    JOIN "building" b ON p."building_id" = b."id"
+)
+INSERT INTO "parking_spot" ("id", "floor_id", "number", "type")
+SELECT
+    gen_random_uuid(),
+    floor_id,
+    space_number::text,
+    'standard'  -- Все места пока стандартные
+FROM parking_data,
+LATERAL generate_series(1, total_spots) AS space_number;

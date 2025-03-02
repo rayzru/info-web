@@ -1,11 +1,19 @@
-import { index, integer, pgEnum, primaryKey,  text, timestamp, varchar } from "drizzle-orm/pg-core";
-import { createTable } from "./create-table";
 import { relations, sql } from "drizzle-orm";
+import {
+  index,
+  integer,
+  pgEnum,
+  primaryKey,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
+import { createTable } from "./create-table";
 
 // Определяем enum ролей
-export const userRoleEnum = pgEnum("user_role", [
+export const userRoleEnum = pgEnum("user_role_enum", [
   "Root",
   "SuperAdmin",
   "Admin",
@@ -24,11 +32,17 @@ export const userRoleEnum = pgEnum("user_role", [
 ]);
 
 export const users = createTable("user", {
-  id: varchar("id", { length: 255 }).notNull().primaryKey().$defaultFn(() => crypto.randomUUID()),
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   name: varchar("name", { length: 255 }),
   // displayName: varchar("display_name", { length: 255 }),
   email: varchar("email", { length: 255 }).notNull(),
-  emailVerified: timestamp("email_verified", { mode: "date", withTimezone: true, }).default(sql`CURRENT_TIMESTAMP`),
+  emailVerified: timestamp("email_verified", {
+    mode: "date",
+    withTimezone: true,
+  }).default(sql`CURRENT_TIMESTAMP`),
   image: varchar("image", { length: 255 }),
 });
 
@@ -36,12 +50,12 @@ export const users = createTable("user", {
 export const userRoles = createTable(
   "user_role",
   {
-    userId: varchar("user_id", { length: 255 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     role: userRoleEnum("role").notNull(),
   },
-  (table) => ({
-    pk: primaryKey({ columns: [table.userId, table.role] }), // Уникальная комбинация userId + role
-  })
+  (table) => [primaryKey({ columns: [table.userId, table.role] })]
 );
 
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
@@ -74,12 +88,10 @@ export const accounts = createTable(
     id_token: text("id_token"),
     session_state: varchar("session_state", { length: 255 }),
   },
-  (account) => ({
-    compoundKey: primaryKey({
-      columns: [account.provider, account.providerAccountId],
-    }),
-    userIdIdx: index("account_user_id_idx").on(account.userId),
-  })
+  (account) => [
+    primaryKey({ columns: [account.provider, account.providerAccountId] }),
+    index("account_user_id_idx").on(account.userId),
+  ]
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -89,11 +101,18 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const sessions = createTable(
   "session",
   {
-    sessionToken: varchar("session_token", { length: 255 }).notNull().primaryKey(),
-    userId: varchar("user_id", { length: 255 }).notNull().references(() => users.id),
-    expires: timestamp("expires", { mode: "date", withTimezone: true }).notNull(),
+    sessionToken: varchar("session_token", { length: 255 })
+      .notNull()
+      .primaryKey(),
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.id),
+    expires: timestamp("expires", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
   },
-  (session) => ({ userIdIdx: index("session_user_id_idx").on(session.userId), })
+  (session) => [index("session_user_id_idx").on(session.userId)]
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -105,9 +124,10 @@ export const verificationTokens = createTable(
   {
     identifier: varchar("identifier", { length: 255 }).notNull(),
     token: varchar("token", { length: 255 }).notNull(),
-    expires: timestamp("expires", { mode: "date", withTimezone: true }).notNull(),
+    expires: timestamp("expires", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
   },
-  (vt) => ({
-    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })]
 );

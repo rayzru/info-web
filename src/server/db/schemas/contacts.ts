@@ -1,6 +1,13 @@
-import { integer, primaryKey,  text, timestamp, varchar } from "drizzle-orm/pg-core";
-import { createTable } from "./create-table";
 import { relations } from "drizzle-orm";
+import {
+  integer,
+  primaryKey,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
+
+import { createTable } from "./create-table";
 
 //================ СПРАВОЧНАЯ
 //
@@ -18,7 +25,10 @@ export const contactGroups = createTable("contact_groups", {
 // Группы свойств внутри ContactGroup
 export const propertyGroups = createTable("property_groups", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  contactGroupId: varchar("contact_group_id", { length: 36 }).references(() => contactGroups.id, { onDelete: "cascade" }),
+  contactGroupId: varchar("contact_group_id", { length: 36 }).references(
+    () => contactGroups.id,
+    { onDelete: "cascade" }
+  ),
   name: text("name").notNull(),
   order: integer("order").default(0),
 });
@@ -26,7 +36,10 @@ export const propertyGroups = createTable("property_groups", {
 // Свойства внутри группы
 export const properties = createTable("properties", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  groupId: varchar("group_id", { length: 36 }).references(() => propertyGroups.id, { onDelete: "cascade" }),
+  groupId: varchar("group_id", { length: 36 }).references(
+    () => propertyGroups.id,
+    { onDelete: "cascade" }
+  ),
   key: text("key").notNull(),
   value: text("value").notNull(),
   type: text("type").notNull(), // STRING, PHONE, LINK и т. д.
@@ -43,12 +56,15 @@ export const tags = createTable("tags", {
 export const contactGroupTags = createTable(
   "contact_group_tags",
   {
-    contactGroupId: varchar("contact_group_id", { length: 36 }).references(() => contactGroups.id, { onDelete: "cascade" }),
-    tagId: varchar("tag_id", { length: 36 }).references(() => tags.id, { onDelete: "cascade" }),
+    contactGroupId: varchar("contact_group_id", { length: 36 }).references(
+      () => contactGroups.id,
+      { onDelete: "cascade" }
+    ),
+    tagId: varchar("tag_id", { length: 36 }).references(() => tags.id, {
+      onDelete: "cascade",
+    }),
   },
-  (t) => ({
-    pk: primaryKey({ columns: [t.contactGroupId, t.tagId] }),
-  })
+  (t) => [primaryKey({ columns: [t.contactGroupId, t.tagId] })]
 );
 
 // Relations
@@ -63,11 +79,16 @@ export const propertyGroupRelations = relations(propertyGroups, ({ many }) => ({
 }));
 
 export const propertyRelations = relations(properties, ({ one }) => ({
-  group: one(propertyGroups, { fields: [properties.groupId], references: [propertyGroups.id] }),
+  group: one(propertyGroups, {
+    fields: [properties.groupId],
+    references: [propertyGroups.id],
+  }),
 }));
 
 export const contactGroupTagRelations = relations(contactGroupTags, ({ one }) => ({
-  contactGroup: one(contactGroups, { fields: [contactGroupTags.contactGroupId], references: [contactGroups.id] }),
+  contactGroup: one(contactGroups, {
+    fields: [contactGroupTags.contactGroupId],
+    references: [contactGroups.id],
+  }),
   tag: one(tags, { fields: [contactGroupTags.tagId], references: [tags.id] }),
 }));
-
