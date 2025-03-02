@@ -203,7 +203,7 @@ function createBezierPath(
     return (
       <>
 
-        <path d={
+        <path key={index} d={
           `
           M ${building.x} ${building.y}
           C ${building.x/2} ${building.y/2},
