@@ -1,4 +1,4 @@
-import ArticleLayout from "@sr2/components/article-layout";
+import ArticleLayout from "~/components/article-layout";
 
 export default function Page() {
   return (

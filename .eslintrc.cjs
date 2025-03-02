@@ -5,7 +5,6 @@ const config = {
     project: true,
   },
   plugins: ["@typescript-eslint", "drizzle", "simple-import-sort", "import-x"],
-  ignorePatterns: ["**/_legacy?/**/*"],
   extends: [
     "next/core-web-vitals",
     "plugin:@typescript-eslint/recommended-type-checked",
@@ -67,7 +66,7 @@ const config = {
           ["^(bun|node)"],
           ["^react|react-dom"],
           ["^@?\\w"],
-          ["^(@|@sr2)(/.*|$)"],
+          ["^~(/.*|$)"],
           [
             "^\\./(?=.*/)(?!/?$)",
             "^\\.(?!/?$)",

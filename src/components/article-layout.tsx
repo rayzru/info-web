@@ -1,5 +1,6 @@
-import "@sr2/styles/globals.css";
 import ResponsiveWrapper from "./responsive-wrapper";
+
+import "~/styles/globals.css";
 
 interface ArticleLayoutProps {
   title: string;

@@ -1,6 +1,6 @@
 import { Info, ParkingCircle, Users } from "lucide-react";
 
-import { cn } from "@sr2/lib/utils";
+import { cn } from "~/lib/utils";
 
 import { MainNavItem } from "./main-nav-item";
 

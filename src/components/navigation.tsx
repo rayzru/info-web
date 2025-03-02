@@ -1,10 +1,11 @@
+import Link from "next/link";
+
 import { Logo } from "./logo";
 import { MainNav } from "./main-nav";
-import { UserNav } from "./user-nav";
-import Link from "next/link";
+import ResponsiveWrapper from "./responsive-wrapper";
 import { SearchNav } from "./search-nav";
 import { ThemeToggle } from "./theme-toggle";
-import ResponsiveWrapper from "./responsive-wrapper";
+import { UserNav } from "./user-nav";
 
 export async function Navigation() {
   return (
@@ -17,7 +18,7 @@ export async function Navigation() {
 
           <MainNav />
 
-          <div className="flex-1 align-self-center">
+          <div className="align-self-center flex-1">
             <SearchNav />
           </div>
 

@@ -1,6 +1,6 @@
 import { type SVGProps, useEffect, useState } from "react";
 
-import { cn } from "@sr2/lib/utils";
+import { cn } from "~/lib/utils";
 
 interface MapCompactPickerProps {
   onSelect: (selected: number) => void;

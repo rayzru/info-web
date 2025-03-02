@@ -7,12 +7,12 @@ import { Building } from "lucide-react";
 import { type Session } from "next-auth";
 import { z } from "zod";
 
-import { Form, FormControl, FormItem } from "@sr2/components/ui/form";
-import { Input } from "@sr2/components/ui/input";
+import { submitLinkApartment } from "~/app/me/link-apartment/actions";
+import { Form, FormControl, FormItem } from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
 
 import { Button } from "./ui/button";
 import { ButtonGroup, ButtonGroupItem } from "./ui/button-group";
-import { submitLinkApartment } from "@sr2/app/me/link-apartment/actions";
 
 type Building = {
   id: string;
@@ -41,7 +41,7 @@ export const LinkApartmentForm = ({
     }
     const result = await submitLinkApartment({
       ...values,
-      userId: user.user.id!,
+      userId: user.user.id,
     });
 
     if (result.success) {
@@ -65,12 +65,12 @@ export const LinkApartmentForm = ({
         !usedApartments.some(
           ({ buildingId, apartmentNumber }) =>
             buildingId === data.buildingId &&
-            apartmentNumber === data.apartmentNumber
+            apartmentNumber === data.apartmentNumber,
         ),
       {
         path: ["apartmentNumber"],
         message: "Этот номер уже занят",
-      }
+      },
     )
     .refine(
       (data) => {
@@ -82,7 +82,7 @@ export const LinkApartmentForm = ({
       {
         path: ["apartmentNumber"],
         message: "Превышен максимальный номер квартиры в этом здании",
-      }
+      },
     );
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -103,11 +103,11 @@ export const LinkApartmentForm = ({
   } = form;
 
   return (
-    <div className="flex flex-row w-full gap-4 max-w-xl mx-auto">
+    <div className="mx-auto flex w-full max-w-xl flex-row gap-4">
       <Form {...form}>
         <form
           onSubmit={handleSubmit((data) => onSubmit?.(data))}
-          className="flex flex-col gap-4 w-full"
+          className="flex w-full flex-col gap-4"
         >
           <div className="flex flex-1 flex-col gap-4">
             <FormItem>
@@ -134,7 +134,7 @@ export const LinkApartmentForm = ({
                 </ButtonGroup>
               </FormControl>
               {errors.buildingId && (
-                <p className="text-red-500 text-sm">
+                <p className="text-sm text-red-500">
                   {errors.buildingId.message}
                 </p>
               )}
@@ -147,13 +147,13 @@ export const LinkApartmentForm = ({
                     valueAsNumber: true,
                     onChange: () => void trigger("apartmentNumber"),
                   })}
-                  className="ring-0 focus:ring-0 focus-visible::ring-0 text-center md:text-2xl h-[66px] placeholder:font-normal"
+                  className="focus-visible::ring-0 h-[66px] text-center ring-0 placeholder:font-normal focus:ring-0 md:text-2xl"
                   type="number"
                   placeholder="Номер квартиры"
                 />
               </FormControl>
               {errors.apartmentNumber && (
-                <p className="text-red-500 text-sm">
+                <p className="text-sm text-red-500">
                   {errors.apartmentNumber.message}
                 </p>
               )}

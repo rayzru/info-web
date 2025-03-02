@@ -1,11 +1,10 @@
-import "@sr2/styles/globals.css";
-
-import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
-import { TRPCReactProvider } from "@sr2/trpc/react";
-import { ThemeProvider } from "@sr2/components/theme-provider";
-import { Navigation } from "@sr2/components/navigation";
+import { Navigation } from "~/components/navigation";
+import { ThemeProvider } from "~/components/theme-provider";
+import { TRPCReactProvider } from "~/trpc/react";
+
+import "~/styles/globals.css";
 
 export const metadata: Metadata = {
   title: "Сердце Ростова 2",
@@ -16,7 +15,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ru">
+    <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta
@@ -32,7 +31,7 @@ export default function RootLayout({
           sizes="32x32"
         />
       </head>
-      <body className={GeistSans.className}>
+      <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -42,7 +41,7 @@ export default function RootLayout({
           <TRPCReactProvider>
             <div
               data-wrapper=""
-              className="border-grid flex flex-1 flex-col min-w-[378px]"
+              className="border-grid flex min-w-[378px] flex-1 flex-col"
             >
               <main className="flex flex-1 flex-col pb-8">
                 <Navigation />

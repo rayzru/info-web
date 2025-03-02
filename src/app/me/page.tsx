@@ -1,10 +1,10 @@
 import { Avatar } from "@radix-ui/react-avatar";
 import { Edit, HomeIcon, ParkingCircleIcon, PlusIcon } from "lucide-react";
 
-import ResponsiveWrapper from "@sr2/components/responsive-wrapper";
-import { AvatarFallback, AvatarImage } from "@sr2/components/ui/avatar";
-import { Button } from "@sr2/components/ui/button";
-import { auth } from "@sr2/server/auth";
+import ResponsiveWrapper from "~/components/responsive-wrapper";
+import { AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
+import { auth } from "~/server/auth";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -13,16 +13,16 @@ export default async function ProfilePage() {
   const userImage = session?.user?.image ?? "";
 
   return (
-      <ResponsiveWrapper className="mt-6">
+    <ResponsiveWrapper className="mt-6">
       <div className="flex flex-col gap-4">
-        <div className="flex flex-row gap-4 items-center">
+        <div className="flex flex-row items-center gap-4">
           <Avatar className="h-12 w-12">
             <AvatarImage src={userImage} alt="" className="rounded-full" />
             <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <p className="text-sm font-medium leading-none">{userName}</p>
-            <p className="text-xs leading-none text-muted-foreground">
+            <p className="text-sm leading-none font-medium">{userName}</p>
+            <p className="text-muted-foreground text-xs leading-none">
               {userEmail}
             </p>
           </div>
@@ -33,7 +33,7 @@ export default async function ProfilePage() {
           </Button>
         </div>
 
-        <div className="flex flex-row gap-4 items-center">
+        <div className="flex flex-row items-center gap-4">
           <Avatar className="h-12 w-12">
             <AvatarFallback>
               <HomeIcon />
@@ -47,7 +47,7 @@ export default async function ProfilePage() {
           </Button>
         </div>
 
-        <div className="flex flex-row gap-4 items-center">
+        <div className="flex flex-row items-center gap-4">
           <Avatar className="h-12 w-12">
             <AvatarFallback>
               <ParkingCircleIcon />
@@ -61,6 +61,6 @@ export default async function ProfilePage() {
           </Button>
         </div>
       </div>
-      </ResponsiveWrapper>
+    </ResponsiveWrapper>
   );
 }

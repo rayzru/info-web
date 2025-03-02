@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { auth, signOut } from "@sr2/server/auth";
+import { auth, signOut } from "~/server/auth";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
@@ -26,7 +26,7 @@ export async function UserNav() {
       {!session && (
         <Link
           href="/login"
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
         >
           Войти
         </Link>
@@ -44,8 +44,8 @@ export async function UserNav() {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{userName}</p>
-                <p className="text-xs leading-none text-muted-foreground">
+                <p className="text-sm leading-none font-medium">{userName}</p>
+                <p className="text-muted-foreground text-xs leading-none">
                   {userEmail}
                 </p>
               </div>
@@ -55,7 +55,7 @@ export async function UserNav() {
               <DropdownMenuItem asChild>
                 <Link
                   href="/me"
-                  className="text-sm font-medium leading-none text-muted-foreground transition-colors hover:text-primary"
+                  className="text-muted-foreground hover:text-primary text-sm leading-none font-medium transition-colors"
                 >
                   Профиль
                   <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>

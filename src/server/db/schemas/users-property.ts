@@ -1,10 +1,10 @@
 import { relations } from "drizzle-orm";
-import { varchar, pgEnum, primaryKey } from "drizzle-orm/pg-core";
+import { pgEnum, primaryKey, varchar } from "drizzle-orm/pg-core";
 
-import { createTable } from "./create-table";
-import { users, userRoleEnum } from "./users";
 import { apartments } from "./buildings";
+import { createTable } from "./create-table";
 import { parkingSpots } from "./parkings";
+import { userRoleEnum, users } from "./users";
 
 // Статусы связи пользователя с объектом недвижимости
 export const userPropertyStatusEnum = pgEnum("user_property_status", [
