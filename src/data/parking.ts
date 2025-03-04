@@ -678,6 +678,22 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1738867701956,
   },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 65,
+    offer: {
+      type: 'rent',
+      price: 6500,
+      description: 'Большая площадь и удобное расположение ко въезду и лифту ',
+    },
+    contact: {
+      phone: '+7 (952) 606-55-89',
+      hasTelegram: true,
+    },
+    dateUpdated: 1741096557258,
+  },
 ];
 
 export default parkingData;
