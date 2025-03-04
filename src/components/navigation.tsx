@@ -1,34 +1,73 @@
 import Link from "next/link";
 
+import { auth, signOut } from "~/server/auth";
+
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "./ui/navigation-menu";
 import { Logo } from "./logo";
 import { MainNav } from "./main-nav";
 import ResponsiveWrapper from "./responsive-wrapper";
-import { SearchNav } from "./search-nav";
 import { ThemeToggle } from "./theme-toggle";
 import { UserNav } from "./user-nav";
 
 export async function Navigation() {
+  const session = await auth();
+  const userName = session?.user?.name ?? "Я";
+  const userEmail = session?.user?.email ?? "";
+  const userImage = session?.user?.image ?? "";
+
   return (
-    <div className="border-b">
-      <ResponsiveWrapper>
-        <div className="flex h-16 items-center gap-3">
-          <Link href="/" passHref>
+    <NavigationMenu>
+      <NavigationMenuList>
+        <NavigationMenuItem>
+          <NavigationMenuLink href="/">
             <Logo />
-          </Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink href="/info">Справочная</NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink href="/">Объявления</NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink href="/community">Сообщество</NavigationMenuLink>
+        </NavigationMenuItem>
 
-          <MainNav />
+        {!session && (
+          <NavigationMenuItem>
+            <NavigationMenuLink href="/login">Кабинет</NavigationMenuLink>
+          </NavigationMenuItem>
+        )}
+        {session && (
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>Кабинет</NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <NavigationMenuLink href="/my">Кабинет</NavigationMenuLink>
 
-          <div className="align-self-center flex-1">
-            <SearchNav />
-          </div>
-
-          <ThemeToggle />
-
-          <div className="ml-auto flex">
-            <UserNav />
-          </div>
-        </div>
-      </ResponsiveWrapper>
-    </div>
+              <form
+                action={async () => {
+                  "use server";
+                  await signOut();
+                }}
+              >
+                <NavigationMenuLink asChild>
+                  <button className="w-full text-left" type="submit">
+                    Выйти
+                  </button>
+                </NavigationMenuLink>
+              </form>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
+        )}
+      </NavigationMenuList>
+    </NavigationMenu>
   );
 }

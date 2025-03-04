@@ -54,7 +54,7 @@ export async function UserNav() {
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
                 <Link
-                  href="/me"
+                  href="/my"
                   className="text-muted-foreground hover:text-primary text-sm leading-none font-medium transition-colors"
                 >
                   Профиль

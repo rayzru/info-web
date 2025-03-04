@@ -15,7 +15,7 @@ export default function ArticleLayout({
 }: Readonly<ArticleLayoutProps>) {
   return (
     <ResponsiveWrapper>
-      <article className="prose dark:prose-invert">
+      <article>
         <header>
           <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
           {description && (
@@ -23,7 +23,6 @@ export default function ArticleLayout({
           )}
         </header>
         <main>{children}</main>
-        <footer />
       </article>
     </ResponsiveWrapper>
   );
