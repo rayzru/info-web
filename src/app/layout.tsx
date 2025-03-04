@@ -41,9 +41,9 @@ export default function RootLayout({
           <TRPCReactProvider>
             <div
               data-wrapper=""
-              className="border-grid flex min-w-[378px] flex-1 flex-col"
+              className="container m-auto grid max-w-7xl min-w-xs grid-cols-12 gap-4 px-[20px]"
             >
-              <main className="flex flex-1 flex-col pb-8">
+              <main className="col-span-full">
                 <Navigation />
                 {children}
               </main>

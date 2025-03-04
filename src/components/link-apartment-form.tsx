@@ -7,7 +7,7 @@ import { Building } from "lucide-react";
 import { type Session } from "next-auth";
 import { z } from "zod";
 
-import { submitLinkApartment } from "~/app/me/link-apartment/actions";
+import { submitLinkApartment } from "~/app/my/link-apartment/actions";
 import { Form, FormControl, FormItem } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 

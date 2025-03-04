@@ -1,6 +1,7 @@
 import { Avatar } from "@radix-ui/react-avatar";
 import { Edit, HomeIcon, ParkingCircleIcon, PlusIcon } from "lucide-react";
 
+import ArticleLayout from "~/components/article-layout";
 import ResponsiveWrapper from "~/components/responsive-wrapper";
 import { AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -13,7 +14,11 @@ export default async function ProfilePage() {
   const userImage = session?.user?.image ?? "";
 
   return (
-    <ResponsiveWrapper className="mt-6">
+    <>
+      <ArticleLayout
+        title={userName}
+        description="Кабинет участника сообщества ЖК"
+      ></ArticleLayout>
       <div className="flex flex-col gap-4">
         <div className="flex flex-row items-center gap-4">
           <Avatar className="h-12 w-12">
@@ -27,7 +32,7 @@ export default async function ProfilePage() {
             </p>
           </div>
           <Button variant="ghost" className="h-8 w-8" asChild>
-            <a href="/me/edit-profile">
+            <a href="/my/profile/edit">
               <Edit />
             </a>
           </Button>
@@ -41,7 +46,7 @@ export default async function ProfilePage() {
           </Avatar>
           <h4>Квартира</h4>
           <Button variant="ghost" className="h-8 w-8" asChild>
-            <a href="/me/link-apartment">
+            <a href="/my/property/add">
               <PlusIcon />
             </a>
           </Button>
@@ -61,6 +66,6 @@ export default async function ProfilePage() {
           </Button>
         </div>
       </div>
-    </ResponsiveWrapper>
+    </>
   );
 }

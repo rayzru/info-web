@@ -4,7 +4,7 @@ const animateClasses = `text-red-600 dark:text-red-400`;
 export function Logo({
   className,
   ...props
-}: React.HTMLAttributes<HTMLPictureElement>) {
+}: Readonly<React.HTMLAttributes<HTMLPictureElement>>) {
   return (
     <picture
       className={cn(

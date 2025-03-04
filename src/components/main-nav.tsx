@@ -9,10 +9,7 @@ export function MainNav({
   ...props
 }: Readonly<React.HTMLAttributes<HTMLElement>>) {
   return (
-    <nav
-      className={cn("flex items-center space-x-4 lg:space-x-6", className)}
-      {...props}
-    >
+    <nav className={cn("flex items-center gap-5", className)} {...props}>
       <MainNavItem title="Справочная" link="/info" icon={<Info />} />
       <MainNavItem title="Паркинг" link="/parking" icon={<ParkingCircle />} />
       <MainNavItem title="Сообщество" link="/community" icon={<Users />} />
