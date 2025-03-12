@@ -8,6 +8,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { createTable } from "./create-table";
+import { parkings } from "./parkings";
 
 // Enum для типов квартир
 export const apartmentTypeEnum = pgEnum("apartment_type", [
@@ -45,9 +46,9 @@ export const entrances = createTable(
   (entrance) => [
     unique("building_id_entrance_number_idx").on(
       entrance.buildingId,
-      entrance.entranceNumber
+      entrance.entranceNumber,
     ),
-  ]
+  ],
 );
 
 // Таблица этажей
@@ -66,9 +67,9 @@ export const floors = createTable(
   (floor) => [
     unique("endtance_id_floor_number_idx").on(
       floor.floorNumber,
-      floor.entranceId
+      floor.entranceId,
     ),
-  ]
+  ],
 );
 
 // Таблица квартир
@@ -88,6 +89,7 @@ export const apartments = createTable("apartment", {
 // Определяем связи
 export const buildingsRelations = relations(buildings, ({ many }) => ({
   entrances: many(entrances),
+  parkings: many(parkings),
 }));
 
 export const entrancesRelations = relations(entrances, ({ one, many }) => ({

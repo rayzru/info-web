@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { LinkApartmentForm } from "~/components/link-apartment-form";
+import { AddPropertyForm } from "~/components/add-property-form";
 import ResponsiveWrapper from "~/components/responsive-wrapper";
 import {
   Breadcrumb,
@@ -11,8 +11,6 @@ import {
 } from "~/components/ui/breadcrumb";
 import { auth } from "~/server/auth";
 import { models } from "~/server/db/model";
-
-import { submitLinkApartment } from "./actions";
 
 export default async function AddFlatPage() {
   const buildingsWithMaxApartment = await models.buildings.summary();
@@ -31,7 +29,7 @@ export default async function AddFlatPage() {
           <BreadcrumbItem>Привязка квартиры</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <LinkApartmentForm
+      <AddPropertyForm
         buildings={buildingsWithMaxApartment}
         usedApartments={[]}
         user={user}

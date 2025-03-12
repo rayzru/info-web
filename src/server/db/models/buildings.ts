@@ -10,7 +10,7 @@ export const buildings = ({ db }: { db: Database }) => ({
     return b;
   },
   summary: async () => {
-    const buildingsWithMaxApartment = await db.query.buildings.findMany({
+    const buildingsWithData = await db.query.buildings.findMany({
       columns: {
         id: true,
         number: true,
@@ -32,18 +32,40 @@ export const buildings = ({ db }: { db: Database }) => ({
             },
           },
         },
+        parkings: {
+          with: {
+            floors: {
+              with: {
+                spots: {
+                  columns: {
+                    number: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       where: (table, { eq }) => eq(table.active, true),
     });
 
-    return buildingsWithMaxApartment.map((building) => ({
+    return buildingsWithData.map((building) => ({
       ...building,
       maxApartmentNumber: Math.max(
         ...building.entrances.flatMap((entrance) =>
           entrance.floors.flatMap((floor) =>
-            floor.apartments.map((apartment) => Number(apartment.number))
-          )
-        )
+            floor.apartments.map((apartment) => Number(apartment.number)),
+          ),
+        ),
+        0,
+      ),
+      maxParkingNumber: Math.max(
+        ...building.parkings.flatMap((parking) =>
+          parking.floors.flatMap((floor) =>
+            floor.spots.map((spot) => Number(spot.number)),
+          ),
+        ),
+        0,
       ),
     }));
   },
