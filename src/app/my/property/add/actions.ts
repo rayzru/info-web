@@ -2,13 +2,14 @@
 
 // import { models } from "~/server/db/model";
 
-export async function submitLinkApartment(data: {
+export async function submitAddProperty(data: {
   buildingId: string;
-  apartmentNumber: number;
+  number: number;
+  type: "apartment" | "parking";
   userId: string;
 }) {
-  const { buildingId, apartmentNumber, userId } = data;
-
+  const { buildingId, number, type, userId } = data;
+  console.log(data);
   // const user = await models.users.findMany({
   //   where: (table, { eq }) => eq(table.id, userId),
   // });

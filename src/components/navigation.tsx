@@ -1,56 +1,88 @@
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import { Info, ParkingCircle, Users } from "lucide-react";
 import Link from "next/link";
 
 import { auth, signOut } from "~/server/auth";
 
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "./ui/navigation-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Button } from "./ui/button";
+import { DropdownMenuContent } from "./ui/dropdown-menu";
 import { Logo } from "./logo";
-import { MainNav } from "./main-nav";
-import ResponsiveWrapper from "./responsive-wrapper";
-import { ThemeToggle } from "./theme-toggle";
-import { UserNav } from "./user-nav";
+
+const navigation = [
+  {
+    title: "Справочная",
+    link: "/info",
+    icon: <Info />,
+  },
+  {
+    title: "Паркинг",
+    link: "/parking",
+    icon: <ParkingCircle />,
+  },
+  {
+    title: "Сообщество",
+    link: "/community",
+    icon: <Users />,
+  },
+];
 
 export async function Navigation() {
   const session = await auth();
-  const userName = session?.user?.name ?? "Я";
-  const userEmail = session?.user?.email ?? "";
-  const userImage = session?.user?.image ?? "";
 
   return (
-    <NavigationMenu>
-      <NavigationMenuList>
-        <NavigationMenuItem>
-          <NavigationMenuLink href="/">
-            <Logo />
-          </NavigationMenuLink>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuLink href="/info">Справочная</NavigationMenuLink>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuLink href="/">Объявления</NavigationMenuLink>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuLink href="/community">Сообщество</NavigationMenuLink>
-        </NavigationMenuItem>
+    <div className="mt-4 flex items-center justify-between">
+      <Link href="/">
+        <Logo />
+      </Link>
 
-        {!session && (
-          <NavigationMenuItem>
-            <NavigationMenuLink href="/login">Кабинет</NavigationMenuLink>
-          </NavigationMenuItem>
-        )}
+      <div className="flex items-center gap-2">
+        {navigation.map((item) => (
+          <Link key={item.title} href={item.link} passHref>
+            <Button
+              key={`${item.title}-text`}
+              variant="ghost"
+              className="md:hidden"
+              size={"icon"}
+            >
+              {item.icon}
+            </Button>
+            <Button
+              key={`${item.title}-icon`}
+              variant="ghost"
+              className="hidden md:block"
+            >
+              {item.title}
+            </Button>
+          </Link>
+        ))}
+      </div>
+
+      <div>
+        {!session && <Button>Войти</Button>}
+
         {session && (
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>Кабинет</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <NavigationMenuLink href="/my">Кабинет</NavigationMenuLink>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost">
+                <Avatar className="h-4 w-4">
+                  <AvatarImage src={session.user.image} />
+                  <AvatarFallback>
+                    {session.user.name?.slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+                Кабинет
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent>
+              <DropdownMenuItem>
+                <a href="/my">Кабинет собственника</a>
+              </DropdownMenuItem>
 
               <form
                 action={async () => {
@@ -58,16 +90,16 @@ export async function Navigation() {
                   await signOut();
                 }}
               >
-                <NavigationMenuLink asChild>
+                <DropdownMenuItem asChild>
                   <button className="w-full text-left" type="submit">
                     Выйти
                   </button>
-                </NavigationMenuLink>
+                </DropdownMenuItem>
               </form>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
-      </NavigationMenuList>
-    </NavigationMenu>
+      </div>
+    </div>
   );
 }
