@@ -694,6 +694,22 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1741096557258,
   },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 68,
+    offer: {
+      type: 'rent',
+      price: 5000,
+      description: 'Плюс залог 2000 за пульт. В случае утери не возвращается.',
+    },
+    contact: {
+      phone: '+7 (961) 551-82-42',
+      hasTelegram: true,
+    },
+    dateUpdated: 1741768745023,
+  },
 ];
 
 export default parkingData;
