@@ -100,7 +100,7 @@ export const AddPropertyForm = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       buildingId: "",
-      number: undefined,
+      number: 1,
       type: "apartment",
     },
     mode: "all",
@@ -139,7 +139,6 @@ export const AddPropertyForm = ({
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
                     className="flex flex-col space-y-1"
                   >
                     {memoBuildings.map((building) => (
@@ -169,14 +168,12 @@ export const AddPropertyForm = ({
             name="type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Строение</FormLabel>
+                <FormLabel>Тип недвижимости</FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
-                    defaultValue={"apartment"}
                     className="flex flex-col space-y-1"
                   >
-                    <p className="mb-2">Тип недвижимости</p>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="apartment" id="apartment" />
                       <Label htmlFor="apartment">Квартира</Label>
@@ -198,7 +195,7 @@ export const AddPropertyForm = ({
 
           <FormField
             control={form.control}
-            name="type"
+            name="number"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
@@ -206,49 +203,13 @@ export const AddPropertyForm = ({
                   {type === "apartment" ? "квартиры" : "парковочного места"}
                 </FormLabel>
                 <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={"apartment"}
-                    className="flex flex-col space-y-1"
-                  >
-                    <p className="mb-2">Тип недвижимости</p>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="apartment" id="apartment" />
-                      <Label htmlFor="apartment">Квартира</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="parking" id="parking" />
-                      <Label htmlFor="parking">Парковочное место</Label>
-                    </div>
-                  </RadioGroup>
+                  <Input type="number" pattern="[0-9]+" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Тип регистрируемой недвижимости. Квартира или парковочное
-                  место.
-                </FormDescription>
+                <FormDescription />
                 <FormMessage />
               </FormItem>
             )}
           />
-
-          <FormItem>
-            <FormControl>
-              <div className="mb-2 flex flex-col gap-2">
-                <Label htmlFor="number">
-                  <>
-                    Номер{" "}
-                    {type === "apartment" ? "квартиры" : "парковочного места"}
-                  </>
-                </Label>
-                <Input type="number" id="number" />
-              </div>
-            </FormControl>
-            {errors.number && (
-              <p className="text-sm text-red-500">
-                {errors.number.message as string}
-              </p>
-            )}
-          </FormItem>
 
           <Button type="submit" disabled={!form.formState.isValid}>
             Зарегистрировать недвижимость
