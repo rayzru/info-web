@@ -710,6 +710,24 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1741768745023,
   },
+  {
+    variant: 'standard',
+    level: -1,
+    parkingNumber: 186,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description:
+        'Под первым подъездом. Залог за пульт 2000. Парковка сдается с 5 апреля.',
+    },
+    contact: {
+      phone: '+7 (908) 197-47-67',
+      hasWhatsApp: false,
+      hasTelegram: false,
+    },
+    building: 7,
+    dateUpdated: 1742813259185,
+  },
 ];
 
 export default parkingData;
