@@ -630,23 +630,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -2,
-    building: 2,
-    parkingNumber: 89,
-    offer: {
-      type: 'rent',
-      price: 4500,
-      description: 'Недалеко от въезда',
-    },
-    contact: {
-      phone: '+7 (918) 502-40-83',
-      hasTelegram: false,
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1737806296191,
-  },
-  {
-    variant: 'standard',
     level: -1,
     building: 2,
     parkingNumber: 85,
@@ -727,6 +710,23 @@ const parkingData: ParkingOfferInfo[] = [
     },
     building: 7,
     dateUpdated: 1742813259185,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 89,
+    offer: {
+      type: 'rent',
+      price: 5000,
+      description: 'Не далеко от въезда.',
+    },
+    contact: {
+      phone: '+7 (918) 502-40-83',
+      hasWhatsApp: true,
+      hasTelegram: true,
+    },
+    dateUpdated: 1742818328795,
   },
 ];
 
