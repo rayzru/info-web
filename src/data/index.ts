@@ -9,7 +9,7 @@ export default [
     logo: 'sr2',
     addresses: [
       {
-        title: 'Головной офис',
+        title: 'Офис',
         city: 'г. Ростов-на-Дону',
         address: 'пр. Михаила Нагибина, 33а/47',
         floor: 3,
