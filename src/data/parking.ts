@@ -275,21 +275,6 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -1,
-    building: 6,
-    parkingNumber: 17,
-    offer: {
-      type: 'rent',
-      price: 4000,
-    },
-    contact: {
-      phone: '+7 (906) 422-07-66',
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1711712402272,
-  },
-  {
-    variant: 'standard',
-    level: -1,
     building: 1,
     parkingNumber: 71,
     offer: {
@@ -727,6 +712,21 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: true,
     },
     dateUpdated: 1742818328795,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 17,
+    offer: {
+      type: 'rent',
+      price: 5000,
+    },
+    contact: {
+      phone: '+7 (906) 422-07-66',
+      hasTelegram: true,
+    },
+    dateUpdated: 1743668646892,
   },
 ];
 
