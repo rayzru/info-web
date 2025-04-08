@@ -728,6 +728,70 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1743668646892,
   },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 93,
+    offer: {
+      type: 'sell',
+      price: 1500000,
+      description: 'Два сосдених места под 12 этажным литером. Торг.',
+    },
+    contact: {
+      phone: '+7 (918) 592-09-09',
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1744015840549,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 94,
+    offer: {
+      type: 'sell',
+      price: 1500000,
+      description: 'Два сосдених места под 12 этажным литером. Торг.',
+    },
+    contact: {
+      phone: '+7 (918) 592-09-09',
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1744015840549,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 93,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Два сосдених места под 12 этажным литером. Торг.',
+    },
+    contact: {
+      phone: '+7 (918) 592-09-09',
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1744015840549,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 94,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Два сосдених места под 12 этажным литером. Торг.',
+    },
+    contact: {
+      phone: '+7 (918) 592-09-09',
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1744015840549,
+  },
 ];
 
 export default parkingData;
