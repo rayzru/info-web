@@ -509,14 +509,15 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'rent',
       price: 6000,
-      description: 'Широкое место, удобный заезд',
+      description: 'Удобный заезд , место под 1 подъездом. ',
     },
     contact: {
       phone: '+7 (918) 530-80-17',
-      hasWhatsApp: true,
+      hasTelegram: true,
     },
-    dateUpdated: 1733555199431,
+    dateUpdated: 1744834589214,
   },
+
   {
     variant: 'standard',
     level: -1,
@@ -791,6 +792,21 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true,
     },
     dateUpdated: 1744015840549,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 1,
+    parkingNumber: 7,
+    offer: {
+      type: 'rent',
+      price: 7000,
+    },
+    contact: {
+      phone: '+7 (928) 154-59-70',
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1744883670019,
   },
 ];
 
