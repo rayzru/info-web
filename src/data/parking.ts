@@ -801,12 +801,13 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'rent',
       price: 7000,
+      description: 'Место находится рядом с лифтом. ',
     },
     contact: {
       phone: '+7 (928) 154-59-70',
       hasWhatsApp: true,
     },
-    dateUpdated: 1744883670019,
+    dateUpdated: 1745594738421,
   },
 ];
 
