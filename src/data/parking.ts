@@ -552,21 +552,6 @@ const parkingData: ParkingOfferInfo[] = [
   // },
   {
     variant: 'standard',
-    level: -2,
-    building: 1,
-    parkingNumber: 35,
-    offer: {
-      type: 'sell',
-      price: 1000000,
-      description: 'Длина 6 метров, въезд на место под углом. Рядом с лифтом.',
-    },
-    contact: {
-      phone: '+7 (993) 446-59-67',
-    },
-    dateUpdated: 1736539784919,
-  },
-  {
-    variant: 'standard',
     level: -1,
     building: 6,
     parkingNumber: 182,
@@ -825,6 +810,35 @@ const parkingData: ParkingOfferInfo[] = [
     },
     parkingNumber: 7,
     dateUpdated: 1745666427282,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 1,
+    parkingNumber: 35,
+    offer: {
+      type: 'sell',
+      price: 1000000,
+    },
+    contact: {
+      phone: '+7 (993) 446-59-67',
+    },
+    dateUpdated: 1746003294401,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 1,
+    contact: {
+      phone: '+7 (993) 446-59-67',
+    },
+    parkingNumber: 35,
+    offer: {
+      type: 'rent',
+      price: 8000,
+      description: 'Рядом с лифтом',
+    },
+    dateUpdated: 1746003402915,
   },
 ];
 
