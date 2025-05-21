@@ -856,6 +856,22 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1747161476855,
   },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 48,
+    offer: {
+      type: 'rent',
+      price: 10000,
+      description:
+        'Семейное парковочное место 48/49 на 2 машины. Заезд друг за другом',
+    },
+    contact: {
+      phone: '+7 (903) 406-17-80',
+    },
+    dateUpdated: 1747755872622,
+  },
 ];
 
 export default parkingData;
