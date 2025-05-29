@@ -405,23 +405,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -2,
-    building: 2,
-    parkingNumber: 17,
-    offer: {
-      type: 'rent',
-      price: 7000,
-      description: 'Широкое место с удобным въездом',
-    },
-    contact: {
-      phone: '+7 (989) 579-24-29',
-      hasTelegram: true,
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1731158981936,
-  },
-  {
-    variant: 'standard',
     level: -1,
     building: 6,
     parkingNumber: 214,
@@ -871,6 +854,23 @@ const parkingData: ParkingOfferInfo[] = [
       phone: '+7 (903) 406-17-80',
     },
     dateUpdated: 1747755872622,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 17,
+    offer: {
+      type: 'rent',
+      price: 8000,
+      description: 'Широкое место с удобным заездом. ',
+    },
+    contact: {
+      phone: '+7 (989) 579-24-29',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1748502958046,
   },
 ];
 
