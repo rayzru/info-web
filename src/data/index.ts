@@ -447,11 +447,6 @@ export default [
         title: 'Диспетчерская',
         phone: '+7 (863) 310-02-26',
       },
-      {
-        title: 'Мастер',
-        subtitle: 'Алексей',
-        phone: '+7 (999) 481-38-68',
-      },
     ],
     messengers: [
       {
