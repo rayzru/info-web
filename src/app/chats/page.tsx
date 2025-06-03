@@ -17,7 +17,6 @@ export default function Chats() {
           <div className={ styles.chats }>
             <ChatCard url='https://t.me/serdcerostova2' title={ 'Сердце Ростова 2' } subtitle='Главный чат' />
             <ChatCard url='https://t.me/sr2today' title={ 'Новостной канал' } subtitle={ 'Новости СР2' } />
-            <ChatCard title={ 'Сердце Ростова 2' } url='https://wa.me/serdcerostova2' subtitle='WhatsApp чат сообщества' />
           </div>
 
           <h2 className={ styles.chatsSectionTitle }>Чаты строений/литеров</h2>

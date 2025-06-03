@@ -67,7 +67,7 @@ export default [
       {
         title: 'Расчетный отдел',
         subtitle: 'Бухгалтерия',
-        phone: '+7 (960) 448-78-18',
+        phone: '+7 (903) 403-09-30',
         hasWhatsApp: true,
       },
     ],
