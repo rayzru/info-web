@@ -763,20 +763,6 @@ const parkingData: ParkingOfferInfo[] = [
     variant: 'standard',
     level: -2,
     building: 1,
-    parkingNumber: 35,
-    offer: {
-      type: 'sell',
-      price: 1000000,
-    },
-    contact: {
-      phone: '+7 (993) 446-59-67',
-    },
-    dateUpdated: 1746003294401,
-  },
-  {
-    variant: 'standard',
-    level: -2,
-    building: 1,
     contact: {
       phone: '+7 (993) 446-59-67',
     },
@@ -870,6 +856,21 @@ const parkingData: ParkingOfferInfo[] = [
       price: 1300000,
     },
     dateUpdated: 1748945353984,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 1,
+    parkingNumber: 35,
+    offer: {
+      type: 'sell',
+      price: 1000000,
+      description: 'Большое место',
+    },
+    contact: {
+      phone: '+7 (993) 446-59-67',
+    },
+    dateUpdated: 1750936957107,
   },
 ];
 
