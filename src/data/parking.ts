@@ -872,6 +872,23 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1750936957107,
   },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 123,
+    offer: {
+      type: 'rent',
+      price: 9000,
+      description: 'Широкое место около лифта. Залог за пульт и метку 2500',
+    },
+    contact: {
+      phone: '+7 (908) 177-79-28',
+      hasWhatsApp: true,
+      hasTelegram: true,
+    },
+    dateUpdated: 1752065496904,
+  },
 ];
 
 export default parkingData;
