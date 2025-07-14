@@ -879,7 +879,7 @@ const parkingData: ParkingOfferInfo[] = [
     parkingNumber: 123,
     offer: {
       type: 'rent',
-      price: 9000,
+      price: 8000,
       description: 'Широкое место около лифта. Залог за пульт и метку 2500',
     },
     contact: {
@@ -887,7 +887,7 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true,
       hasTelegram: true,
     },
-    dateUpdated: 1752065496904,
+    dateUpdated: 1752526378398,
   },
 ];
 
