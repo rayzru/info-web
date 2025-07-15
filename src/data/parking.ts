@@ -889,6 +889,22 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1752526378398,
   },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 212,
+    offer: {
+      type: 'rent',
+      price: 5500,
+      description: 'Удобное расположение',
+    },
+    contact: {
+      phone: '+7 (951) 492-68-69',
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1752549407649,
+  },
 ];
 
 export default parkingData;
