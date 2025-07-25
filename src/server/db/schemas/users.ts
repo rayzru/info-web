@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  boolean,
   index,
   integer,
   pgEnum,
@@ -31,13 +32,18 @@ export const userRoleEnum = pgEnum("user_role_enum", [
   "StoreRepresenative",
 ]);
 
+export const userGenderEnum = pgEnum("user_gender_enum", [
+  "Male",
+  "Female",
+  "Unspecified",
+]);
+
 export const users = createTable("user", {
   id: varchar("id", { length: 255 })
     .notNull()
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar("name", { length: 255 }),
-  // displayName: varchar("display_name", { length: 255 }),
   email: varchar("email", { length: 255 }).notNull(),
   emailVerified: timestamp("email_verified", {
     mode: "date",
@@ -55,7 +61,7 @@ export const userRoles = createTable(
       .references(() => users.id, { onDelete: "cascade" }),
     role: userRoleEnum("role").notNull(),
   },
-  (table) => [primaryKey({ columns: [table.userId, table.role] })]
+  (table) => [primaryKey({ columns: [table.userId, table.role] })],
 );
 
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
@@ -91,7 +97,7 @@ export const accounts = createTable(
   (account) => [
     primaryKey({ columns: [account.provider, account.providerAccountId] }),
     index("account_user_id_idx").on(account.userId),
-  ]
+  ],
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -112,7 +118,7 @@ export const sessions = createTable(
       withTimezone: true,
     }).notNull(),
   },
-  (session) => [index("session_user_id_idx").on(session.userId)]
+  (session) => [index("session_user_id_idx").on(session.userId)],
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -129,5 +135,31 @@ export const verificationTokens = createTable(
       withTimezone: true,
     }).notNull(),
   },
-  (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })]
+  (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })],
 );
+
+export const userProfiles = createTable("user_profile", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  firstName: varchar("first_name", { length: 255 }),
+  lastName: varchar("last_name", { length: 255 }),
+  middleName: varchar("middle_name", { length: 255 }),
+  displayName: varchar("display_name", { length: 255 }),
+  phone: varchar("phone", { length: 20 }), // E.164 format: +7XXXXXXXXXX (max 20 chars)
+  hidePhone: boolean("hide_phone").notNull().default(false),
+  hideName: boolean("hide_name").notNull().default(false),
+  avatar: varchar("avatar", { length: 255 }),
+  dateOfBirth: timestamp("date_of_birth", {
+    mode: "date",
+  }),
+  gender: userGenderEnum("gender"),
+});
+
+export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
+  user: one(users, { fields: [userProfiles.userId], references: [users.id] }),
+}));
