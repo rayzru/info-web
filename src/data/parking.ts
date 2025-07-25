@@ -900,7 +900,7 @@ const parkingData: ParkingOfferInfo[] = [
     },
     contact: {
       phone: '+7 (918) 502-40-83',
-      hasTelegram: true,
+      hasTelegram: false,
       hasWhatsApp: true,
     },
     dateUpdated: 1753435265953,
