@@ -99,22 +99,6 @@ const parkingData: ParkingOfferInfo[] = [
     variant: 'standard',
     level: -1,
     building: 7,
-    parkingNumber: 44,
-    offer: {
-      type: 'sell',
-      price: 1250000,
-      description:
-        'Продажа только вместе с 45 местом (за два места 2.500.000₽)',
-    },
-    contact: {
-      phone: '+7 (903) 405-29-95',
-    },
-    dateUpdated: 1705330814473,
-  },
-  {
-    variant: 'standard',
-    level: -1,
-    building: 7,
     parkingNumber: 45,
     offer: {
       type: 'sell',
@@ -904,6 +888,40 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true,
     },
     dateUpdated: 1753435265953,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'место с удобным заездом с ул Башкирской',
+    },
+    contact: {
+      phone: '+7 (918) 567-10-81',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    parkingNumber: 21,
+    dateUpdated: 1754157981424,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 44,
+    offer: {
+      type: 'sell',
+      price: 1250000,
+      description: '',
+    },
+    contact: {
+      phone: '+7 (903) 405-29-95',
+      hasTelegram: false,
+      hasWhatsApp: false,
+    },
+    dateUpdated: 1754163115501,
   },
 ];
 
