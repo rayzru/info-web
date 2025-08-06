@@ -859,22 +859,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -1,
-    building: 7,
-    parkingNumber: 212,
-    offer: {
-      type: 'rent',
-      price: 5500,
-      description: 'Удобное расположение',
-    },
-    contact: {
-      phone: '+7 (951) 492-68-69',
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1752549407649,
-  },
-  {
-    variant: 'standard',
     level: -2,
     building: 2,
     parkingNumber: 89,
@@ -922,6 +906,21 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: false,
     },
     dateUpdated: 1754163115501,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 212,
+    offer: {
+      type: 'rent',
+      price: 6000
+    },
+    contact: {
+      phone: '+7 (951) 492-68-69',
+      hasWhatsApp: true
+    },
+    dateUpdated: 1754493767357,
   },
 ];
 
