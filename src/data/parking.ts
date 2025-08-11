@@ -844,23 +844,6 @@ const parkingData: ParkingOfferInfo[] = [
     variant: 'standard',
     level: -2,
     building: 2,
-    parkingNumber: 123,
-    offer: {
-      type: 'rent',
-      price: 8000,
-      description: 'Широкое место около лифта. Залог за пульт и метку 2500',
-    },
-    contact: {
-      phone: '+7 (908) 177-79-28',
-      hasWhatsApp: true,
-      hasTelegram: true,
-    },
-    dateUpdated: 1752526378398,
-  },
-  {
-    variant: 'standard',
-    level: -2,
-    building: 2,
     parkingNumber: 89,
     offer: {
       type: 'rent',
@@ -914,13 +897,29 @@ const parkingData: ParkingOfferInfo[] = [
     parkingNumber: 212,
     offer: {
       type: 'rent',
-      price: 6000
+      price: 6000,
     },
     contact: {
       phone: '+7 (951) 492-68-69',
-      hasWhatsApp: true
+      hasWhatsApp: true,
     },
     dateUpdated: 1754493767357,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 123,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Широкое место около лифта. Залог за пульт и метку 2500',
+    },
+    contact: {
+      phone: '+7 (908) 177-79-28',
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1754935254397,
   },
 ];
 
