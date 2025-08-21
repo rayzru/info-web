@@ -892,21 +892,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -1,
-    building: 6,
-    parkingNumber: 212,
-    offer: {
-      type: 'rent',
-      price: 6000,
-    },
-    contact: {
-      phone: '+7 (951) 492-68-69',
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1754493767357,
-  },
-  {
-    variant: 'standard',
     level: -2,
     building: 2,
     parkingNumber: 123,
