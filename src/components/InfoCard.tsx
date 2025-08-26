@@ -5,7 +5,16 @@ import { Card, CardHeader, List } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 // import useLocalStorage from '@/hooks/use-local-storage';
-import { AddressInfo, BaseInfo, GroupInfo, MessengerInfo, PhoneInfo, PropsWithStyles, TextInfo, WebsiteInfo } from '@/types';
+import {
+  AddressInfo,
+  BaseInfo,
+  GroupInfo,
+  MessengerInfo,
+  PhoneInfo,
+  PropsWithStyles,
+  TextInfo,
+  WebsiteInfo,
+} from '@/types';
 
 import { Address } from './list/Address';
 import { Messenger } from './list/Messenger';
@@ -25,12 +34,22 @@ const StyledCard = styled(Card)`
   position: relative;
 
   &:hover {
-    box-shadow: 0 0 4px rgba(0,12,88,0.2);
+    box-shadow: 0 0 4px rgba(0, 12, 88, 0.2);
   }
 `;
 
 export const InfoCard = ({ info, singleCard = false, style }: Props) => {
-  const { title, subtitle, logo, addresses, phones, messengers, urls, texts, rows = 1, } = info;
+  const {
+    title,
+    subtitle,
+    logo,
+    addresses,
+    phones,
+    messengers,
+    urls,
+    texts,
+    rows = 1,
+  } = info;
   // const [isOpenedInitially, updateSettings] = useLocalStorage<boolean>(`card_${id}`, false);
   const [isOpened, setIsOpened] = useState(singleCard);
   const [copiedState, setCopiedState] = useState<boolean>(false);
@@ -40,7 +59,6 @@ export const InfoCard = ({ info, singleCard = false, style }: Props) => {
       setTimeout(() => setCopiedState(false), 4000);
     }
   }, [copiedState]);
-
 
   useEffect(() => {
     setIsOpened(singleCard);
@@ -52,55 +70,68 @@ export const InfoCard = ({ info, singleCard = false, style }: Props) => {
       return;
     }
     // updateSettings(!isOpened);
-    setIsOpened(prev => !prev);
+    setIsOpened((prev) => !prev);
   };
 
-  const filterVisible = (el: BaseInfo) => el.visible === undefined || el.visible !== false;
+  const filterVisible = (el: BaseInfo) =>
+    el.visible === undefined || el.visible !== false;
 
   const contentStyle = singleCard ? {} : { paddingTop: 0 };
   const wrapperStyle = {
     gridRow: `span ${isOpened ? rows : 1}`,
     ...contentStyle,
-    ...style
+    ...style,
   };
 
   return (
-    <StyledCard style={ wrapperStyle } >
-      { !singleCard && (
+    <StyledCard style={wrapperStyle}>
+      {!singleCard && (
         <CardHeader
-          sx={ {
+          sx={{
             cursor: 'pointer',
             '& .MuiCardHeader-content': {
               display: 'block',
               overflow: 'hidden',
             },
-          } }
-          avatar={ logo && (<Logo alt={ title } type={ logo } />) }
-          onClick={ handleChange }
-          title={ title }
-          titleTypographyProps={ {
+          }}
+          avatar={logo && <Logo alt={title} type={logo} />}
+          onClick={handleChange}
+          title={title}
+          titleTypographyProps={{
             variant: 'h2',
             fontSize: 18,
-          } }
-          subheader={ subtitle }
-          subheaderTypographyProps={ {
+          }}
+          subheader={subtitle}
+          subheaderTypographyProps={{
             noWrap: true,
             textOverflow: 'ellipsis',
             variant: 'h3',
             fontSize: 16,
-            color: 'text.secondary'
-          } }
+            color: 'text.secondary',
+          }}
         />
-      ) }
-      { isOpened && (
-        <List >
-          { addresses?.filter(filterVisible).map((a: AddressInfo, i: number) => <Address key={ i } { ...a } />) }
-          { phones?.filter(filterVisible).map((p: PhoneInfo, i: number) => <Phone key={ i } { ...p } />) }
-          { messengers?.filter(filterVisible).map((m: MessengerInfo, i: number) => <Messenger key={ i } { ...m } />) }
-          { urls?.filter(filterVisible).map((w: WebsiteInfo, i: number) => <WebLink key={ i } { ...w } />) }
-          { texts?.filter(filterVisible).map((t: TextInfo, i: number) => <Text key={ i } { ...t } />) }
+      )}
+      {isOpened && (
+        <List>
+          {addresses?.filter(filterVisible).map((a: AddressInfo, i: number) => (
+            <Address key={i} {...a} />
+          ))}
+          {phones?.filter(filterVisible).map((p: PhoneInfo, i: number) => (
+            <Phone key={i} {...p} />
+          ))}
+          {messengers
+            ?.filter(filterVisible)
+            .map((m: MessengerInfo, i: number) => (
+              <Messenger key={i} {...m} />
+            ))}
+          {urls?.filter(filterVisible).map((w: WebsiteInfo, i: number) => (
+            <WebLink key={i} {...w} />
+          ))}
+          {texts?.filter(filterVisible).map((t: TextInfo, i: number) => (
+            <Text key={i} {...t} />
+          ))}
         </List>
-      ) }
+      )}
     </StyledCard>
   );
 };

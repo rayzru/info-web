@@ -26,7 +26,7 @@ export default function Parking() {
 
   const regrouped = [
     ...sorted.filter(
-      (el: POI) => monthDiff(now, new Date(el.dateUpdated)) <= 1
+      (el: POI) => monthDiff(now, new Date(el.dateUpdated)) <= 1,
     ),
     ...sorted.filter((el: POI) => {
       const d = new Date(el.dateUpdated);
@@ -53,13 +53,14 @@ export default function Parking() {
           <ParkingFilter onFilter={onFilter} />
         </Suspense>
         <ParkingGrid className={styles.cards}>
-          {data.map((el: ParkingOfferInfo) => (
+          {data.map((el: ParkingOfferInfo, i: number) => (
             <ParkingCard
               key={
                 el.offer.type +
                 el.building.toString() +
                 el.parkingNumber.toString() +
-                el.level.toString()
+                el.level.toString() +
+                i.toString()
               }
               info={el}
             />
