@@ -909,7 +909,7 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -1,
+    level: -2,
     building: 1,
     contact: {
       phone: '+7 (993) 446-59-67',
@@ -918,7 +918,7 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'sell',
       price: 1500000,
-      description: '-2',
+      description: 'Большое место',
     },
     dateUpdated: 1756201027698,
   },
