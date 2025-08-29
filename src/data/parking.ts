@@ -714,39 +714,6 @@ const parkingData: ParkingOfferInfo[] = [
     variant: 'standard',
     level: -2,
     building: 1,
-    parkingNumber: 7,
-    offer: {
-      type: 'rent',
-      price: 7000,
-      description: 'Место находится рядом с лифтом. ',
-    },
-    contact: {
-      phone: '+7 (928) 154-59-70',
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1745594738421,
-  },
-  {
-    variant: 'standard',
-    level: -2,
-    building: 1,
-    offer: {
-      type: 'rent',
-      price: 7000,
-      description: 'Парковка находится рядом с лифтом',
-    },
-    contact: {
-      phone: '+7 (928) 179-59-72',
-      hasWhatsApp: true,
-      hasTelegram: true,
-    },
-    parkingNumber: 7,
-    dateUpdated: 1745666427282,
-  },
-  {
-    variant: 'standard',
-    level: -2,
-    building: 1,
     contact: {
       phone: '+7 (993) 446-59-67',
     },
@@ -922,6 +889,23 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: true,
     },
     dateUpdated: 1756314506224,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 1,
+    parkingNumber: 7,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Залог за пульт - 2000р.',
+    },
+    contact: {
+      phone: '+7 (928) 179-59-72',
+      hasWhatsApp: true,
+      hasTelegram: true,
+    },
+    dateUpdated: 1756436743488,
   },
 ];
 
