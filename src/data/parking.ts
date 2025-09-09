@@ -924,6 +924,23 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1756968893841,
   },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 51,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Залог за пульт - 2000р',
+    },
+    contact: {
+      phone: '+7 (928) 185-61-31',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1757419938105,
+  },
 ];
 
 export default parkingData;
