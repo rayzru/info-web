@@ -957,6 +957,23 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1757619210467,
   },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 78,
+    offer: {
+      type: 'sell',
+      price: 1300000,
+      description: 'Большое место, расположено рядом с лифтом. ',
+    },
+    contact: {
+      phone: '+7 (964) 481-50-32',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1758565446428,
+  },
 ];
 
 export default parkingData;
