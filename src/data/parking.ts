@@ -892,23 +892,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -2,
-    building: 1,
-    parkingNumber: 7,
-    offer: {
-      type: 'rent',
-      price: 7000,
-      description: 'Залог за пульт - 2000р.',
-    },
-    contact: {
-      phone: '+7 (928) 179-59-72',
-      hasWhatsApp: true,
-      hasTelegram: true,
-    },
-    dateUpdated: 1756436743488,
-  },
-  {
-    variant: 'standard',
     level: -1,
     building: 6,
     parkingNumber: 118,
