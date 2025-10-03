@@ -806,7 +806,7 @@ const parkingData: ParkingOfferInfo[] = [
       hasTelegram: false,
       hasWhatsApp: true,
     },
-    dateUpdated: 1753435265953,
+    dateUpdated: 1759478847460,
   },
   {
     variant: 'standard',
