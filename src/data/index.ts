@@ -35,6 +35,8 @@ export default [
         title: 'Начальник участка',
         subtitle: 'Соболев Александр Сергеевич',
         phone: '+7 (906) 453-40-97',
+        hasWhatsApp: true,
+        hasTelegram: true,
       },
       {
         title: 'Мастер участка',
