@@ -811,23 +811,6 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -1,
-    building: 6,
-    offer: {
-      type: 'rent',
-      price: 7000,
-      description: 'место с удобным заездом с ул Башкирской',
-    },
-    contact: {
-      phone: '+7 (918) 567-10-81',
-      hasTelegram: true,
-      hasWhatsApp: true,
-    },
-    parkingNumber: 21,
-    dateUpdated: 1754157981424,
-  },
-  {
-    variant: 'standard',
-    level: -1,
     building: 7,
     parkingNumber: 44,
     offer: {
