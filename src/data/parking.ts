@@ -940,6 +940,22 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1758565446428,
   },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    offer: {
+      type: 'rent',
+      price: 10000,
+      description: 'Парковка на 2 машины. 3 и 4 места',
+    },
+    contact: {
+      phone: '+7 (928) 411-06-48',
+      hasWhatsApp: true,
+    },
+    parkingNumber: 3,
+    dateUpdated: 1760287818360,
+  },
 ];
 
 export default parkingData;
