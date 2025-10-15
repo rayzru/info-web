@@ -10,9 +10,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@emotion/cache": "^11.13.1",
-    "@emotion/react": "^11.13.3",
-    "@emotion/styled": "^11.13.0",
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@fontsource/roboto": "^5.1.0",
     "@mui/icons-material": "^6.1.1",
     "@mui/lab": "^6.0.0-beta.10",
@@ -22,7 +22,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-imask": "^7.6.1",
-    "sass": "^1.79.4"
+    "sass": "^1.93.2"
   },
   "devDependencies": {
     "@types/node": "^22",
@@ -32,7 +32,7 @@
     "@typescript-eslint/parser": "^7",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14",
-    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sonarjs": "^2.0.3",
     "typescript": "^5.6.2"
