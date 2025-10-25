@@ -913,7 +913,7 @@ const parkingData: ParkingOfferInfo[] = [
     parkingNumber: 78,
     offer: {
       type: 'sell',
-      price: 1100000,
+      price: 900000,
       description: 'Большое место, расположено рядом с лифтом. ',
     },
     contact: {
