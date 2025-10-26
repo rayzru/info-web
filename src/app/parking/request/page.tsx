@@ -187,7 +187,6 @@ export default function Parking() {
                   <Select
                     value={ data?.building?.toString() }
                     onChange={ handleBuildingChange }
-                    placeholder='Выберите строение'
                   >
                     <MenuItem value={ 1 }>Строение 1 (литеры 4, 5)</MenuItem>
                     <MenuItem value={ 2 }>Строение 2 (литеры 2, 3)</MenuItem>
@@ -202,7 +201,6 @@ export default function Parking() {
                       defaultValue={ '-1' }
                       value={ data?.level?.toString() }
                       onChange={ handleLevelChange }
-                      placeholder='Выберите этаж парковки'
                     >
                       <MenuItem value={ -1 }>-1 Этаж</MenuItem>
                       <MenuItem value={ -2 }>-2 Этаж</MenuItem>
@@ -224,7 +222,6 @@ export default function Parking() {
                 <Select
                   onChange={ handleOfferTypeChange }
                   defaultValue={ '-' }
-                  placeholder='Выберите этаж парковки'
                 >
                   <MenuItem value={ 'rent' }>Сдаю в аренду</MenuItem>
                   <MenuItem value={ 'sell' }>Продаю</MenuItem>

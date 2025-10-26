@@ -1,4 +1,4 @@
-@import '../utility';
+@use '../utility' as *;
 
 .chatCard {
   width: 250px;

@@ -1,4 +1,4 @@
-@import '../utility';
+@use '../utility' as *;
 
 .nav {
   line-height: 1.4em;

@@ -342,14 +342,14 @@ export default [
   {
     id: 'liter8',
     rows: 2,
-    title: 'Литер 8',
-    subtitle: 'Ведется строительство',
+    title: 'Строение 5',
+    subtitle: 'Литер 8',
     logo: 'root',
     messengers: [
       {
-        title: 'Telegram - Литер 8',
+        title: 'Telegram - Строение 5',
         messengerType: 'telegram',
-        link: 'https://t.me/sr2l8',
+        link: 'https://t.me/sr2_s5',
       },
     ],
     tags: ['complex', 'building'],

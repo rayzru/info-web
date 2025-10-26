@@ -47,12 +47,16 @@ export const BaseListItem = ({
       <ListItemIcon color='secondary' style={ { minWidth: 40 } }>
         { showIcon && icon }
       </ListItemIcon>
-      <ListItemText primary={ children } secondary={ (
-        <>
-          <Typography component={ 'div' } color={ 'text.secondary' }>{ title }</Typography>
-          { subtitle }
-        </>
-      ) } />
+      <ListItemText
+        primary={ children }
+        secondary={ (
+          <>
+            <Typography component={ 'div' } color={ 'text.secondary' }>{ title }</Typography>
+            { subtitle }
+          </>
+        ) }
+        secondaryTypographyProps={ { component: 'div' } }
+      />
     </ListItem>
   );
 }

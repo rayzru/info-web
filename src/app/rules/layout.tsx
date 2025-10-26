@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
-
-import RootLayout from '../layout';
+import { PropsWithChildren } from 'react';
 
 export const metadata: Metadata = {
   title: 'Правила сообщества',
   description: 'Сердце Ростова 2',
 };
 
-export default RootLayout;
+export default function Layout({ children }: PropsWithChildren) {
+  return children;
+}

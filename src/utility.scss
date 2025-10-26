@@ -1,6 +1,8 @@
+@use "sass:meta";
+
 @mixin mq($values...) {
     @each $value in $values {
-		$type: type_of($value);
+		$type: meta.type-of($value);
 		@if $type == number {
 			@media (min-width: #{$value} ) { @content; }
 		}
