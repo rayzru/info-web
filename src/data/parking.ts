@@ -292,23 +292,6 @@ const parkingData: ParkingOfferInfo[] = [
     variant: 'standard',
     level: -1,
     building: 6,
-    parkingNumber: 167,
-    offer: {
-      type: 'rent',
-      price: 5000,
-      description: 'Находится около лифта',
-    },
-    contact: {
-      phone: '+7 (929) 820-76-73',
-      hasTelegram: true,
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1719165314671,
-  },
-  {
-    variant: 'standard',
-    level: -1,
-    building: 6,
     parkingNumber: 164,
     offer: {
       type: 'rent',
@@ -386,23 +369,6 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true,
     },
     dateUpdated: 1726485852663,
-  },
-  {
-    variant: 'standard',
-    level: -1,
-    building: 6,
-    parkingNumber: 214,
-    offer: {
-      type: 'rent',
-      price: 5000,
-      description: 'Удобное место недалеко от лифта',
-    },
-    contact: {
-      phone: '+7 (900) 137-28-57',
-      hasWhatsApp: true,
-      hasTelegram: true,
-    },
-    dateUpdated: 1728647365370,
   },
   {
     variant: 'standard',
@@ -938,6 +904,40 @@ const parkingData: ParkingOfferInfo[] = [
     },
     parkingNumber: 3,
     dateUpdated: 1760287818360,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 167,
+    offer: {
+      type: 'rent',
+      price: 5000,
+      description: 'Парковка находится напротив первого подъезда 6-го строения',
+    },
+    contact: {
+      phone: '+7 (929) 820-76-73',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1763050876807,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 214,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Удобное расположение',
+    },
+    contact: {
+      phone: '+7 (900) 137-28-57',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1762698039395,
   },
 ];
 
