@@ -156,11 +156,6 @@ export default [
     ],
     messengers: [
       {
-        title: 'WhatsApp',
-        messengerType: 'whatsapp',
-        link: 'http://go.sr2.today/whatsapp',
-      },
-      {
         title: 'Telegram - Общий чат',
         messengerType: 'telegram',
         link: 'http://go.sr2.today/telegram',
@@ -207,19 +202,17 @@ export default [
     ],
     phones: [
       {
-        title: 'Консьерж',
-        subtitle: 'подъезд 1',
+        title: 'Консьерж - подъезд 1',
         phone: '+7 (960) 461-44-24',
       },
       {
-        title: 'Консьерж',
-        subtitle: 'подъезд 2',
+        title: 'Консьерж - подъезд 2',
         phone: '+7 (960) 461-44-25',
       },
     ],
     messengers: [
       {
-        title: 'Telegram - Cтроение 1',
+        title: 'Telegram - Строение 1',
         messengerType: 'telegram',
         link: 'https://t.me/sr2_s1',
       },
@@ -235,19 +228,17 @@ export default [
     addresses: [
       {
         city: 'г. Ростов-на-Дону',
-        address: 'ул. Ларина, 45, строение 2',
+        address: 'ул. Ларина, д.45, строение 2',
         maps: ['https://yandex.ru/maps/-/CDRsF-Ix'],
       },
     ],
     phones: [
       {
-        title: 'Консьерж',
-        subtitle: 'Подъезд 1',
+        title: 'Консьерж - подъезд 1',
         phone: '+7 (960) 461-44-21',
       },
       {
-        title: 'Консьерж',
-        subtitle: 'Подъезд 2',
+        title: 'Консьерж - подъезд 2',
         phone: '+7 (960) 461-44-32',
       },
     ],
@@ -256,6 +247,69 @@ export default [
         title: 'Telegram - Строение 2',
         messengerType: 'telegram',
         link: 'https://t.me/sr2_s2',
+      },
+    ],
+    tags: ['complex', 'building'],
+  },
+  {
+    id: 'building3',
+    rows: 5,
+    title: 'Строение 3',
+    subtitle: 'Литер 9',
+    logo: 'root',
+    addresses: [
+      {
+        city: 'г. Ростов-на-Дону',
+        address: 'ул. Ларина, д.45, строение 3',
+      },
+    ],
+    messengers: [
+      {
+        title: 'Telegram - Строение 3',
+        messengerType: 'telegram',
+        link: 'https://t.me/sr2_s3',
+      },
+    ],
+    tags: ['complex', 'building'],
+  },
+  {
+    id: 'building4',
+    rows: 5,
+    title: 'Строение 4',
+    subtitle: 'Литер 1',
+    logo: 'root',
+    addresses: [
+      {
+        city: 'г. Ростов-на-Дону',
+        address: 'ул. Ларина, д.45, строение 4',
+      },
+    ],
+    messengers: [
+      {
+        title: 'Telegram - Строение 4',
+        messengerType: 'telegram',
+        link: 'https://t.me/sr2_s4',
+      },
+    ],
+    tags: ['complex', 'building'],
+  },
+  {
+    id: 'building5',
+    rows: 5,
+    title: 'Строение 5',
+    subtitle: 'Литер 8',
+    logo: 'root',
+    addresses: [
+      {
+        city: 'г. Ростов-на-Дону',
+        address: 'ул. Ларина, д.45, строение 5',
+      },
+    ],
+    messengers: [
+      {
+        title: 'Telegram - Строение 5',
+        messengerType: 'telegram',
+        link: 'https://t.me/sr2_s5',
       },
     ],
     tags: ['complex', 'building'],
@@ -320,51 +374,6 @@ export default [
         title: 'Telegram - Строение 7',
         messengerType: 'telegram',
         link: 'https://t.me/sr2_s7',
-      },
-    ],
-    tags: ['complex', 'building'],
-  },
-  {
-    id: 'liter1',
-    rows: 2,
-    title: 'Литер 1',
-    subtitle: 'Ведется строительство',
-    logo: 'root',
-    messengers: [
-      {
-        title: 'Telegram - Литер 1',
-        messengerType: 'telegram',
-        link: 'https://t.me/sr2l1',
-      },
-    ],
-    tags: ['complex', 'building'],
-  },
-  {
-    id: 'liter8',
-    rows: 2,
-    title: 'Строение 5',
-    subtitle: 'Литер 8',
-    logo: 'root',
-    messengers: [
-      {
-        title: 'Telegram - Строение 5',
-        messengerType: 'telegram',
-        link: 'https://t.me/sr2_s5',
-      },
-    ],
-    tags: ['complex', 'building'],
-  },
-  {
-    id: 'liter9',
-    rows: 2,
-    title: 'Литер 9',
-    subtitle: 'Ведется строительство',
-    logo: 'root',
-    messengers: [
-      {
-        title: 'Telegram - Литер 9',
-        messengerType: 'telegram',
-        link: 'https://t.me/sr2_l9',
       },
     ],
     tags: ['complex', 'building'],
@@ -606,24 +615,20 @@ export default [
     ],
   },
   {
-    id: 'timer',
+    id: 'orbita',
     rows: 3,
-    title: 'Таймер',
+    title: 'Орбита',
     subtitle: 'Интернет-провайдер',
-    logo: 'taimer',
+    logo: '',
     phones: [
       {
         title: 'Техническая поддержка',
-        phone: '+7 (863) 318-00-00',
-      },
-      {
-        title: 'Клиентская служба',
-        phone: '+7 (928) 226-92-02',
+        phone: '+7 (863) 318-0-318',
       },
     ],
     urls: [
       {
-        url: 'https://timernet.ru/?city=rostov-na-donu-rostovskaya-oblast&region=11#tgroup_16_2',
+        url: 'https://orbitanov.ru/rostov/',
         title: 'Тарифы, подключение',
       },
     ],
