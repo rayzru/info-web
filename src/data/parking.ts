@@ -599,21 +599,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -1,
-    building: 6,
-    parkingNumber: 17,
-    offer: {
-      type: 'rent',
-      price: 5000,
-    },
-    contact: {
-      phone: '+7 (906) 422-07-66',
-      hasTelegram: true,
-    },
-    dateUpdated: 1743668646892,
-  },
-  {
-    variant: 'standard',
     level: -2,
     building: 2,
     parkingNumber: 93,
@@ -874,23 +859,6 @@ const parkingData: ParkingOfferInfo[] = [
   },
   {
     variant: 'standard',
-    level: -2,
-    building: 2,
-    parkingNumber: 78,
-    offer: {
-      type: 'sell',
-      price: 900000,
-      description: 'Большое место, расположено рядом с лифтом. ',
-    },
-    contact: {
-      phone: '+7 (964) 481-50-32',
-      hasTelegram: true,
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1758565446428,
-  },
-  {
-    variant: 'standard',
     level: -1,
     building: 7,
     offer: {
@@ -938,6 +906,57 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true,
     },
     dateUpdated: 1762698039395,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 6,
+    parkingNumber: 131,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Комм платежи входят ',
+    },
+    contact: {
+      phone: '+7 (906) 422-07-66',
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1764507234884,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 1,
+    parkingNumber: 7,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: '2000 руб. залог за пульт.',
+    },
+    contact: {
+      phone: '+7 (928) 179-59-72',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1764514315278,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 78,
+    offer: {
+      type: 'sell',
+      price: 1300000,
+      description:
+        'Большое место pядом с лифтом. Удобный въезд/выезд.',
+    },
+    contact: {
+      phone: '+7 (964) 481-50-32',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1764432374987,
   },
 ];
 
