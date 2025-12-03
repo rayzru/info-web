@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ChangeEvent, MouseEvent, useEffect, useState } from 'react';
+import { ChangeEvent, MouseEvent, useEffect, useState } from 'react';
 import { CurrencyRuble } from '@mui/icons-material';
 import {
   Alert,
@@ -188,13 +188,13 @@ export default function Parking() {
                     value={ data?.building?.toString() }
                     onChange={ handleBuildingChange }
                   >
-                    <MenuItem value={ 1 }>Строение 1 (литеры 4, 5)</MenuItem>
-                    <MenuItem value={ 2 }>Строение 2 (литеры 2, 3)</MenuItem>
-                    <MenuItem value={ 3 }>Строение 3 (литеры 9)</MenuItem>
-                    <MenuItem value={ 4 }>Строение 4 (литеры 1)</MenuItem>
-                    <MenuItem value={ 5 }>Строение 5 (литеры 8)</MenuItem>
-                    <MenuItem value={ 6 }>Строение 6 (литеры 7)</MenuItem>
-                    <MenuItem value={ 7 }>Строение 7 (литеры 6)</MenuItem>
+                    <MenuItem className={styles.menuitem} value={ 1 }>Строение 1&nbsp;<span className={ styles.muted }>(лит. 4, 5)</span></MenuItem>
+                    <MenuItem  className={styles.menuitem} value={ 2 }>Строение 2&nbsp;<span className={ styles.muted }>(лит. 2, 3)</span></MenuItem>
+                    <MenuItem  className={styles.menuitem} value={ 3 }>Строение 3&nbsp;<span className={ styles.muted }>(лит. 9)</span></MenuItem>
+                    <MenuItem  className={styles.menuitem} value={ 4 }>Строение 4&nbsp;<span className={ styles.muted }>(лит. 1)</span></MenuItem>
+                    <MenuItem  className={styles.menuitem} value={ 5 }>Строение 5&nbsp;<span className={ styles.muted }>(лит. 8)</span></MenuItem>
+                    <MenuItem  className={styles.menuitem} value={ 6 }>Строение 6&nbsp;<span className={ styles.muted }>(лит. 7)</span></MenuItem>
+                    <MenuItem  className={styles.menuitem} value={ 7 }>Строение 7&nbsp;<span className={ styles.muted }>(лит. 6)</span></MenuItem>
                   </Select>
                 </FormControl>
                 { ['1', '2'].includes(data?.building?.toString() ?? '0') && (

@@ -973,6 +973,22 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1764780329391,
   },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 5,
+    parkingNumber: 94,
+    offer: {
+      type: 'rent',
+      price: 8000,
+    },
+    contact: {
+      phone: '+7 (918) 856-00-61',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1764786001481,
+  },
 ];
 
 export default parkingData;
