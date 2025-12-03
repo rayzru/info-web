@@ -95,7 +95,7 @@ export default function ParkingFilter(props: Props): React.JSX.Element {
           value={ filter.buildings }
           onChange={ handleBuildings }
         >
-          { [1, 2, 6, 7].map((building: number) => (
+          { [1, 2, 3, 4, 5, 6, 7].map((building: number) => (
             <ToggleButton
               key={ String(building) }
               value={ String(building) }

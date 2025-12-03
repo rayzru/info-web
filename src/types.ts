@@ -102,7 +102,7 @@ export interface ParkingOfferInfo extends BaseInfo {
 
 export type ParkingVariant = 'comfort' | 'standard';
 export type ParkingLevel = -1 | -2;
-export type Building = 1 | 2 | 6 | 7;
+export type Building = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface Offer {
   type: 'rent' | 'sell';

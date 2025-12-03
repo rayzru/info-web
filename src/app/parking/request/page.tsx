@@ -190,6 +190,9 @@ export default function Parking() {
                   >
                     <MenuItem value={ 1 }>Строение 1 (литеры 4, 5)</MenuItem>
                     <MenuItem value={ 2 }>Строение 2 (литеры 2, 3)</MenuItem>
+                    <MenuItem value={ 3 }>Строение 3 (литеры 9)</MenuItem>
+                    <MenuItem value={ 4 }>Строение 4 (литеры 1)</MenuItem>
+                    <MenuItem value={ 5 }>Строение 5 (литеры 8)</MenuItem>
                     <MenuItem value={ 6 }>Строение 6 (литеры 7)</MenuItem>
                     <MenuItem value={ 7 }>Строение 7 (литеры 6)</MenuItem>
                   </Select>

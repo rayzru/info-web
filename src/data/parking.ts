@@ -948,8 +948,7 @@ const parkingData: ParkingOfferInfo[] = [
     offer: {
       type: 'sell',
       price: 1300000,
-      description:
-        'Большое место pядом с лифтом. Удобный въезд/выезд.',
+      description: 'Большое место pядом с лифтом. Удобный въезд/выезд.',
     },
     contact: {
       phone: '+7 (964) 481-50-32',
@@ -957,6 +956,22 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true,
     },
     dateUpdated: 1764432374987,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    parkingNumber: 184,
+    building: 5,
+    contact: {
+      phone: '+7 (989) 528-92-56',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    offer: {
+      type: 'rent',
+      price: 10000,
+    },
+    dateUpdated: 1764780329391,
   },
 ];
 
