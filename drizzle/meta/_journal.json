@@ -15,6 +15,20 @@
       "when": 1740933832905,
       "tag": "0001_seed-data",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764802348438,
+      "tag": "0002_steep_steel_serpent",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1765043225918,
+      "tag": "0003_slim_nitro",
+      "breakpoints": true
     }
   ]
 }

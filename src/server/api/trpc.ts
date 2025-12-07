@@ -12,6 +12,12 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { auth } from "~/server/auth";
+import {
+  type AdminFeature,
+  type UserRole,
+  hasFeatureAccess,
+  isAdmin,
+} from "~/server/auth/rbac";
 import { db } from "~/server/db";
 
 /**
@@ -128,6 +134,67 @@ export const protectedProcedure = t.procedure
       ctx: {
         // infers the `session` as non-nullable
         session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
+/**
+ * Admin procedure
+ *
+ * Requires user to have admin role. Use this for all admin panel API endpoints.
+ * Provides `ctx.userRoles` for role-based checks within procedures.
+ *
+ * @see ~/server/auth/rbac.ts for role definitions
+ */
+export const adminProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (!ctx.session || !ctx.session.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    const userRoles = (ctx.session.user.roles ?? []) as UserRole[];
+
+    if (!isAdmin(userRoles)) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Admin access required",
+      });
+    }
+
+    return next({
+      ctx: {
+        session: { ...ctx.session, user: ctx.session.user },
+        userRoles,
+      },
+    });
+  });
+
+/**
+ * Admin procedure with feature check
+ *
+ * Creates a procedure that requires specific feature access.
+ * Use: adminProcedureWithFeature("users:manage")
+ */
+export const adminProcedureWithFeature = (feature: AdminFeature) =>
+  t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
+    if (!ctx.session || !ctx.session.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    const userRoles = (ctx.session.user.roles ?? []) as UserRole[];
+
+    if (!hasFeatureAccess(userRoles, feature)) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: `Access to feature "${feature}" denied`,
+      });
+    }
+
+    return next({
+      ctx: {
+        session: { ...ctx.session, user: ctx.session.user },
+        userRoles,
       },
     });
   });

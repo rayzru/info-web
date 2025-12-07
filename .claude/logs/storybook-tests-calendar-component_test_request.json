@@ -1,0 +1,113 @@
+{
+  "timestamp": "2025-01-26T14:00:00Z",
+  "from": "feature-builder",
+  "to": "test-coordinator",
+  "message_type": "test_request",
+  "feature": "storybook-tests-calendar-component",
+  "context": {
+    "gitlab_issue": "#305",
+    "phase": "Phase 1 - Test Coverage",
+    "spec_file": "/specs/storybook-tests-calendar-component_spec.md",
+    "working_directory": "/front-end.iss-free",
+    "implementation_status": "complete",
+    "storybook_stories": 51,
+    "figma_integration": "complete"
+  },
+  "scope_analysis": {
+    "code_type": "frontend",
+    "component_library": "date-picker",
+    "test_infrastructure": "already_created",
+    "requires_unit_tests": true,
+    "requires_integration_tests": true,
+    "requires_e2e_tests": false,
+    "requires_accessibility": false,
+    "risk_level": "MEDIUM"
+  },
+  "testing_requirements": {
+    "hook_tests": {
+      "count": 5,
+      "files": [
+        "ui-kit/components/date-picker/hooks/use-days-in-month.test.ts",
+        "ui-kit/components/date-picker/hooks/use-month-state.test.ts",
+        "ui-kit/components/date-picker/hooks/use-localized-week-days.test.ts",
+        "ui-kit/components/date-picker/hooks/use-months-in-year.test.ts",
+        "ui-kit/components/date-picker/hooks/use-range-hover.test.ts"
+      ],
+      "testing_approach": "functional_testing",
+      "focus": "behavior and outputs, not implementation details",
+      "shared_infrastructure": true
+    },
+    "integration_tests": {
+      "count": 4,
+      "files": [
+        "ui-kit/components/date-picker/date-picker.test.tsx",
+        "ui-kit/components/date-picker/date-range-picker.test.tsx",
+        "ui-kit/components/date-picker/calendar.test.tsx",
+        "ui-kit/components/date-picker/month-picker.test.tsx"
+      ],
+      "focus": "component interaction, user workflows, keyboard navigation"
+    },
+    "component_unit_tests": {
+      "count": 3,
+      "files": [
+        "ui-kit/components/date-picker/day-cell.test.tsx",
+        "ui-kit/components/date-picker/calendar-nav.test.tsx",
+        "ui-kit/components/date-picker/month-cell.test.tsx"
+      ],
+      "focus": "building blocks, individual component behavior"
+    }
+  },
+  "shared_infrastructure": {
+    "location": "ui-kit/components/date-picker/__test-utils__/",
+    "files": {
+      "fixtures": "fixtures.ts",
+      "test_helpers": "test-helpers.tsx"
+    },
+    "provided": {
+      "FIXED_NOW": "DateTime constant for time consistency",
+      "DATE_FIXTURES": "Pre-defined test dates",
+      "LIMIT_FIXTURES": "Date range limit scenarios",
+      "setupTimeMocking": "Auto mock/restore time",
+      "renderWithProviders": "RTL with i18n context"
+    }
+  },
+  "quality_gates": {
+    "frontend_coverage": {
+      "statement": ">=90%",
+      "branch": ">=85%",
+      "hooks": ">=90%",
+      "components": ">=80%"
+    },
+    "build_checks": {
+      "typescript": "bunx tsc --noEmit",
+      "build": "bun run build",
+      "test_execution": "bun test"
+    },
+    "all_tests_passing": true,
+    "zero_failures": true
+  },
+  "estimated_deliverables": {
+    "hook_tests": "~150-200 lines each (5 files)",
+    "integration_tests": "~200-300 lines each (4 files)",
+    "component_tests": "~100-150 lines each (3 files)",
+    "total_files": 12,
+    "total_lines": "~2000-2500"
+  },
+  "priority": "high",
+  "special_notes": [
+    "Use functional testing approach for hooks (behavior over implementation)",
+    "Use shared test infrastructure (fixtures.ts, test-helpers.tsx)",
+    "All tests must use FIXED_NOW for time consistency",
+    "Integration tests should cover keyboard navigation",
+    "Component tests focus on ARIA attributes and accessibility",
+    "NO E2E tests required for this phase",
+    "NO accessibility audits required (handled in Phase 2)"
+  ],
+  "coordination_expectations": {
+    "route_to": "test-writer",
+    "test_type": "unit+integration",
+    "framework": "Jest + React Testing Library + @testing-library/react-hooks",
+    "execution_command": "bun test",
+    "coverage_command": "bun test --coverage"
+  }
+}

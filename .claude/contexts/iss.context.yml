@@ -1,0 +1,24 @@
+name: iss
+description: Intrigma Scheduling Studio (ISS) - Legacy system (read-only; modify only with explicit approval)
+include:
+  # Keep this tight to avoid pulling tens of thousands of files
+  - "Source/Data/Migrations/**"     # FluentMigrator migrations
+  - "Source/BusinessEntities/**"
+  - "Source.Blazor/Server/**"
+  - "Modules/**/README*"
+  - "Modules/**/src/**"             # code only, not build outputs
+  - "Integrations/**/README*"
+  - "Integrations/**/src/**"
+  - "src/Fenix.Legacy/**"           # bridge to modern system
+exclude:
+  - "**/bin/**"
+  - "**/obj/**"
+  - "**/.vs/**"
+  - "**/packages/**"
+  - "**/node_modules/**"
+  - "**/TestResults/**"
+  - "**/*.nupkg"
+  - "**/*.msi"
+  - "**/*.exe"
+  - "**/*.dll"
+  - "**/*.pdb"

@@ -1,4 +1,9 @@
+import { adminRouter } from "~/server/api/routers/admin";
+import { claimsRouter } from "~/server/api/routers/claims";
+import { directoryRouter } from "~/server/api/routers/directory";
+import { listingsRouter } from "~/server/api/routers/listings";
 import { postRouter } from "~/server/api/routers/post";
+import { profileRouter } from "~/server/api/routers/profile";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -8,6 +13,11 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   post: postRouter,
+  admin: adminRouter,
+  profile: profileRouter,
+  claims: claimsRouter,
+  listings: listingsRouter,
+  directory: directoryRouter,
 });
 
 // export type definition of API
