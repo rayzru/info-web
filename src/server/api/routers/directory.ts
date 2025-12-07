@@ -569,7 +569,7 @@ export const directoryRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { query, limit } = input;
       const queryLower = query.toLowerCase();
-      const searchWords = queryLower.split(/\s+/).filter(w => w.length >= 2);
+      const searchWords = queryLower.split(/\s+/).filter(w => w.length >= 1);
 
       if (searchWords.length === 0) {
         return { contacts: [], matchedTags: [], total: 0 };
@@ -578,43 +578,97 @@ export const directoryRouter = createTRPCRouter({
       // Find tags that match the search query
       const allTags = await ctx.db.query.directoryTags.findMany();
 
-      // Check if query looks like a numbered tag (e.g., "подъезд 2", "строение 1")
-      const numberedTagPattern = /^(подъезд|строение|п|строен)\s*(\d+)$/i;
-      const numberedMatch = queryLower.match(numberedTagPattern);
+      // Pattern for numbered tags (e.g., "подъезд 2", "строение 1", "литер 4", "стр 3")
+      const numberedTagPattern = /^(подъезд|строение|литер|п|строен|лит|стр)\s*(\d+)$/i;
+
+      // Build potential multi-word tag queries from the search words
+      // e.g., for "чат строение 2", try: "чат", "строение", "2", "строение 2", "чат строение", etc.
+      const potentialQueries: string[] = [];
+
+      // First, check if any consecutive words form a numbered tag pattern
+      // These get priority and exclude their component words from fuzzy matching
+      const numberedPhrases = new Set<string>();
+      const wordsUsedInNumberedPhrases = new Set<number>(); // indices of words used
+
+      for (let i = 0; i < searchWords.length - 1; i++) {
+        const phrase = `${searchWords[i]} ${searchWords[i + 1]}`;
+        if (numberedTagPattern.test(phrase)) {
+          numberedPhrases.add(phrase);
+          wordsUsedInNumberedPhrases.add(i);
+          wordsUsedInNumberedPhrases.add(i + 1);
+        }
+      }
+
+      // Add numbered phrases first (exact match priority)
+      for (const phrase of numberedPhrases) {
+        potentialQueries.push(phrase);
+      }
+
+      // Add individual words only if they weren't part of a numbered phrase
+      for (let i = 0; i < searchWords.length; i++) {
+        const word = searchWords[i]!;
+        if (word.length >= 2 && !wordsUsedInNumberedPhrases.has(i)) {
+          potentialQueries.push(word);
+        }
+      }
+
+      // Add other consecutive word pairs (non-numbered) for phrases like "чат строение"
+      for (let i = 0; i < searchWords.length - 1; i++) {
+        const phrase = `${searchWords[i]} ${searchWords[i + 1]}`;
+        if (!numberedPhrases.has(phrase)) {
+          potentialQueries.push(phrase);
+        }
+      }
 
       const matchedTags: typeof allTags = [];
-      for (const tag of allTags) {
-        const tagNameLower = tag.name.toLowerCase();
-        const tagSlugLower = tag.slug.toLowerCase();
-        const synonyms: string[] = tag.synonyms ? JSON.parse(tag.synonyms) : [];
-        const synonymsLower = synonyms.map(s => s.toLowerCase());
+      const matchedTagIds = new Set<string>();
 
-        // If searching for a numbered tag, require exact match
-        if (numberedMatch) {
-          const searchNum = numberedMatch[2];
-          const searchType = numberedMatch[1];
+      for (const potentialQuery of potentialQueries) {
+        const numberedMatch = potentialQuery.match(numberedTagPattern);
 
-          // Check for exact match in name or synonyms
-          const isExactMatch =
-            tagNameLower === queryLower ||
-            synonymsLower.some(syn => syn === queryLower) ||
-            // Also match slug patterns like "podezd-2" or "stroenie-1"
-            (searchType?.match(/^(подъезд|п)$/i) && tagSlugLower === `podezd-${searchNum}`) ||
-            (searchType?.match(/^(строение|строен)$/i) && tagSlugLower === `stroenie-${searchNum}`);
+        for (const tag of allTags) {
+          if (matchedTagIds.has(tag.id)) continue; // Skip already matched tags
 
-          if (isExactMatch) {
-            matchedTags.push(tag);
-          }
-        } else {
-          // Regular search: check if any search word matches this tag
-          for (const word of searchWords) {
-            if (
-              tagNameLower.includes(word) ||
-              tagSlugLower.includes(word) ||
-              synonymsLower.some(syn => syn.includes(word))
+          const tagNameLower = tag.name.toLowerCase();
+          const tagSlugLower = tag.slug.toLowerCase();
+          const synonyms: string[] = tag.synonyms ? JSON.parse(tag.synonyms) : [];
+          const synonymsLower = synonyms.map(s => s.toLowerCase());
+
+          // If this potential query looks like a numbered tag, require exact match
+          if (numberedMatch) {
+            const searchNum = numberedMatch[2];
+            const searchType = numberedMatch[1];
+
+            // Check for exact match in name or synonyms
+            const isExactMatch =
+              tagNameLower === potentialQuery ||
+              synonymsLower.some(syn => syn === potentialQuery) ||
+              // Also match slug patterns like "podezd-2" or "stroenie-1"
+              // Note: литер/лит should NOT map to stroenie-X directly, they use synonyms
+              (searchType?.match(/^(подъезд|п)$/i) && tagSlugLower === `podezd-${searchNum}`) ||
+              (searchType?.match(/^(строение|строен|стр)$/i) && tagSlugLower === `stroenie-${searchNum}`);
+
+            if (isExactMatch) {
+              matchedTags.push(tag);
+              matchedTagIds.add(tag.id);
+            }
+          } else {
+            // Regular search: check if query matches this tag
+            // But skip partial matches on building/entrance patterns to avoid matching all buildings
+            const isBuildingOrEntranceTag = /^(stroenie|podezd)-\d+$/.test(tagSlugLower);
+            if (isBuildingOrEntranceTag) {
+              // For building/entrance tags, require exact name match, not partial
+              if (tagNameLower === potentialQuery || synonymsLower.some(syn => syn === potentialQuery)) {
+                matchedTags.push(tag);
+                matchedTagIds.add(tag.id);
+              }
+            } else if (
+              tagNameLower.includes(potentialQuery) ||
+              tagSlugLower.includes(potentialQuery) ||
+              synonymsLower.some(syn => syn.includes(potentialQuery))
             ) {
               matchedTags.push(tag);
-              break;
+              matchedTagIds.add(tag.id);
             }
           }
         }
@@ -657,13 +711,14 @@ export const directoryRouter = createTRPCRouter({
         };
       }
 
-      const matchedTagIds = matchedTags.map(t => t.id);
+      const matchedTagIdsArray = matchedTags.map(t => t.id);
+      const useIntersection = matchedTags.length >= 2;
 
       // Strategy 1: Find contacts with direct contact-level tags
       const contactsWithDirectTags = await ctx.db
         .selectDistinct({ contactId: directoryContactTags.contactId })
         .from(directoryContactTags)
-        .where(inArray(directoryContactTags.tagId, matchedTagIds));
+        .where(inArray(directoryContactTags.tagId, matchedTagIdsArray));
 
       // Strategy 2: Find entries with matching tags, then get their contacts
       const entriesWithTags = await ctx.db
@@ -672,7 +727,7 @@ export const directoryRouter = createTRPCRouter({
         .innerJoin(directoryEntries, eq(directoryEntryTags.entryId, directoryEntries.id))
         .where(
           and(
-            inArray(directoryEntryTags.tagId, matchedTagIds),
+            inArray(directoryEntryTags.tagId, matchedTagIdsArray),
             eq(directoryEntries.isActive, 1)
           )
         );
@@ -688,7 +743,7 @@ export const directoryRouter = createTRPCRouter({
           .where(inArray(directoryContacts.entryId, entryIds));
       }
 
-      // Combine both sources (union)
+      // Combine both sources (union for candidates)
       const allContactIds = new Set<string>([
         ...contactsWithDirectTags.map(c => c.contactId),
         ...contactsFromEntries.map(c => c.contactId),
@@ -764,14 +819,36 @@ export const directoryRouter = createTRPCRouter({
         }
       }
 
-      // Get tags for each contact and compute sort weight
-      const contactsWithTagInfo = await Promise.all(
+      // Get tags for each contact, filter by intersection if needed, and compute sort weight
+      const contactsWithTagInfo = (await Promise.all(
         contacts.map(async (c) => {
+          // Get contact-level tags
           const contactTags = await ctx.db
             .select({ tag: directoryTags })
             .from(directoryContactTags)
             .innerJoin(directoryTags, eq(directoryContactTags.tagId, directoryTags.id))
             .where(eq(directoryContactTags.contactId, c.contact.id));
+
+          // Get entry-level tags
+          const entryTags = await ctx.db
+            .select({ tag: directoryTags })
+            .from(directoryEntryTags)
+            .innerJoin(directoryTags, eq(directoryEntryTags.tagId, directoryTags.id))
+            .where(eq(directoryEntryTags.entryId, c.entry.id));
+
+          // Combine all tag IDs (contact + entry level)
+          const allTagIds = new Set([
+            ...contactTags.map(ct => ct.tag.id),
+            ...entryTags.map(et => et.tag.id),
+          ]);
+
+          // If using intersection mode, check if contact has ALL matched tags
+          if (useIntersection) {
+            const hasAllTags = matchedTagIdsArray.every(tagId => allTagIds.has(tagId));
+            if (!hasAllTags) {
+              return null; // Exclude contacts that don't have all tags
+            }
+          }
 
           // Extract building and entrance numbers from tags
           let buildingNum = 999;
@@ -800,22 +877,24 @@ export const directoryRouter = createTRPCRouter({
           }
           weight += buildingNum * 10 + entranceNum;
 
+          // Combine tags for display (deduplicated)
+          const combinedTags = new Map<string, { id: string; name: string; slug: string }>();
+          [...contactTags, ...entryTags].forEach(t => {
+            combinedTags.set(t.tag.id, { id: t.tag.id, name: t.tag.name, slug: t.tag.slug });
+          });
+
           return {
             ...c.contact,
             entryTitle: c.entry.title,
             entrySlug: c.entry.slug,
             entryIcon: c.entry.icon,
-            tags: contactTags.map(ct => ({
-              id: ct.tag.id,
-              name: ct.tag.name,
-              slug: ct.tag.slug,
-            })),
+            tags: Array.from(combinedTags.values()),
             _buildingNum: buildingNum,
             _entranceNum: entranceNum,
             _weight: weight,
           };
         })
-      );
+      )).filter((c): c is NonNullable<typeof c> => c !== null);
 
       // Sort by weight (priority building first), then building num, then entrance num
       contactsWithTagInfo.sort((a, b) => {

@@ -18,6 +18,7 @@ import {
   Droplet,
   UserCheck,
   Headphones,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -228,18 +229,33 @@ export function DirectoryContent({
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
               className={cn(
-                "h-14 pl-12 pr-24 text-lg transition-shadow",
+                "h-14 pl-12 text-lg transition-shadow",
+                hasActiveQuery ? "pr-28" : "pr-24",
                 "border-2",
                 isSearchFocused
                   ? "border-primary shadow-lg"
                   : "border-border hover:border-primary/50"
               )}
             />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs text-muted-foreground">
-              <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">
-                <Command className="inline h-3 w-3" />
-              </kbd>
-              <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">K</kbd>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              {/* Clear button (X) */}
+              {hasActiveQuery && (
+                <button
+                  type="button"
+                  onClick={handleClearFilter}
+                  className="p-1 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                  aria-label="Очистить поиск"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+              {/* CMD+K hint */}
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">
+                  <Command className="inline h-3 w-3" />
+                </kbd>
+                <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">K</kbd>
+              </div>
             </div>
           </div>
 
@@ -299,12 +315,6 @@ export function DirectoryContent({
                 </span>
               </Badge>
             )}
-            <button
-              onClick={handleClearFilter}
-              className="text-primary hover:underline text-sm"
-            >
-              Очистить
-            </button>
           </div>
 
           {/* Loading */}

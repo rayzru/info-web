@@ -159,6 +159,13 @@ export default function NewDirectoryEntryPage() {
       return;
     }
 
+    // Validate type is a valid enum value
+    const validTypes = ["contact", "organization", "location", "document"] as const;
+    if (!validTypes.includes(type as typeof validTypes[number])) {
+      toast({ title: "Выберите тип записи", variant: "destructive" });
+      return;
+    }
+
     const validContacts = contacts
       .filter((c) => c.value.trim())
       .map((c, i) => ({
@@ -177,7 +184,7 @@ export default function NewDirectoryEntryPage() {
     }));
 
     createMutation.mutate({
-      type: type as any,
+      type: type as typeof validTypes[number],
       title: title.trim(),
       description: description.trim() || undefined,
       content: content.trim() || undefined,

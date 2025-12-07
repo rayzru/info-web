@@ -263,9 +263,15 @@ export default function EditDirectoryEntryPage() {
       note: s.note || undefined,
     }));
 
+    // Only include type if it's a valid value
+    const validTypes = ["contact", "organization", "location", "document"] as const;
+    const typeToSend = validTypes.includes(type as typeof validTypes[number])
+      ? (type as typeof validTypes[number])
+      : undefined;
+
     updateMutation.mutate({
       id: entryId,
-      type: type as any,
+      type: typeToSend,
       title: title.trim(),
       subtitle: subtitle.trim() || undefined,
       description: description.trim() || undefined,

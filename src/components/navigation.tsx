@@ -1,4 +1,4 @@
-import { Info, ParkingCircle, Users } from "lucide-react";
+import { Info, Map, ParkingCircle, Users } from "lucide-react";
 import Link from "next/link";
 
 import { auth, signOut } from "~/server/auth";
@@ -10,9 +10,15 @@ import { Logo } from "./logo";
 const navigation = [
   {
     title: "Справочная",
-    link: "/info",
+    link: "/",
     icon: <Info />,
     testId: "nav-info",
+  },
+  {
+    title: "Карта",
+    link: "/map",
+    icon: <Map />,
+    testId: "nav-map",
   },
   {
     title: "Паркинг",
@@ -72,7 +78,7 @@ export async function Navigation() {
                     {session.user.name?.slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
-                Кабинет
+                {session.user.name ?? "Кабинет"}
               </Button>
             </Link>
             <form
