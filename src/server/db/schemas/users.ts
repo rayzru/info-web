@@ -153,6 +153,8 @@ export const userProfiles = createTable("user_profile", {
   phone: varchar("phone", { length: 20 }), // E.164 format: +7XXXXXXXXXX (max 20 chars)
   hidePhone: boolean("hide_phone").notNull().default(false),
   hideName: boolean("hide_name").notNull().default(false),
+  hideGender: boolean("hide_gender").notNull().default(false),
+  hideBirthday: boolean("hide_birthday").notNull().default(false),
   avatar: varchar("avatar", { length: 255 }),
   dateOfBirth: timestamp("date_of_birth", {
     mode: "date",

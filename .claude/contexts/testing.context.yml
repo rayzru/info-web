@@ -1,0 +1,31 @@
+name: testing
+description: Testing context across all layers (unit, integration, e2e)
+include:
+  # Backend tests
+  - "src/Fenix.*.Tests/**"
+  - "src/Fenix.Tests.Utility/**"
+  - "src/coverlet.runsettings"
+
+  # Frontend tests
+  - "front-end.iss-free/__tests__/**"
+  - "front-end.iss-free/e2e/**"
+  - "front-end.iss-free/**/*.test.*"
+  - "front-end.iss-free/**/*.spec.*"
+  - "front-end.iss-free/vitest.config.ts"
+  - "front-end.iss-free/jest.config.ts"
+  - "front-end.iss-free/vitest.shims.d.ts"
+
+  # Storybook (often used as testing scaffolding)
+  - "front-end.iss-free/stories/**"
+  - "front-end.iss-free/.storybook/**"
+
+  # Verified test artifacts
+  - "src/Fenix.Api.Tests/*.verified.txt"
+exclude:
+  - "**/bin/**"
+  - "**/obj/**"
+  - "**/node_modules/**"
+  - "**/coverage/**"
+  - "**/TestResults/**"
+  - "**/.next/**"
+  - "**/.env*"

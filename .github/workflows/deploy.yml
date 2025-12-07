@@ -1,0 +1,192 @@
+name: Deploy (Next.js standalone)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: "22"
+      BUN_VERSION: "1.2.9"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build (Next.js standalone)
+        run: |
+          # Clean cache to ensure fresh build
+          echo "=== Cleaning Next.js cache ==="
+          rm -rf .next/cache
+
+          # Build with production settings
+          echo "=== Building application ==="
+          NODE_ENV=production bun run build
+
+          # Capture BUILD_ID for verification
+          BUILD_ID=$(cat .next/BUILD_ID)
+          echo "=== Build ID: $BUILD_ID ==="
+          echo "BUILD_ID=$BUILD_ID" >> $GITHUB_ENV
+
+          # Prepare deployment directories
+          mkdir -p deploy/standalone deploy/static deploy/public
+          cp -r .next/standalone/* deploy/standalone/
+          mkdir -p deploy/standalone/.next
+          cp -r .next/static deploy/standalone/.next/
+          cp -r .next/server deploy/standalone/.next/
+          cp .next/BUILD_ID deploy/standalone/.next/
+          cp .next/*.json deploy/standalone/.next/
+          cp -r .next/static     deploy/static/
+          [ -d public ] && [ -n "$(ls -A public 2>/dev/null)" ] && cp -r public/* deploy/public/ || echo "Public directory empty or doesn't exist"
+          cp ecosystem.config.cjs deploy/standalone/
+
+          # Verification
+          echo "=== Deploy directory contents ==="
+          ls -la deploy/standalone/ | head -15
+          echo "=== .next directory check ==="
+          ls -la deploy/standalone/.next/ || echo ".next directory not found in deploy"
+          echo "=== BUILD_ID verification ==="
+          cat deploy/standalone/.next/BUILD_ID
+          echo "=== Static files check ==="
+          ls -la deploy/static/ | head -10
+          echo "=== Ecosystem config check ==="
+          ls -la deploy/standalone/ecosystem.config.cjs || echo "Ecosystem config not found in deploy"
+        env:
+          SKIP_ENV_VALIDATION: "1"
+          # Database (will be configured on server)
+          DATABASE_URL: "postgresql://placeholder"
+          DATABASE_NAME: "placeholder"
+          # Auth (will be configured on server)
+          AUTH_SECRET: "placeholder-will-be-set-on-server"
+          YANDEX_CLIENT_ID: "placeholder"
+          YANDEX_CLIENT_SECRET: "placeholder"
+
+      - name: Prepare SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          # Add known hosts
+          if [[ -n "${{ secrets.KNOWN_HOSTS }}" ]]; then
+            echo "${{ secrets.KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          else
+            echo "StrictHostKeyChecking no" >> ~/.ssh/config
+            echo "UserKnownHostsFile /dev/null" >> ~/.ssh/config
+          fi
+
+          # Create SSH private key with proper formatting
+          cat > ~/.ssh/id_ed25519 << 'EOF'
+          ${{ secrets.SSH_PRIVATE_KEY }}
+          EOF
+
+          # Ensure proper permissions and line endings
+          chmod 600 ~/.ssh/id_ed25519
+          [[ -f ~/.ssh/config ]] && chmod 600 ~/.ssh/config || true
+
+          # Verify key format
+          ssh-keygen -l -f ~/.ssh/id_ed25519 || echo "Warning: SSH key verification failed"
+
+      - name: Upload release via rsync
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+
+          # Validate required environment variables
+          if [[ -z "$USER" || -z "$HOST" || -z "$TARGET" ]]; then
+            echo "Error: Missing required SSH configuration"
+            echo "USER: '$USER'"
+            echo "HOST: '$HOST'"
+            echo "TARGET: '$TARGET'"
+            exit 1
+          fi
+
+          REL="releases/$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
+          echo "Creating release directory: $REL"
+
+          # Test SSH connection
+          echo "Testing SSH connection..."
+          ssh -p 22 -o ConnectTimeout=30 "$USER@$HOST" "echo 'SSH connection successful' && uptime"
+
+          # Create release directory structure that matches nginx expectations
+          ssh -p 22 "$USER@$HOST" "mkdir -p $TARGET/$REL"
+
+          # Deploy standalone app files to the root of the release (including .next directory)
+          echo "Deploying standalone files..."
+          timeout 300 rsync -azq --delete --exclude='.env' deploy/standalone/ "$USER@$HOST:$TARGET/$REL/" || echo "Standalone deployment failed or timed out"
+
+          # Deploy static and public files to match nginx paths
+          echo "Deploying static files..."
+          timeout 180 rsync -azq --delete deploy/static/     "$USER@$HOST:$TARGET/$REL/static/" || echo "Static deployment failed or timed out"
+          echo "Deploying public files..."
+          timeout 60 rsync -azq deploy/public/     "$USER@$HOST:$TARGET/$REL/public/" || echo "Public deployment failed or timed out"
+
+          # Create production .env file locally and upload
+          echo "Creating production .env file..."
+          cat > .env << EOF
+          # Next Auth
+          AUTH_SECRET="$AUTH_SECRET"
+          NEXTAUTH_SECRET="$NEXTAUTH_SECRET"
+          NEXTAUTH_URL="$NEXTAUTH_URL"
+
+          # Yandex OAuth
+          YANDEX_CLIENT_ID="$YANDEX_CLIENT_ID"
+          YANDEX_CLIENT_SECRET="$YANDEX_CLIENT_SECRET"
+
+          # Database (PostgreSQL)
+          DATABASE_URL="$DATABASE_URL"
+          DATABASE_NAME="$DATABASE_NAME"
+          EOF
+
+          # Upload .env file to server
+          scp .env "$USER@$HOST:$TARGET/$REL/.env"
+
+          # Verify .env file was created and has content
+          echo "Verifying .env file..."
+          ssh "$USER@$HOST" "ls -la $TARGET/$REL/.env && echo 'File size:' && wc -c $TARGET/$REL/.env"
+
+          # Verify BUILD_ID on server
+          echo "=== Verifying BUILD_ID on server ==="
+          ssh "$USER@$HOST" "cat $TARGET/$REL/.next/BUILD_ID"
+
+          # Create symlink and restart app with PM2
+          echo "=== Updating symlink and restarting app ==="
+          ssh "$USER@$HOST" "cd $TARGET && rm -rf current && ln -sfn $REL current && echo 'Symlink created:' && ls -la current && echo 'Target directory:' && ls -la && cd current && echo 'Current directory:' && pwd && echo 'All files in current:' && ls -la && echo 'Check .next directory:' && ls -la .next/ && echo 'Check BUILD_ID:' && cat .next/BUILD_ID && echo 'Check .env file:' && ls -la .env && echo '=== Restarting PM2 from current directory ===' && (pm2 delete playto-app 2>/dev/null || true) && pm2 start ecosystem.config.cjs && pm2 save && echo 'PM2 app restarted successfully'"
+        env:
+          USER:   ${{ secrets.SSH_USER }}
+          HOST:   ${{ secrets.SSH_HOST }}
+          TARGET: ${{ secrets.SSH_TARGET_DIR }}
+          # Environment variables for .env file creation
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          YANDEX_CLIENT_ID: ${{ secrets.YANDEX_CLIENT_ID }}
+          YANDEX_CLIENT_SECRET: ${{ secrets.YANDEX_CLIENT_SECRET }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+
+      - name: Prune old releases (keep 5)
+        run: |
+          # Validate required environment variables
+          if [[ -z "$USER" || -z "$HOST" || -z "$TARGET" ]]; then
+            echo "Error: Missing required SSH configuration for cleanup"
+            exit 1
+          fi
+
+          ssh "$USER@$HOST" bash -lc 'cd "'"$TARGET"'"/releases && ls -1t | tail -n +6 | xargs -r rm -rf'
+        env:
+          USER:   ${{ secrets.SSH_USER }}
+          HOST:   ${{ secrets.SSH_HOST }}
+          TARGET: ${{ secrets.SSH_TARGET_DIR }}

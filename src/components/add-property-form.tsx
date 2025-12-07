@@ -8,7 +8,7 @@ import { type Building } from "lucide-react";
 import { type Session } from "next-auth";
 import { z } from "zod";
 
-import { submitAddProperty } from "~/app/my/property/add/actions";
+import { submitAddProperty } from "~/app/(main)/my/property/add/actions";
 import {
   Form,
   FormControl,
@@ -65,7 +65,7 @@ export const AddPropertyForm = ({
     }
   };
 
-  const formSchema: z.ZodSchema = z
+  const formSchema = z
     .object({
       buildingId: z.string(),
       type: z.enum(["apartment", "parking"]),

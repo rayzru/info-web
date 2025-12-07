@@ -36,14 +36,14 @@ const buildings: Building[] = [
   {
     x: 39,
     y: 40,
-    title: "Литер 8",
+    title: "Строение 5",
     order: 2,
   },
 
   {
     x: 21,
     y: 37,
-    title: "Литер 1",
+    title: "Строение 4",
     order: 2,
   },
   {
@@ -55,7 +55,7 @@ const buildings: Building[] = [
   {
     x: 12,
     y: 73,
-    title: "Литер 9",
+    title: "Строение 3",
     order: 2,
   },
 ];

@@ -1,14 +1,27 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  index,
+  integer,
   pgEnum,
   smallint,
+  timestamp,
   unique,
   varchar,
 } from "drizzle-orm/pg-core";
 
 import { createTable } from "./create-table";
 import { parkings } from "./parkings";
+
+// Enum для типов каналов коммуникации
+export const channelTypeEnum = pgEnum("channel_type", [
+  "telegram",
+  "max",       // Будущий MAX
+  "whatsapp",
+  "vk",
+  "email",
+  "other",
+]);
 
 // Enum для типов квартир
 export const apartmentTypeEnum = pgEnum("apartment_type", [
@@ -86,10 +99,46 @@ export const apartments = createTable("apartment", {
   layoutCode: varchar("layout_code", { length: 255 }), // Код планировки
 });
 
+// ============== BUILDING CHANNELS ==============
+// Системные каналы коммуникации для зданий (для уведомлений, рассылок)
+
+export const buildingChannels = createTable(
+  "building_channel",
+  {
+    id: varchar("id", { length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    // Привязка к зданию (опционально - может быть общий канал ЖК)
+    buildingId: varchar("building_id", { length: 255 }).references(
+      () => buildings.id,
+      { onDelete: "cascade" }
+    ),
+    // Тип канала
+    channelType: channelTypeEnum("channel_type").notNull(),
+    // ID/ссылка канала (chat_id для Telegram, URL для других)
+    channelId: varchar("channel_id", { length: 500 }).notNull(),
+    // Название канала для отображения
+    name: varchar("name", { length: 255 }),
+    // Флаги
+    isActive: integer("is_active").notNull().default(1), // Активен для уведомлений
+    isPrimary: integer("is_primary").notNull().default(0), // Основной канал
+    // Метаданные
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("building_channel_building_idx").on(table.buildingId),
+    index("building_channel_type_idx").on(table.channelType),
+    index("building_channel_active_idx").on(table.isActive),
+  ]
+);
+
 // Определяем связи
 export const buildingsRelations = relations(buildings, ({ many }) => ({
   entrances: many(entrances),
   parkings: many(parkings),
+  channels: many(buildingChannels),
 }));
 
 export const entrancesRelations = relations(entrances, ({ one, many }) => ({
@@ -111,3 +160,13 @@ export const floorsRelations = relations(floors, ({ one, many }) => ({
 export const apartmentsRelations = relations(apartments, ({ one }) => ({
   floor: one(floors, { fields: [apartments.floorId], references: [floors.id] }),
 }));
+
+export const buildingChannelsRelations = relations(
+  buildingChannels,
+  ({ one }) => ({
+    building: one(buildings, {
+      fields: [buildingChannels.buildingId],
+      references: [buildings.id],
+    }),
+  })
+);

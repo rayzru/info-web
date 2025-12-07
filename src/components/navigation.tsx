@@ -1,8 +1,3 @@
-import {
-  DropdownMenu,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
 import { Info, ParkingCircle, Users } from "lucide-react";
 import Link from "next/link";
 
@@ -10,7 +5,6 @@ import { auth, signOut } from "~/server/auth";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { DropdownMenuContent } from "./ui/dropdown-menu";
 import { Logo } from "./logo";
 
 const navigation = [
@@ -18,16 +12,19 @@ const navigation = [
     title: "Справочная",
     link: "/info",
     icon: <Info />,
+    testId: "nav-info",
   },
   {
     title: "Паркинг",
     link: "/parking",
     icon: <ParkingCircle />,
+    testId: "nav-parking",
   },
   {
     title: "Сообщество",
     link: "/community",
     icon: <Users />,
+    testId: "nav-community",
   },
 ];
 
@@ -36,13 +33,13 @@ export async function Navigation() {
 
   return (
     <div className="mt-4 flex items-center justify-between">
-      <Link href="/">
+      <Link href="/" data-testid="nav-logo">
         <Logo />
       </Link>
 
       <div className="flex items-center gap-2">
         {navigation.map((item) => (
-          <Link key={item.title} href={item.link} passHref>
+          <Link key={item.title} href={item.link} passHref data-testid={item.testId}>
             <Button
               key={`${item.title}-text`}
               variant="ghost"
@@ -63,41 +60,32 @@ export async function Navigation() {
       </div>
 
       <div>
-        {!session && <Button>Войти</Button>}
+        {!session && <Link passHref href={"/login"} data-testid="nav-login"><Button>Войти</Button></Link>}
 
         {session && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <div className="flex items-center gap-2">
+            <Link href="/my" passHref data-testid="nav-user-cabinet">
               <Button variant="ghost">
                 <Avatar className="h-4 w-4">
-                  <AvatarImage src={session.user.image} />
+                  <AvatarImage src={session.user.image ?? undefined} />
                   <AvatarFallback>
                     {session.user.name?.slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
                 Кабинет
               </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent>
-              <DropdownMenuItem>
-                <a href="/my">Кабинет собственника</a>
-              </DropdownMenuItem>
-
-              <form
-                action={async () => {
-                  "use server";
-                  await signOut();
-                }}
-              >
-                <DropdownMenuItem asChild>
-                  <button className="w-full text-left" type="submit">
-                    Выйти
-                  </button>
-                </DropdownMenuItem>
-              </form>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </Link>
+            <form
+              action={async () => {
+                "use server";
+                await signOut();
+              }}
+            >
+              <Button variant="outline" type="submit" data-testid="nav-logout">
+                Выйти
+              </Button>
+            </form>
+          </div>
         )}
       </div>
     </div>

@@ -1,7 +1,8 @@
 import { type Metadata } from "next";
 
-import { Navigation } from "~/components/navigation";
+import { SessionProvider } from "~/components/session-provider";
 import { ThemeProvider } from "~/components/theme-provider";
+import { Toaster } from "~/components/ui/sonner";
 import { TRPCReactProvider } from "~/trpc/react";
 
 import "~/styles/globals.css";
@@ -15,7 +16,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <head>
         <meta charSet="utf-8" />
         <meta
@@ -32,24 +33,17 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <TRPCReactProvider>
-            <div
-              data-wrapper=""
-              className="container m-auto grid max-w-7xl min-w-xs grid-cols-12 gap-4 px-[20px]"
-            >
-              <main className="col-span-full">
-                <Navigation />
-                {children}
-              </main>
-            </div>
-          </TRPCReactProvider>
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+            <Toaster />
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );
