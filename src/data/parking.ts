@@ -926,23 +926,6 @@ const parkingData: ParkingOfferInfo[] = [
   {
     variant: 'standard',
     level: -2,
-    building: 1,
-    parkingNumber: 7,
-    offer: {
-      type: 'rent',
-      price: 7000,
-      description: '2000 руб. залог за пульт.',
-    },
-    contact: {
-      phone: '+7 (928) 179-59-72',
-      hasTelegram: true,
-      hasWhatsApp: true,
-    },
-    dateUpdated: 1764514315278,
-  },
-  {
-    variant: 'standard',
-    level: -2,
     building: 2,
     parkingNumber: 78,
     offer: {
@@ -989,6 +972,23 @@ const parkingData: ParkingOfferInfo[] = [
     },
     dateUpdated: 1764786001481,
   },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 3,
+    parkingNumber: 113,
+    offer: {
+      type: 'rent',
+      price: 5000,
+      description: 'Сдаю на длительный срок',
+    },
+    contact: {
+      phone: '+7 (918) 597-50-66',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1765207910456,
+  }
 ];
 
 export default parkingData;
