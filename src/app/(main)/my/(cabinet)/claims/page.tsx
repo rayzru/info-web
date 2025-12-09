@@ -10,6 +10,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -116,23 +117,45 @@ export default function ClaimsPage() {
       utils.claims.my.invalidate();
       setPropertyToRevoke(null);
       setSelectedProperty(null);
+      toast.success("Права отозваны");
+    },
+    onError: (error) => {
+      toast.error("Не удалось отозвать права", {
+        description: error.message,
+      });
     },
   });
 
   const reviewTenantMutation = api.claims.owner.reviewTenantClaim.useMutation({
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       utils.claims.owner.pendingTenantClaims.invalidate();
       utils.claims.owner.myProperties.invalidate();
       utils.claims.owner.propertyHistory.invalidate();
       setClaimToReview(null);
       setRejectComment("");
+      toast.success(
+        variables.status === "approved"
+          ? "Заявка подтверждена"
+          : "Заявка отклонена",
+      );
+    },
+    onError: (error) => {
+      toast.error("Не удалось обработать заявку", {
+        description: error.message,
+      });
     },
   });
 
   const cancelClaimMutation = api.claims.cancel.useMutation({
     onSuccess: () => {
       utils.claims.my.invalidate();
-      utils.claims.owner.propertyHistory.invalidate();
+      toast.success("Заявка отменена");
+      setSelectedProperty(null);
+    },
+    onError: (error) => {
+      toast.error("Не удалось отменить заявку", {
+        description: error.message,
+      });
     },
   });
 

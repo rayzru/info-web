@@ -1,0 +1,65 @@
+<mjml>
+  <mj-head>
+    <mj-title>Способ входа отвязан</mj-title>
+    <mj-preview>От вашего аккаунта отвязан способ входа</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" />
+      <mj-text font-size="15px" line-height="1.6" color="#333333" />
+      <mj-button background-color="#2563eb" border-radius="8px" font-size="15px" font-weight="600" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f4f4f5">
+    <!-- Header -->
+    <mj-section padding="30px 0 20px">
+      <mj-column>
+        <mj-text align="center" font-size="28px" font-weight="700" color="#18181b" letter-spacing="0.05em">
+          ПАРАДНАЯ
+        </mj-text>
+        <mj-text align="center" font-size="13px" color="#71717a">
+          Жилой комплекс «Сердце Ростова»
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Main Content -->
+    <mj-section background-color="#ffffff" border-radius="12px" padding="40px 30px">
+      <mj-column>
+        <mj-text font-size="22px" font-weight="600" color="#18181b">
+          Способ входа отвязан
+        </mj-text>
+        <mj-text padding-top="20px">
+          Здравствуйте, {{userName}}!
+        </mj-text>
+        <mj-text padding-top="10px">
+          От вашего аккаунта в сервисе «Парадная» был отвязан способ входа.
+        </mj-text>
+        <mj-text padding-top="20px" padding-bottom="20px" background-color="#f4f4f5" border-radius="8px" padding-left="20px">
+          <strong>Сервис:</strong> {{providerName}}<br/>
+          <strong>Дата и время:</strong> {{unlinkedAt}}
+        </mj-text>
+        <mj-text>
+          Вы больше не сможете входить через {{providerName}}. Вы можете привязать его снова в любое время.
+        </mj-text>
+        <mj-button href="{{securityUrl}}" padding-top="25px">
+          Управление безопасностью
+        </mj-button>
+        <mj-divider border-color="#e5e7eb" padding="30px 0" />
+        <mj-text font-size="13px" color="#dc2626">
+          <strong>Это не вы?</strong> Если вы не отвязывали этот аккаунт, срочно проверьте настройки безопасности. Кто-то мог получить доступ к вашему аккаунту.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section padding="30px 0">
+      <mj-column>
+        <mj-text align="center" font-size="13px" color="#71717a">
+          Это письмо отправлено автоматически, отвечать на него не нужно.
+        </mj-text>
+        <mj-text align="center" font-size="13px" color="#71717a" padding-top="10px">
+          © 2025 Парадная. Все права защищены.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

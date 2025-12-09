@@ -12,7 +12,7 @@ const weCategories = [
     slug: "chats",
   },
   {
-    name: "Правила сообщества",
+    name: "Правила",
     slug: "rules",
   },
 ];
