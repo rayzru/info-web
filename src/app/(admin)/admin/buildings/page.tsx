@@ -95,10 +95,8 @@ function StatCard({
 }) {
   return (
     <div className="rounded-lg border bg-card p-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-          <Icon className="h-4 w-4 text-muted-foreground" />
-        </div>
+      <div className="flex items-start gap-3">
+        <Icon className="h-5 w-5 mt-2 text-gray-300" />
         <div>
           <p className="text-2xl font-bold">{value}</p>
           <p className="text-xs text-muted-foreground">{label}</p>

@@ -1,0 +1,63 @@
+<mjml>
+  <mj-head>
+    <mj-title>Добро пожаловать в Парадную!</mj-title>
+    <mj-preview>Ваш аккаунт успешно создан</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" />
+      <mj-text font-size="15px" line-height="1.6" color="#333333" />
+      <mj-button background-color="#2563eb" border-radius="8px" font-size="15px" font-weight="600" />
+    </mj-attributes>
+    <mj-style>
+      .footer-link { color: #6b7280; text-decoration: none; }
+      .footer-link:hover { text-decoration: underline; }
+    </mj-style>
+  </mj-head>
+  <mj-body background-color="#f4f4f5">
+    <!-- Header -->
+    <mj-section padding="30px 0 20px">
+      <mj-column>
+        <mj-text align="center" font-size="28px" font-weight="700" color="#18181b" letter-spacing="0.05em">
+          ПАРАДНАЯ
+        </mj-text>
+        <mj-text align="center" font-size="13px" color="#71717a">
+          Жилой комплекс «Сердце Ростова»
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Main Content -->
+    <mj-section background-color="#ffffff" border-radius="12px" padding="40px 30px">
+      <mj-column>
+        <mj-text font-size="22px" font-weight="600" color="#18181b">
+          Добро пожаловать, {{userName}}!
+        </mj-text>
+        <mj-text padding-top="20px">
+          Ваш аккаунт в сервисе «Парадная» успешно создан. Теперь вы можете пользоваться всеми возможностями нашего сервиса:
+        </mj-text>
+        <mj-text padding-top="10px">
+          <ul style="margin: 0; padding-left: 20px;">
+            <li style="margin-bottom: 8px;">Просматривать справочник полезных контактов</li>
+            <li style="margin-bottom: 8px;">Зарегистрировать свою квартиру или машиноместо</li>
+            <li style="margin-bottom: 8px;">Общаться с соседями на форуме</li>
+            <li style="margin-bottom: 8px;">Размещать объявления</li>
+          </ul>
+        </mj-text>
+        <mj-button href="{{loginUrl}}" padding-top="30px">
+          Войти в личный кабинет
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section padding="30px 0">
+      <mj-column>
+        <mj-text align="center" font-size="13px" color="#71717a">
+          Это письмо отправлено автоматически, отвечать на него не нужно.
+        </mj-text>
+        <mj-text align="center" font-size="13px" color="#71717a" padding-top="10px">
+          © 2025 Парадная. Все права защищены.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

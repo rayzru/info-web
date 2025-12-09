@@ -1,7 +1,7 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
-import { userProfiles, users } from "~/server/db/schema";
+import { deletionRequests, userProfiles, users } from "~/server/db/schema";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -52,6 +52,20 @@ export const profileRouter = createTRPCRouter({
         hideName: z.boolean().optional(),
         hideGender: z.boolean().optional(),
         hideBirthday: z.boolean().optional(),
+        // Мессенджеры
+        telegramUsername: z
+          .string()
+          .max(100)
+          .regex(/^[a-zA-Z0-9_]{5,32}$/, "Некорректный username Telegram")
+          .optional()
+          .nullable(),
+        maxUsername: z.string().max(100).optional().nullable(),
+        whatsappPhone: z
+          .string()
+          .regex(/^\+?[1-9]\d{1,14}$/, "Некорректный номер WhatsApp")
+          .optional()
+          .nullable(),
+        hideMessengers: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -78,6 +92,11 @@ export const profileRouter = createTRPCRouter({
             hideName: input.hideName,
             hideGender: input.hideGender,
             hideBirthday: input.hideBirthday,
+            // Мессенджеры
+            telegramUsername: input.telegramUsername,
+            maxUsername: input.maxUsername,
+            whatsappPhone: input.whatsappPhone,
+            hideMessengers: input.hideMessengers,
           })
           .where(eq(userProfiles.id, existingProfile.id));
       } else {
@@ -95,6 +114,11 @@ export const profileRouter = createTRPCRouter({
           hideName: input.hideName ?? false,
           hideGender: input.hideGender ?? false,
           hideBirthday: input.hideBirthday ?? false,
+          // Мессенджеры
+          telegramUsername: input.telegramUsername,
+          maxUsername: input.maxUsername,
+          whatsappPhone: input.whatsappPhone,
+          hideMessengers: input.hideMessengers ?? false,
         });
       }
 
@@ -115,4 +139,87 @@ export const profileRouter = createTRPCRouter({
         message: "Загрузка аватарки пока недоступна. Функция в разработке.",
       };
     }),
+
+  // Get pending deletion request for current user
+  getDeletionRequest: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    const request = await ctx.db.query.deletionRequests.findFirst({
+      where: and(
+        eq(deletionRequests.userId, userId),
+        eq(deletionRequests.status, "pending")
+      ),
+    });
+
+    return request ?? null;
+  }),
+
+  // Request account deletion
+  requestDeletion: protectedProcedure
+    .input(
+      z.object({
+        reason: z.string().max(1000).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Check if there's already a pending request
+      const existingRequest = await ctx.db.query.deletionRequests.findFirst({
+        where: and(
+          eq(deletionRequests.userId, userId),
+          eq(deletionRequests.status, "pending")
+        ),
+      });
+
+      if (existingRequest) {
+        return {
+          success: false,
+          message: "У вас уже есть активная заявка на удаление аккаунта.",
+        };
+      }
+
+      // Create new deletion request
+      await ctx.db.insert(deletionRequests).values({
+        userId,
+        reason: input.reason,
+        status: "pending",
+      });
+
+      return {
+        success: true,
+        message:
+          "Заявка на удаление аккаунта отправлена. Администрация рассмотрит её в течение 30 дней.",
+      };
+    }),
+
+  // Cancel deletion request
+  cancelDeletionRequest: protectedProcedure.mutation(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    // Find pending request
+    const request = await ctx.db.query.deletionRequests.findFirst({
+      where: and(
+        eq(deletionRequests.userId, userId),
+        eq(deletionRequests.status, "pending")
+      ),
+    });
+
+    if (!request) {
+      return {
+        success: false,
+        message: "Активная заявка на удаление не найдена.",
+      };
+    }
+
+    // Delete the request (or mark as cancelled)
+    await ctx.db
+      .delete(deletionRequests)
+      .where(eq(deletionRequests.id, request.id));
+
+    return {
+      success: true,
+      message: "Заявка на удаление аккаунта отменена.",
+    };
+  }),
 });

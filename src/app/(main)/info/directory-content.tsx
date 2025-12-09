@@ -7,7 +7,6 @@ import {
   MapPin,
   MessageCircle,
   Globe,
-  Command,
   Building,
   AlertTriangle,
   Wrench,
@@ -25,7 +24,25 @@ import Link from "next/link";
 import { api } from "~/trpc/react";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
+import { KeyboardShortcut } from "~/components/keyboard-shortcut";
 import { cn } from "~/lib/utils";
+
+// Склонение слова "запись" для русского языка
+function pluralizeRecords(count: number): string {
+  const lastTwo = count % 100;
+  const lastOne = count % 10;
+
+  if (lastTwo >= 11 && lastTwo <= 19) {
+    return `${count} записей`;
+  }
+  if (lastOne === 1) {
+    return `${count} запись`;
+  }
+  if (lastOne >= 2 && lastOne <= 4) {
+    return `${count} записи`;
+  }
+  return `${count} записей`;
+}
 
 type Tag = {
   id: string;
@@ -59,14 +76,36 @@ type DirectoryContentProps = {
   initialEntries: { entries: Entry[]; total: number };
 };
 
-// Quick access tags - contact-level tags for quick filtering
-const QUICK_ACCESS_TAGS = [
-  { slug: "konsierzh", icon: UserCheck, label: "Консьержи", color: "bg-blue-500" },
-  { slug: "chat", icon: MessageCircle, label: "Чаты", color: "bg-violet-500" },
-  { slug: "dispetcher", icon: Headphones, label: "Диспетчерские", color: "bg-green-500" },
-  { slug: "elektrik", icon: Zap, label: "Электрики", color: "bg-yellow-500" },
-  { slug: "santehnik", icon: Droplet, label: "Сантехники", color: "bg-cyan-500" },
-];
+// Tag groups for quick access
+const TAG_GROUPS = {
+  services: {
+    title: "Полезное",
+    tags: [
+      { slug: "konsierzh", icon: UserCheck, label: "Консьержи" },
+      { slug: "chat", icon: MessageCircle, label: "Чаты" },
+    ],
+  },
+  emergency: {
+    title: "Аварийные",
+    tags: [
+      { slug: "dispetcher", icon: Headphones, label: "Диспетчерские" },
+      { slug: "elektrik", icon: Zap, label: "Электрики" },
+      { slug: "santehnik", icon: Droplet, label: "Сантехники" },
+    ],
+  },
+  buildings: {
+    title: "Строения",
+    tags: [
+      { slug: "stroenie-1", label: "1" },
+      { slug: "stroenie-2", label: "2" },
+      { slug: "stroenie-3", label: "3" },
+      { slug: "stroenie-4", label: "4" },
+      { slug: "stroenie-5", label: "5" },
+      { slug: "stroenie-6", label: "6" },
+      { slug: "stroenie-7", label: "7" },
+    ],
+  },
+};
 
 // Contact type colors
 const CONTACT_COLORS: Record<string, { bg: string; border: string; text: string }> = {
@@ -190,11 +229,30 @@ export function DirectoryContent({
     inputRef.current?.focus();
   };
 
-  // Get quick access tags from initial data (use contact-level tags)
-  const quickTags = QUICK_ACCESS_TAGS.map((qt) => {
-    const tag = initialTags.find((t) => t.slug === qt.slug);
-    return { ...qt, tag };
-  });
+  // Map tag groups with actual tag data from DB
+  const tagGroups = {
+    services: {
+      ...TAG_GROUPS.services,
+      tags: TAG_GROUPS.services.tags.map((t) => ({
+        ...t,
+        tag: initialTags.find((it) => it.slug === t.slug),
+      })),
+    },
+    emergency: {
+      ...TAG_GROUPS.emergency,
+      tags: TAG_GROUPS.emergency.tags.map((t) => ({
+        ...t,
+        tag: initialTags.find((it) => it.slug === t.slug),
+      })),
+    },
+    buildings: {
+      ...TAG_GROUPS.buildings,
+      tags: TAG_GROUPS.buildings.tags.map((t) => ({
+        ...t,
+        tag: initialTags.find((it) => it.slug === t.slug),
+      })),
+    },
+  };
 
   return (
     <div className="flex flex-col min-h-[60vh]">
@@ -229,12 +287,12 @@ export function DirectoryContent({
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
               className={cn(
-                "h-14 pl-12 text-lg transition-shadow",
+                "h-14 pl-12 text-lg transition-shadow rounded-full",
                 hasActiveQuery ? "pr-28" : "pr-24",
                 "border-2",
                 isSearchFocused
-                  ? "border-primary shadow-lg"
-                  : "border-border hover:border-primary/50"
+                  ? "border-primary shadow-lg shadow-primary/20"
+                  : "border-primary/30 hover:border-primary/50"
               )}
             />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -249,35 +307,158 @@ export function DirectoryContent({
                   <X className="h-4 w-4" />
                 </button>
               )}
-              {/* CMD+K hint */}
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">
-                  <Command className="inline h-3 w-3" />
-                </kbd>
-                <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">K</kbd>
-              </div>
+              {/* CMD+K / CTRL+K hint */}
+              <KeyboardShortcut shortcutKey="K" />
             </div>
           </div>
 
           {/* Quick Access Tags - only show when not searching */}
           {!hasActiveQuery && (
-            <div className="mt-6 flex flex-wrap justify-center gap-2">
-              {quickTags.map(({ slug, icon: Icon, label, color, tag }) => (
-                <button
-                  key={slug}
-                  onClick={() => handleTagClick(slug, tag?.id)}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-full",
-                    "bg-secondary hover:bg-secondary/80 transition-colors",
-                    "text-sm font-medium"
-                  )}
-                >
-                  <span className={cn("w-2 h-2 rounded-full", color)} />
-                  <Icon className="h-4 w-4" />
-                  <span>{label}</span>
-                </button>
-              ))}
-            </div>
+            <>
+              {/* Mobile layout: stacked groups with horizontal tags */}
+              <div className="mt-6 flex flex-col gap-4 md:hidden">
+                {/* Services group */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs text-muted-foreground font-medium lowercase">
+                    {tagGroups.services.title}
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {tagGroups.services.tags.map(({ slug, icon: Icon, label, tag }) => (
+                      <button
+                        key={slug}
+                        onClick={() => handleTagClick(slug, tag?.id)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-2.5 py-1 rounded-md max-w-[120px]",
+                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "text-sm"
+                        )}
+                      >
+                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
+                        <span className="truncate">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Emergency group */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs text-muted-foreground font-medium lowercase">
+                    {tagGroups.emergency.title}
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {tagGroups.emergency.tags.map(({ slug, icon: Icon, label, tag }) => (
+                      <button
+                        key={slug}
+                        onClick={() => handleTagClick(slug, tag?.id)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-2.5 py-1 rounded-md max-w-[120px]",
+                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "text-sm"
+                        )}
+                      >
+                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
+                        <span className="truncate">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Buildings group */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs text-muted-foreground font-medium lowercase">
+                    {tagGroups.buildings.title}
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {tagGroups.buildings.tags.map(({ slug, label, tag }) => (
+                      <button
+                        key={slug}
+                        onClick={() => handleTagClick(slug, tag?.id)}
+                        className={cn(
+                          "flex items-center gap-1 px-2 py-1 rounded-md",
+                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "text-sm"
+                        )}
+                      >
+                        <Building className="h-3 w-3 shrink-0" />
+                        <span>{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop layout: 3 columns */}
+              <div className="mt-6 hidden md:grid grid-cols-3 gap-4 max-w-lg mx-auto">
+                {/* Services column */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs text-muted-foreground font-medium lowercase">
+                    {tagGroups.services.title}
+                  </span>
+                  <div className="flex flex-col gap-1">
+                    {tagGroups.services.tags.map(({ slug, icon: Icon, label, tag }) => (
+                      <button
+                        key={slug}
+                        onClick={() => handleTagClick(slug, tag?.id)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-2.5 py-1 rounded-md w-fit",
+                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "text-sm"
+                        )}
+                      >
+                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
+                        <span className="truncate">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Emergency column */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs text-muted-foreground font-medium lowercase">
+                    {tagGroups.emergency.title}
+                  </span>
+                  <div className="flex flex-col gap-1">
+                    {tagGroups.emergency.tags.map(({ slug, icon: Icon, label, tag }) => (
+                      <button
+                        key={slug}
+                        onClick={() => handleTagClick(slug, tag?.id)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-2.5 py-1 rounded-md w-fit max-w-full",
+                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "text-sm"
+                        )}
+                      >
+                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
+                        <span className="truncate">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Buildings column */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs text-muted-foreground font-medium lowercase">
+                    {tagGroups.buildings.title}
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {tagGroups.buildings.tags.map(({ slug, label, tag }) => (
+                      <button
+                        key={slug}
+                        onClick={() => handleTagClick(slug, tag?.id)}
+                        className={cn(
+                          "flex items-center gap-1 px-2 py-1 rounded-md",
+                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "text-sm"
+                        )}
+                      >
+                        <Building className="h-3 w-3 shrink-0" />
+                        <span>{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -308,12 +489,14 @@ export function DirectoryContent({
               </>
             )}
             {isFiltering && contactsByTag.data?.tag && (
-              <Badge variant="secondary" className="gap-1">
-                {contactsByTag.data.tag.name}
-                <span className="text-muted-foreground">
-                  ({contactsByTag.data.total})
+              <>
+                <Badge variant="secondary">
+                  {contactsByTag.data.tag.name}
+                </Badge>
+                <span className="text-muted-foreground text-sm font-normal">
+                  {pluralizeRecords(contactsByTag.data.total)}
                 </span>
-              </Badge>
+              </>
             )}
           </div>
 

@@ -1,17 +1,26 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
+import { and, eq, gt, isNotNull } from "drizzle-orm";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import MailRuProvider from "next-auth/providers/mailru";
+import VKProvider from "next-auth/providers/vk";
 import YandexProvider from "next-auth/providers/yandex";
 
 import { db } from "~/server/db";
 import {
   accounts,
   sessions,
+  telegramAuthTokens,
   userRoles,
   users,
   verificationTokens,
 } from "~/server/db/schema";
+import { notifyAsync, getProviderDisplayName } from "~/server/notifications";
+import OdnoklassnikiProvider from "./providers/odnoklassniki";
+import SberProvider from "./providers/sber";
+import TinkoffProvider from "./providers/tinkoff";
 import { type UserRole, isAdmin } from "./rbac";
 
 // Test accounts for development
@@ -108,41 +117,256 @@ async function getOrCreateTestUser(accountKey: string) {
 // Check if development mode
 const isDev = process.env.NODE_ENV === "development";
 
-export const authConfig = {
-  secret: process.env.AUTH_SECRET,
-  providers: [
+// Build providers array dynamically based on available credentials
+function buildProviders() {
+  const providers: NextAuthConfig["providers"] = [];
+
+  // Yandex (required)
+  providers.push(
     YandexProvider({
       clientId: process.env.YANDEX_CLIENT_ID!,
       clientSecret: process.env.YANDEX_CLIENT_SECRET!,
-    }),
-    // Development-only credentials provider
-    ...(isDev
-      ? [
-          CredentialsProvider({
-            id: "test-credentials",
-            name: "Test Account",
-            credentials: {
-              account: {
-                label: "Account Type",
-                type: "text",
-                placeholder: "admin, moderator, owner, resident, guest, editor",
-              },
-            },
-            async authorize(credentials) {
-              if (!credentials?.account) return null;
-              const accountKey = credentials.account as string;
-              const user = await getOrCreateTestUser(accountKey);
-              if (!user) return null;
-              return {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-              };
-            },
-          }),
-        ]
-      : []),
-  ],
+    })
+  );
+
+  // VK (optional)
+  if (process.env.VK_CLIENT_ID && process.env.VK_CLIENT_SECRET) {
+    providers.push(
+      VKProvider({
+        clientId: process.env.VK_CLIENT_ID,
+        clientSecret: process.env.VK_CLIENT_SECRET,
+      })
+    );
+  }
+
+  // Google (optional)
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    providers.push(
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      })
+    );
+  }
+
+  // Mail.ru (optional)
+  if (process.env.MAILRU_CLIENT_ID && process.env.MAILRU_CLIENT_SECRET) {
+    providers.push(
+      MailRuProvider({
+        clientId: process.env.MAILRU_CLIENT_ID,
+        clientSecret: process.env.MAILRU_CLIENT_SECRET,
+      })
+    );
+  }
+
+  // Одноклассники (optional)
+  if (
+    process.env.OK_CLIENT_ID &&
+    process.env.OK_CLIENT_SECRET &&
+    process.env.OK_PUBLIC_KEY
+  ) {
+    providers.push(
+      OdnoklassnikiProvider({
+        clientId: process.env.OK_CLIENT_ID,
+        clientSecret: process.env.OK_CLIENT_SECRET,
+        publicKey: process.env.OK_PUBLIC_KEY,
+      })
+    );
+  }
+
+  // Сбер ID (optional)
+  if (process.env.SBER_CLIENT_ID && process.env.SBER_CLIENT_SECRET) {
+    providers.push(
+      SberProvider({
+        clientId: process.env.SBER_CLIENT_ID,
+        clientSecret: process.env.SBER_CLIENT_SECRET,
+      })
+    );
+  }
+
+  // T-ID / Тинькофф (optional)
+  if (process.env.TINKOFF_CLIENT_ID && process.env.TINKOFF_CLIENT_SECRET) {
+    providers.push(
+      TinkoffProvider({
+        clientId: process.env.TINKOFF_CLIENT_ID,
+        clientSecret: process.env.TINKOFF_CLIENT_SECRET,
+      })
+    );
+  }
+
+  // Telegram Bot Auth (optional)
+  if (process.env.TELEGRAM_BOT_TOKEN) {
+    providers.push(
+      CredentialsProvider({
+        id: "telegram",
+        name: "Telegram",
+        credentials: {
+          code: { label: "Код из бота", type: "text" },
+        },
+        async authorize(credentials) {
+          if (!credentials?.code) return null;
+
+          const code = credentials.code as string;
+
+          // Find verified token by code
+          const token = await db.query.telegramAuthTokens.findFirst({
+            where: and(
+              eq(telegramAuthTokens.code, code),
+              eq(telegramAuthTokens.verified, true),
+              isNotNull(telegramAuthTokens.telegramId),
+              gt(telegramAuthTokens.expires, new Date())
+            ),
+          });
+
+          if (!token || token.usedAt) {
+            return null;
+          }
+
+          // Mark token as used
+          await db
+            .update(telegramAuthTokens)
+            .set({ usedAt: new Date() })
+            .where(eq(telegramAuthTokens.id, token.id));
+
+          // Find or create user by Telegram ID
+          let user = await db.query.users.findFirst({
+            where: eq(users.email, `tg_${token.telegramId}@telegram.local`),
+          });
+
+          if (!user) {
+            // Create new user
+            const [newUser] = await db
+              .insert(users)
+              .values({
+                email: `tg_${token.telegramId}@telegram.local`,
+                name:
+                  [token.telegramFirstName, token.telegramLastName]
+                    .filter(Boolean)
+                    .join(" ") || `Telegram User`,
+                emailVerified: new Date(),
+              })
+              .returning();
+            user = newUser;
+
+            // Assign Guest role
+            if (user) {
+              await db.insert(userRoles).values({
+                userId: user.id,
+                role: "Guest",
+              });
+            }
+          }
+
+          if (!user) return null;
+
+          // Create/update account link
+          const existingAccount = await db.query.accounts.findFirst({
+            where: and(
+              eq(accounts.provider, "telegram"),
+              eq(accounts.providerAccountId, token.telegramId!)
+            ),
+          });
+
+          if (!existingAccount) {
+            await db.insert(accounts).values({
+              userId: user.id,
+              type: "oauth", // Use oauth type for compatibility with NextAuth adapter
+              provider: "telegram",
+              providerAccountId: token.telegramId!,
+            });
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          };
+        },
+      })
+    );
+  }
+
+  // Email + Password Credentials
+  providers.push(
+    CredentialsProvider({
+      id: "credentials",
+      name: "Email",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Пароль", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        const email = credentials.email as string;
+        const password = credentials.password as string;
+
+        // Find user by email
+        const user = await db.query.users.findFirst({
+          where: eq(users.email, email),
+        });
+
+        if (!user || !user.passwordHash) {
+          // User doesn't exist or doesn't have password set
+          return null;
+        }
+
+        // Check if user is deleted
+        if (user.isDeleted) {
+          return null;
+        }
+
+        // Verify password
+        const isValid = await bcrypt.compare(password, user.passwordHash);
+        if (!isValid) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
+      },
+    })
+  );
+
+  // Development-only test credentials provider
+  if (isDev) {
+    providers.push(
+      CredentialsProvider({
+        id: "test-credentials",
+        name: "Test Account",
+        credentials: {
+          account: {
+            label: "Account Type",
+            type: "text",
+            placeholder: "admin, moderator, owner, resident, guest, editor",
+          },
+        },
+        async authorize(credentials) {
+          if (!credentials?.account) return null;
+          const accountKey = credentials.account as string;
+          const user = await getOrCreateTestUser(accountKey);
+          if (!user) return null;
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          };
+        },
+      })
+    );
+  }
+
+  return providers;
+}
+
+export const authConfig = {
+  secret: process.env.AUTH_SECRET,
+  providers: buildProviders(),
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -189,7 +413,67 @@ export const authConfig = {
       };
     },
   },
+  events: {
+    // Send notification when a new OAuth account is linked
+    linkAccount: async ({ user, account }) => {
+      if (user.email && account.provider) {
+        notifyAsync({
+          type: "account.linked",
+          userId: user.id ?? "",
+          email: user.email,
+          name: user.name ?? "Пользователь",
+          provider: account.provider,
+          providerName: getProviderDisplayName(account.provider),
+        });
+      }
+    },
+  },
 } satisfies NextAuthConfig;
 
 // Export test accounts for login page
 export { TEST_ACCOUNTS };
+
+// Export list of available providers for UI
+export function getAvailableProviders() {
+  const available: {
+    id: string;
+    name: string;
+    type: "oauth" | "credentials";
+  }[] = [];
+
+  // Always available
+  available.push({ id: "yandex", name: "Яндекс", type: "oauth" });
+
+  if (process.env.VK_CLIENT_ID) {
+    available.push({ id: "vk", name: "ВКонтакте", type: "oauth" });
+  }
+
+  if (process.env.GOOGLE_CLIENT_ID) {
+    available.push({ id: "google", name: "Google", type: "oauth" });
+  }
+
+  if (process.env.MAILRU_CLIENT_ID) {
+    available.push({ id: "mailru", name: "Mail.ru", type: "oauth" });
+  }
+
+  if (process.env.OK_CLIENT_ID) {
+    available.push({ id: "odnoklassniki", name: "Одноклассники", type: "oauth" });
+  }
+
+  if (process.env.SBER_CLIENT_ID) {
+    available.push({ id: "sber", name: "Сбер ID", type: "oauth" });
+  }
+
+  if (process.env.TINKOFF_CLIENT_ID) {
+    available.push({ id: "tinkoff", name: "Т-Банк", type: "oauth" });
+  }
+
+  if (process.env.TELEGRAM_BOT_TOKEN) {
+    available.push({ id: "telegram", name: "Telegram", type: "credentials" });
+  }
+
+  // Email/password always available
+  available.push({ id: "credentials", name: "Email", type: "credentials" });
+
+  return available;
+}
