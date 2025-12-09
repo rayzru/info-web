@@ -4,6 +4,8 @@ import { useState } from "react";
 import {
   Archive,
   ClipboardList,
+  Download,
+  FileText,
   HomeIcon,
   ImageIcon,
   Loader2,
@@ -217,17 +219,28 @@ export function ListingsView({
   };
 
   const handleCreate = () => {
-    if (!selectedPropertyId || !title || !price) return;
+    // For apartments require title, for parking generate it
+    if (!selectedPropertyId || !price) return;
+    if (propertyType === "apartment" && !title) return;
+
+    // Generate title for parking spots
+    let listingTitle = title;
+    if (propertyType === "parking") {
+      const spot = myProperties.parkingSpots.find(s => s.id === selectedPropertyId);
+      if (spot) {
+        listingTitle = `${listingType === "rent" ? "Аренда" : "Продажа"} P${spot.floor.parking.building.number}/-${spot.floor.floorNumber}/${spot.number}`;
+      }
+    }
 
     createListing.mutate({
       listingType,
       propertyType,
       apartmentId: propertyType === "apartment" ? selectedPropertyId : undefined,
       parkingSpotId: propertyType === "parking" ? selectedPropertyId : undefined,
-      title,
+      title: listingTitle,
       description: description || undefined,
       price: parseInt(price, 10),
-      utilitiesIncluded: true,
+      utilitiesIncluded: propertyType === "parking",
     });
   };
 
@@ -279,26 +292,20 @@ export function ListingsView({
 
   const ListingCard = ({
     listing,
+    hideFooter = false,
   }: {
     listing: ListingsViewProps["listings"][0];
+    hideFooter?: boolean;
   }) => (
     <Card key={listing.id}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div
-              className={`rounded-lg p-2 ${
-                listing.propertyType === "apartment"
-                  ? "bg-primary/10"
-                  : "bg-blue-500/10"
-              }`}
-            >
-              {listing.propertyType === "apartment" ? (
-                <HomeIcon className="h-5 w-5 text-primary" />
-              ) : (
-                <ParkingCircleIcon className="h-5 w-5 text-blue-500" />
-              )}
-            </div>
+            {listing.propertyType === "apartment" ? (
+              <HomeIcon className="h-5 w-5 text-muted-foreground opacity-60" />
+            ) : (
+              <ParkingCircleIcon className="h-5 w-5 text-muted-foreground opacity-60" />
+            )}
             <div>
               <CardTitle className="text-base">{listing.title}</CardTitle>
               <CardDescription>
@@ -340,48 +347,50 @@ export function ListingsView({
           )}
         </div>
       </CardContent>
-      <CardFooter className="border-t pt-3">
-        <div className="flex w-full gap-2">
-          {(listing.status === "draft" || listing.status === "rejected") && (
-            <>
+      {!hideFooter && (
+        <CardFooter className="border-t pt-3">
+          <div className="flex w-full gap-2">
+            {(listing.status === "draft" || listing.status === "rejected") && (
+              <>
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    submitForModeration.mutate({ listingId: listing.id })
+                  }
+                  disabled={submitForModeration.isPending}
+                >
+                  {submitForModeration.isPending ? (
+                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                  ) : (
+                    <Send className="mr-2 h-3 w-3" />
+                  )}
+                  На модерацию
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => deleteListing.mutate({ listingId: listing.id })}
+                  disabled={deleteListing.isPending}
+                >
+                  <Trash2 className="mr-2 h-3 w-3" />
+                  Удалить
+                </Button>
+              </>
+            )}
+            {listing.status === "approved" && (
               <Button
                 size="sm"
-                onClick={() =>
-                  submitForModeration.mutate({ listingId: listing.id })
-                }
-                disabled={submitForModeration.isPending}
+                variant="outline"
+                onClick={() => archiveListing.mutate({ listingId: listing.id })}
+                disabled={archiveListing.isPending}
               >
-                {submitForModeration.isPending ? (
-                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                ) : (
-                  <Send className="mr-2 h-3 w-3" />
-                )}
-                На модерацию
+                <Archive className="mr-2 h-3 w-3" />
+                В архив
               </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => deleteListing.mutate({ listingId: listing.id })}
-                disabled={deleteListing.isPending}
-              >
-                <Trash2 className="mr-2 h-3 w-3" />
-                Удалить
-              </Button>
-            </>
-          )}
-          {listing.status === "approved" && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => archiveListing.mutate({ listingId: listing.id })}
-              disabled={archiveListing.isPending}
-            >
-              <Archive className="mr-2 h-3 w-3" />
-              В архив
-            </Button>
-          )}
-        </div>
-      </CardFooter>
+            )}
+          </div>
+        </CardFooter>
+      )}
     </Card>
   );
 
@@ -495,15 +504,17 @@ export function ListingsView({
                 </Select>
               </div>
 
-              {/* Title */}
-              <div className="space-y-2">
-                <Label>Заголовок</Label>
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Например: Уютная студия в новом доме"
-                />
-              </div>
+              {/* Title - only for apartments */}
+              {propertyType === "apartment" && (
+                <div className="space-y-2">
+                  <Label>Заголовок</Label>
+                  <Input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Например: Уютная студия в новом доме"
+                  />
+                </div>
+              )}
 
               {/* Description */}
               <div className="space-y-2">
@@ -511,7 +522,9 @@ export function ListingsView({
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Опишите особенности объекта..."
+                  placeholder={propertyType === "parking"
+                    ? "Укажите особенности места: размеры, удобство подъезда, наличие розетки и т.д."
+                    : "Опишите особенности объекта..."}
                   rows={3}
                 />
               </div>
@@ -519,7 +532,7 @@ export function ListingsView({
               {/* Price */}
               <div className="space-y-2">
                 <Label>
-                  Цена {listingType === "rent" && "(в месяц, включая комм.)"}
+                  Цена {listingType === "rent" && "(в месяц)"}
                 </Label>
                 <Input
                   type="number"
@@ -527,6 +540,11 @@ export function ListingsView({
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="0"
                 />
+                {propertyType === "parking" && listingType === "rent" && (
+                  <p className="text-xs text-muted-foreground">
+                    Цена включает коммунальные расходы на содержание парковки
+                  </p>
+                )}
               </div>
 
               {/* Photo Upload Placeholder */}
@@ -543,6 +561,34 @@ export function ListingsView({
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Contract Template for Parking Rental */}
+              {propertyType === "parking" && listingType === "rent" && (
+                <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                  <CardContent className="pt-4">
+                    <div className="flex items-start gap-3">
+                      <FileText className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Шаблон договора аренды</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Рекомендуем использовать типовой договор с условиями передачи ключа, залога и правилами пользования парковкой
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-2"
+                          asChild
+                        >
+                          <a href="/templates/parking-rental-contract.html" target="_blank" rel="noopener noreferrer">
+                            <Download className="mr-2 h-3 w-3" />
+                            Скачать шаблон договора
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             <DialogFooter>
@@ -560,7 +606,7 @@ export function ListingsView({
                 disabled={
                   createListing.isPending ||
                   !selectedPropertyId ||
-                  !title ||
+                  (propertyType === "apartment" && !title) ||
                   !price
                 }
               >
@@ -578,17 +624,29 @@ export function ListingsView({
       {listings.length > 0 && (
         <Tabs defaultValue="active">
           <TabsList>
-            <TabsTrigger value="active">
-              Активные ({activeListings.length})
+            <TabsTrigger value="active" className="font-normal">
+              Активные
+              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-xs">
+                {activeListings.length}
+              </span>
             </TabsTrigger>
-            <TabsTrigger value="pending">
-              На модерации ({pendingListings.length})
+            <TabsTrigger value="pending" className="font-normal">
+              На модерации
+              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-xs">
+                {pendingListings.length}
+              </span>
             </TabsTrigger>
-            <TabsTrigger value="drafts">
-              Черновики ({draftListings.length})
+            <TabsTrigger value="drafts" className="font-normal">
+              Черновики
+              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-xs">
+                {draftListings.length}
+              </span>
             </TabsTrigger>
-            <TabsTrigger value="archived">
-              Архив ({archivedListings.length})
+            <TabsTrigger value="archived" className="font-normal">
+              Архив
+              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-xs">
+                {archivedListings.length}
+              </span>
             </TabsTrigger>
           </TabsList>
 
@@ -615,7 +673,7 @@ export function ListingsView({
               </Card>
             ) : (
               pendingListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
+                <ListingCard key={listing.id} listing={listing} hideFooter />
               ))
             )}
           </TabsContent>

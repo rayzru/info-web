@@ -3,8 +3,10 @@ import { and, eq, desc, count, or } from "drizzle-orm";
 import { z } from "zod";
 
 import {
+  buildings,
   listings,
   listingPhotos,
+  parkings,
   userApartments,
   userParkingSpots,
 } from "~/server/db/schema";
@@ -331,6 +333,101 @@ export const listingsRouter = createTRPCRouter({
         .update(listings)
         .set({
           status: "archived",
+          archiveReason: "manual",
+          archivedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(listings.id, input.listingId));
+
+      return { success: true };
+    }),
+
+  // Renew listing (reset stale status and extend lifetime)
+  renew: protectedProcedure
+    .input(z.object({ listingId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      const listing = await ctx.db.query.listings.findFirst({
+        where: and(
+          eq(listings.id, input.listingId),
+          eq(listings.userId, userId)
+        ),
+      });
+
+      if (!listing) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Объявление не найдено",
+        });
+      }
+
+      // Can only renew approved or stale listings
+      if (listing.status !== "approved") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Можно продлить только опубликованные объявления",
+        });
+      }
+
+      await ctx.db
+        .update(listings)
+        .set({
+          isStale: false,
+          staleAt: null,
+          renewedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(listings.id, input.listingId));
+
+      return { success: true };
+    }),
+
+  // Republish archived listing (needs new moderation)
+  republish: protectedProcedure
+    .input(z.object({ listingId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      const listing = await ctx.db.query.listings.findFirst({
+        where: and(
+          eq(listings.id, input.listingId),
+          eq(listings.userId, userId)
+        ),
+      });
+
+      if (!listing) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Объявление не найдено",
+        });
+      }
+
+      // Can only republish archived listings (not those archived due to rights revocation)
+      if (listing.status !== "archived") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Можно переопубликовать только архивные объявления",
+        });
+      }
+
+      if (listing.archiveReason === "rights_revoked") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Невозможно переопубликовать: права на собственность отозваны",
+        });
+      }
+
+      await ctx.db
+        .update(listings)
+        .set({
+          status: "pending_moderation",
+          isStale: false,
+          staleAt: null,
+          archiveReason: null,
+          archivedAt: null,
+          archivedBy: null,
+          archivedComment: null,
           updatedAt: new Date(),
         })
         .where(eq(listings.id, input.listingId));
@@ -568,10 +665,15 @@ export const listingsRouter = createTRPCRouter({
         .from(listings)
         .where(eq(listings.status, "rejected"));
 
+      const [total] = await ctx.db
+        .select({ count: count() })
+        .from(listings);
+
       return {
         pendingModeration: pending?.count ?? 0,
         approved: approved?.count ?? 0,
         rejected: rejected?.count ?? 0,
+        total: total?.count ?? 0,
       };
     }),
   }),
@@ -582,13 +684,14 @@ export const listingsRouter = createTRPCRouter({
       .input(
         z.object({
           page: z.number().min(1).default(1),
-          limit: z.number().min(1).max(50).default(20),
+          limit: z.number().min(1).max(200).default(20),
           type: listingTypeSchema.optional(),
           propertyType: propertyTypeSchema.optional(),
+          buildingNumber: z.number().optional(),
         })
       )
       .query(async ({ ctx, input }) => {
-        const { page, limit, type, propertyType } = input;
+        const { page, limit, type, propertyType, buildingNumber } = input;
         const offset = (page - 1) * limit;
 
         const conditions = [eq(listings.status, "approved")];
@@ -601,9 +704,16 @@ export const listingsRouter = createTRPCRouter({
 
         const whereClause = and(...conditions);
 
-        const listingsData = await ctx.db.query.listings.findMany({
+        let listingsData = await ctx.db.query.listings.findMany({
           where: whereClause,
           with: {
+            user: {
+              columns: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
             apartment: {
               with: {
                 floor: {
@@ -631,21 +741,70 @@ export const listingsRouter = createTRPCRouter({
             },
           },
           orderBy: desc(listings.publishedAt),
-          limit,
-          offset,
         });
 
-        const [totalResult] = await ctx.db
-          .select({ count: count() })
-          .from(listings)
-          .where(whereClause);
+        // Filter by building number if specified (post-query filtering due to nested relation)
+        if (buildingNumber !== undefined) {
+          listingsData = listingsData.filter((listing) => {
+            if (listing.propertyType === "apartment" && listing.apartment) {
+              return listing.apartment.floor?.entrance?.building?.number === buildingNumber;
+            }
+            if (listing.propertyType === "parking" && listing.parkingSpot) {
+              return listing.parkingSpot.floor?.parking?.building?.number === buildingNumber;
+            }
+            return false;
+          });
+        }
+
+        // Apply pagination after filtering
+        const total = listingsData.length;
+        const paginatedData = listingsData.slice(offset, offset + limit);
 
         return {
-          listings: listingsData,
-          total: totalResult?.count ?? 0,
+          listings: paginatedData,
+          total,
           page,
-          totalPages: Math.ceil((totalResult?.count ?? 0) / limit),
+          totalPages: Math.ceil(total / limit),
         };
       }),
+
+    // Get available buildings for filter (all buildings)
+    buildings: protectedProcedure.query(async ({ ctx }) => {
+      const buildingsData = await ctx.db.query.buildings.findMany({
+        columns: {
+          id: true,
+          number: true,
+          title: true,
+        },
+        orderBy: (buildings, { asc }) => [asc(buildings.number)],
+      });
+      return buildingsData;
+    }),
+
+    // Get buildings that have parkings
+    buildingsWithParkings: protectedProcedure.query(async ({ ctx }) => {
+      // Get distinct building IDs that have parkings
+      const parkingsData = await ctx.db
+        .selectDistinct({ buildingId: parkings.buildingId })
+        .from(parkings);
+
+      const buildingIds = parkingsData.map((p) => p.buildingId);
+
+      if (buildingIds.length === 0) {
+        return [];
+      }
+
+      const buildingsData = await ctx.db.query.buildings.findMany({
+        columns: {
+          id: true,
+          number: true,
+          title: true,
+        },
+        where: (buildings, { inArray }) => inArray(buildings.id, buildingIds),
+        orderBy: (buildings, { asc }) => [asc(buildings.number)],
+      });
+
+      return buildingsData;
+    }),
   }),
 });

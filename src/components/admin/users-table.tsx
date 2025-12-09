@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { useToast } from "~/hooks/use-toast";
 import { type UserRole } from "~/server/auth/rbac";
 import { api } from "~/trpc/react";
 
@@ -40,15 +41,28 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const { toast } = useToast();
 
-  const { data, isLoading, refetch } = api.admin.users.list.useQuery({
+  const { data, isLoading } = api.admin.users.list.useQuery({
     page,
     limit: 20,
     search: search || undefined,
   });
 
-  const deleteUser = api.admin.users.delete.useMutation({
-    onSuccess: () => refetch(),
+  const createDeletionRequest = api.admin.deletionRequests.create.useMutation({
+    onSuccess: () => {
+      toast({
+        title: "Заявка создана",
+        description: "Заявка на удаление пользователя создана",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   const handleSearch = (e: React.FormEvent) => {
@@ -57,11 +71,11 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
     setPage(1);
   };
 
-  const handleDelete = async (userId: string, userName: string | null) => {
+  const handleRequestDeletion = async (userId: string, userName: string | null) => {
     if (
-      confirm(`Вы уверены, что хотите удалить пользователя ${userName ?? userId}?`)
+      confirm(`Создать заявку на удаление пользователя ${userName ?? userId}?`)
     ) {
-      await deleteUser.mutateAsync({ userId });
+      await createDeletionRequest.mutateAsync({ userId });
     }
   };
 
@@ -167,10 +181,10 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
                           {canDeleteUsers && (
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
-                              onClick={() => handleDelete(user.id, user.name)}
+                              onClick={() => handleRequestDeletion(user.id, user.name)}
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Удалить
+                              <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+                              <span className="text-destructive">Удалить</span>
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>

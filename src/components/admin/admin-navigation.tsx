@@ -9,9 +9,11 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   ScrollText,
   Settings,
   Users,
+  UserX,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -30,6 +32,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Settings,
   ScrollText,
   BookOpen,
+  UserX,
+  Megaphone,
 };
 
 interface AdminNavigationProps {
@@ -96,7 +100,7 @@ export function AdminNavigation({ user, navItems }: AdminNavigationProps) {
                   )}
                   data-testid={testId}
                 >
-                  {Icon && <Icon className="h-4 w-4" />}
+                  {Icon && <Icon className="h-4 w-4 opacity-60" />}
                   {item.title}
                 </Link>
               </li>

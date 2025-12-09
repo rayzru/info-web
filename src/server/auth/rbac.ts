@@ -64,7 +64,7 @@ const FEATURE_PERMISSIONS: Record<AdminFeature, UserRole[]> = {
   "users:view": ["Root", "SuperAdmin", "Admin"],
   "users:manage": ["Root", "SuperAdmin", "Admin"],
   "users:roles": ["Root", "SuperAdmin", "Admin"],
-  "users:delete": ["Root"],
+  "users:delete": ["Root", "SuperAdmin", "Admin"],
   "buildings:view": ["Root", "SuperAdmin", "Admin", "BuildingChairman"],
   "buildings:manage": ["Root", "SuperAdmin", "Admin"],
   "properties:view": [
@@ -241,6 +241,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     href: "/admin/logs",
     icon: "ScrollText",
     feature: "system:logs",
+  },
+  {
+    title: "Запросы на удаление",
+    href: "/admin/deletion-requests",
+    icon: "UserX",
+    feature: "users:delete",
   },
 ];
 

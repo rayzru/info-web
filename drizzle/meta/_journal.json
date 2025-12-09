@@ -29,6 +29,20 @@
       "when": 1765043225918,
       "tag": "0003_slim_nitro",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1765126090316,
+      "tag": "0004_worthless_mercury",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1765132853813,
+      "tag": "0005_dusty_sabretooth",
+      "breakpoints": true
     }
   ]
 }

@@ -322,7 +322,7 @@ INSERT INTO "parking" ("id", "building_id", "name")
 SELECT
     gen_random_uuid(),
     b.id,
-    'Подземная парковка ' || b."number"
+    'Парковка (стр. ' || b."number" || ')'
 FROM "building" b
 WHERE b."number" IN (1, 2, 6, 7);
 

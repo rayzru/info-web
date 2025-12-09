@@ -5,7 +5,7 @@ import {
   HomeIcon,
   Megaphone,
   ParkingCircleIcon,
-  Settings,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -49,25 +49,17 @@ export default async function ProfilePage() {
   return (
     <div className="py-6">
       {/* Header with User Info */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-14 w-14">
-            <AvatarImage src={userImage} alt="" className="rounded-full" />
-            <AvatarFallback className="text-lg bg-primary/10 text-primary">
-              {userName.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-xl font-semibold">{userName}</h1>
-            <p className="text-sm text-muted-foreground">{userEmail}</p>
-          </div>
+      <div className="flex items-center gap-4 mb-8">
+        <Avatar className="h-14 w-14">
+          <AvatarImage src={userImage} alt="" className="rounded-full" />
+          <AvatarFallback className="text-lg bg-primary/10 text-primary">
+            {userName.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h1 className="text-xl font-semibold">{userName}</h1>
+          <p className="text-sm text-muted-foreground">{userEmail}</p>
         </div>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/my/profile">
-            <Settings className="mr-2 h-4 w-4" />
-            Настройки
-          </Link>
-        </Button>
       </div>
 
       {/* Main Actions */}
@@ -114,12 +106,12 @@ export default async function ProfilePage() {
           <Card className="h-full transition-all hover:shadow-md hover:border-primary/50 group-hover:bg-primary/5">
             <CardContent className="flex items-center gap-4 p-5">
               <div className="shrink-0 rounded-xl bg-violet-500/10 p-3 group-hover:bg-violet-500/20 transition-colors">
-                <Settings className="h-6 w-6 text-violet-500" />
+                <User className="h-6 w-6 text-violet-500" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium">Профиль</p>
                 <p className="text-sm text-muted-foreground truncate">
-                  Настройки и приватность
+                  Настройки и информация
                 </p>
               </div>
               <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />

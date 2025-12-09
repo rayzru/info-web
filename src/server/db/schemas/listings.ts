@@ -36,6 +36,14 @@ export const listingStatusEnum = pgEnum("listing_status", [
   "archived", // Архивировано (снято с публикации)
 ]);
 
+// Причины архивирования
+export const archiveReasonEnum = pgEnum("listing_archive_reason", [
+  "manual", // Снято пользователем вручную
+  "expired", // Истёк срок (4 недели)
+  "rights_revoked", // Отозваны права на собственность
+  "admin", // Снято администратором
+]);
+
 // Таблица объявлений
 export const listings = createTable(
   "listing",
@@ -69,6 +77,11 @@ export const listings = createTable(
     price: integer("price").notNull(),
     // Включены ли коммунальные в цену аренды
     utilitiesIncluded: boolean("utilities_included").default(true),
+    // Контактные предпочтения (какие способы связи показывать)
+    showPhone: boolean("show_phone").notNull().default(true),
+    showTelegram: boolean("show_telegram").notNull().default(false),
+    showMax: boolean("show_max").notNull().default(false),
+    showWhatsapp: boolean("show_whatsapp").notNull().default(false),
     // Статус модерации
     status: listingStatusEnum("status").notNull().default("draft"),
     // Модератор, рассмотревший объявление
@@ -78,13 +91,21 @@ export const listings = createTable(
     moderatedAt: timestamp("moderated_at", { mode: "date", withTimezone: true }),
     // Причина отклонения (если отклонено)
     rejectionReason: text("rejection_reason"),
-    // Причина архивирования (если архивировано из-за отзыва прав)
-    archivedReason: text("archived_reason"),
-    // Кем архивировано (если архивировано системно при отзыве прав)
+    // Флаг устаревания (после 3 недель публикации)
+    isStale: boolean("is_stale").notNull().default(false),
+    // Когда объявление стало устаревшим
+    staleAt: timestamp("stale_at", { mode: "date", withTimezone: true }),
+    // Тип причины архивирования
+    archiveReason: archiveReasonEnum("archive_reason"),
+    // Дополнительный комментарий к архивированию
+    archivedComment: text("archived_comment"),
+    // Кем архивировано (если архивировано администратором)
     archivedBy: varchar("archived_by", { length: 255 }).references(
       () => users.id
     ),
     archivedAt: timestamp("archived_at", { mode: "date", withTimezone: true }),
+    // Дата последнего продления объявления
+    renewedAt: timestamp("renewed_at", { mode: "date", withTimezone: true }),
     // Счётчик просмотров
     viewCount: integer("view_count").notNull().default(0),
     // Временные метки

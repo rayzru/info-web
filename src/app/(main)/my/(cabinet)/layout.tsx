@@ -1,22 +1,38 @@
 "use client";
 
 import {
+  Bell,
   ClipboardList,
-  Construction,
   FileText,
+  KeyRound,
   LayoutDashboard,
-  LogOut,
   Megaphone,
+  Monitor,
+  Moon,
   Shield,
+  Sun,
   User,
 } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "~/lib/utils";
+import { useThemeStore, type Theme } from "~/stores/theme-store";
+import { api } from "~/trpc/react";
 
-const navigationItems = [
+interface NavigationItem {
+  title: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  testId: string;
+  showBadge?: boolean;
+  disabled?: boolean;
+  description?: string;
+}
+
+const navigationItems: NavigationItem[] = [
   {
     title: "Кабинет",
     href: "/my",
@@ -28,6 +44,12 @@ const navigationItems = [
     href: "/my/profile",
     icon: User,
     testId: "nav-profile",
+  },
+  {
+    title: "Безопасность",
+    href: "/my/security",
+    icon: KeyRound,
+    testId: "nav-security",
   },
   {
     title: "Недвижимость",
@@ -48,12 +70,11 @@ const navigationItems = [
     testId: "nav-ads",
   },
   {
-    title: "Сервисы",
-    href: "#",
-    icon: Construction,
-    description: "В разработке",
-    disabled: true,
-    testId: "nav-services",
+    title: "Уведомления",
+    href: "/my/notifications",
+    icon: Bell,
+    testId: "nav-notifications",
+    showBadge: true,
   },
 ];
 
@@ -64,18 +85,39 @@ export default function CabinetLayout({
 }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { data: unreadCount } = api.notifications.unreadCount.useQuery(
+    undefined,
+    { refetchInterval: 30000 }, // Refetch every 30 seconds
+  );
+  const { theme, setTheme } = useThemeStore();
+  const { setTheme: setNextTheme } = useTheme();
+
+  const handleThemeChange = (newTheme: Theme) => {
+    setTheme(newTheme);
+    setNextTheme(newTheme);
+  };
+
+  const themeOptions = [
+    { value: "system" as Theme, label: "Система", icon: Monitor },
+    { value: "light" as Theme, label: "Светлая", icon: Sun },
+    { value: "dark" as Theme, label: "Тёмная", icon: Moon },
+  ];
 
   const isAdmin = session?.user?.isAdmin;
 
   return (
     <div className="py-6">
       <div className="flex gap-8">
-        {/* Sidebar Navigation */}
+        {/* Main Content */}
+        <main className="flex-1 min-w-0">{children}</main>
+
+        {/* Sidebar Navigation (Right side) */}
         <aside className="hidden md:block w-64 shrink-0">
           <nav className="space-y-1 sticky top-6">
             {navigationItems.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
+              const showBadge = item.showBadge && unreadCount && unreadCount > 0;
 
               return (
                 <Link
@@ -92,7 +134,14 @@ export default function CabinetLayout({
                   onClick={(e) => item.disabled && e.preventDefault()}
                   data-testid={item.testId}
                 >
-                  <Icon className="h-4 w-4" />
+                  <div className="relative">
+                    <Icon className="h-4 w-4" />
+                    {showBadge && (
+                      <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 flex items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground px-1">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex-1">
                     <div>{item.title}</div>
                     {item.disabled && (
@@ -103,20 +152,34 @@ export default function CabinetLayout({
               );
             })}
 
-            {/* Logout and Admin Links */}
+            {/* Theme selector - compact icon-only */}
             <div className="my-3 border-t" />
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors w-full",
-                "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-              data-testid="nav-logout"
-            >
-              <LogOut className="h-4 w-4" />
-              <div>Выйти</div>
-            </button>
+            <div className="px-3 py-2 flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Тема</span>
+              <div className="flex rounded-lg border bg-muted/50 p-0.5">
+                {themeOptions.map((option) => {
+                  const Icon = option.icon;
+                  const isSelected = theme === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      title={option.label}
+                      className={cn(
+                        "p-1.5 rounded-md transition-all",
+                        isSelected
+                          ? "bg-background text-primary shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      onClick={() => handleThemeChange(option.value)}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
+            {/* Admin Link */}
             {isAdmin && (
               <>
                 <div className="my-3 border-t" />
@@ -135,9 +198,6 @@ export default function CabinetLayout({
             )}
           </nav>
         </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>
   );

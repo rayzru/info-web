@@ -1,8 +1,15 @@
+import dynamic from "next/dynamic";
 import { Search } from "lucide-react";
 
 import { cn } from "~/lib/utils";
 
 import { Button } from "./ui/button";
+
+// Lazy load the keyboard shortcut component (client-only, OS detection)
+const KeyboardShortcutInline = dynamic(
+  () => import("./keyboard-shortcut").then((mod) => mod.KeyboardShortcutInline),
+  { ssr: false }
+);
 
 export async function SearchNav() {
   return (
@@ -20,9 +27,9 @@ export async function SearchNav() {
         // onClick={() => setOpen(true)}
       >
         <span className="hidden lg:inline-flex">Поиск...</span>
-        <kbd className="bg-muted pointer-events-none absolute top-[0.3rem] right-[0.3rem] hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex">
-          <span className="text-xs">⌘</span>K
-        </kbd>
+        <div className="absolute top-[0.3rem] right-[0.3rem] hidden sm:block">
+          <KeyboardShortcutInline shortcutKey="K" />
+        </div>
       </Button>
     </>
   );

@@ -1,19 +1,23 @@
 import { TRPCError } from "@trpc/server";
-import { and, count, eq, ilike, isNull, or } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 
 import { hasFeatureAccess, type UserRole } from "~/server/auth/rbac";
 import {
+  accounts,
   apartments,
   buildings,
+  deletionRequests,
   entrances,
   floors,
   listings,
   parkingFloors,
   parkings,
   parkingSpots,
+  sessions,
   userApartments,
   userParkingSpots,
+  userProfiles,
   userRoles,
   users,
 } from "~/server/db/schema";
@@ -389,7 +393,8 @@ export const adminRouter = createTRPCRouter({
           .update(listings)
           .set({
             status: "archived",
-            archivedReason: `Отзыв прав на собственность: ${revocationReason}`,
+            archiveReason: "rights_revoked",
+            archivedComment: `Отзыв прав на собственность: ${revocationReason}`,
             archivedBy: ctx.session.user.id,
             archivedAt: new Date(),
             updatedAt: new Date(),
@@ -465,7 +470,8 @@ export const adminRouter = createTRPCRouter({
           .update(listings)
           .set({
             status: "archived",
-            archivedReason: `Отзыв прав на собственность: ${revocationReason}`,
+            archiveReason: "rights_revoked",
+            archivedComment: `Отзыв прав на собственность: ${revocationReason}`,
             archivedBy: ctx.session.user.id,
             archivedAt: new Date(),
             updatedAt: new Date(),
@@ -645,5 +651,320 @@ export const adminRouter = createTRPCRouter({
     return {
       totalUsers: usersCount[0]?.count ?? 0,
     };
+  }),
+
+  // Deletion requests management
+  deletionRequests: createTRPCRouter({
+    // List all deletion requests
+    list: adminProcedureWithFeature("users:delete")
+      .input(
+        z.object({
+          status: z
+            .enum(["pending", "approved", "rejected", "completed"])
+            .optional(),
+        })
+      )
+      .query(async ({ ctx, input }) => {
+        const { status } = input;
+
+        const requests = await ctx.db.query.deletionRequests.findMany({
+          where: status ? eq(deletionRequests.status, status) : undefined,
+          with: {
+            user: true,
+          },
+          orderBy: [desc(deletionRequests.createdAt)],
+        });
+
+        return requests;
+      }),
+
+    // Approve deletion request
+    approve: adminProcedureWithFeature("users:delete")
+      .input(
+        z.object({
+          requestId: z.string().uuid(),
+          adminNotes: z.string().max(1000).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { requestId, adminNotes } = input;
+
+        const request = await ctx.db.query.deletionRequests.findFirst({
+          where: eq(deletionRequests.id, requestId),
+        });
+
+        if (!request) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Заявка не найдена",
+          });
+        }
+
+        if (request.status !== "pending") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Заявка уже обработана",
+          });
+        }
+
+        // Update request status
+        await ctx.db
+          .update(deletionRequests)
+          .set({
+            status: "approved",
+            adminNotes,
+            processedBy: ctx.session.user.id,
+            processedAt: new Date(),
+          })
+          .where(eq(deletionRequests.id, requestId));
+
+        return { success: true };
+      }),
+
+    // Reject deletion request
+    reject: adminProcedureWithFeature("users:delete")
+      .input(
+        z.object({
+          requestId: z.string().uuid(),
+          adminNotes: z.string().max(1000),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { requestId, adminNotes } = input;
+
+        const request = await ctx.db.query.deletionRequests.findFirst({
+          where: eq(deletionRequests.id, requestId),
+        });
+
+        if (!request) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Заявка не найдена",
+          });
+        }
+
+        if (request.status !== "pending") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Заявка уже обработана",
+          });
+        }
+
+        // Update request status
+        await ctx.db
+          .update(deletionRequests)
+          .set({
+            status: "rejected",
+            adminNotes,
+            processedBy: ctx.session.user.id,
+            processedAt: new Date(),
+          })
+          .where(eq(deletionRequests.id, requestId));
+
+        return { success: true };
+      }),
+
+    // Create deletion request (by admin for a user)
+    create: adminProcedureWithFeature("users:delete")
+      .input(
+        z.object({
+          userId: z.string().uuid(),
+          reason: z.string().max(1000).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { userId, reason } = input;
+
+        // Prevent self-deletion request
+        if (userId === ctx.session.user.id) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Нельзя создать заявку на удаление своего аккаунта",
+          });
+        }
+
+        // Check if user exists
+        const user = await ctx.db.query.users.findFirst({
+          where: eq(users.id, userId),
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Пользователь не найден",
+          });
+        }
+
+        // Check if user is Root (cannot be deleted)
+        const targetRoles = await ctx.db
+          .select({ role: userRoles.role })
+          .from(userRoles)
+          .where(eq(userRoles.userId, userId));
+
+        if (targetRoles.some((r) => r.role === "Root")) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Невозможно удалить Root пользователя",
+          });
+        }
+
+        // Check if there's already a pending request for this user
+        const existingRequest = await ctx.db.query.deletionRequests.findFirst({
+          where: and(
+            eq(deletionRequests.userId, userId),
+            eq(deletionRequests.status, "pending")
+          ),
+        });
+
+        if (existingRequest) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Уже существует заявка на удаление этого пользователя",
+          });
+        }
+
+        // Create deletion request
+        const [request] = await ctx.db
+          .insert(deletionRequests)
+          .values({
+            userId,
+            reason: reason ?? "Удаление по решению администрации",
+          })
+          .returning();
+
+        return request;
+      }),
+
+    // Execute approved deletion (soft delete user)
+    execute: adminProcedureWithFeature("users:delete")
+      .input(
+        z.object({
+          requestId: z.string().uuid(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { requestId } = input;
+
+        const request = await ctx.db.query.deletionRequests.findFirst({
+          where: eq(deletionRequests.id, requestId),
+        });
+
+        if (!request) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Заявка не найдена",
+          });
+        }
+
+        if (request.status !== "approved") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Заявка должна быть сначала одобрена",
+          });
+        }
+
+        const userId = request.userId;
+
+        // Check if user is Root (cannot be deleted)
+        const targetRoles = await ctx.db
+          .select({ role: userRoles.role })
+          .from(userRoles)
+          .where(eq(userRoles.userId, userId));
+
+        if (targetRoles.some((r) => r.role === "Root")) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Невозможно удалить Root пользователя",
+          });
+        }
+
+        // Soft delete: mark user as deleted, remove personal data
+        await ctx.db
+          .update(users)
+          .set({
+            isDeleted: true,
+            deletedAt: new Date(),
+            name: "[Удалён]",
+            email: `deleted_${userId}@deleted.local`,
+            image: null,
+          })
+          .where(eq(users.id, userId));
+
+        // Delete user profile (personal data)
+        await ctx.db
+          .delete(userProfiles)
+          .where(eq(userProfiles.userId, userId));
+
+        // Delete accounts (OAuth connections)
+        await ctx.db.delete(accounts).where(eq(accounts.userId, userId));
+
+        // Delete sessions
+        await ctx.db.delete(sessions).where(eq(sessions.userId, userId));
+
+        // Delete roles
+        await ctx.db.delete(userRoles).where(eq(userRoles.userId, userId));
+
+        // Revoke all property bindings
+        await ctx.db
+          .update(userApartments)
+          .set({
+            revokedAt: new Date(),
+            revokedBy: ctx.session.user.id,
+            revocationReason: "Удаление аккаунта пользователя",
+          })
+          .where(
+            and(
+              eq(userApartments.userId, userId),
+              isNull(userApartments.revokedAt)
+            )
+          );
+
+        await ctx.db
+          .update(userParkingSpots)
+          .set({
+            revokedAt: new Date(),
+            revokedBy: ctx.session.user.id,
+            revocationReason: "Удаление аккаунта пользователя",
+          })
+          .where(
+            and(
+              eq(userParkingSpots.userId, userId),
+              isNull(userParkingSpots.revokedAt)
+            )
+          );
+
+        // Archive all listings
+        await ctx.db
+          .update(listings)
+          .set({
+            status: "archived",
+            archiveReason: "admin",
+            archivedComment: "Удаление аккаунта пользователя",
+            archivedBy: ctx.session.user.id,
+            archivedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(listings.userId, userId),
+              or(
+                eq(listings.status, "draft"),
+                eq(listings.status, "pending_moderation"),
+                eq(listings.status, "approved")
+              )
+            )
+          );
+
+        // Mark deletion request as completed
+        await ctx.db
+          .update(deletionRequests)
+          .set({
+            status: "completed",
+            processedAt: new Date(),
+          })
+          .where(eq(deletionRequests.id, requestId));
+
+        return { success: true };
+      }),
   }),
 });

@@ -11,10 +11,44 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
-    // AUTH_DISCORD_ID: z.string(),
-    // AUTH_DISCORD_SECRET: z.string(),
+    // OAuth Providers
     YANDEX_CLIENT_ID: z.string(),
     YANDEX_CLIENT_SECRET: z.string(),
+    // VK OAuth (optional)
+    VK_CLIENT_ID: z.string().optional(),
+    VK_CLIENT_SECRET: z.string().optional(),
+    // Google OAuth (optional)
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    // Mail.ru OAuth (optional)
+    MAILRU_CLIENT_ID: z.string().optional(),
+    MAILRU_CLIENT_SECRET: z.string().optional(),
+    // Одноклассники OAuth (optional) - uses VK ID platform
+    OK_CLIENT_ID: z.string().optional(),
+    OK_CLIENT_SECRET: z.string().optional(),
+    OK_PUBLIC_KEY: z.string().optional(),
+    // Сбер ID OAuth (optional) - requires agreement with Sber
+    SBER_CLIENT_ID: z.string().optional(),
+    SBER_CLIENT_SECRET: z.string().optional(),
+    // Тинькофф ID (T-ID) OAuth (optional)
+    TINKOFF_CLIENT_ID: z.string().optional(),
+    TINKOFF_CLIENT_SECRET: z.string().optional(),
+    // Telegram Bot (for auth via bot)
+    TELEGRAM_BOT_TOKEN: z.string().optional(),
+
+    // SMTP Configuration for email sending
+    SMTP_HOST: z.string().optional(),
+    SMTP_PORT: z.coerce.number().optional().default(465),
+    SMTP_SECURE: z
+      .string()
+      .optional()
+      .default("true")
+      .transform((v) => v === "true"),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASSWORD: z.string().optional(),
+    SMTP_FROM_NAME: z.string().optional().default("Парадная"),
+    SMTP_FROM_EMAIL: z.string().email().optional(),
+    SMTP_REPLY_TO: z.string().email().optional(),
 
     DATABASE_URL: z.string().url(),
     DATABASE_NAME: z.string(),
@@ -38,10 +72,33 @@ export const env = createEnv({
    */
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
-    // AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID,
-    // AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
+    // OAuth Providers
     YANDEX_CLIENT_ID: process.env.YANDEX_CLIENT_ID,
     YANDEX_CLIENT_SECRET: process.env.YANDEX_CLIENT_SECRET,
+    VK_CLIENT_ID: process.env.VK_CLIENT_ID,
+    VK_CLIENT_SECRET: process.env.VK_CLIENT_SECRET,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    MAILRU_CLIENT_ID: process.env.MAILRU_CLIENT_ID,
+    MAILRU_CLIENT_SECRET: process.env.MAILRU_CLIENT_SECRET,
+    OK_CLIENT_ID: process.env.OK_CLIENT_ID,
+    OK_CLIENT_SECRET: process.env.OK_CLIENT_SECRET,
+    OK_PUBLIC_KEY: process.env.OK_PUBLIC_KEY,
+    SBER_CLIENT_ID: process.env.SBER_CLIENT_ID,
+    SBER_CLIENT_SECRET: process.env.SBER_CLIENT_SECRET,
+    TINKOFF_CLIENT_ID: process.env.TINKOFF_CLIENT_ID,
+    TINKOFF_CLIENT_SECRET: process.env.TINKOFF_CLIENT_SECRET,
+    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+    // SMTP
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
+    SMTP_SECURE: process.env.SMTP_SECURE,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+    SMTP_FROM_NAME: process.env.SMTP_FROM_NAME,
+    SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL,
+    SMTP_REPLY_TO: process.env.SMTP_REPLY_TO,
+    // Database
     DATABASE_URL: process.env.DATABASE_URL,
     DATABASE_NAME: process.env.DATABASE_NAME,
     NODE_ENV: process.env.NODE_ENV,

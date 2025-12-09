@@ -50,6 +50,14 @@ export const users = createTable("user", {
     withTimezone: true,
   }).default(sql`CURRENT_TIMESTAMP`),
   image: varchar("image", { length: 255 }),
+  // Password for email/password auth (bcrypt hash)
+  passwordHash: varchar("password_hash", { length: 255 }),
+  // Soft delete fields
+  isDeleted: boolean("is_deleted").notNull().default(false),
+  deletedAt: timestamp("deleted_at", {
+    mode: "date",
+    withTimezone: true,
+  }),
 });
 
 // Таблица ролей пользователей (many-to-many)
@@ -138,6 +146,46 @@ export const verificationTokens = createTable(
   (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })],
 );
 
+// Токены для сброса пароля
+export const passwordResetTokens = createTable(
+  "password_reset_token",
+  {
+    id: varchar("id", { length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    token: varchar("token", { length: 255 }).notNull(),
+    expires: timestamp("expires", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
+    usedAt: timestamp("used_at", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [index("password_reset_token_idx").on(table.token)],
+);
+
+export const passwordResetTokensRelations = relations(
+  passwordResetTokens,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [passwordResetTokens.userId],
+      references: [users.id],
+    }),
+  }),
+);
+
 export const userProfiles = createTable("user_profile", {
   id: varchar("id", { length: 255 })
     .notNull()
@@ -160,8 +208,54 @@ export const userProfiles = createTable("user_profile", {
     mode: "date",
   }),
   gender: userGenderEnum("gender"),
+  // Мессенджеры
+  telegramUsername: varchar("telegram_username", { length: 100 }), // @username без @
+  telegramId: varchar("telegram_id", { length: 50 }), // ID пользователя для привязки через бота
+  telegramVerified: boolean("telegram_verified").notNull().default(false), // Подтверждён ли через бота
+  telegramVerifiedAt: timestamp("telegram_verified_at", { mode: "date", withTimezone: true }),
+  maxUsername: varchar("max_username", { length: 100 }), // Max (VK Мессенджер)
+  whatsappPhone: varchar("whatsapp_phone", { length: 20 }), // WhatsApp номер в E.164
+  hideMessengers: boolean("hide_messengers").notNull().default(false), // Скрыть все мессенджеры
 });
 
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
   user: one(users, { fields: [userProfiles.userId], references: [users.id] }),
 }));
+
+// Токены для авторизации через Telegram бота
+export const telegramAuthTokens = createTable(
+  "telegram_auth_token",
+  {
+    id: varchar("id", { length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    // Код который пользователь вводит в боте (6 цифр)
+    code: varchar("code", { length: 6 }).notNull(),
+    // Telegram ID пользователя (заполняется после ввода кода в боте)
+    telegramId: varchar("telegram_id", { length: 50 }),
+    telegramUsername: varchar("telegram_username", { length: 100 }),
+    telegramFirstName: varchar("telegram_first_name", { length: 255 }),
+    telegramLastName: varchar("telegram_last_name", { length: 255 }),
+    // Статус токена
+    verified: boolean("verified").notNull().default(false),
+    verifiedAt: timestamp("verified_at", { mode: "date", withTimezone: true }),
+    // Срок действия (15 минут)
+    expires: timestamp("expires", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
+    // Использован ли токен для создания сессии
+    usedAt: timestamp("used_at", { mode: "date", withTimezone: true }),
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("telegram_auth_token_code_idx").on(table.code),
+    index("telegram_auth_token_telegram_id_idx").on(table.telegramId),
+  ]
+);
