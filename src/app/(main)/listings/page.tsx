@@ -1,24 +1,18 @@
-import { Car, Home, Package, Tag, Wrench } from "lucide-react";
+import { Car, Home, Package, Wrench } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "~/components/ui/badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { PageHeader } from "~/components/page-header";
 
 export default function ListingsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-          <Tag className="h-5 w-5 text-primary-foreground" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">Объявления</h1>
-          <p className="text-sm text-muted-foreground">
-            Объявления жителей ЖК Сердце Ростова 2
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Объявления"
+        description="Объявления жителей ЖК Сердце Ростова 2"
+      />
 
       {/* Category cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">

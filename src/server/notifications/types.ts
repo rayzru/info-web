@@ -13,6 +13,14 @@ export interface UserRegisteredEvent {
   name: string;
 }
 
+export interface EmailVerificationRequestedEvent {
+  type: "email.verification_requested";
+  userId: string;
+  email: string;
+  name: string;
+  verificationToken: string;
+}
+
 export interface PasswordChangedEvent {
   type: "password.changed";
   userId: string;
@@ -114,6 +122,7 @@ export interface SecurityAlertEvent {
 export type NotificationEvent =
   // Auth events
   | UserRegisteredEvent
+  | EmailVerificationRequestedEvent
   | PasswordChangedEvent
   | PasswordResetRequestedEvent
   | PasswordResetCompletedEvent

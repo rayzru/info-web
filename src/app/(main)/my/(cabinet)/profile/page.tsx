@@ -1,3 +1,4 @@
+import { PageHeader } from "~/components/page-header";
 import { ProfileForm } from "~/components/profile-form";
 import { api } from "~/trpc/server";
 
@@ -6,12 +7,10 @@ export default async function ProfilePage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold">Профиль</h1>
-        <p className="text-muted-foreground mt-1">
-          Настройки профиля и приватности
-        </p>
-      </div>
+      <PageHeader
+        title="Профиль"
+        description={`Настройки профиля и приватности`}
+      />
 
       <ProfileForm user={user} profile={profile} />
     </div>

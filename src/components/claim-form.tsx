@@ -177,14 +177,12 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
       {!claimType && (
         <div className="grid gap-4 md:grid-cols-3">
           <Card
-            className="cursor-pointer hover:bg-muted/50 transition-colors"
+            className="relative flex min-h-40 flex-col overflow-hidden cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
             onClick={() => setClaimType("apartment")}
           >
-            <CardHeader className="text-center">
-              <div className="mx-auto rounded-lg bg-primary/10 p-4 w-fit">
-                <HomeIcon className="h-8 w-8 text-primary" />
-              </div>
-              <CardTitle className="text-lg">Квартира</CardTitle>
+            <HomeIcon className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <CardHeader className="relative z-10 flex-1">
+              <CardTitle className="text-xl">Квартира</CardTitle>
               <CardDescription>
                 Подать заявку на квартиру
               </CardDescription>
@@ -192,22 +190,20 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
           </Card>
 
           <Card
-            className="cursor-pointer hover:bg-muted/50 transition-colors"
+            className="relative flex min-h-40 flex-col overflow-hidden cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
             onClick={() => setClaimType("parking")}
           >
-            <CardHeader className="text-center">
-              <div className="mx-auto rounded-lg bg-blue-500/10 p-4 w-fit">
-                <ParkingCircleIcon className="h-8 w-8 text-blue-500" />
-              </div>
-              <CardTitle className="text-lg">Парковка</CardTitle>
+            <ParkingCircleIcon className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <CardHeader className="relative z-10 flex-1">
+              <CardTitle className="text-xl">Парковка</CardTitle>
               <CardDescription>
-                Подать заявку на парковку
+                Подать заявку на машиноместо
               </CardDescription>
             </CardHeader>
           </Card>
 
           <Card
-            className="cursor-pointer hover:bg-muted/50 transition-colors opacity-50"
+            className="relative flex min-h-40 flex-col overflow-hidden cursor-pointer opacity-50"
             onClick={() =>
               toast({
                 title: "Скоро",
@@ -215,11 +211,9 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
               })
             }
           >
-            <CardHeader className="text-center">
-              <div className="mx-auto rounded-lg bg-green-500/10 p-4 w-fit">
-                <Store className="h-8 w-8 text-green-500" />
-              </div>
-              <CardTitle className="text-lg">Коммерция</CardTitle>
+            <Store className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <CardHeader className="relative z-10 flex-1">
+              <CardTitle className="text-xl">Коммерция</CardTitle>
               <CardDescription>
                 Подать заявку на коммерцию
               </CardDescription>

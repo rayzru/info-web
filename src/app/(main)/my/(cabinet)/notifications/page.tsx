@@ -19,6 +19,7 @@ import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { cn } from "~/lib/utils";
+import { PageHeader } from "~/components/page-header";
 
 const NOTIFICATION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   claim_submitted: FileText,
@@ -116,14 +117,16 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Уведомления</h1>
-          <p className="text-muted-foreground mt-1">
-            {unreadCount && unreadCount > 0
+
+              <PageHeader
+                title="Уведомления"
+                description={
+                  unreadCount && unreadCount > 0
               ? `${unreadCount} непрочитанных`
               : "Нет непрочитанных уведомлений"}
-          </p>
-        </div>
+              />
+
+       
 
         <div className="flex items-center gap-2">
           {unreadCount && unreadCount > 0 && (

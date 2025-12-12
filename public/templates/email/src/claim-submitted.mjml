@@ -1,0 +1,62 @@
+<mjml>
+  <mj-head>
+    <mj-title>Заявка принята</mj-title>
+    <mj-preview
+      >Ваша заявка на регистрацию собственности принята к
+      рассмотрению</mj-preview
+    >
+    <mj-attributes>
+      <mj-all
+        font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+      />
+      <mj-text font-size="15px" line-height="1.6" color="#333333" />
+      <mj-button
+        background-color="#2563eb"
+        border-radius="8px"
+        font-size="15px"
+        font-weight="600"
+      />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f4f4f5">
+    <!-- Header -->
+    <mj-include path="./includes/header.mjml" />
+
+    <!-- Main Content -->
+    <mj-section
+      background-color="#ffffff"
+      border-radius="12px"
+      padding="40px 30px"
+    >
+      <mj-column>
+        <mj-text font-size="22px" font-weight="600" color="#18181b">
+          Заявка принята
+        </mj-text>
+        <mj-text padding-top="20px"> Здравствуйте, {{ userName }}! </mj-text>
+        <mj-text padding-top="10px">
+          Ваша заявка на регистрацию собственности принята к рассмотрению.
+        </mj-text>
+        <mj-text
+          padding-top="20px"
+          padding-bottom="20px"
+          background-color="#f0fdf4"
+          padding-left="20px"
+          padding-right="20px"
+        >
+          <strong>Тип заявки:</strong> {{ claimType }}<br />
+          <strong>Адрес:</strong> {{ propertyAddress }}
+        </mj-text>
+        <mj-text>
+          Мы рассмотрим вашу заявку в ближайшее время. Вы получите уведомление о
+          результате на этот email.
+        </mj-text>
+        <mj-button href="{{claimUrl}}" padding-top="25px">
+          Посмотреть статус заявки
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-include path="./includes/footer.mjml" />
+  </mj-body>
+</mjml>

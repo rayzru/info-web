@@ -1,0 +1,11 @@
+<!-- Email Header Component -->
+<mj-section padding="30px 0 20px">
+  <mj-column>
+    <mj-text align="center" font-size="28px" font-weight="700" color="#18181b" letter-spacing="0.05em">
+      Сообщество Жильцов
+    </mj-text>
+    <mj-text align="center" font-size="13px" color="#71717a">
+      Жилой комплекс «Сердце Ростова 2»
+    </mj-text>
+  </mj-column>
+</mj-section>

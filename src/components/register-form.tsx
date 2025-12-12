@@ -1,14 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "~/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import {
   Tooltip,
   TooltipContent,
@@ -16,6 +25,10 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
+import {
+  registerFormSchema,
+  type RegisterFormData,
+} from "~/lib/validations/auth";
 import { api } from "~/trpc/react";
 
 import { VkIdStack } from "./auth/vk-id-stack";
@@ -29,70 +42,41 @@ export function RegisterForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/my";
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    mode: "onChange",
+  });
 
   const registerMutation = api.auth.register.useMutation({
-    onSuccess: (data) => {
-      setSuccess(data.message);
-      setError(null);
-      // Redirect to login page after 2 seconds
-      setTimeout(() => {
-        router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-      }, 2000);
+    onSuccess: (_data, variables) => {
+      // Redirect to check-email page with email in query
+      router.push(`/check-email?email=${encodeURIComponent(variables.email)}`);
     },
     onError: (err) => {
-      setError(err.message);
-      setSuccess(null);
+      setServerError(err.message);
     },
   });
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
+  const onSubmit = async (data: RegisterFormData) => {
+    setServerError(null);
 
-    if (password !== confirmPassword) {
-      setError("Пароли не совпадают");
-      return;
-    }
-
-    if (password.length < 8) {
-      setError("Пароль должен быть не менее 8 символов");
-      return;
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      setError("Пароль должен содержать хотя бы одну заглавную букву");
-      return;
-    }
-
-    if (!/[a-z]/.test(password)) {
-      setError("Пароль должен содержать хотя бы одну строчную букву");
-      return;
-    }
-
-    if (!/[0-9]/.test(password)) {
-      setError("Пароль должен содержать хотя бы одну цифру");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      await registerMutation.mutateAsync({
-        email,
-        password,
-        name,
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await registerMutation.mutateAsync({
+      email: data.email,
+      password: data.password,
+      name: data.name,
+    });
   };
+
+  const isLoading = registerMutation.isPending;
+  const isValid = form.formState.isValid;
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -100,82 +84,100 @@ export function RegisterForm({
         РЕГИСТРАЦИЯ
       </h1>
 
-      {/* Success Message */}
-      {success && (
-        <div className="rounded-lg bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          {success}
-        </div>
-      )}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Имя</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Иван Иванов"
+                    data-testid="register-name"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      {/* Email/Password Form */}
-      <form onSubmit={handleRegister} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="name">Имя</Label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Иван Иванов"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            minLength={2}
-            data-testid="register-name"
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="email@example.com"
+                    data-testid="register-email"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="email@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            data-testid="register-email"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="password">Пароль</Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
-            data-testid="register-password"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            placeholder="••••••••"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            minLength={8}
-            data-testid="register-confirm-password"
-          />
-        </div>
-        {error && (
-          <p className="text-sm text-destructive" data-testid="register-error">
-            {error}
-          </p>
-        )}
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={isLoading}
-          data-testid="register-submit"
-        >
-          {isLoading ? "Регистрация..." : "Зарегистрироваться"}
-        </Button>
-      </form>
 
-      {/* Divider */}
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Пароль</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    data-testid="register-password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Подтвердите пароль</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    data-testid="register-confirm-password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {serverError && (
+            <p className="text-sm text-destructive" data-testid="register-error">
+              {serverError}
+            </p>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={!isValid || isLoading}
+            data-testid="register-submit"
+          >
+            {isLoading ? "Регистрация..." : "Зарегистрироваться"}
+          </Button>
+        </form>
+      </Form>
+
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
@@ -187,10 +189,8 @@ export function RegisterForm({
         </div>
       </div>
 
-      {/* OAuth Providers */}
       <TooltipProvider delayDuration={300}>
         <div className="flex justify-center gap-1">
-          {/* Яндекс ID */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -212,7 +212,6 @@ export function RegisterForm({
             <TooltipContent>Яндекс ID</TooltipContent>
           </Tooltip>
 
-          {/* VK ID (стек: VK, Mail.ru, OK) */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -228,7 +227,6 @@ export function RegisterForm({
             <TooltipContent>VK ID</TooltipContent>
           </Tooltip>
 
-          {/* Google */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -250,15 +248,14 @@ export function RegisterForm({
             <TooltipContent>Google</TooltipContent>
           </Tooltip>
 
-          {/* Сбер ID */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 type="button"
-                className="size-11 p-0"
-                onClick={async () => await signIn("sber", { callbackUrl })}
+                className="size-11 p-0 opacity-50 pointer-events-none"
                 data-testid="register-sber"
+                disabled
               >
                 <Image
                   src="/logos/sber.svg"
@@ -269,18 +266,17 @@ export function RegisterForm({
                 />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Сбер ID</TooltipContent>
+            <TooltipContent>Сбер ID (скоро)</TooltipContent>
           </Tooltip>
 
-          {/* Т-Банк */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 type="button"
-                className="size-11 p-0"
-                onClick={async () => await signIn("tinkoff", { callbackUrl })}
+                className="size-11 p-0 opacity-50 pointer-events-none"
                 data-testid="register-tbank"
+                disabled
               >
                 <Image
                   src="/logos/tbank.svg"
@@ -291,18 +287,17 @@ export function RegisterForm({
                 />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Т-Банк</TooltipContent>
+            <TooltipContent>Т-Банк (скоро)</TooltipContent>
           </Tooltip>
 
-          {/* Telegram */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 type="button"
-                className="size-11 p-0"
-                onClick={async () => await signIn("telegram", { callbackUrl })}
+                className="size-11 p-0 opacity-50 pointer-events-none"
                 data-testid="register-telegram"
+                disabled
               >
                 <Image
                   src="/logos/telegram.svg"
@@ -313,14 +308,17 @@ export function RegisterForm({
                 />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Telegram</TooltipContent>
+            <TooltipContent>Telegram (скоро)</TooltipContent>
           </Tooltip>
         </div>
       </TooltipProvider>
 
       <div className="mt-4 text-center text-sm">
         <span className="text-muted-foreground/70">Уже есть аккаунт?</span>{" "}
-        <Link href="/login" className="font-medium underline underline-offset-4 hover:text-foreground">
+        <Link
+          href="/login"
+          className="font-medium underline underline-offset-4 hover:text-foreground"
+        >
           Войти
         </Link>
       </div>
