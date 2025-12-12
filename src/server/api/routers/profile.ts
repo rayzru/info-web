@@ -8,6 +8,9 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 // Zod schema for gender enum
 const genderSchema = z.enum(["Male", "Female", "Unspecified"]);
 
+// Zod schema for map provider enum
+const mapProviderSchema = z.enum(["yandex", "2gis", "google", "apple", "osm"]);
+
 export const profileRouter = createTRPCRouter({
   // Get current user's profile
   get: protectedProcedure.query(async ({ ctx }) => {
@@ -66,6 +69,8 @@ export const profileRouter = createTRPCRouter({
           .optional()
           .nullable(),
         hideMessengers: z.boolean().optional(),
+        // Настройки приложения
+        mapProvider: mapProviderSchema.optional().nullable(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -97,6 +102,8 @@ export const profileRouter = createTRPCRouter({
             maxUsername: input.maxUsername,
             whatsappPhone: input.whatsappPhone,
             hideMessengers: input.hideMessengers,
+            // Настройки приложения
+            mapProvider: input.mapProvider,
           })
           .where(eq(userProfiles.id, existingProfile.id));
       } else {
@@ -119,6 +126,8 @@ export const profileRouter = createTRPCRouter({
           maxUsername: input.maxUsername,
           whatsappPhone: input.whatsappPhone,
           hideMessengers: input.hideMessengers ?? false,
+          // Настройки приложения
+          mapProvider: input.mapProvider ?? "yandex",
         });
       }
 

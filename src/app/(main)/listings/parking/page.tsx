@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowUpDown, Building2, Calendar, Car, Phone } from "lucide-react";
-import Link from "next/link";
+import { ArrowUpDown, Building2, Calendar, Car, ListFilter, Phone } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
+import { PageHeader } from "~/components/page-header";
 import {
   Select,
   SelectContent,
@@ -105,35 +105,47 @@ export default function ParkingListingsPage() {
   const totalPages = Math.ceil(sortedListings.length / pageSize);
   const paginatedListings = sortedListings.slice((page - 1) * pageSize, page * pageSize);
 
+  // Get current filter labels for display
+  const getTypeLabel = () => {
+    if (!currentType) return "Все типы";
+    return currentType === "rent" ? "Аренда" : "Продажа";
+  };
+
+  const getBuildingLabel = () => {
+    if (!currentBuilding) return "Все строения";
+    return `Строение ${currentBuilding}`;
+  };
+
+  const getSortLabel = () => {
+    switch (currentSort) {
+      case "price_asc": return "Сначала дешевые";
+      case "price_desc": return "Сначала дорогие";
+      case "date": return "По дате";
+      default: return "По номеру";
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/listings">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
-          <Car className="h-5 w-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">Паркинг</h1>
-          <p className="text-sm text-muted-foreground">
-            Аренда и продажа парковочных мест
-          </p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      {/* Header with filters */}
+      <PageHeader
+        title="Паркинг"
+        description="Аренда и продажа парковочных мест"
+        backHref="/listings"
+        icon={
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
+            <Car className="h-5 w-5 text-white" />
+          </div>
+        }
+      >
         {/* Type filter */}
         <Select
           value={currentType ?? "all"}
           onValueChange={(value) => setFilter("type", value)}
         >
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Тип сделки" />
+          <SelectTrigger className="border-transparent hover:border-border focus:ring-0 h-auto py-1.5 px-2 gap-1.5">
+            <ListFilter className="h-3.5 w-3.5 opacity-60" />
+            <SelectValue>{getTypeLabel()}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Все типы</SelectItem>
@@ -147,8 +159,9 @@ export default function ParkingListingsPage() {
           value={currentBuilding ?? "all"}
           onValueChange={(value) => setFilter("building", value)}
         >
-          <SelectTrigger className="w-44">
-            <SelectValue placeholder="Строение" />
+          <SelectTrigger className="border-transparent hover:border-border focus:ring-0 h-auto py-1.5 px-2 gap-1.5">
+            <Building2 className="h-3.5 w-3.5 opacity-60" />
+            <SelectValue>{getBuildingLabel()}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Все строения</SelectItem>
@@ -165,18 +178,18 @@ export default function ParkingListingsPage() {
           value={currentSort}
           onValueChange={(value) => setFilter("sort", value)}
         >
-          <SelectTrigger className="w-44">
-            <ArrowUpDown className="mr-2 h-4 w-4" />
-            <SelectValue placeholder="Сортировка" />
+          <SelectTrigger className="border-transparent hover:border-border focus:ring-0 h-auto py-1.5 px-2 gap-1.5">
+            <ArrowUpDown className="h-3.5 w-3.5 opacity-60" />
+            <SelectValue>{getSortLabel()}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="code">По номеру (P1-1-001)</SelectItem>
+            <SelectItem value="code">По номеру</SelectItem>
             <SelectItem value="price_asc">Сначала дешевые</SelectItem>
             <SelectItem value="price_desc">Сначала дорогие</SelectItem>
             <SelectItem value="date">По дате</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </PageHeader>
 
       {/* Listings grid */}
       {isLoading ? (

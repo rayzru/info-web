@@ -110,14 +110,14 @@ export default function ChatsPage() {
             </h2>
             <div className="space-y-1">
               <ChatLink
+                href="https://t.me/serdcerostova2"
+                title="СР2 — Основной"
+                description="Главный чат для всех жителей"
+              />
+              <ChatLink
                 href="https://t.me/sr2today"
                 title="SR2.today"
                 description="Новости и объявления комплекса"
-              />
-              <ChatLink
-                href="https://t.me/sr2_main"
-                title="СР2 — Основной"
-                description="Главный чат для всех жителей"
               />
             </div>
           </section>
@@ -145,7 +145,7 @@ export default function ChatsPage() {
             </h2>
             <div className="space-y-1">
               <ChatLink
-                href="https://t.me/sr2_parking"
+                href="https://t.me/sr2_auto"
                 title="Паркинг"
                 description="Вопросы подземного паркинга"
               />

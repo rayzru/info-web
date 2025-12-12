@@ -1,35 +1,27 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { eq, and, gt } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import { z } from "zod";
 
 import {
-  users,
+  passwordSchema,
+  registerInputSchema,
+} from "~/lib/validations/auth";
+import {
   accounts,
+  emailVerificationTokens,
   passwordResetTokens,
   userRoles,
+  users,
 } from "~/server/db/schema";
-import { notifyAsync, getProviderDisplayName } from "~/server/notifications";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { getProviderDisplayName,notifyAsync } from "~/server/notifications";
 
-// Password requirements
-const passwordSchema = z
-  .string()
-  .min(8, "Пароль должен быть не менее 8 символов")
-  .regex(/[A-Z]/, "Пароль должен содержать хотя бы одну заглавную букву")
-  .regex(/[a-z]/, "Пароль должен содержать хотя бы одну строчную букву")
-  .regex(/[0-9]/, "Пароль должен содержать хотя бы одну цифру");
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const authRouter = createTRPCRouter({
   // Register new user with email and password
   register: publicProcedure
-    .input(
-      z.object({
-        email: z.string().email("Некорректный email"),
-        password: passwordSchema,
-        name: z.string().min(2, "Имя должно быть не менее 2 символов"),
-      })
-    )
+    .input(registerInputSchema)
     .mutation(async ({ ctx, input }) => {
       // Check if user already exists
       const existingUser = await ctx.db.query.users.findFirst({
@@ -69,16 +61,27 @@ export const authRouter = createTRPCRouter({
           role: "Guest",
         });
 
-        // Send welcome notification
+        // Generate email verification token
+        const verificationToken = crypto.randomBytes(32).toString("hex");
+        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+        await ctx.db.insert(emailVerificationTokens).values({
+          userId: newUser.id,
+          token: verificationToken,
+          expires,
+        });
+
+        // Send verification email
         notifyAsync({
-          type: "user.registered",
+          type: "email.verification_requested",
           userId: newUser.id,
           email: input.email.toLowerCase(),
           name: input.name,
+          verificationToken,
         });
       }
 
-      return { success: true, message: "Аккаунт создан. Войдите с вашим email и паролем." };
+      return { success: true, message: "На вашу почту отправлено письмо для подтверждения email." };
     }),
 
   // Request password reset
@@ -285,5 +288,92 @@ export const authRouter = createTRPCRouter({
       }
 
       return { success: true };
+    }),
+
+  // Verify email with token
+  verifyEmail: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Find valid token
+      const verificationToken = await ctx.db.query.emailVerificationTokens.findFirst({
+        where: and(
+          eq(emailVerificationTokens.token, input.token),
+          gt(emailVerificationTokens.expires, new Date())
+        ),
+        with: { user: true },
+      });
+
+      if (!verificationToken || verificationToken.usedAt) {
+        throw new Error("Недействительная или истёкшая ссылка для подтверждения email");
+      }
+
+      // Mark email as verified
+      await ctx.db
+        .update(users)
+        .set({ emailVerified: new Date() })
+        .where(eq(users.id, verificationToken.userId));
+
+      // Mark token as used
+      await ctx.db
+        .update(emailVerificationTokens)
+        .set({ usedAt: new Date() })
+        .where(eq(emailVerificationTokens.id, verificationToken.id));
+
+      // Send welcome email now that email is verified
+      if (verificationToken.user) {
+        notifyAsync({
+          type: "user.registered",
+          userId: verificationToken.userId,
+          email: verificationToken.user.email,
+          name: verificationToken.user.name ?? "Пользователь",
+        });
+      }
+
+      return { success: true, message: "Email успешно подтверждён! Теперь вы можете войти в аккаунт." };
+    }),
+
+  // Resend verification email
+  resendVerificationEmail: publicProcedure
+    .input(z.object({ email: z.string().email() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.db.query.users.findFirst({
+        where: eq(users.email, input.email.toLowerCase()),
+      });
+
+      // Always return success to prevent email enumeration
+      if (!user || user.isDeleted || user.emailVerified) {
+        return { success: true, message: "Если email существует и не подтверждён, на него будет отправлено письмо" };
+      }
+
+      // Check if user registered via password (has passwordHash)
+      if (!user.passwordHash) {
+        return { success: true, message: "Если email существует и не подтверждён, на него будет отправлено письмо" };
+      }
+
+      // Delete any existing tokens for this user
+      await ctx.db
+        .delete(emailVerificationTokens)
+        .where(eq(emailVerificationTokens.userId, user.id));
+
+      // Generate new token
+      const verificationToken = crypto.randomBytes(32).toString("hex");
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      await ctx.db.insert(emailVerificationTokens).values({
+        userId: user.id,
+        token: verificationToken,
+        expires,
+      });
+
+      // Send verification email
+      notifyAsync({
+        type: "email.verification_requested",
+        userId: user.id,
+        email: user.email,
+        name: user.name ?? "Пользователь",
+        verificationToken,
+      });
+
+      return { success: true, message: "Если email существует и не подтверждён, на него будет отправлено письмо" };
     }),
 });

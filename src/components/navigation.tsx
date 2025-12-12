@@ -1,4 +1,3 @@
-import { Info, Map, Tag, Users } from "lucide-react";
 import Link from "next/link";
 
 import { auth, signOut } from "~/server/auth";
@@ -8,33 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { NavLogo } from "./nav-logo";
 import { MobileNav } from "./mobile-nav";
-
-const navigation = [
-  {
-    title: "Справочная",
-    link: "/",
-    icon: <Info />,
-    testId: "nav-info",
-  },
-  {
-    title: "Карта",
-    link: "/map",
-    icon: <Map />,
-    testId: "nav-map",
-  },
-  {
-    title: "Объявления",
-    link: "/listings",
-    icon: <Tag />,
-    testId: "nav-listings",
-  },
-  {
-    title: "Сообщество",
-    link: "/community",
-    icon: <Users />,
-    testId: "nav-community",
-  },
-];
+import { NavLinks } from "./nav-links";
 
 export async function Navigation() {
   const session = await auth();
@@ -46,15 +19,7 @@ export async function Navigation() {
       <NavLogo />
 
       {/* Desktop navigation - only show on larger screens */}
-      <div className="hidden lg:flex items-center gap-2">
-        {navigation.map((item) => (
-          <Link key={item.title} href={item.link} passHref data-testid={item.testId}>
-            <Button variant="ghost" size="sm">
-              {item.title}
-            </Button>
-          </Link>
-        ))}
-      </div>
+      <NavLinks />
 
       {/* Right side: user actions */}
       <div className="flex items-center gap-2">
