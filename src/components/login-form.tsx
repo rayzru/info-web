@@ -5,7 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { AlertCircle } from "lucide-react";
 
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -27,19 +29,47 @@ export function LoginForm({
 }: Readonly<LoginFormProps>) {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/my";
+  const errorParam = searchParams.get("error");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showResendLink, setShowResendLink] = useState(errorParam === "EMAIL_NOT_VERIFIED");
+  const [error, setError] = useState<string | null>(
+    errorParam === "CredentialsSignin" ? "Неверный email или пароль" :
+    errorParam === "EMAIL_NOT_VERIFIED" ? "Email не подтверждён. Проверьте почту или запросите повторную отправку." : null
+  );
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
+
     try {
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         email,
         password,
-        callbackUrl,
+        redirect: false,
       });
+
+      if (result?.error) {
+        // Handle specific error types
+        if (result.error === "EMAIL_NOT_VERIFIED") {
+          setError("Email не подтверждён. Проверьте почту или запросите повторную отправку.");
+          setShowResendLink(true);
+        } else if (result.error === "CredentialsSignin") {
+          setError("Неверный email или пароль");
+          setShowResendLink(false);
+        } else {
+          setError("Произошла ошибка при входе. Попробуйте позже.");
+          setShowResendLink(false);
+        }
+      } else if (result?.ok) {
+        // Success - redirect manually
+        window.location.href = callbackUrl;
+      }
+    } catch {
+      setError("Произошла ошибка при входе. Попробуйте позже.");
     } finally {
       setIsLoading(false);
     }
@@ -50,6 +80,27 @@ export function LoginForm({
       <h1 className="text-center text-lg font-bold uppercase tracking-[0.2em] text-foreground/90 [text-shadow:inset_0_1px_2px_rgba(0,0,0,0.1)]">
         ПАРАДНАЯ
       </h1>
+
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error}
+            {showResendLink && (
+              <>
+                {" "}
+                <Link
+                  href="/resend-verification"
+                  className="underline underline-offset-2 hover:text-destructive-foreground"
+                >
+                  Отправить повторно
+                </Link>
+              </>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Email/Password Form */}
       <form onSubmit={handleEmailSignIn} className="flex flex-col gap-4">

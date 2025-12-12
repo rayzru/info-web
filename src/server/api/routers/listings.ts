@@ -15,6 +15,7 @@ import {
   adminProcedureWithFeature,
   createTRPCRouter,
   protectedProcedure,
+  publicProcedure,
 } from "../trpc";
 
 // Zod schemas
@@ -680,7 +681,7 @@ export const listingsRouter = createTRPCRouter({
 
   // Public: get approved listings (for browsing)
   public: createTRPCRouter({
-    list: protectedProcedure
+    list: publicProcedure
       .input(
         z.object({
           page: z.number().min(1).default(1),
@@ -769,7 +770,7 @@ export const listingsRouter = createTRPCRouter({
       }),
 
     // Get available buildings for filter (all buildings)
-    buildings: protectedProcedure.query(async ({ ctx }) => {
+    buildings: publicProcedure.query(async ({ ctx }) => {
       const buildingsData = await ctx.db.query.buildings.findMany({
         columns: {
           id: true,
@@ -782,7 +783,7 @@ export const listingsRouter = createTRPCRouter({
     }),
 
     // Get buildings that have parkings
-    buildingsWithParkings: protectedProcedure.query(async ({ ctx }) => {
+    buildingsWithParkings: publicProcedure.query(async ({ ctx }) => {
       // Get distinct building IDs that have parkings
       const parkingsData = await ctx.db
         .selectDistinct({ buildingId: parkings.buildingId })

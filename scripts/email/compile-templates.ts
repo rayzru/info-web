@@ -14,6 +14,7 @@ import mjml from "mjml";
 
 const SRC_DIR = join(process.cwd(), "public", "templates", "email", "src");
 const OUT_DIR = join(process.cwd(), "public", "templates", "email");
+const INCLUDES_DIR = join(SRC_DIR, "includes");
 
 async function compileTemplates() {
   console.log("🔧 Compiling MJML email templates...\n");
@@ -28,10 +29,11 @@ async function compileTemplates() {
     // Directory might already exist
   }
 
-  // Read all .mjml files from source directory
+  // Read all .mjml files from source directory (excluding includes folder)
   let files: string[];
   try {
-    files = (await readdir(SRC_DIR)).filter((f) => f.endsWith(".mjml"));
+    const allFiles = await readdir(SRC_DIR);
+    files = allFiles.filter((f) => f.endsWith(".mjml"));
   } catch {
     console.log("📁 Source directory not found. Creating it...");
     await mkdir(SRC_DIR, { recursive: true });
@@ -60,6 +62,7 @@ async function compileTemplates() {
       const result = mjml(mjmlSource, {
         minify: true,
         validationLevel: "soft",
+        filePath: srcPath, // Required for mj-include to work
       });
 
       // Log any warnings

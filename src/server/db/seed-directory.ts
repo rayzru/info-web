@@ -373,11 +373,11 @@ const ENTRIES: EntryDefinition[] = [
       { type: "phone", value: "+7 (863) 297-56-01", label: "Ворота", subtitle: "ООО ГостСервис", tagIds: ["tag-vorota"] },
       { type: "phone", value: "+7 (928) 296-31-49", label: "Домофон", subtitle: "ООО ПрофДелоДон", tagIds: ["tag-domofon"] },
       { type: "phone", value: "+7 (928) 296-31-49", label: "Лифтовая диспетчерская", subtitle: "ООО ЮгЛифтСервис", is24h: true, tagIds: ["tag-lift"] },
-      { type: "telegram", value: "http://go.sr2.today/telegram", label: "Telegram - Общий чат", tagIds: ["tag-chat"] },
+      { type: "telegram", value: "https://t.me/serdcerostova2", label: "Telegram - Общий чат", tagIds: ["tag-chat"] },
       { type: "address", value: "г. Ростов-на-Дону, ул. Ларина, 45", tagIds: ["tag-address"] },
     ],
     tagIds: ["tag-emergency"],
-    telegramChannel: "http://go.sr2.today/telegram",
+    telegramChannel: "https://t.me/serdcerostova2",
   },
 
   // ===== ЗДАНИЯ (Строения 1-7) =====

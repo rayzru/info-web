@@ -9,6 +9,7 @@ import { sendEmail, type EmailTemplateId, type EmailPayload } from "~/server/ema
 import type {
   NotificationEvent,
   UserRegisteredEvent,
+  EmailVerificationRequestedEvent,
   PasswordChangedEvent,
   PasswordResetRequestedEvent,
   PasswordResetCompletedEvent,
@@ -69,6 +70,23 @@ function mapUserRegistered(event: UserRegisteredEvent): EmailMapping<"welcome"> 
     payload: {
       userName: event.name,
       loginUrl: `${getBaseUrl()}/login`,
+    },
+  };
+}
+
+/**
+ * Map EmailVerificationRequestedEvent to email
+ */
+function mapEmailVerificationRequested(
+  event: EmailVerificationRequestedEvent
+): EmailMapping<"verification"> {
+  return {
+    templateId: "verification",
+    to: event.email,
+    payload: {
+      userName: event.name,
+      verificationUrl: `${getBaseUrl()}/verify-email?token=${event.verificationToken}`,
+      expiresIn: "24 часа",
     },
   };
 }
@@ -260,6 +278,12 @@ export async function notify(
     switch (event.type) {
       case "user.registered": {
         const mapping = mapUserRegistered(event);
+        await sendEmail(mapping.templateId, mapping.to, mapping.payload);
+        break;
+      }
+
+      case "email.verification_requested": {
+        const mapping = mapEmailVerificationRequested(event);
         await sendEmail(mapping.templateId, mapping.to, mapping.payload);
         break;
       }

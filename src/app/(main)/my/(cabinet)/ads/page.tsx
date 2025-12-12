@@ -1,4 +1,5 @@
 import { ListingsView } from "~/components/listings-view";
+import { PageHeader } from "~/components/page-header";
 import { api } from "~/trpc/server";
 
 export default async function AdsPage() {
@@ -13,13 +14,11 @@ export default async function AdsPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold">Мои объявления</h1>
-        <p className="text-muted-foreground mt-1">
-          Аренда и продажа недвижимости
-        </p>
-      </div>
-
+      <PageHeader
+        title="Мои объявления"
+        description="Аренда и продажа недвижимости"
+      />
+      
       <ListingsView
         listings={listings}
         myProperties={myProperties}

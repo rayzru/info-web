@@ -3,70 +3,76 @@
     <mj-title>Уведомление безопасности</mj-title>
     <mj-preview>Важное уведомление о безопасности вашего аккаунта</mj-preview>
     <mj-attributes>
-      <mj-all font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" />
+      <mj-all
+        font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+      />
       <mj-text font-size="15px" line-height="1.6" color="#333333" />
-      <mj-button background-color="#dc2626" border-radius="8px" font-size="15px" font-weight="600" />
+      <mj-button
+        background-color="#dc2626"
+        border-radius="8px"
+        font-size="15px"
+        font-weight="600"
+      />
     </mj-attributes>
   </mj-head>
   <mj-body background-color="#f4f4f5">
     <!-- Header -->
-    <mj-section padding="30px 0 20px">
-      <mj-column>
-        <mj-text align="center" font-size="28px" font-weight="700" color="#18181b" letter-spacing="0.05em">
-          ПАРАДНАЯ
-        </mj-text>
-        <mj-text align="center" font-size="13px" color="#71717a">
-          Жилой комплекс «Сердце Ростова»
-        </mj-text>
-      </mj-column>
-    </mj-section>
+    <mj-include path="./includes/header.mjml" />
 
     <!-- Alert Banner -->
-    <mj-section background-color="#fef2f2" border-radius="12px 12px 0 0" padding="20px 30px">
+    <mj-section
+      background-color="#fef2f2"
+      border-radius="12px 12px 0 0"
+      padding="20px 30px"
+    >
       <mj-column>
-        <mj-text font-size="18px" font-weight="600" color="#dc2626" align="center">
+        <mj-text
+          font-size="18px"
+          font-weight="600"
+          color="#dc2626"
+          align="center"
+        >
           Уведомление безопасности
         </mj-text>
       </mj-column>
     </mj-section>
 
     <!-- Main Content -->
-    <mj-section background-color="#ffffff" border-radius="0 0 12px 12px" padding="30px 30px 40px">
+    <mj-section
+      background-color="#ffffff"
+      border-radius="0 0 12px 12px"
+      padding="30px 30px 40px"
+    >
       <mj-column>
+        <mj-text padding-top="10px"> Здравствуйте, {{ userName }}! </mj-text>
         <mj-text padding-top="10px">
-          Здравствуйте, {{userName}}!
+          Мы зафиксировали активность в вашем аккаунте, о которой хотим вас
+          уведомить.
         </mj-text>
-        <mj-text padding-top="10px">
-          Мы зафиксировали активность в вашем аккаунте, о которой хотим вас уведомить.
+        <mj-text
+          padding-top="20px"
+          padding-bottom="20px"
+          background-color="#fef2f2"
+          padding-left="20px"
+        >
+          <strong>Событие:</strong> {{ alertType }}<br />
+          <strong>Дата и время:</strong> {{ occurredAt }}<br />
+          <strong>Детали:</strong> {{ details }}
         </mj-text>
-        <mj-text padding-top="20px" padding-bottom="20px" background-color="#fef2f2" border-radius="8px" padding-left="20px">
-          <strong>Событие:</strong> {{alertType}}<br/>
-          <strong>Дата и время:</strong> {{occurredAt}}<br/>
-          <strong>Детали:</strong> {{details}}
-        </mj-text>
-        <mj-text>
-          Если это были вы, никаких действий не требуется.
-        </mj-text>
+        <mj-text> Если это были вы, никаких действий не требуется. </mj-text>
         <mj-button href="{{securityUrl}}" padding-top="25px">
           Проверить настройки безопасности
         </mj-button>
         <mj-divider border-color="#e5e7eb" padding="30px 0" />
         <mj-text font-size="13px" color="#dc2626">
-          <strong>Это не вы?</strong> Немедленно смените пароль и проверьте привязанные аккаунты. Если вы не можете войти в аккаунт, свяжитесь с нашей поддержкой.
+          <strong>Это не вы?</strong> Немедленно смените пароль и проверьте
+          привязанные аккаунты. Если вы не можете войти в аккаунт, свяжитесь с
+          нашей поддержкой.
         </mj-text>
       </mj-column>
     </mj-section>
 
     <!-- Footer -->
-    <mj-section padding="30px 0">
-      <mj-column>
-        <mj-text align="center" font-size="13px" color="#71717a">
-          Это письмо отправлено автоматически, отвечать на него не нужно.
-        </mj-text>
-        <mj-text align="center" font-size="13px" color="#71717a" padding-top="10px">
-          © 2025 Парадная. Все права защищены.
-        </mj-text>
-      </mj-column>
-    </mj-section>
+    <mj-include path="./includes/footer.mjml" />
   </mj-body>
 </mjml>

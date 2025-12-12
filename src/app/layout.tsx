@@ -2,6 +2,7 @@ import { type Metadata } from "next";
 
 import { SessionProvider } from "~/components/session-provider";
 import { ThemeProvider } from "~/components/theme-provider";
+import { ThemeTransitionOverlay } from "~/components/theme-transition";
 import { Toaster } from "~/components/ui/sonner";
 import { TRPCReactProvider } from "~/trpc/react";
 
@@ -42,6 +43,7 @@ export default function RootLayout({
           >
             <TRPCReactProvider>{children}</TRPCReactProvider>
             <Toaster />
+            <ThemeTransitionOverlay />
           </ThemeProvider>
         </SessionProvider>
       </body>

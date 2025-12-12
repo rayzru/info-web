@@ -317,6 +317,12 @@ function buildProviders() {
           return null;
         }
 
+        // Check if email is verified for password-based accounts
+        if (!user.emailVerified) {
+          // Throw a specific error that can be caught by the frontend
+          throw new Error("EMAIL_NOT_VERIFIED");
+        }
+
         // Verify password
         const isValid = await bcrypt.compare(password, user.passwordHash);
         if (!isValid) {

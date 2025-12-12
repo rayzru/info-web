@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, AlertTriangle, Camera, Loader2, MessageCircle, Trash2 } from "lucide-react";
+import { AlertCircle, AlertTriangle, Camera, Loader2, Map, MessageCircle, Trash2 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 
@@ -48,6 +49,7 @@ interface ProfileFormProps {
     maxUsername: string | null;
     whatsappPhone: string | null;
     hideMessengers: boolean;
+    mapProvider: "yandex" | "2gis" | "google" | "apple" | "osm" | null;
   } | null;
 }
 
@@ -110,6 +112,9 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
   );
   const [hideMessengers, setHideMessengers] = useState(
     profile?.hideMessengers ?? false
+  );
+  const [mapProvider, setMapProvider] = useState<string>(
+    profile?.mapProvider ?? "yandex"
   );
 
   const updateProfile = api.profile.update.useMutation({
@@ -209,6 +214,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
       maxUsername: maxUsername || null,
       whatsappPhone: whatsappPhone || null,
       hideMessengers,
+      mapProvider: mapProvider as "yandex" | "2gis" | "google" | "apple" | "osm",
     });
   };
 
@@ -486,6 +492,39 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
         </div>
       </section>
 
+      {/* Настройки приложения */}
+      <section>
+        <h2 className="text-lg font-medium pb-3 border-b mb-8 flex items-center gap-2">
+          <Map className="h-5 w-5" />
+          Настройки приложения
+        </h2>
+
+        <div className="space-y-8">
+          {/* Провайдер карт */}
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
+            <div className="space-y-3 order-1">
+              <Label htmlFor="mapProvider">Провайдер карт</Label>
+              <Select value={mapProvider} onValueChange={setMapProvider}>
+                <SelectTrigger className="w-full sm:w-64">
+                  <SelectValue placeholder="Выберите провайдера карт" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="yandex">Яндекс Карты</SelectItem>
+                  <SelectItem value="2gis">2ГИС</SelectItem>
+                  <SelectItem value="google">Google Карты</SelectItem>
+                  <SelectItem value="apple">Apple Maps</SelectItem>
+                  <SelectItem value="osm">OpenStreetMap</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
+              Адреса в приложении будут открываться в выбранном картографическом
+              сервисе. Яндекс Карты и 2ГИС рекомендуются для России.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Кнопка сохранения */}
       <div className="flex justify-end pt-4">
         <Button type="submit" disabled={updateProfile.isPending} size="lg">
@@ -497,12 +536,14 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
       </div>
 
       {/* Удаление аккаунта */}
-      <section className="pt-10 mt-10 border-t border-destructive/20">
-        <h2 className="text-lg font-medium pb-3 border-b border-destructive/20 mb-6 text-destructive flex items-center gap-2">
-          <Trash2 className="h-5 w-5" />
-          Удаление аккаунта
-        </h2>
-
+      <Card className="mt-10 border-destructive/30">
+        <CardHeader>
+          <CardTitle className="text-destructive flex items-center gap-2">
+            <Trash2 className="h-5 w-5" />
+            Удаление аккаунта
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
         {deletionRequest ? (
           <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
             <div className="flex items-start gap-3">
@@ -608,7 +649,8 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
             </p>
           </div>
         )}
-      </section>
+        </CardContent>
+      </Card>
     </form>
   );
 }

@@ -141,13 +141,13 @@ async function loadTemplate(templateId: EmailTemplateId): Promise<string> {
 
 /**
  * Replace placeholders in template with payload values
- * Placeholders format: {{variableName}}
+ * Supports both {{variableName}} and {{ variableName }} formats
  */
 function renderTemplate(
   template: string,
   payload: Record<string, string>
 ): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (match, key: string) => {
+  return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key: string) => {
     return payload[key] ?? match;
   });
 }

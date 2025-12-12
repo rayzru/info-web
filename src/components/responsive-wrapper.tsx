@@ -9,7 +9,7 @@ export default function ResponsiveWrapper({
   return (
     <div
       className={cn(
-        `container mx-auto max-w-7xl min-w-xs px-[20px]`,
+        `container mx-auto max-w-7xl min-w-xs`,
         className,
       )}
     >

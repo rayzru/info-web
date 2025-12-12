@@ -33,6 +33,7 @@ export type {
   EventPayload,
   // Auth events
   UserRegisteredEvent,
+  EmailVerificationRequestedEvent,
   PasswordChangedEvent,
   PasswordResetRequestedEvent,
   PasswordResetCompletedEvent,

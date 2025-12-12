@@ -79,12 +79,12 @@ export default function EditDirectoryEntryPage() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Queries
-  const { data: entryData, isLoading: entryLoading } = api.directory.admin.get.useQuery(
-    { id: entryId },
-    { enabled: !!entryId }
-  );
+  const { data: entryData, isLoading: entryLoading } =
+    api.directory.admin.get.useQuery({ id: entryId }, { enabled: !!entryId });
   const { data: tagsData } = api.directory.getTags.useQuery({ parentId: null });
-  const { data: allTagsData } = api.directory.getTags.useQuery({ includeAll: true });
+  const { data: allTagsData } = api.directory.getTags.useQuery({
+    includeAll: true,
+  });
 
   // Transform tags for TagPicker with grouping
   const contactTagOptions: TagOption[] = React.useMemo(() => {
@@ -102,13 +102,23 @@ export default function EditDirectoryEntryPage() {
           tag.slug === "dispetcher" ||
           tag.slug === "lift" ||
           tag.slug === "domofon" ||
-          tag.slug === "vorota"
+          tag.slug === "vorota",
       )
       .map((tag) => {
         let group = "Прочее";
         if (tag.slug.startsWith("stroenie-")) group = "Строения";
         else if (tag.slug.startsWith("podezd-")) group = "Подъезды";
-        else if (["konsierzh", "elektrik", "santehnik", "dispetcher", "lift", "domofon", "vorota"].includes(tag.slug)) {
+        else if (
+          [
+            "konsierzh",
+            "elektrik",
+            "santehnik",
+            "dispetcher",
+            "lift",
+            "domofon",
+            "vorota",
+          ].includes(tag.slug)
+        ) {
           group = "Службы";
         } else if (tag.slug === "chat") group = "Каналы";
 
@@ -141,15 +151,30 @@ export default function EditDirectoryEntryPage() {
         isPrimary: c.isPrimary === 1,
         tagIds: (c.tags ?? []).map((t) => t.id),
       }));
-      setContacts(mappedContacts.length > 0 ? mappedContacts : [{ type: "phone", value: "", label: "", subtitle: "", isPrimary: true, tagIds: [] }]);
+      setContacts(
+        mappedContacts.length > 0
+          ? mappedContacts
+          : [
+              {
+                type: "phone",
+                value: "",
+                label: "",
+                subtitle: "",
+                isPrimary: true,
+                tagIds: [],
+              },
+            ],
+      );
 
       // Map schedules
-      const mappedSchedules: Schedule[] = (entryData.schedules ?? []).map((s) => ({
-        dayOfWeek: s.dayOfWeek,
-        openTime: s.openTime ?? "09:00",
-        closeTime: s.closeTime ?? "18:00",
-        note: s.note ?? "",
-      }));
+      const mappedSchedules: Schedule[] = (entryData.schedules ?? []).map(
+        (s) => ({
+          dayOfWeek: s.dayOfWeek,
+          openTime: s.openTime ?? "09:00",
+          closeTime: s.closeTime ?? "18:00",
+          note: s.note ?? "",
+        }),
+      );
       setSchedules(mappedSchedules);
 
       // Map tags
@@ -178,7 +203,14 @@ export default function EditDirectoryEntryPage() {
   const addContact = () => {
     setContacts([
       ...contacts,
-      { type: "phone", value: "", label: "", subtitle: "", isPrimary: false, tagIds: [] },
+      {
+        type: "phone",
+        value: "",
+        label: "",
+        subtitle: "",
+        isPrimary: false,
+        tagIds: [],
+      },
     ]);
   };
 
@@ -191,7 +223,11 @@ export default function EditDirectoryEntryPage() {
     setContacts(newContacts);
   };
 
-  const updateContact = (index: number, field: keyof Contact, value: string | boolean | string[]) => {
+  const updateContact = (
+    index: number,
+    field: keyof Contact,
+    value: string | boolean | string[],
+  ) => {
     const newContacts = [...contacts];
     if (field === "isPrimary" && value === true) {
       // Only one primary
@@ -203,7 +239,6 @@ export default function EditDirectoryEntryPage() {
     }
     setContacts(newContacts);
   };
-
 
   // Schedule handlers
   const toggleScheduleDay = (dayOfWeek: number) => {
@@ -218,11 +253,15 @@ export default function EditDirectoryEntryPage() {
     }
   };
 
-  const updateSchedule = (dayOfWeek: number, field: keyof Schedule, value: string | number) => {
+  const updateSchedule = (
+    dayOfWeek: number,
+    field: keyof Schedule,
+    value: string | number,
+  ) => {
     setSchedules(
       schedules.map((s) =>
-        s.dayOfWeek === dayOfWeek ? { ...s, [field]: value } : s
-      )
+        s.dayOfWeek === dayOfWeek ? { ...s, [field]: value } : s,
+      ),
     );
   };
 
@@ -264,9 +303,14 @@ export default function EditDirectoryEntryPage() {
     }));
 
     // Only include type if it's a valid value
-    const validTypes = ["contact", "organization", "location", "document"] as const;
-    const typeToSend = validTypes.includes(type as typeof validTypes[number])
-      ? (type as typeof validTypes[number])
+    const validTypes = [
+      "contact",
+      "organization",
+      "location",
+      "document",
+    ] as const;
+    const typeToSend = validTypes.includes(type as (typeof validTypes)[number])
+      ? (type as (typeof validTypes)[number])
       : undefined;
 
     updateMutation.mutate({
@@ -317,9 +361,7 @@ export default function EditDirectoryEntryPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-semibold">Редактирование записи</h1>
-          <p className="text-muted-foreground mt-1">
-            /{entryData.slug}
-          </p>
+          <p className="text-muted-foreground mt-1">/{entryData.slug}</p>
         </div>
       </div>
 
@@ -394,20 +436,28 @@ export default function EditDirectoryEntryPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Контакты</CardTitle>
-                <Button type="button" variant="outline" size="sm" onClick={addContact}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addContact}
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Добавить
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 {contacts.map((contact, index) => (
-                  <div key={index} className="space-y-2 pb-4 border-b last:border-b-0">
-                    <div className="flex gap-2 items-start">
+                  <div
+                    key={index}
+                    className="space-y-2 border-b pb-4 last:border-b-0"
+                  >
+                    <div className="flex items-start gap-2">
                       <Select
                         value={contact.type}
                         onValueChange={(v) => updateContact(index, "type", v)}
                       >
-                        <SelectTrigger className="w-[140px]">
+                        <SelectTrigger className="w-[120px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -421,31 +471,46 @@ export default function EditDirectoryEntryPage() {
 
                       <Input
                         value={contact.value}
-                        onChange={(e) => updateContact(index, "value", e.target.value)}
+                        onChange={(e) =>
+                          updateContact(index, "value", e.target.value)
+                        }
                         placeholder="Значение"
+                        className="flex-1"
+                      />
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Input
+                        value={contact.label}
+                        onChange={(e) =>
+                          updateContact(index, "label", e.target.value)
+                        }
+                        placeholder="Подпись"
                         className="flex-1"
                       />
 
                       <Input
-                        value={contact.label}
-                        onChange={(e) => updateContact(index, "label", e.target.value)}
-                        placeholder="Подпись"
-                        className="w-[140px]"
-                      />
-
-                      <Input
                         value={contact.subtitle}
-                        onChange={(e) => updateContact(index, "subtitle", e.target.value)}
+                        onChange={(e) =>
+                          updateContact(index, "subtitle", e.target.value)
+                        }
                         placeholder="Подзаголовок"
-                        className="w-40"
+                        className="flex-1"
                       />
-
+                    </div>
+                    <div className="flex justify-between">
                       <div className="flex items-center gap-2">
+                        
                         <Checkbox
+                          id={`contact${index}`}
                           checked={contact.isPrimary}
-                          onCheckedChange={(v) => updateContact(index, "isPrimary", !!v)}
+                          onCheckedChange={(v) =>
+                            updateContact(index, "isPrimary", !!v)
+                          }
                         />
-                        <span className="text-xs text-muted-foreground">Осн.</span>
+                        <span className="text-muted-foreground text-xs">
+                          <Label htmlFor={`contact${index}`}>Основной контакт</Label>
+                          
+                        </span>
                       </div>
 
                       {contacts.length > 1 && (
@@ -455,7 +520,7 @@ export default function EditDirectoryEntryPage() {
                           size="icon"
                           onClick={() => removeContact(index)}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className="text-destructive h-4 w-4" />
                         </Button>
                       )}
                     </div>
@@ -466,7 +531,9 @@ export default function EditDirectoryEntryPage() {
                         <TagPicker
                           options={contactTagOptions}
                           selected={contact.tagIds}
-                          onChange={(tagIds) => updateContact(index, "tagIds", tagIds)}
+                          onChange={(tagIds) =>
+                            updateContact(index, "tagIds", tagIds)
+                          }
                           placeholder="Добавить теги..."
                           emptyText="Теги не найдены"
                         />
@@ -485,7 +552,9 @@ export default function EditDirectoryEntryPage() {
               <CardContent className="space-y-4">
                 <div className="flex flex-wrap gap-2">
                   {DAY_NAMES.map((name, index) => {
-                    const isActive = schedules.some((s) => s.dayOfWeek === index);
+                    const isActive = schedules.some(
+                      (s) => s.dayOfWeek === index,
+                    );
                     return (
                       <Button
                         key={index}
@@ -501,7 +570,7 @@ export default function EditDirectoryEntryPage() {
                 </div>
 
                 {schedules.length > 0 && (
-                  <div className="space-y-3 mt-4">
+                  <div className="mt-4 space-y-3">
                     {schedules
                       .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
                       .map((schedule) => (
@@ -516,7 +585,11 @@ export default function EditDirectoryEntryPage() {
                             type="time"
                             value={schedule.openTime}
                             onChange={(e) =>
-                              updateSchedule(schedule.dayOfWeek, "openTime", e.target.value)
+                              updateSchedule(
+                                schedule.dayOfWeek,
+                                "openTime",
+                                e.target.value,
+                              )
                             }
                             className="w-28"
                           />
@@ -525,14 +598,22 @@ export default function EditDirectoryEntryPage() {
                             type="time"
                             value={schedule.closeTime}
                             onChange={(e) =>
-                              updateSchedule(schedule.dayOfWeek, "closeTime", e.target.value)
+                              updateSchedule(
+                                schedule.dayOfWeek,
+                                "closeTime",
+                                e.target.value,
+                              )
                             }
                             className="w-28"
                           />
                           <Input
                             value={schedule.note}
                             onChange={(e) =>
-                              updateSchedule(schedule.dayOfWeek, "note", e.target.value)
+                              updateSchedule(
+                                schedule.dayOfWeek,
+                                "note",
+                                e.target.value,
+                              )
                             }
                             placeholder="Примечание"
                             className="flex-1"
@@ -558,7 +639,11 @@ export default function EditDirectoryEntryPage() {
                     {tagsData.map((tag) => (
                       <Badge
                         key={tag.id}
-                        variant={selectedTagIds.includes(tag.id) ? "default" : "outline"}
+                        variant={
+                          selectedTagIds.includes(tag.id)
+                            ? "default"
+                            : "outline"
+                        }
                         className="cursor-pointer"
                         onClick={() => toggleTag(tag.id)}
                       >
@@ -567,7 +652,7 @@ export default function EditDirectoryEntryPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Категорий пока нет
                   </p>
                 )}
@@ -576,7 +661,7 @@ export default function EditDirectoryEntryPage() {
 
             {/* Actions */}
             <Card>
-              <CardContent className="pt-6 space-y-3">
+              <CardContent className="space-y-3 pt-6">
                 <Button
                   type="submit"
                   className="w-full"
@@ -587,7 +672,11 @@ export default function EditDirectoryEntryPage() {
                   )}
                   Сохранить изменения
                 </Button>
-                <Link href={`/info/${entryData.slug}`} target="_blank" className="block">
+                <Link
+                  href={`/info/${entryData.slug}`}
+                  target="_blank"
+                  className="block"
+                >
                   <Button type="button" variant="outline" className="w-full">
                     Открыть на сайте
                   </Button>

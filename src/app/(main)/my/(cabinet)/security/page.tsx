@@ -1,4 +1,5 @@
 import { LinkedAccounts, PasswordSection } from "~/components/linked-accounts";
+import { PageHeader } from "~/components/page-header";
 import { getAvailableProviders } from "~/server/auth/config";
 
 export default function SecurityPage() {
@@ -6,12 +7,11 @@ export default function SecurityPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold">Безопасность</h1>
-        <p className="text-muted-foreground mt-1">
-          Управление способами входа и безопасностью аккаунта
-        </p>
-      </div>
+
+      <PageHeader
+        title="Безопасность"
+        description={`Управление способами входа и безопасностью аккаунта`}
+      />
 
       <div className="space-y-12">
         {/* Linked Accounts Section */}

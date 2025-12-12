@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import {
   Menu,
   Info,
-  Map,
   Monitor,
   Moon,
   Sun,
@@ -13,6 +12,11 @@ import {
   LogOut,
   User,
   Shield,
+  LayoutDashboard,
+  KeyRound,
+  Bell,
+  Building2,
+  Megaphone,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -31,6 +35,7 @@ import {
 import { cn } from "~/lib/utils";
 import { useThemeStore, type Theme } from "~/stores/theme-store";
 import { useTheme } from "next-themes";
+import { useThemeTransition } from "./theme-transition";
 
 const navigation = [
   {
@@ -38,12 +43,6 @@ const navigation = [
     link: "/",
     icon: Info,
     testId: "nav-info",
-  },
-  {
-    title: "Карта",
-    link: "/map",
-    icon: Map,
-    testId: "nav-map",
   },
   {
     title: "Объявления",
@@ -72,15 +71,21 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
   const pathname = usePathname();
   const { theme, setTheme } = useThemeStore();
   const { setTheme: setNextTheme } = useTheme();
+  const triggerTransition = useThemeTransition();
 
   const isActive = (link: string) => {
     if (link === "/") return pathname === "/";
     return pathname.startsWith(link);
   };
 
-  const handleThemeChange = (newTheme: Theme) => {
-    setTheme(newTheme);
-    setNextTheme(newTheme);
+  const handleThemeChange = async (newTheme: Theme, e: MouseEvent) => {
+    await triggerTransition(
+      () => {
+        setTheme(newTheme);
+        setNextTheme(newTheme);
+      },
+      { x: e.clientX, y: e.clientY }
+    );
   };
 
   const themeOptions = [
@@ -161,20 +166,100 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
             {user && (
               <>
                 <Separator className="my-2" />
-                <div className="flex flex-col gap-1">
-                  <Link href="/my" onClick={() => setOpen(false)}>
-                    <Button
-                      variant={isActive("/my") ? "secondary" : "ghost"}
-                      className={cn(
-                        "w-full justify-start gap-3 h-12",
-                        isActive("/my") && "bg-primary/10 text-primary font-medium"
-                      )}
-                    >
-                      <User className="h-5 w-5" />
-                      Мой кабинет
-                    </Button>
-                  </Link>
-                </div>
+                {/* Показываем подпункты только на страницах /my/* где сайдбар скрыт (md:hidden) */}
+                {pathname.startsWith("/my") ? (
+                  <>
+                    <div className="flex flex-col gap-1">
+                      <Link href="/my" onClick={() => setOpen(false)}>
+                        <Button
+                          variant={pathname === "/my" ? "secondary" : "ghost"}
+                          className={cn(
+                            "w-full justify-start gap-3 h-12",
+                            pathname === "/my" && "bg-primary/10 text-primary font-medium"
+                          )}
+                        >
+                          <LayoutDashboard className="h-5 w-5" />
+                          Кабинет
+                        </Button>
+                      </Link>
+                      <Link href="/my/profile" onClick={() => setOpen(false)}>
+                        <Button
+                          variant={pathname === "/my/profile" ? "secondary" : "ghost"}
+                          className={cn(
+                            "w-full justify-start gap-3 h-12",
+                            pathname === "/my/profile" && "bg-primary/10 text-primary font-medium"
+                          )}
+                        >
+                          <User className="h-5 w-5" />
+                          Профиль
+                        </Button>
+                      </Link>
+                      <Link href="/my/security" onClick={() => setOpen(false)}>
+                        <Button
+                          variant={pathname === "/my/security" ? "secondary" : "ghost"}
+                          className={cn(
+                            "w-full justify-start gap-3 h-12",
+                            pathname === "/my/security" && "bg-primary/10 text-primary font-medium"
+                          )}
+                        >
+                          <KeyRound className="h-5 w-5" />
+                          Безопасность
+                        </Button>
+                      </Link>
+                      <Link href="/my/notifications" onClick={() => setOpen(false)}>
+                        <Button
+                          variant={pathname === "/my/notifications" ? "secondary" : "ghost"}
+                          className={cn(
+                            "w-full justify-start gap-3 h-12",
+                            pathname === "/my/notifications" && "bg-primary/10 text-primary font-medium"
+                          )}
+                        >
+                          <Bell className="h-5 w-5" />
+                          Уведомления
+                        </Button>
+                      </Link>
+                    </div>
+                    <Separator className="my-2" />
+                    <div className="flex flex-col gap-1">
+                      <Link href="/my/property" onClick={() => setOpen(false)}>
+                        <Button
+                          variant={pathname === "/my/property" ? "secondary" : "ghost"}
+                          className={cn(
+                            "w-full justify-start gap-3 h-12",
+                            pathname === "/my/property" && "bg-primary/10 text-primary font-medium"
+                          )}
+                        >
+                          <Building2 className="h-5 w-5" />
+                          Недвижимость
+                        </Button>
+                      </Link>
+                      <Link href="/my/ads" onClick={() => setOpen(false)}>
+                        <Button
+                          variant={pathname === "/my/ads" ? "secondary" : "ghost"}
+                          className={cn(
+                            "w-full justify-start gap-3 h-12",
+                            pathname === "/my/ads" && "bg-primary/10 text-primary font-medium"
+                          )}
+                        >
+                          <Megaphone className="h-5 w-5" />
+                          Объявления
+                        </Button>
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-1">
+                    <Link href="/my" onClick={() => setOpen(false)}>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-3 h-12"
+                      >
+                        <User className="h-5 w-5" />
+                        Мой кабинет
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </>
             )}
 
@@ -217,7 +302,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                       "flex-1 gap-2",
                       isSelected && "bg-primary/10 text-primary"
                     )}
-                    onClick={() => handleThemeChange(option.value)}
+                    onClick={(e) => handleThemeChange(option.value, e)}
                   >
                     <Icon className="h-4 w-4" />
                     {option.label}

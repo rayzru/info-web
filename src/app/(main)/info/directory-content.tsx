@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import {
   Search,
   Phone,
@@ -18,12 +18,13 @@ import {
   UserCheck,
   Headphones,
   X,
+  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 
 import { api } from "~/trpc/react";
 import { Input } from "~/components/ui/input";
-import { Badge } from "~/components/ui/badge";
 import { KeyboardShortcut } from "~/components/keyboard-shortcut";
 import { cn } from "~/lib/utils";
 
@@ -105,18 +106,6 @@ const TAG_GROUPS = {
       { slug: "stroenie-7", label: "7" },
     ],
   },
-};
-
-// Contact type colors
-const CONTACT_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  phone: { bg: "bg-green-50 dark:bg-green-950/30", border: "border-green-300 dark:border-green-800", text: "text-green-700 dark:text-green-300" },
-  telegram: { bg: "bg-blue-50 dark:bg-blue-950/30", border: "border-blue-300 dark:border-blue-800", text: "text-blue-700 dark:text-blue-300" },
-  whatsapp: { bg: "bg-emerald-50 dark:bg-emerald-950/30", border: "border-emerald-300 dark:border-emerald-800", text: "text-emerald-700 dark:text-emerald-300" },
-  email: { bg: "bg-orange-50 dark:bg-orange-950/30", border: "border-orange-300 dark:border-orange-800", text: "text-orange-700 dark:text-orange-300" },
-  website: { bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-300 dark:border-purple-800", text: "text-purple-700 dark:text-purple-300" },
-  address: { bg: "bg-gray-50 dark:bg-gray-950/30", border: "border-gray-300 dark:border-gray-700", text: "text-gray-700 dark:text-gray-300" },
-  vk: { bg: "bg-sky-50 dark:bg-sky-950/30", border: "border-sky-300 dark:border-sky-800", text: "text-sky-700 dark:text-sky-300" },
-  other: { bg: "bg-slate-50 dark:bg-slate-950/30", border: "border-slate-300 dark:border-slate-700", text: "text-slate-700 dark:text-slate-300" },
 };
 
 // Contact type icons
@@ -276,7 +265,7 @@ export function DirectoryContent({
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <Input
               ref={inputRef}
-              placeholder="консьерж, чат, электрик, строение 1..."
+              placeholder="Что вас интересует?"
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -322,18 +311,20 @@ export function DirectoryContent({
                   <span className="text-xs text-muted-foreground font-medium lowercase">
                     {tagGroups.services.title}
                   </span>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {tagGroups.services.tags.map(({ slug, icon: Icon, label, tag }) => (
                       <button
                         key={slug}
                         onClick={() => handleTagClick(slug, tag?.id)}
                         className={cn(
-                          "flex items-center gap-1.5 px-2.5 py-1 rounded-md max-w-[120px]",
-                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "group flex items-center gap-1.5 px-3 py-1.5 rounded-full max-w-[140px] cursor-pointer",
+                          "bg-background border border-primary/20",
+                          "hover:border-primary hover:shadow-sm",
+                          "transition-all duration-150",
                           "text-sm"
                         )}
                       >
-                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
+                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0 opacity-50 group-hover:opacity-100 group-hover:text-primary transition-all" />}
                         <span className="truncate">{label}</span>
                       </button>
                     ))}
@@ -345,18 +336,20 @@ export function DirectoryContent({
                   <span className="text-xs text-muted-foreground font-medium lowercase">
                     {tagGroups.emergency.title}
                   </span>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {tagGroups.emergency.tags.map(({ slug, icon: Icon, label, tag }) => (
                       <button
                         key={slug}
                         onClick={() => handleTagClick(slug, tag?.id)}
                         className={cn(
-                          "flex items-center gap-1.5 px-2.5 py-1 rounded-md max-w-[120px]",
-                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "group flex items-center gap-1.5 px-3 py-1.5 rounded-full max-w-[140px] cursor-pointer",
+                          "bg-background border border-primary/20",
+                          "hover:border-primary hover:shadow-sm",
+                          "transition-all duration-150",
                           "text-sm"
                         )}
                       >
-                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
+                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0 opacity-50 group-hover:opacity-100 group-hover:text-primary transition-all" />}
                         <span className="truncate">{label}</span>
                       </button>
                     ))}
@@ -368,18 +361,20 @@ export function DirectoryContent({
                   <span className="text-xs text-muted-foreground font-medium lowercase">
                     {tagGroups.buildings.title}
                   </span>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {tagGroups.buildings.tags.map(({ slug, label, tag }) => (
                       <button
                         key={slug}
                         onClick={() => handleTagClick(slug, tag?.id)}
                         className={cn(
-                          "flex items-center gap-1 px-2 py-1 rounded-md",
-                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "group flex items-center justify-center gap-1 w-12 h-8 rounded-full cursor-pointer",
+                          "bg-background border border-primary/20",
+                          "hover:border-primary hover:shadow-sm",
+                          "transition-all duration-150",
                           "text-sm"
                         )}
                       >
-                        <Building className="h-3 w-3 shrink-0" />
+                        <Building className="h-3.5 w-3.5 shrink-0 opacity-50 group-hover:opacity-100 group-hover:text-primary transition-all" />
                         <span>{label}</span>
                       </button>
                     ))}
@@ -388,70 +383,76 @@ export function DirectoryContent({
               </div>
 
               {/* Desktop layout: 3 columns */}
-              <div className="mt-6 hidden md:grid grid-cols-3 gap-4 max-w-lg mx-auto">
+              <div className="mt-6 hidden md:grid grid-cols-3 gap-6 max-w-xl mx-auto">
                 {/* Services column */}
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2">
                   <span className="text-xs text-muted-foreground font-medium lowercase">
                     {tagGroups.services.title}
                   </span>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1.5">
                     {tagGroups.services.tags.map(({ slug, icon: Icon, label, tag }) => (
                       <button
                         key={slug}
                         onClick={() => handleTagClick(slug, tag?.id)}
                         className={cn(
-                          "flex items-center gap-1.5 px-2.5 py-1 rounded-md w-fit",
-                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "group flex items-center gap-2 px-3 py-1.5 rounded-full w-fit cursor-pointer",
+                          "bg-background border border-primary/20",
+                          "hover:border-primary hover:shadow-sm",
+                          "transition-all duration-150",
                           "text-sm"
                         )}
                       >
-                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
-                        <span className="truncate">{label}</span>
+                        {Icon && <Icon className="h-4 w-4 shrink-0 opacity-50 group-hover:opacity-100 group-hover:text-primary transition-all" />}
+                        <span>{label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Emergency column */}
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2">
                   <span className="text-xs text-muted-foreground font-medium lowercase">
                     {tagGroups.emergency.title}
                   </span>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1.5">
                     {tagGroups.emergency.tags.map(({ slug, icon: Icon, label, tag }) => (
                       <button
                         key={slug}
                         onClick={() => handleTagClick(slug, tag?.id)}
                         className={cn(
-                          "flex items-center gap-1.5 px-2.5 py-1 rounded-md w-fit max-w-full",
-                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "group flex items-center gap-2 px-3 py-1.5 rounded-full w-fit cursor-pointer",
+                          "bg-background border border-primary/20",
+                          "hover:border-primary hover:shadow-sm",
+                          "transition-all duration-150",
                           "text-sm"
                         )}
                       >
-                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
-                        <span className="truncate">{label}</span>
+                        {Icon && <Icon className="h-4 w-4 shrink-0 opacity-50 group-hover:opacity-100 group-hover:text-primary transition-all" />}
+                        <span>{label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Buildings column */}
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2">
                   <span className="text-xs text-muted-foreground font-medium lowercase">
                     {tagGroups.buildings.title}
                   </span>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="grid grid-cols-3 gap-1.5">
                     {tagGroups.buildings.tags.map(({ slug, label, tag }) => (
                       <button
                         key={slug}
                         onClick={() => handleTagClick(slug, tag?.id)}
                         className={cn(
-                          "flex items-center gap-1 px-2 py-1 rounded-md",
-                          "bg-secondary hover:bg-secondary/80 transition-colors",
+                          "group flex items-center justify-center gap-1 h-8 rounded-full cursor-pointer",
+                          "bg-background border border-primary/20",
+                          "hover:border-primary hover:shadow-sm",
+                          "transition-all duration-150",
                           "text-sm"
                         )}
                       >
-                        <Building className="h-3 w-3 shrink-0" />
+                        <Building className="h-3.5 w-3.5 shrink-0 opacity-50 group-hover:opacity-100 group-hover:text-primary transition-all" />
                         <span>{label}</span>
                       </button>
                     ))}
@@ -467,37 +468,47 @@ export function DirectoryContent({
       {hasActiveQuery && (
         <div className="mt-6 flex-1">
           {/* Filter indicator */}
-          <div className="flex items-center flex-wrap gap-2 mb-4 text-sm">
-            {isSearching && (
-              <>
-                <span className="text-muted-foreground">
-                  Поиск: &quot;{searchQuery}&quot;
-                </span>
-                {matchedTags.length > 0 && (
-                  <span className="text-muted-foreground">→</span>
-                )}
-                {matchedTags.map((tag) => (
-                  <Badge key={tag.id} variant="secondary" className="gap-1">
+          <div className="flex items-center justify-between mb-4 text-sm">
+            <div className="flex items-center flex-wrap gap-1.5">
+              {isSearching && matchedTags.map((tag) => (
+                <button
+                  key={tag.id}
+                  onClick={() => handleTagClick(tag.slug, tag.id)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-full cursor-pointer",
+                    "bg-background border border-primary/20",
+                    "hover:border-primary hover:shadow-sm",
+                    "transition-all duration-150",
+                    "text-sm text-foreground/80"
+                  )}
+                >
+                  {tag.name}
+                </button>
+              ))}
+              {isFiltering && contactsByTag.data?.tag && (() => {
+                const tag = contactsByTag.data.tag;
+                return (
+                  <button
+                    onClick={() => handleTagClick(tag.slug, tag.id)}
+                    className={cn(
+                      "px-2.5 py-1 rounded-full cursor-pointer",
+                      "bg-primary/10 border border-primary/30",
+                      "text-sm text-primary font-medium"
+                    )}
+                  >
                     {tag.name}
-                  </Badge>
-                ))}
-                {contactResults.data && (
-                  <span className="text-muted-foreground">
-                    ({contactResults.data.total} контактов)
-                  </span>
-                )}
-              </>
-            )}
-            {isFiltering && contactsByTag.data?.tag && (
-              <>
-                <Badge variant="secondary">
-                  {contactsByTag.data.tag.name}
-                </Badge>
-                <span className="text-muted-foreground text-sm font-normal">
-                  {pluralizeRecords(contactsByTag.data.total)}
-                </span>
-              </>
-            )}
+                  </button>
+                );
+              })()}
+            </div>
+            <span className="text-muted-foreground text-sm shrink-0 ml-4">
+              {isSearching && contactResults.data && (
+                pluralizeRecords(contactResults.data.total)
+              )}
+              {isFiltering && contactsByTag.data && (
+                pluralizeRecords(contactsByTag.data.total)
+              )}
+            </span>
           </div>
 
           {/* Loading */}
@@ -536,6 +547,7 @@ export function DirectoryContent({
                     contactId,
                   })
                 }
+                onTagClick={handleTagClick}
               />
             ))}
           </div>
@@ -543,20 +555,131 @@ export function DirectoryContent({
       )}
 
       {/* Hint when not searching */}
-      {!hasActiveQuery && (
-        <div className="text-center text-sm text-muted-foreground mt-8">
-          Попробуйте: «консьерж», «чат строение 1», «электрик»
-        </div>
-      )}
+      {!hasActiveQuery && <SearchHint onHintClick={(hint) => {
+        setSearchQuery(hint);
+        inputRef.current?.focus();
+      }} />}
     </div>
   );
 }
 
-// Compact contact card
+// Popular search hints for random selection
+const SEARCH_HINTS = [
+  "консьерж",
+  "электрик",
+  "сантехник",
+  "чат",
+  "диспетчер",
+  "лифт",
+  "домофон",
+  "ук",
+  "паркинг",
+  "интернет",
+  "уборка",
+];
+
+// Generate random pair of hints
+function getRandomHintPair(): [string, string] {
+  const shuffled = [...SEARCH_HINTS].sort(() => Math.random() - 0.5);
+  return [shuffled[0]!, shuffled[1]!];
+}
+
+// Animated search hint component
+function SearchHint({ onHintClick }: { onHintClick: (hint: string) => void }) {
+  const [hintPair, setHintPair] = useState<[string, string] | null>(null);
+  const [key, setKey] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Initial appearance and first pair after 300ms
+  useEffect(() => {
+    // Show container first
+    const showTimer = setTimeout(() => {
+      setIsVisible(true);
+    }, 100);
+
+    // Then show first pair after 300ms
+    const pairTimer = setTimeout(() => {
+      setHintPair(getRandomHintPair());
+    }, 300);
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(pairTimer);
+    };
+  }, []);
+
+  // Change hint pair every 60 seconds
+  useEffect(() => {
+    if (!hintPair) return;
+
+    const interval = setInterval(() => {
+      setHintPair(getRandomHintPair());
+      setKey((k) => k + 1);
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [hintPair]);
+
+  return (
+    <motion.div
+      className="mt-8 flex justify-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isVisible ? 1 : 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
+      <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-border/30 text-sm text-muted-foreground/70">
+        <HelpCircle className="h-3.5 w-3.5 shrink-0 opacity-50" />
+        <span className="opacity-70">попробуйте</span>
+        <AnimatePresence mode="wait">
+          {hintPair && (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="flex items-center gap-1.5"
+            >
+              <button
+                onClick={() => onHintClick(hintPair[0])}
+                className={cn(
+                  "px-2.5 py-1 rounded-full cursor-pointer",
+                  "bg-background border border-primary/20",
+                  "hover:border-primary hover:shadow-sm",
+                  "transition-all duration-150",
+                  "text-foreground/80"
+                )}
+              >
+                {hintPair[0]}
+              </button>
+              <span className="opacity-50">или</span>
+              <button
+                onClick={() => onHintClick(hintPair[1])}
+                className={cn(
+                  "px-2.5 py-1 rounded-full cursor-pointer",
+                  "bg-background border border-primary/20",
+                  "hover:border-primary hover:shadow-sm",
+                  "transition-all duration-150",
+                  "text-foreground/80"
+                )}
+              >
+                {hintPair[1]}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <KeyboardShortcut shortcutKey="K" className="opacity-50" />
+      </div>
+    </motion.div>
+  );
+}
+
+// Contact card - light design with focus on readability
 function ContactCard({
   contact,
   onPhoneClick,
   onLinkClick,
+  onTagClick,
 }: {
   contact: {
     id: string;
@@ -571,8 +694,8 @@ function ContactCard({
   };
   onPhoneClick?: (contactId: string) => void;
   onLinkClick?: (contactId: string) => void;
+  onTagClick?: (tagSlug: string, tagId: string) => void;
 }) {
-  const colors = CONTACT_COLORS[contact.type] ?? CONTACT_COLORS.other ?? { bg: "bg-slate-50", border: "border-slate-300", text: "text-slate-700" };
   const Icon = CONTACT_ICONS[contact.type] ?? ExternalLink;
 
   const handleClick = () => {
@@ -612,71 +735,71 @@ function ContactCard({
 
   const isExternalLink = ["telegram", "whatsapp", "website", "vk"].includes(contact.type);
 
+  // Display text for contact
+  const contactDisplayText = contact.type === "phone"
+    ? contact.value
+    : contact.label ?? contact.value;
+
+  // Subtitle for phone includes label + subtitle
+  const phoneSubtitle = contact.type === "phone" && (contact.label || contact.subtitle)
+    ? [contact.label, contact.subtitle].filter(Boolean).join(" — ")
+    : null;
+
   return (
-    <div
-      className={cn(
-        "rounded-lg border-2 p-3 transition-all hover:shadow-md",
-        colors.bg,
-        colors.border
-      )}
-    >
-      {/* Header: Entry title + 24h badge */}
-      <div className="flex items-start justify-between gap-2 mb-2">
+    <div className="relative rounded-lg border bg-card p-4 transition-all hover:shadow-md hover:border-primary/30 overflow-hidden flex flex-col min-h-[140px]">
+      {/* Icon in corner - like listings page */}
+      <Icon className="absolute -bottom-4 -right-4 h-20 w-20 text-muted-foreground/10" />
+
+      {/* Header: Entry title (smaller, not primary) + 24h badge */}
+      <div className="relative flex items-start justify-between gap-2 mb-1">
         <Link
           href={`/info/${contact.entrySlug}`}
-          className="text-xs font-medium text-muted-foreground hover:text-foreground truncate"
+          className="text-md text-muted-foreground hover:text-foreground transition-colors truncate"
         >
           {contact.entryTitle}
         </Link>
         {contact.is24h === 1 && (
-          <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300 rounded">
+          <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 bg-red-500/10 text-red-600 dark:text-red-400 rounded">
             24/7
           </span>
         )}
       </div>
 
-      {/* Main contact info */}
+      {/* Subtitle */}
+      <div className="relative mt-1 text-sm text-muted-foreground truncate">
+        {contact.subtitle && contact.type !== "phone" && contact.subtitle}
+        {phoneSubtitle && phoneSubtitle}
+      </div>
+
+      {/* Main contact info - large and prominent */}
       <a
         href={href}
         target={isExternalLink ? "_blank" : undefined}
         rel={isExternalLink ? "noopener noreferrer" : undefined}
         onClick={handleClick}
-        className={cn(
-          "flex items-center gap-2 font-medium",
-          colors.text,
-          "hover:opacity-80 transition-opacity"
-        )}
+        className="group relative block mt-2"
       >
-        <Icon className="h-4 w-4 shrink-0" />
-        <span className="truncate">
-          {contact.type === "phone" ? contact.value : contact.label ?? contact.value}
+        <span className="text-base font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+          {contactDisplayText}
         </span>
       </a>
 
-      {/* Label/subtitle */}
-      {(contact.label || contact.subtitle) && contact.type === "phone" && (
-        <div className="mt-1 text-sm text-muted-foreground truncate">
-          {contact.label}
-          {contact.label && contact.subtitle && " — "}
-          {contact.subtitle}
-        </div>
-      )}
-      {contact.subtitle && contact.type !== "phone" && (
-        <div className="mt-1 text-sm text-muted-foreground truncate">
-          {contact.subtitle}
-        </div>
-      )}
-
-      {/* Tags */}
+      {/* Tags - styled like search badges, pinned to bottom */}
       {contact.tags.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
+        <div className="relative mt-auto pt-3 flex flex-wrap gap-1.5">
           {contact.tags.slice(0, 3).map((tag) => (
-            <span
+            <button
               key={tag.id}
-              className="text-[10px] px-1.5 py-0.5 bg-muted rounded-full text-muted-foreground"
+              onClick={() => onTagClick?.(tag.slug, tag.id)}
+              className={cn(
+                "text-[11px] px-2 py-0.5 rounded-full cursor-pointer",
+                "bg-background border border-primary/20 text-muted-foreground",
+                "hover:border-primary hover:text-foreground",
+                "transition-all duration-150"
+              )}
             >
               {tag.name}
-            </span>
+            </button>
           ))}
         </div>
       )}

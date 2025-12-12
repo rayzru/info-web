@@ -38,6 +38,14 @@ export const userGenderEnum = pgEnum("user_gender_enum", [
   "Unspecified",
 ]);
 
+export const mapProviderEnum = pgEnum("map_provider_enum", [
+  "yandex",
+  "2gis",
+  "google",
+  "apple",
+  "osm",
+]);
+
 export const users = createTable("user", {
   id: varchar("id", { length: 255 })
     .notNull()
@@ -186,6 +194,46 @@ export const passwordResetTokensRelations = relations(
   }),
 );
 
+// Токены для подтверждения email при регистрации
+export const emailVerificationTokens = createTable(
+  "email_verification_token",
+  {
+    id: varchar("id", { length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    token: varchar("token", { length: 255 }).notNull(),
+    expires: timestamp("expires", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
+    usedAt: timestamp("used_at", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [index("email_verification_token_idx").on(table.token)],
+);
+
+export const emailVerificationTokensRelations = relations(
+  emailVerificationTokens,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [emailVerificationTokens.userId],
+      references: [users.id],
+    }),
+  }),
+);
+
 export const userProfiles = createTable("user_profile", {
   id: varchar("id", { length: 255 })
     .notNull()
@@ -216,6 +264,8 @@ export const userProfiles = createTable("user_profile", {
   maxUsername: varchar("max_username", { length: 100 }), // Max (VK Мессенджер)
   whatsappPhone: varchar("whatsapp_phone", { length: 20 }), // WhatsApp номер в E.164
   hideMessengers: boolean("hide_messengers").notNull().default(false), // Скрыть все мессенджеры
+  // Настройки приложения
+  mapProvider: mapProviderEnum("map_provider").default("yandex"), // Провайдер карт для адресов
 });
 
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
