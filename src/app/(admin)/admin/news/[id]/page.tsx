@@ -37,6 +37,7 @@ import {
 import { StandardEditor } from "~/components/editor/rich-editor";
 import { TelegramPreviewDialog } from "~/components/admin/telegram-preview-dialog";
 import { ImageUploader } from "~/components/media";
+import { TagSelector } from "~/components/tag-selector";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 import type { NewsStatus, NewsType } from "~/server/db/schema";
@@ -60,6 +61,7 @@ export default function EditNewsPage() {
   const [isPinned, setIsPinned] = useState(false);
   const [isHighlighted, setIsHighlighted] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [tagIds, setTagIds] = useState<string[]>([]);
 
   // Dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -126,6 +128,7 @@ export default function EditNewsPage() {
       setIsPinned(news.isPinned);
       setIsHighlighted(news.isHighlighted);
       setIsAnonymous(news.isAnonymous);
+      setTagIds(news.tags?.map((t) => t.id) ?? []);
     }
   }, [news]);
 
@@ -155,6 +158,7 @@ export default function EditNewsPage() {
       isPinned,
       isHighlighted,
       isAnonymous,
+      tagIds,
     });
   };
 
@@ -362,6 +366,15 @@ export default function EditNewsPage() {
                       <SelectItem value="urgent">Срочное</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Теги</Label>
+                  <TagSelector
+                    value={tagIds}
+                    onChange={setTagIds}
+                    placeholder="Выберите теги..."
+                  />
                 </div>
 
                 <div className="flex items-center justify-between">

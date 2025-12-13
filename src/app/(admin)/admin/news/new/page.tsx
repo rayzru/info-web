@@ -32,6 +32,7 @@ import {
 } from "~/components/ui/form";
 import { StandardEditor } from "~/components/editor/rich-editor";
 import { ImageUploader } from "~/components/media";
+import { TagSelector } from "~/components/tag-selector";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 import type { NewsStatus, NewsType } from "~/server/db/schema";
@@ -74,6 +75,7 @@ const newsFormSchema = z.object({
   isPinned: z.boolean(),
   isHighlighted: z.boolean(),
   isAnonymous: z.boolean(),
+  tagIds: z.array(z.string()),
 });
 
 type NewsFormValues = z.infer<typeof newsFormSchema>;
@@ -96,6 +98,7 @@ export default function NewNewsPage() {
       isPinned: false,
       isHighlighted: false,
       isAnonymous: false,
+      tagIds: [],
     },
   });
 
@@ -126,6 +129,7 @@ export default function NewNewsPage() {
       isPinned: values.isPinned,
       isHighlighted: values.isHighlighted,
       isAnonymous: values.isAnonymous,
+      tagIds: values.tagIds,
     });
   };
 
@@ -345,6 +349,24 @@ export default function NewNewsPage() {
                             <SelectItem value="urgent">Срочное</SelectItem>
                           </SelectContent>
                         </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="tagIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Теги</FormLabel>
+                        <FormControl>
+                          <TagSelector
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Выберите теги..."
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
