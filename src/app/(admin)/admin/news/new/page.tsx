@@ -73,6 +73,7 @@ const newsFormSchema = z.object({
   publishAt: z.string().optional(),
   isPinned: z.boolean(),
   isHighlighted: z.boolean(),
+  isAnonymous: z.boolean(),
 });
 
 type NewsFormValues = z.infer<typeof newsFormSchema>;
@@ -94,6 +95,7 @@ export default function NewNewsPage() {
       publishAt: "",
       isPinned: false,
       isHighlighted: false,
+      isAnonymous: false,
     },
   });
 
@@ -123,6 +125,7 @@ export default function NewNewsPage() {
       publishAt: values.publishAt ? new Date(values.publishAt) : undefined,
       isPinned: values.isPinned,
       isHighlighted: values.isHighlighted,
+      isAnonymous: values.isAnonymous,
     });
   };
 
@@ -369,6 +372,27 @@ export default function NewNewsPage() {
                     render={({ field }) => (
                       <FormItem className="flex items-center justify-between">
                         <FormLabel>Выделить</FormLabel>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="isAnonymous"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between">
+                        <div>
+                          <FormLabel>Анонимно</FormLabel>
+                          <p className="text-muted-foreground text-xs">
+                            От имени ресурса
+                          </p>
+                        </div>
                         <FormControl>
                           <Switch
                             checked={field.value}
