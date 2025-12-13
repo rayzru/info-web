@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { api } from "~/trpc/server";
+import { LatestNews } from "~/components/latest-news";
 
 import { DirectoryContent } from "./info/directory-content";
 
@@ -19,6 +20,11 @@ export default async function Home() {
       <Suspense fallback={<DirectoryContentSkeleton />}>
         <DirectoryContent initialTags={tags} initialEntries={entries} />
       </Suspense>
+
+      {/* Latest News Section */}
+      <Suspense fallback={<NewsSkeleton />}>
+        <LatestNews />
+      </Suspense>
     </div>
   );
 }
@@ -33,6 +39,29 @@ function DirectoryContentSkeleton() {
             <div key={i} className="h-10 w-24 bg-muted animate-pulse rounded-full" />
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function NewsSkeleton() {
+  return (
+    <div className="py-8">
+      <div className="flex items-center justify-between mb-6">
+        <div className="h-6 w-32 bg-muted animate-pulse rounded" />
+        <div className="h-8 w-24 bg-muted animate-pulse rounded" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-lg border overflow-hidden">
+            <div className="aspect-video bg-muted animate-pulse" />
+            <div className="p-4 space-y-2">
+              <div className="h-5 w-20 bg-muted animate-pulse rounded" />
+              <div className="h-5 w-full bg-muted animate-pulse rounded" />
+              <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

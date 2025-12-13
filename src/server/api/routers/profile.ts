@@ -1,7 +1,8 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { deletionRequests, userProfiles, users } from "~/server/db/schema";
+import { deletionRequests, userProfiles, userRoles, users } from "~/server/db/schema";
+import type { UserRole } from "~/server/auth/rbac";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -25,12 +26,20 @@ export const profileRouter = createTRPCRouter({
       where: eq(userProfiles.userId, userId),
     });
 
+    // Get user roles
+    const roles = await ctx.db.query.userRoles.findMany({
+      where: eq(userRoles.userId, userId),
+    });
+
+    const userRolesList = roles.map((r) => r.role as UserRole);
+
     return {
       user: {
         id: user?.id,
         name: user?.name,
         email: user?.email,
         image: user?.image,
+        roles: userRolesList.length > 0 ? userRolesList : (["Guest"] as UserRole[]),
       },
       profile: profile ?? null,
     };

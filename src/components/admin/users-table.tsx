@@ -1,16 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, MoreHorizontal, Search, Trash2, UserCog } from "lucide-react";
+import Link from "next/link";
+import { Ban, Building2, KeyRound, Search, ShieldAlert, Trash2, UserCog } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import {
   Table,
@@ -20,9 +16,20 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { useToast } from "~/hooks/use-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import { type UserRole } from "~/server/auth/rbac";
+import { getRankConfig } from "~/lib/ranks";
+import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
+
+import { BlockUserDialog } from "./block-user-dialog";
+import { DeleteUserDialog } from "./delete-user-dialog";
+import { UnblockUserDialog } from "./unblock-user-dialog";
 
 interface User {
   id: string;
@@ -30,6 +37,7 @@ interface User {
   email: string;
   image: string | null;
   roles: UserRole[];
+  createdAt: Date | null;
 }
 
 interface UsersTableProps {
@@ -37,32 +45,184 @@ interface UsersTableProps {
   canDeleteUsers: boolean;
 }
 
+function formatDate(date: Date | null): string {
+  if (!date) return "—";
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(date));
+}
+
+// Row component to handle block status loading per user
+function UserRow({
+  user,
+  canManageRoles,
+  canDeleteUsers,
+}: {
+  user: User;
+  canManageRoles: boolean;
+  canDeleteUsers: boolean;
+}) {
+  const { data: blockStatus } = api.admin.users.getActiveBlock.useQuery(
+    { userId: user.id },
+    { staleTime: 30000 }
+  );
+
+  const isBlocked = !!blockStatus;
+  const rankConfig = getRankConfig(user.roles.length > 0 ? user.roles : ["Guest"]);
+
+  return (
+    <TableRow key={user.id} className={cn(isBlocked && "bg-destructive/5")}>
+      <TableCell>
+        <div className="relative">
+          <Avatar
+            className={cn(
+              "h-8 w-8 ring-2 ring-offset-1 ring-offset-background",
+              isBlocked ? "ring-destructive/50" : rankConfig.ringColor
+            )}
+          >
+            <AvatarImage src={user.image ?? undefined} />
+            <AvatarFallback
+              className={cn(
+                "text-xs",
+                isBlocked ? "bg-destructive/20 text-destructive" : rankConfig.badgeColor,
+                !isBlocked && "text-white"
+              )}
+            >
+              {user.name?.slice(0, 2).toUpperCase() ?? "U"}
+            </AvatarFallback>
+          </Avatar>
+          {isBlocked && (
+            <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-destructive p-0.5">
+              <Ban className="h-2.5 w-2.5 text-white" />
+            </div>
+          )}
+        </div>
+      </TableCell>
+      <TableCell>
+        <div>
+          <div className="flex items-center gap-2">
+            <p className={cn("font-medium", isBlocked && "text-destructive")}>
+              {user.name ?? "Без имени"}
+            </p>
+            {isBlocked && (
+              <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                Заблокирован
+              </Badge>
+            )}
+          </div>
+          <p className={cn("text-xs", isBlocked ? "text-destructive/70" : rankConfig.textColor)}>
+            {rankConfig.label}
+          </p>
+        </div>
+      </TableCell>
+      <TableCell className="text-muted-foreground">{user.email}</TableCell>
+      <TableCell>
+        <div className="flex flex-wrap gap-1">
+          {user.roles.length > 0 ? (
+            user.roles.map((role) => {
+              const roleConfig = getRankConfig([role]);
+              return (
+                <span
+                  key={role}
+                  className={cn(
+                    "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                    roleConfig.badgeColor.replace("bg-", "bg-") + "/15",
+                    roleConfig.textColor
+                  )}
+                >
+                  {roleConfig.shortLabel}
+                </span>
+              );
+            })
+          ) : (
+            <span className="text-sm text-muted-foreground">—</span>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="text-sm text-muted-foreground">
+        {formatDate(user.createdAt)}
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center justify-end gap-1">
+          {canManageRoles && (
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link href={`/admin/users/${user.id}/roles`}>
+                      <UserCog className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Управление ролями</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link href={`/admin/users/${user.id}/properties`}>
+                      <Building2 className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Собственность</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <KeyRound className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Сбросить пароль</TooltipContent>
+              </Tooltip>
+              {/* Block/Unblock button */}
+              {isBlocked ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <UnblockUserDialog userId={user.id} userName={user.name} />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Разблокировать</TooltipContent>
+                </Tooltip>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <BlockUserDialog userId={user.id} userName={user.name} />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Заблокировать</TooltipContent>
+                </Tooltip>
+              )}
+            </>
+          )}
+          {canDeleteUsers && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <DeleteUserDialog userId={user.id} userName={user.name} />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>Удалить</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const { toast } = useToast();
 
   const { data, isLoading } = api.admin.users.list.useQuery({
     page,
     limit: 20,
     search: search || undefined,
-  });
-
-  const createDeletionRequest = api.admin.deletionRequests.create.useMutation({
-    onSuccess: () => {
-      toast({
-        title: "Заявка создана",
-        description: "Заявка на удаление пользователя создана",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Ошибка",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
   });
 
   const handleSearch = (e: React.FormEvent) => {
@@ -71,15 +231,8 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
     setPage(1);
   };
 
-  const handleRequestDeletion = async (userId: string, userName: string | null) => {
-    if (
-      confirm(`Создать заявку на удаление пользователя ${userName ?? userId}?`)
-    ) {
-      await createDeletionRequest.mutateAsync({ userId });
-    }
-  };
-
   return (
+    <TooltipProvider>
     <div className="space-y-4">
       {/* Search */}
       <form onSubmit={handleSearch} className="flex gap-2">
@@ -104,94 +257,31 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
               <TableHead>Пользователь</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Роли</TableHead>
-              <TableHead className="w-12"></TableHead>
+              <TableHead>Регистрация</TableHead>
+              <TableHead className="w-auto text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
+                <TableCell colSpan={6} className="text-center">
                   Загрузка...
                 </TableCell>
               </TableRow>
             ) : data?.users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
+                <TableCell colSpan={6} className="text-center">
                   Пользователи не найдены
                 </TableCell>
               </TableRow>
             ) : (
               data?.users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.image ?? undefined} />
-                      <AvatarFallback>
-                        {user.name?.slice(0, 2).toUpperCase() ?? "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {user.name ?? "Без имени"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {user.email}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {user.roles.length > 0 ? (
-                        user.roles.map((role) => (
-                          <span
-                            key={role}
-                            className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
-                          >
-                            {role}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-sm text-muted-foreground">—</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {(canManageRoles || canDeleteUsers) && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {canManageRoles && (
-                            <>
-                              <DropdownMenuItem asChild>
-                                <a href={`/admin/users/${user.id}/roles`}>
-                                  <UserCog className="mr-2 h-4 w-4" />
-                                  Управление ролями
-                                </a>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <a href={`/admin/users/${user.id}/properties`}>
-                                  <Building2 className="mr-2 h-4 w-4" />
-                                  Собственность
-                                </a>
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          {canDeleteUsers && (
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => handleRequestDeletion(user.id, user.name)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4 text-destructive" />
-                              <span className="text-destructive">Удалить</span>
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </TableCell>
-                </TableRow>
+                <UserRow
+                  key={user.id}
+                  user={user}
+                  canManageRoles={canManageRoles}
+                  canDeleteUsers={canDeleteUsers}
+                />
               ))
             )}
           </TableBody>
@@ -225,5 +315,6 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
         </div>
       )}
     </div>
+    </TooltipProvider>
   );
 }

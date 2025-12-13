@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpDown, Building2, Calendar, Car, ListFilter, Phone } from "lucide-react";
+import { ArrowUpDown, Building2, Calendar, Car, ListFilter, Loader2, Phone } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -43,7 +43,7 @@ function parseParkingCode(code: string): { building: number; floor: number; spot
   };
 }
 
-export default function ParkingListingsPage() {
+function ParkingListingsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -338,5 +338,19 @@ export default function ParkingListingsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ParkingListingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      }
+    >
+      <ParkingListingsPageContent />
+    </Suspense>
   );
 }

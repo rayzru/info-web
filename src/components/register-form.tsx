@@ -95,6 +95,7 @@ export function RegisterForm({
                 <FormControl>
                   <Input
                     placeholder="Иван Иванов"
+                    disabled={isLoading}
                     data-testid="register-name"
                     {...field}
                   />
@@ -114,6 +115,7 @@ export function RegisterForm({
                   <Input
                     type="email"
                     placeholder="email@example.com"
+                    disabled={isLoading}
                     data-testid="register-email"
                     {...field}
                   />
@@ -133,6 +135,7 @@ export function RegisterForm({
                   <Input
                     type="password"
                     placeholder="••••••••"
+                    disabled={isLoading}
                     data-testid="register-password"
                     {...field}
                   />
@@ -152,6 +155,7 @@ export function RegisterForm({
                   <Input
                     type="password"
                     placeholder="••••••••"
+                    disabled={isLoading}
                     data-testid="register-confirm-password"
                     {...field}
                   />
