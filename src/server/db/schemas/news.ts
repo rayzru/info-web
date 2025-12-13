@@ -4,6 +4,7 @@ import {
   index,
   jsonb,
   pgEnum,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -13,6 +14,7 @@ import type { JSONContent } from "@tiptap/react";
 
 import { createTable } from "./create-table";
 import { users } from "./users";
+import { directoryTags } from "./directory";
 
 // ============================================================================
 // Enums
@@ -89,13 +91,46 @@ export const news = createTable(
 );
 
 // ============================================================================
+// News Tags (junction table)
+// ============================================================================
+
+export const newsTags = createTable(
+  "news_tag",
+  {
+    newsId: uuid("news_id")
+      .notNull()
+      .references(() => news.id, { onDelete: "cascade" }),
+    tagId: varchar("tag_id", { length: 255 })
+      .notNull()
+      .references(() => directoryTags.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.newsId, table.tagId] }),
+    index("news_tag_news_idx").on(table.newsId),
+    index("news_tag_tag_idx").on(table.tagId),
+  ]
+);
+
+// ============================================================================
 // Relations
 // ============================================================================
 
-export const newsRelations = relations(news, ({ one }) => ({
+export const newsRelations = relations(news, ({ one, many }) => ({
   author: one(users, {
     fields: [news.authorId],
     references: [users.id],
+  }),
+  newsTags: many(newsTags),
+}));
+
+export const newsTagsRelations = relations(newsTags, ({ one }) => ({
+  news: one(news, {
+    fields: [newsTags.newsId],
+    references: [news.id],
+  }),
+  tag: one(directoryTags, {
+    fields: [newsTags.tagId],
+    references: [directoryTags.id],
   }),
 }));
 

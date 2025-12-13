@@ -3,7 +3,7 @@ import { and, count, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { JSONContent } from "@tiptap/react";
 
-import { news, newsStatusEnum, newsTypeEnum } from "~/server/db/schema";
+import { news, newsTags, newsStatusEnum, newsTypeEnum } from "~/server/db/schema";
 import { extractPlainText } from "~/lib/editor";
 import {
   adminProcedureWithFeature,
@@ -30,6 +30,7 @@ const createNewsSchema = z.object({
   isPinned: z.boolean().default(false),
   isHighlighted: z.boolean().default(false),
   isAnonymous: z.boolean().default(false),
+  tagIds: z.array(z.string()).optional(),
 });
 
 const updateNewsSchema = z.object({
@@ -45,6 +46,7 @@ const updateNewsSchema = z.object({
   isPinned: z.boolean().optional(),
   isHighlighted: z.boolean().optional(),
   isAnonymous: z.boolean().optional(),
+  tagIds: z.array(z.string()).optional(),
 });
 
 // ============================================================================
@@ -418,6 +420,11 @@ export const newsRouter = createTRPCRouter({
               image: true,
             },
           },
+          newsTags: {
+            with: {
+              tag: true,
+            },
+          },
         },
       });
 
@@ -428,7 +435,11 @@ export const newsRouter = createTRPCRouter({
         });
       }
 
-      return item;
+      // Transform tags for easier consumption
+      return {
+        ...item,
+        tags: item.newsTags.map((nt) => nt.tag),
+      };
     }),
 
   /**
@@ -455,16 +466,28 @@ export const newsRouter = createTRPCRouter({
       const coverImage = input.coverImage?.trim() || undefined;
       const excerpt = input.excerpt?.trim() || undefined;
 
+      const { tagIds, ...newsData } = input;
+
       const [created] = await ctx.db
         .insert(news)
         .values({
-          ...input,
+          ...newsData,
           slug,
           coverImage,
           excerpt,
           authorId: ctx.session.user.id,
         })
         .returning();
+
+      // Insert tags if provided
+      if (created && tagIds && tagIds.length > 0) {
+        await ctx.db.insert(newsTags).values(
+          tagIds.map((tagId) => ({
+            newsId: created.id,
+            tagId,
+          }))
+        );
+      }
 
       return created;
     }),
@@ -503,11 +526,29 @@ export const newsRouter = createTRPCRouter({
         }
       }
 
+      const { tagIds, ...newsData } = data;
+
       const [updated] = await ctx.db
         .update(news)
-        .set(data)
+        .set(newsData)
         .where(eq(news.id, id))
         .returning();
+
+      // Update tags if provided
+      if (tagIds !== undefined) {
+        // Delete existing tags
+        await ctx.db.delete(newsTags).where(eq(newsTags.newsId, id));
+
+        // Insert new tags
+        if (tagIds.length > 0) {
+          await ctx.db.insert(newsTags).values(
+            tagIds.map((tagId) => ({
+              newsId: id,
+              tagId,
+            }))
+          );
+        }
+      }
 
       return updated;
     }),
