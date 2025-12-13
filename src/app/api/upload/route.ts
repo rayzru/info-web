@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "~/server/auth";
+import { db } from "~/server/db";
+import { media } from "~/server/db/schema";
 import {
   processAndSaveImage,
   validateImageFile,
@@ -94,12 +96,39 @@ export async function POST(request: NextRequest) {
       options.outputFormat = outputFormat as ImageProcessingOptions["outputFormat"];
     }
 
-    // Process and save image
+    // Process and save image file
     const result = await processAndSaveImage(file, file.name, options);
+
+    // Check if we should save to media library
+    const saveToLibrary = formData.get("saveToLibrary") !== "false";
+
+    let mediaRecord = null;
+
+    if (saveToLibrary) {
+      // Save metadata to database
+      const [created] = await db
+        .insert(media)
+        .values({
+          filename: result.filename,
+          originalFilename: result.originalFilename,
+          mimeType: result.mimeType,
+          size: result.size,
+          path: result.relativePath,
+          url: result.url,
+          width: result.width,
+          height: result.height,
+          type: "image",
+          uploadedBy: session.user.id,
+        })
+        .returning();
+
+      mediaRecord = created;
+    }
 
     return NextResponse.json({
       success: true,
       image: result,
+      media: mediaRecord,
     });
   } catch (error) {
     console.error("Upload error:", error);
