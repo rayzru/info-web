@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   LogOut,
   Megaphone,
+  Newspaper,
   ScrollText,
   Settings,
   Users,
@@ -34,6 +35,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   BookOpen,
   UserX,
   Megaphone,
+  Newspaper,
 };
 
 interface AdminNavigationProps {
