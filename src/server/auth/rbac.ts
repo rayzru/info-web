@@ -237,6 +237,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     feature: "directory:manage",
   },
   {
+    title: "Медиа",
+    href: "/admin/media",
+    icon: "ImageIcon",
+    feature: "directory:manage",
+  },
+  {
     title: "Настройки",
     href: "/admin/settings",
     icon: "Settings",

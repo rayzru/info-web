@@ -11,6 +11,9 @@ export {
 // Toolbar
 export { Toolbar } from "./toolbar";
 
+// Image Dialog
+export { EditorImageDialog } from "./editor-image-dialog";
+
 // SSR Renderers
 export {
   RichRenderer,

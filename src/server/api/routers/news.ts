@@ -22,7 +22,7 @@ const createNewsSchema = z.object({
   title: z.string().min(1).max(255),
   slug: z.string().min(1).max(255).optional(),
   excerpt: z.string().max(500).optional(),
-  coverImage: z.string().url().optional(),
+  coverImage: z.string().optional(),
   content: z.any() as z.ZodType<JSONContent>,
   type: newsTypeSchema.default("announcement"),
   status: newsStatusSchema.default("draft"),
@@ -36,7 +36,7 @@ const updateNewsSchema = z.object({
   title: z.string().min(1).max(255).optional(),
   slug: z.string().min(1).max(255).optional(),
   excerpt: z.string().max(500).optional(),
-  coverImage: z.string().url().nullable().optional(),
+  coverImage: z.string().nullable().optional(),
   content: (z.any() as z.ZodType<JSONContent>).optional(),
   type: newsTypeSchema.optional(),
   status: newsStatusSchema.optional(),
@@ -439,11 +439,17 @@ export const newsRouter = createTRPCRouter({
         });
       }
 
+      // Convert empty strings to undefined for optional fields
+      const coverImage = input.coverImage?.trim() || undefined;
+      const excerpt = input.excerpt?.trim() || undefined;
+
       const [created] = await ctx.db
         .insert(news)
         .values({
           ...input,
           slug,
+          coverImage,
+          excerpt,
           authorId: ctx.session.user.id,
         })
         .returning();

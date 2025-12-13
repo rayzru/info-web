@@ -205,9 +205,46 @@
   border-color: hsl(var(--primary));
 }
 
-/* Selection */
-.tiptap ::selection {
-  background-color: hsl(var(--primary) / 0.2);
+/* Selection styles are applied via Tailwind in EditorContent component */
+
+/* Ensure text is selectable */
+.tiptap,
+.ProseMirror {
+  cursor: text;
+}
+
+/* ProseMirror gapcursor */
+.ProseMirror-gapcursor {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+}
+
+.ProseMirror-gapcursor:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -2px;
+  width: 20px;
+  border-top: 1px solid black;
+  animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;
+}
+
+@keyframes ProseMirror-cursor-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* ProseMirror selected node styling */
+.ProseMirror-selectednode {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* ProseMirror focus visible */
+.ProseMirror-focused {
+  outline: none;
 }
 
 /* Empty state */
