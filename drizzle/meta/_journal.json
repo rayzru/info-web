@@ -57,6 +57,13 @@
       "when": 1765618912944,
       "tag": "0007_jittery_slayback",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1765621525863,
+      "tag": "0008_complex_the_liberteens",
+      "breakpoints": true
     }
   ]
 }
