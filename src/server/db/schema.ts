@@ -4,6 +4,7 @@ export * from "./schemas/contacts";
 export * from "./schemas/deletion-requests";
 export * from "./schemas/directory";
 export * from "./schemas/listings";
+export * from "./schemas/media";
 export * from "./schemas/news";
 export * from "./schemas/notifications";
 export * from "./schemas/organizations";
