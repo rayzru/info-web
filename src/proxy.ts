@@ -1,19 +1,18 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "~/server/auth";
 
 /**
- * Middleware for handling maintenance mode redirects
+ * Proxy for handling maintenance mode redirects
  *
  * When maintenance mode is enabled:
  * - Redirects all users to /maintenance page
  * - Allows admins to bypass (based on session)
  * - Allows access to static assets, API routes, and auth
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for:
+  // Skip proxy for:
   // - Static files and assets
   // - API routes (needed for tRPC, auth, etc.)
   // - Maintenance page itself
