@@ -16,11 +16,18 @@ import {
   parkingSpots,
   sessions,
   userApartments,
+  userBlocks,
   userParkingSpots,
   userProfiles,
   userRoles,
   users,
 } from "~/server/db/schema";
+import {
+  BLOCK_CATEGORIES,
+  RULES_VIOLATIONS,
+  type BlockCategory,
+  type RuleViolation,
+} from "~/lib/block-reasons";
 
 import {
   adminProcedure,
@@ -60,6 +67,22 @@ const userRoleSchema = z.enum([
   "StoreRepresenative",
 ]);
 
+// Zod schema for block category
+const blockCategorySchema = z.enum([
+  "rules_violation",
+  "fraud",
+  "spam",
+  "abuse",
+  "other",
+]);
+
+// Zod schema for rules violation
+const rulesViolationSchema = z.enum([
+  "3.1", "3.2", "3.3", "3.4", "3.5",
+  "4.1", "4.2", "4.3",
+  "5.1", "5.2",
+]);
+
 export const adminRouter = createTRPCRouter({
   // Get paginated list of users
   users: createTRPCRouter({
@@ -92,9 +115,11 @@ export const adminRouter = createTRPCRouter({
             email: users.email,
             image: users.image,
             emailVerified: users.emailVerified,
+            createdAt: users.createdAt,
           })
           .from(users)
           .where(searchCondition)
+          .orderBy(desc(users.createdAt))
           .limit(limit)
           .offset(offset);
 
@@ -547,6 +572,175 @@ export const adminRouter = createTRPCRouter({
           parkingSpots: revokedParkings.filter((p) => p.revokedAt !== null),
         };
       }),
+
+    // Get active block for user
+    getActiveBlock: adminProcedureWithFeature("users:view")
+      .input(z.object({ userId: z.string().uuid() }))
+      .query(async ({ ctx, input }) => {
+        const block = await ctx.db.query.userBlocks.findFirst({
+          where: and(
+            eq(userBlocks.userId, input.userId),
+            eq(userBlocks.isActive, true)
+          ),
+          with: {
+            blockedByUser: true,
+          },
+        });
+
+        return block ?? null;
+      }),
+
+    // Get block history for user
+    getBlockHistory: adminProcedureWithFeature("users:view")
+      .input(z.object({ userId: z.string().uuid() }))
+      .query(async ({ ctx, input }) => {
+        const blocks = await ctx.db.query.userBlocks.findMany({
+          where: eq(userBlocks.userId, input.userId),
+          with: {
+            blockedByUser: true,
+            unblockedByUser: true,
+          },
+          orderBy: [desc(userBlocks.createdAt)],
+        });
+
+        return blocks;
+      }),
+
+    // Block user
+    block: adminProcedureWithFeature("users:roles")
+      .input(
+        z.object({
+          userId: z.string().uuid(),
+          category: blockCategorySchema,
+          violatedRules: z.array(rulesViolationSchema).optional(),
+          reason: z.string().max(2000).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { userId, category, violatedRules, reason } = input;
+
+        // Prevent self-blocking
+        if (userId === ctx.session.user.id) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Нельзя заблокировать себя",
+          });
+        }
+
+        // Check if user exists
+        const user = await ctx.db.query.users.findFirst({
+          where: eq(users.id, userId),
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Пользователь не найден",
+          });
+        }
+
+        // Check if target user is Root (cannot be blocked)
+        const targetRoles = await ctx.db
+          .select({ role: userRoles.role })
+          .from(userRoles)
+          .where(eq(userRoles.userId, userId));
+
+        if (targetRoles.some((r) => r.role === "Root")) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Невозможно заблокировать Root пользователя",
+          });
+        }
+
+        // Check if user is already blocked
+        const existingBlock = await ctx.db.query.userBlocks.findFirst({
+          where: and(
+            eq(userBlocks.userId, userId),
+            eq(userBlocks.isActive, true)
+          ),
+        });
+
+        if (existingBlock) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Пользователь уже заблокирован",
+          });
+        }
+
+        // Validate: rules_violation must have violatedRules
+        if (category === "rules_violation" && (!violatedRules || violatedRules.length === 0)) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "При блокировке за нарушение правил необходимо указать пункты",
+          });
+        }
+
+        // Validate: other must have reason
+        if (category === "other" && (!reason || reason.trim().length === 0)) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "При блокировке с категорией 'другое' необходимо указать причину",
+          });
+        }
+
+        // Create block record
+        const [block] = await ctx.db
+          .insert(userBlocks)
+          .values({
+            userId,
+            blockedBy: ctx.session.user.id,
+            category,
+            violatedRules: violatedRules ? JSON.stringify(violatedRules) : null,
+            reason: reason ?? null,
+            isActive: true,
+          })
+          .returning();
+
+        // Delete all user sessions to force logout
+        await ctx.db.delete(sessions).where(eq(sessions.userId, userId));
+
+        return block;
+      }),
+
+    // Unblock user
+    unblock: adminProcedureWithFeature("users:roles")
+      .input(
+        z.object({
+          userId: z.string().uuid(),
+          reason: z.string().max(2000),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { userId, reason } = input;
+
+        // Find active block
+        const activeBlock = await ctx.db.query.userBlocks.findFirst({
+          where: and(
+            eq(userBlocks.userId, userId),
+            eq(userBlocks.isActive, true)
+          ),
+        });
+
+        if (!activeBlock) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Пользователь не заблокирован",
+          });
+        }
+
+        // Update block record
+        await ctx.db
+          .update(userBlocks)
+          .set({
+            isActive: false,
+            unblockedAt: new Date(),
+            unblockedBy: ctx.session.user.id,
+            unblockReason: reason,
+          })
+          .where(eq(userBlocks.id, activeBlock.id));
+
+        return { success: true };
+      }),
   }),
 
   // Buildings management
@@ -655,6 +849,29 @@ export const adminRouter = createTRPCRouter({
 
   // Deletion requests management
   deletionRequests: createTRPCRouter({
+    // Get aggregated counts by status
+    counts: adminProcedureWithFeature("users:delete").query(async ({ ctx }) => {
+      const allRequests = await ctx.db.query.deletionRequests.findMany({
+        columns: { status: true },
+      });
+
+      const counts = {
+        pending: 0,
+        approved: 0,
+        rejected: 0,
+        completed: 0,
+        total: allRequests.length,
+      };
+
+      for (const request of allRequests) {
+        if (request.status in counts) {
+          counts[request.status as keyof typeof counts]++;
+        }
+      }
+
+      return counts;
+    }),
+
     // List all deletion requests
     list: adminProcedureWithFeature("users:delete")
       .input(

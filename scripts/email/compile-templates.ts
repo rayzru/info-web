@@ -8,13 +8,13 @@
  * Output: public/templates/email/*.html
  */
 
-import { readdir, readFile, writeFile, mkdir } from "fs/promises";
+import { readdir, mkdir, readFile, writeFile } from "fs/promises";
 import { join, basename } from "path";
-import mjml from "mjml";
+import { $ } from "bun";
+import { minify } from "html-minifier-terser";
 
 const SRC_DIR = join(process.cwd(), "public", "templates", "email", "src");
 const OUT_DIR = join(process.cwd(), "public", "templates", "email");
-const INCLUDES_DIR = join(SRC_DIR, "includes");
 
 async function compileTemplates() {
   console.log("🔧 Compiling MJML email templates...\n");
@@ -57,23 +57,30 @@ async function compileTemplates() {
     const outPath = join(OUT_DIR, outName);
 
     try {
-      const mjmlSource = await readFile(srcPath, "utf-8");
+      // Use MJML CLI for compilation
+      const result = await $`bunx mjml ${srcPath} -s --config.validationLevel soft`.quiet();
 
-      const result = mjml(mjmlSource, {
-        minify: true,
-        validationLevel: "soft",
-        filePath: srcPath, // Required for mj-include to work
-      });
-
-      // Log any warnings
-      if (result.errors.length > 0) {
+      // Check for any stderr output (warnings)
+      const stderr = result.stderr.toString().trim();
+      if (stderr) {
         console.warn(`⚠️  ${file} has warnings:`);
-        result.errors.forEach((err) => {
-          console.warn(`   - ${err.message}`);
-        });
+        console.warn(`   ${stderr}`);
       }
 
-      await writeFile(outPath, result.html, "utf-8");
+      // Get the HTML output and minify it with html-minifier-terser
+      const html = result.stdout.toString();
+      const minified = await minify(html, {
+        collapseWhitespace: true,
+        removeComments: false, // Keep conditional comments for Outlook
+        minifyCSS: true,
+        minifyJS: true,
+        removeRedundantAttributes: true,
+        removeEmptyAttributes: true,
+        processConditionalComments: true,
+        keepClosingSlash: true,
+      });
+
+      await writeFile(outPath, minified, "utf-8");
       console.log(`✅ ${file} → ${outName}`);
       successCount++;
     } catch (error) {

@@ -499,7 +499,7 @@ export default function PropertyPage() {
               Отмена
             </Button>
             <Button
-              variant={claimToReview?.action === "approve" ? "primary" : "destructive"}
+              variant={claimToReview?.action === "approve" ? "default" : "destructive"}
               onClick={() =>
                 claimToReview &&
                 reviewTenantMutation.mutate({

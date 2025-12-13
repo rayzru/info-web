@@ -46,7 +46,7 @@ export function NavLinks() {
               variant={active ? "secondary" : "ghost"}
               size="sm"
               className={cn(
-                active && "bg-primary/10 text-primary font-medium"
+                active && "text-primary font-medium"
               )}
             >
               {item.title}

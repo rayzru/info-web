@@ -19,6 +19,9 @@ import { Textarea } from "~/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
+import { getRankConfig, RANK_CONFIG } from "~/lib/ranks";
+import { cn } from "~/lib/utils";
+import type { UserRole } from "~/server/auth/rbac";
 
 interface ProfileFormProps {
   user: {
@@ -26,6 +29,7 @@ interface ProfileFormProps {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    roles?: UserRole[];
   } | null;
   profile: {
     id: string;
@@ -222,19 +226,25 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
     updateAvatar.mutate({});
   };
 
+  const userRoles = user?.roles ?? ["Guest" as UserRole];
+  const rankConfig = getRankConfig(userRoles);
+
   return (
     <form onSubmit={handleSubmit} className="space-y-12">
       {/* Avatar Section */}
       <section>
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
           <div className="relative">
-            <Avatar className="h-24 w-24 rounded-xl">
+            <Avatar className={cn(
+              "h-24 w-24 rounded-xl ring-[3px] ring-offset-2 ring-offset-background",
+              rankConfig.ringColor
+            )}>
               <AvatarImage
                 src={profile?.avatar ?? user?.image ?? ""}
                 alt=""
                 className="object-cover rounded-xl"
               />
-              <AvatarFallback className="text-3xl rounded-xl">
+              <AvatarFallback className={cn("text-3xl rounded-xl", rankConfig.badgeColor, "text-white")}>
                 {displayName?.charAt(0) ?? "?"}
               </AvatarFallback>
             </Avatar>
@@ -250,10 +260,10 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
           </div>
           <div className="text-center sm:text-left">
             <h2 className="text-xl font-semibold">{displayName || "Имя не указано"}</h2>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Функция загрузки фото в разработке
+            <p className={cn("text-sm font-medium", rankConfig.textColor)}>
+              {rankConfig.label}
             </p>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
           </div>
         </div>
       </section>

@@ -1,53 +1,17 @@
 <!-- Email Footer Component -->
-<!-- Links Section -->
 <mj-section padding="20px 0 0">
   <mj-column>
-    <mj-text align="center" font-size="14px" color="#71717a" padding-bottom="15px">
-      <a href="https://sr2.ru" style="color: #2563eb; text-decoration: none;">sr2.ru</a>
+    <mj-divider border-color="#e5e7eb" border-width="1px" padding="0 30px 20px" />
+    <mj-text align="center" font-size="13px" color="#71717a" padding-bottom="10px">
+      <a href="https://sr2.ru" style="color: #2563eb; text-decoration: none;">SR2.ru</a>
       &nbsp;&bull;&nbsp;
       <a href="https://t.me/sr2_main" style="color: #2563eb; text-decoration: none;">Telegram-чат</a>
     </mj-text>
-  </mj-column>
-</mj-section>
-
-<!-- Divider -->
-<mj-section padding="0">
-  <mj-column>
-    <mj-divider border-color="#e5e7eb" border-width="1px" padding="0 30px" />
-  </mj-column>
-</mj-section>
-
-<!-- Info Section -->
-<mj-section padding="20px 0">
-  <mj-column>
-    <mj-text align="center" font-size="12px" color="#a1a1aa" line-height="1.6">
-      Соседями для соседей
+    <mj-text align="center" font-size="11px" color="#a1a1aa" line-height="1.5">
+      Соседями для соседей &mdash; сервис жильцов ЖК «Сердце Ростова 2»
     </mj-text>
-    <mj-text align="center" font-size="11px" color="#a1a1aa" padding-top="8px" line-height="1.5">
-      Информационный сервис создан и поддерживается инициативными жильцами ЖК «Сердце Ростова 2».
-    </mj-text>
-  </mj-column>
-</mj-section>
-
-<!-- Legal Links -->
-<mj-section padding="0 0 10px">
-  <mj-column>
-    <mj-text align="center" font-size="11px" color="#a1a1aa">
-      <a href="https://sr2.ru/terms" style="color: #a1a1aa; text-decoration: underline;">Пользовательское соглашение</a>
-      &nbsp;&bull;&nbsp;
-      <a href="https://sr2.ru/privacy" style="color: #a1a1aa; text-decoration: underline;">Политика конфиденциальности</a>
-    </mj-text>
-  </mj-column>
-</mj-section>
-
-<!-- Auto-message notice -->
-<mj-section padding="10px 0 20px">
-  <mj-column>
-    <mj-text align="center" font-size="11px" color="#d4d4d8">
-      Это письмо отправлено автоматически, отвечать на него не нужно.
-    </mj-text>
-    <mj-text align="center" font-size="11px" color="#d4d4d8" padding-top="5px">
-      © 2025 Парадная. Открытое сообщество в рамках законодательства РФ.
+    <mj-text align="center" font-size="11px" color="#d4d4d8" padding-top="15px">
+      Письмо отправлено автоматически &nbsp;&bull;&nbsp; © 2025 SR2.ru
     </mj-text>
   </mj-column>
 </mj-section>

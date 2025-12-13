@@ -43,6 +43,20 @@
       "when": 1765132853813,
       "tag": "0005_dusty_sabretooth",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1765579407376,
+      "tag": "0006_wild_frog_thor",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1765618912944,
+      "tag": "0007_jittery_slayback",
+      "breakpoints": true
     }
   ]
 }

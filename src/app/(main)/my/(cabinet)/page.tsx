@@ -8,8 +8,7 @@ import Link from "next/link";
 import { PageHeader } from "~/components/page-header";
 
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 
@@ -34,73 +33,71 @@ export default async function CabinetPage() {
        description={`Добро пожаловать, ${userName}`}
       />
 
-      {/* Category cards */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-        {/* Listings */}
-        <Card className="relative flex min-h-[200px] flex-col overflow-hidden">
-          {activeListings.length > 0 && (
-            <Badge className="absolute right-4 top-4 z-10 bg-green-500">
-              {activeListings.length} активных
-            </Badge>
-          )}
-          <Megaphone className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
-          <CardHeader className="relative z-10 flex-1">
-            <CardTitle className="text-xl">Объявления</CardTitle>
-            <CardDescription>
-              Аренда и продажа недвижимости
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            <Button asChild size="sm">
-              <Link href="/my/ads">Мои объявления</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      {/* Category cards - asymmetric grid */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+        {/* Listings - larger */}
+        <Link href="/my/ads" className="group sm:col-span-1 lg:col-span-3">
+          <Card className="relative flex min-h-28 sm:min-h-50 h-full flex-col overflow-hidden transition-all hover:bg-amber-50 hover:border-amber-200 hover:shadow-lg dark:hover:bg-amber-950/30 dark:hover:border-amber-800">
+            {activeListings.length > 0 && (
+              <Badge className="absolute right-4 top-4 z-10 bg-green-500">
+                {activeListings.length} активных
+              </Badge>
+            )}
+            <Megaphone className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <CardHeader className="relative z-10 flex-1">
+              <CardTitle className="text-xl">Объявления</CardTitle>
+              <CardDescription>
+                Аренда и продажа недвижимости
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
 
-        {/* Property */}
-        <Card className="relative flex min-h-[200px] flex-col overflow-hidden">
-          {pendingClaims.length > 0 && (
-            <Badge className="absolute right-4 top-4 z-10 bg-yellow-500">
-              {pendingClaims.length} на модерации
-            </Badge>
-          )}
-          <Home className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
-          <CardHeader className="relative z-10 flex-1">
-            <CardTitle className="text-xl">Недвижимость</CardTitle>
-            <CardDescription>
-              {approvedClaims.length > 0
-                ? `${approvedClaims.length} подтверждённых объектов`
-                : "Квартиры и машиноместа"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            <Button asChild size="sm">
-              <Link href="/my/property">Управление</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Property - smaller */}
+        <Link href="/my/property" className="group sm:col-span-1 lg:col-span-2">
+          <Card className="relative flex min-h-28 sm:min-h-50 h-full flex-col overflow-hidden transition-all hover:bg-green-50 hover:border-green-200 hover:shadow-lg dark:hover:bg-green-950/30 dark:hover:border-green-800">
+            {pendingClaims.length > 0 && (
+              <Badge className="absolute right-4 top-4 z-10 bg-yellow-500">
+                {pendingClaims.length} на модерации
+              </Badge>
+            )}
+            <Home className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <CardHeader className="relative z-10 flex-1">
+              <CardTitle className="text-xl">Недвижимость</CardTitle>
+              <CardDescription>
+                {approvedClaims.length > 0
+                  ? `${approvedClaims.length} подтверждённых объектов`
+                  : "Квартиры и машиноместа"}
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
 
-        {/* Profile */}
-        <Card className="relative flex min-h-[200px] flex-col overflow-hidden">
-          <User className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
-          <CardHeader className="relative z-10 flex-1">
-            <CardTitle className="text-xl">Профиль</CardTitle>
-            <CardDescription>
-              Личные данные и контактная информация
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="relative z-10 flex gap-2">
-            <Button asChild size="sm">
-              <Link href="/my/profile">Изменить</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/my/security">
-                <KeyRound className="mr-1 h-4 w-4" />
-                Безопасность
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Profile - smaller */}
+        <Link href="/my/profile" className="group sm:col-span-1 lg:col-span-2">
+          <Card className="relative flex min-h-28 sm:min-h-50 h-full flex-col overflow-hidden transition-all hover:bg-blue-50 hover:border-blue-200 hover:shadow-lg dark:hover:bg-blue-950/30 dark:hover:border-blue-800">
+            <User className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <CardHeader className="relative z-10 flex-1">
+              <CardTitle className="text-xl">Профиль</CardTitle>
+              <CardDescription>
+                Личные данные и контакты
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        {/* Security - larger */}
+        <Link href="/my/security" className="group sm:col-span-1 lg:col-span-3">
+          <Card className="relative flex min-h-28 sm:min-h-50 h-full flex-col overflow-hidden transition-all hover:bg-violet-50 hover:border-violet-200 hover:shadow-lg dark:hover:bg-violet-950/30 dark:hover:border-violet-800">
+            <KeyRound className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <CardHeader className="relative z-10 flex-1">
+              <CardTitle className="text-xl">Безопасность</CardTitle>
+              <CardDescription>
+                Пароль и способы входа
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
       </div>
     </div>
   );

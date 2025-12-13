@@ -7,7 +7,8 @@ import {
   AlertTriangle,
   Check,
   Loader2,
-  Lock,
+  Mail,
+  Pencil,
   Plus,
   Unlink,
 } from "lucide-react";
@@ -73,7 +74,32 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
     },
   });
 
+  const changePassword = api.auth.changePassword.useMutation({
+    onSuccess: (result) => {
+      toast({
+        title: "Успешно",
+        description: result.message,
+      });
+      setPasswordDialogOpen(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      void utils.auth.getLinkedAccounts.invalidate();
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const [unlinkProvider, setUnlinkProvider] = useState<string | null>(null);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   if (isLoading) {
     return (
@@ -88,12 +114,6 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
 
   // Calculate which providers can be linked (not already linked)
   const linkedProviderIds = linkedAccounts.map((a) => a.provider);
-  const availableToLink = availableProviders.filter(
-    (p) =>
-      !linkedProviderIds.includes(p.id) &&
-      p.id !== "credentials" &&
-      p.type === "oauth"
-  );
 
   // Total auth methods
   const totalAuthMethods = linkedAccounts.length + (hasPassword ? 1 : 0);
@@ -108,32 +128,164 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
     setUnlinkProvider(null);
   };
 
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Ошибка",
+        description: "Пароли не совпадают",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    changePassword.mutate({
+      currentPassword: hasPassword ? currentPassword : undefined,
+      newPassword,
+    });
+  };
+
+  // All OAuth providers (both linked and available)
+  const oauthProviders = availableProviders.filter(
+    (p) => p.id !== "credentials" && p.type === "oauth"
+  );
+
   return (
     <div className="space-y-8">
-      {/* Linked OAuth accounts as cards */}
-      <section>
-        <h3 className="text-sm font-medium text-muted-foreground mb-4">
-          Привязанные аккаунты
-        </h3>
+      {/* All auth methods in one grid */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Email/Password card - first */}
+        <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+          {hasPassword ? (
+            // Password is set - active card with change password button inside
+            <div className="flex flex-col items-center p-6 rounded-xl border bg-card">
+              <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center overflow-hidden mb-3">
+                <Mail className="h-7 w-7 text-muted-foreground" />
+              </div>
+              <p className="font-medium text-sm">Email и пароль</p>
+              <span className="mt-2 text-xs text-green-600 flex items-center gap-1">
+                <Check className="h-3 w-3" />
+                Активен
+              </span>
+              <DialogTrigger asChild>
+                <button className="mt-3 text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
+                  <Pencil className="h-3 w-3" />
+                  Сменить пароль
+                </button>
+              </DialogTrigger>
+            </div>
+          ) : (
+            // Password not set - inactive clickable card
+            <DialogTrigger asChild>
+              <button className="flex flex-col items-center p-6 rounded-xl border border-dashed hover:border-primary hover:bg-primary/5 transition-colors">
+                <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center overflow-hidden mb-3 opacity-50">
+                  <Mail className="h-7 w-7 text-muted-foreground" />
+                </div>
+                <p className="font-medium text-sm text-muted-foreground">Email и пароль</p>
+                <span className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+                  <Plus className="h-3 w-3" />
+                  Установить
+                </span>
+              </button>
+            </DialogTrigger>
+          )}
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {linkedAccounts.map((account) => {
-            const info = PROVIDER_INFO[account.provider] ?? {
-              name: account.provider,
-              logo: null,
-            };
-            const canUnlink = totalAuthMethods > 1;
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {hasPassword ? "Изменить пароль" : "Установить пароль"}
+              </DialogTitle>
+              <DialogDescription>
+                {hasPassword
+                  ? "Введите текущий пароль и новый пароль"
+                  : "Установите пароль для входа по email"}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              {hasPassword && (
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword">Текущий пароль</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">
+                  {hasPassword ? "Новый пароль" : "Пароль"}
+                </Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={8}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Минимум 8 символов
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setPasswordDialogOpen(false);
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  }}
+                >
+                  Отмена
+                </Button>
+                <Button type="submit" disabled={changePassword.isPending}>
+                  {changePassword.isPending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {hasPassword ? "Изменить" : "Установить"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
 
+        {/* OAuth providers */}
+        {oauthProviders.map((provider) => {
+          const info = PROVIDER_INFO[provider.id] ?? {
+            name: provider.name,
+            logo: null,
+          };
+          const isLinked = linkedProviderIds.includes(provider.id);
+          const canUnlink = totalAuthMethods > 1;
+
+          if (isLinked) {
+            // Linked provider card
             return (
               <div
-                key={account.provider}
+                key={provider.id}
                 className="relative flex flex-col items-center p-6 rounded-xl border bg-card"
               >
                 {/* Unlink button in top-right corner */}
                 <Dialog
-                  open={unlinkProvider === account.provider}
+                  open={unlinkProvider === provider.id}
                   onOpenChange={(open) =>
-                    setUnlinkProvider(open ? account.provider : null)
+                    setUnlinkProvider(open ? provider.id : null)
                   }
                 >
                   <DialogTrigger asChild>
@@ -168,7 +320,7 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
                       </Button>
                       <Button
                         variant="destructive"
-                        onClick={() => handleUnlink(account.provider)}
+                        onClick={() => handleUnlink(provider.id)}
                         disabled={unlinkAccount.isPending}
                       >
                         {unlinkAccount.isPending && (
@@ -205,65 +357,42 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
                 </span>
               </div>
             );
-          })}
-        </div>
+          }
 
-        {linkedAccounts.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            Нет привязанных аккаунтов
-          </p>
-        )}
-      </section>
+          // Not linked - clickable card
+          return (
+            <button
+              key={provider.id}
+              onClick={() => handleLinkProvider(provider.id)}
+              className="flex flex-col items-center p-6 rounded-xl border border-dashed hover:border-primary hover:bg-primary/5 transition-colors"
+            >
+              {/* Logo */}
+              <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center overflow-hidden mb-3 opacity-50">
+                {info.logo ? (
+                  <Image
+                    src={info.logo}
+                    alt={info.name}
+                    width={44}
+                    height={44}
+                    className="rounded-lg"
+                  />
+                ) : (
+                  <span className="text-muted-foreground font-bold text-lg">?</span>
+                )}
+              </div>
 
-      {/* Available to link */}
-      {availableToLink.length > 0 && (
-        <section>
-          <h3 className="text-sm font-medium text-muted-foreground mb-4">
-            Доступные для привязки
-          </h3>
+              {/* Provider name */}
+              <p className="font-medium text-sm text-muted-foreground">{info.name}</p>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {availableToLink.map((provider) => {
-              const info = PROVIDER_INFO[provider.id] ?? {
-                name: provider.name,
-                logo: null,
-              };
-
-              return (
-                <button
-                  key={provider.id}
-                  onClick={() => handleLinkProvider(provider.id)}
-                  className="flex flex-col items-center p-6 rounded-xl border border-dashed hover:border-primary hover:bg-primary/5 transition-colors"
-                >
-                  {/* Logo */}
-                  <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center overflow-hidden mb-3 opacity-50">
-                    {info.logo ? (
-                      <Image
-                        src={info.logo}
-                        alt={info.name}
-                        width={44}
-                        height={44}
-                        className="rounded-lg"
-                      />
-                    ) : (
-                      <span className="text-muted-foreground font-bold text-lg">?</span>
-                    )}
-                  </div>
-
-                  {/* Provider name */}
-                  <p className="font-medium text-sm">{info.name}</p>
-
-                  {/* Add hint */}
-                  <span className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-                    <Plus className="h-3 w-3" />
-                    Привязать
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
+              {/* Add hint */}
+              <span className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+                <Plus className="h-3 w-3" />
+                Привязать
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
       {/* Warning */}
       {totalAuthMethods === 1 && (
@@ -284,151 +413,3 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
   );
 }
 
-export function PasswordSection() {
-  const { toast } = useToast();
-  const utils = api.useUtils();
-
-  const { data } = api.auth.getLinkedAccounts.useQuery();
-  const hasPassword = data?.hasPassword ?? false;
-
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const changePassword = api.auth.changePassword.useMutation({
-    onSuccess: (result) => {
-      toast({
-        title: "Успешно",
-        description: result.message,
-      });
-      setIsChangingPassword(false);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      void utils.auth.getLinkedAccounts.invalidate();
-    },
-    onError: (error) => {
-      toast({
-        title: "Ошибка",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Ошибка",
-        description: "Пароли не совпадают",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    changePassword.mutate({
-      currentPassword: hasPassword ? currentPassword : undefined,
-      newPassword,
-    });
-  };
-
-  return (
-    <section>
-      <h3 className="text-sm font-medium text-muted-foreground mb-4">
-        Пароль
-      </h3>
-
-      {isChangingPassword ? (
-        <form onSubmit={handleSubmit} className="space-y-4 max-w-sm">
-          {hasPassword && (
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Текущий пароль</Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                required
-              />
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="newPassword">
-              {hasPassword ? "Новый пароль" : "Пароль"}
-            </Label>
-            <Input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-              minLength={8}
-            />
-            <p className="text-xs text-muted-foreground">
-              Минимум 8 символов, заглавная и строчная буква, цифра
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <Button type="submit" disabled={changePassword.isPending}>
-              {changePassword.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              {hasPassword ? "Изменить пароль" : "Установить пароль"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setIsChangingPassword(false);
-                setCurrentPassword("");
-                setNewPassword("");
-                setConfirmPassword("");
-              }}
-            >
-              Отмена
-            </Button>
-          </div>
-        </form>
-      ) : (
-        <div className="flex items-center justify-between p-4 rounded-lg border bg-card max-w-lg">
-          <div className="flex items-center gap-3">
-            <Lock className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-sm">
-                {hasPassword ? "Пароль установлен" : "Пароль не установлен"}
-              </p>
-              {!hasPassword && (
-                <p className="text-xs text-muted-foreground">
-                  Установите пароль для входа по email
-                </p>
-              )}
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsChangingPassword(true)}
-          >
-            {hasPassword ? "Изменить" : "Установить"}
-          </Button>
-        </div>
-      )}
-    </section>
-  );
-}

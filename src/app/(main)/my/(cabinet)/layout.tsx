@@ -5,6 +5,7 @@ import {
   Building2,
   KeyRound,
   LayoutDashboard,
+  LogOut,
   Megaphone,
   Monitor,
   Moon,
@@ -12,7 +13,7 @@ import {
   Sun,
   User,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -129,7 +130,7 @@ export default function CabinetLayout({
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
                     isActive
-                      ? "bg-primary/10 text-primary font-medium"
+                      ? "bg-secondary text-primary font-medium"
                       : isPrimaryHighlight
                         ? "bg-primary text-primary-foreground font-medium hover:bg-primary/90"
                         : item.disabled
@@ -206,6 +207,20 @@ export default function CabinetLayout({
                 </Link>
               </>
             )}
+
+            {/* Logout */}
+            <div className="my-3 border-t" />
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors w-full",
+                "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              )}
+              data-testid="nav-logout"
+            >
+              <LogOut className="h-4 w-4" />
+              <div>Выйти</div>
+            </button>
           </nav>
         </aside>
       </div>

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project uses the [T3 Stack](https://create.t3.gg/) - a modern, full-stack TypeScript framework combining Next.js, tRPC, and Drizzle ORM for type-safe, rapid development.
+This project uses the [T3 Stack](https://create.t3.gg/) - a modern, full-stack TypeScript framework combining Next.js, tRPC, and Drizzle ORM for type-safe, rapid development. The application is designed for residential complex management (buildings, apartments, parking, property claims, listings).
 
 ## Core Principles
 
@@ -11,232 +11,373 @@ This project uses the [T3 Stack](https://create.t3.gg/) - a modern, full-stack T
 3. **Type-Safe APIs** - tRPC provides automatic type inference
 4. **Modern React** - React 19 with Server Components and Suspense
 5. **Database Type Safety** - Drizzle ORM with TypeScript schemas
+6. **Role-Based Access Control** - Granular permissions system
 
 ## Technology Stack
 
 ### Framework Layer
-- **Next.js 16.0.1** - React framework with App Router
-- **React 19.2.0** - UI library with Server Components
-- **TypeScript 5.9.3** - Type-safe JavaScript
+| Package | Version | Purpose |
+|---------|---------|---------|
+| Next.js | 16 | React framework with App Router |
+| React | 19 | UI library with Server Components |
+| TypeScript | 5 | Type-safe JavaScript (strict mode) |
 
 ### API Layer
-- **tRPC 11.7.1** - End-to-end type-safe APIs
-- **React Query** - Data fetching and caching (via tRPC)
-- **Zod** - Runtime validation and type inference
+| Package | Version | Purpose |
+|---------|---------|---------|
+| tRPC | 11 | End-to-end type-safe APIs |
+| React Query | 5 | Data fetching and caching |
+| Zod | 4 | Runtime validation and type inference |
 
 ### Data Layer
-- **Drizzle ORM 0.44.7** - Type-safe SQL query builder
-- **PostgreSQL** - Relational database
-- **postgres.js** - PostgreSQL client
+| Package | Version | Purpose |
+|---------|---------|---------|
+| Drizzle ORM | 0.45 | Type-safe SQL query builder |
+| PostgreSQL | - | Relational database |
+| postgres.js | - | PostgreSQL client |
 
 ### Authentication
-- **NextAuth 5.0.0-beta.25** - Authentication framework
-- **Yandex OAuth** - OAuth provider
+| Package | Version | Purpose |
+|---------|---------|---------|
+| NextAuth | 5 (beta) | Authentication framework |
+| bcryptjs | - | Password hashing |
 
-### Styling
-- **TailwindCSS 4.1.17** - Utility-first CSS
-- **Radix UI** - Accessible component primitives
+### Styling & UI
+| Package | Version | Purpose |
+|---------|---------|---------|
+| TailwindCSS | 4 | Utility-first CSS |
+| Radix UI | - | Accessible component primitives |
+
+### State Management
+| Package | Version | Purpose |
+|---------|---------|---------|
+| Zustand | 5 | Lightweight global state |
 
 ## Project Structure
 
 ```
 src/
-├── app/                    # Next.js App Router pages
-│   ├── (auth)/            # Auth-related pages
-│   │   └── login/         # Login page
-│   ├── api/               # API routes
-│   │   ├── auth/          # NextAuth endpoints
-│   │   └── trpc/          # tRPC HTTP adapter
-│   ├── community/         # Community features
-│   │   ├── chats/        # Chat functionality
-│   │   └── rules/        # Community rules
-│   ├── my/                # User dashboard
-│   │   └── property/     # Property management
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page
+├── app/                    # Next.js App Router
+│   ├── (main)/            # Main layout group
+│   │   ├── listings/      # Apartment & parking listings
+│   │   ├── my/            # User cabinet
+│   │   │   └── (cabinet)/ # Protected cabinet routes
+│   │   │       ├── ads/           # Manage listings
+│   │   │       ├── notifications/ # User notifications
+│   │   │       ├── profile/       # User profile
+│   │   │       ├── property/      # Property management
+│   │   │       └── security/      # Security settings
+│   │   ├── info/[slug]/   # Info pages
+│   │   ├── map/           # Map view
+│   │   ├── login/         # Login page
+│   │   ├── register/      # Registration
+│   │   ├── forgot-password/    # Password recovery
+│   │   ├── reset-password/     # Password reset
+│   │   └── verify-email/       # Email verification
+│   ├── (admin)/           # Admin panel routes
+│   │   └── admin/         # Admin dashboard
+│   ├── _components/       # Root layout components
+│   └── api/               # API routes
+│       ├── auth/          # NextAuth endpoints
+│       └── trpc/          # tRPC HTTP adapter
 │
 ├── components/            # React components
-│   ├── ui/               # Radix UI + Shadcn components
-│   ├── login-form.tsx    # Login form component
-│   ├── navigation.tsx    # Navigation component
-│   └── ...               # Other components
+│   ├── admin/             # Admin-specific components
+│   ├── auth/              # Authentication components
+│   ├── community/         # Community features
+│   ├── social-icons/      # Social provider icons
+│   └── ui/                # Radix UI + Shadcn components (30+)
 │
-├── server/                # Server-side code
-│   ├── api/              # tRPC routers
-│   │   ├── routers/     # Feature-specific routers
-│   │   ├── root.ts      # Root router (combines all routers)
-│   │   └── trpc.ts      # tRPC setup and context
-│   ├── auth/             # Authentication
-│   │   ├── config.ts    # NextAuth configuration
-│   │   └── index.ts     # Auth helpers
-│   └── db/               # Database
-│       ├── index.ts     # Database connection
-│       └── schema.ts    # Drizzle schemas
-│
-├── trpc/                  # tRPC client setup
-│   ├── query-client.ts   # React Query configuration
-│   ├── react.tsx         # tRPC React hooks
-│   └── server.ts         # Server-side tRPC caller
+├── hooks/                 # Custom React hooks
+│   └── use-toast.ts       # Toast notifications
 │
 ├── lib/                   # Shared utilities
-│   └── utils.ts          # Helper functions
+│   ├── utils.ts           # Helper functions (cn, etc.)
+│   ├── weather.ts         # Weather integration
+│   └── validations/       # Zod schemas
+│       └── auth.ts        # Auth validation schemas
+│
+├── server/                # Server-side code
+│   ├── api/               # tRPC API
+│   │   ├── routers/       # Feature-specific routers (8)
+│   │   ├── root.ts        # Root router
+│   │   └── trpc.ts        # tRPC setup and context
+│   ├── auth/              # Authentication
+│   │   ├── config.ts      # NextAuth configuration
+│   │   ├── rbac.ts        # Role-based access control
+│   │   └── providers/     # Custom OAuth providers
+│   ├── db/                # Database
+│   │   ├── index.ts       # Database connection
+│   │   ├── schema.ts      # Schema exports
+│   │   └── schemas/       # Drizzle table schemas
+│   ├── email/             # Email service (Nodemailer + MJML)
+│   └── notifications/     # Notification service
+│
+├── stores/                # Zustand stores
+│   └── theme-store.ts     # Theme management
+│
+├── trpc/                  # tRPC client setup
+│   ├── query-client.ts    # React Query configuration
+│   ├── react.tsx          # tRPC React hooks
+│   └── server.ts          # Server-side tRPC caller
+│
+├── types/                 # TypeScript definitions
 │
 ├── styles/                # Global styles
-│   └── globals.css       # Tailwind + custom CSS
+│   └── globals.css        # Tailwind + custom CSS
 │
 └── env.js                 # Environment variable validation
 ```
 
+## tRPC Routers
+
+### Available Routers (8)
+
+| Router | Description | Procedures |
+|--------|-------------|------------|
+| `auth` | Authentication | register, login, password reset, email verification, OAuth linking |
+| `profile` | User profile | get/update profile, messengers, privacy settings |
+| `listings` | Real estate listings | CRUD, photos, status management, moderation |
+| `claims` | Property claims | submit, status tracking, document upload |
+| `directory` | Building directory | entries, contacts, tags, scope filtering |
+| `notifications` | User notifications | get, mark read, real-time |
+| `admin` | Admin operations | user/building management, feature control |
+| `post` | Posts/content | create, read |
+
+### Procedure Types
+
+```typescript
+publicProcedure      // No auth required
+protectedProcedure   // User auth required
+adminProcedure       // Admin role required
+adminProcedureWithFeature(feature)  // Feature-based access
+```
+
+## Database Schema
+
+### Core Tables (13+)
+
+#### Authentication & Users
+```
+users
+├── accounts (OAuth accounts)
+├── sessions
+├── userRoles (RBAC)
+├── userProfiles (extended info, messengers, privacy)
+├── passwordResetTokens
+├── emailVerificationTokens
+└── telegramAuthTokens
+```
+
+#### Buildings & Properties
+```
+buildings
+├── buildingChannels (Telegram, Email, WhatsApp)
+├── entrances
+│   └── floors
+│       └── apartments
+
+parkings
+└── parkingFloors
+    └── parkingSpots
+```
+
+#### User-Property Relationships
+```
+userApartments (user_id, apartment_id, status, role)
+userParkingSpots (user_id, parking_spot_id, status, role)
+```
+
+#### Listings
+```
+listings
+├── listingPhotos (up to 20)
+├── Statuses: draft, pending_moderation, approved, rejected, archived
+└── Archive reasons: manual, expired, rights_revoked, admin
+```
+
+#### Claims
+```
+propertyClaims
+├── Types: apartment, parking, commercial
+├── Statuses: pending, review, approved, rejected, documents_requested
+└── References: apartment, parking, or organization
+```
+
+#### Organizations & Directory
+```
+organizations
+└── organizationTags
+
+directoryEntries
+├── directoryContacts
+├── directoryTags
+├── Types: contact, organization, location, document
+└── Scope: core, commerce, city, promoted
+```
+
+#### Other
+```
+notifications
+deletionRequests
+contacts
+posts
+```
+
+## Authentication System
+
+### OAuth Providers (8)
+- **Primary**: Yandex
+- **Standard**: VK, Google, Mail.ru
+- **Custom**: Одноклассники, Sber, Tinkoff
+- **Bot**: Telegram
+
+### Credentials
+- Email/password with bcrypt hashing
+- Email verification required
+- Password reset flow
+
+### RBAC (Role-Based Access Control)
+
+#### User Roles (12)
+```
+Root, SuperAdmin, Admin
+Editor, Moderator
+BuildingChairman, ComplexChairman, ComplexRepresentative
+ApartmentOwner, ApartmentResident
+ParkingOwner, ParkingResident
+StoreOwner, StoreRepresentative
+Guest
+```
+
+#### Admin Features (16)
+```
+admin:access
+users:view, users:manage, users:roles, users:delete
+buildings:view, buildings:manage
+properties:view, properties:approve
+claims:view, claims:review
+listings:view, listings:moderate
+content:view, content:moderate
+directory:manage
+system:settings, system:logs
+```
+
+### Test Accounts (Development)
+| Account | Email | Roles |
+|---------|-------|-------|
+| admin | admin@test.local | Root, SuperAdmin, Admin |
+| moderator | moderator@test.local | Moderator |
+| owner | owner@test.local | ApartmentOwner, ParkingOwner |
+| resident | resident@test.local | ApartmentResident |
+| editor | editor@test.local | Editor |
+| guest | guest@test.local | Guest |
+
+## Email System
+
+### Configuration
+- Provider: Nodemailer
+- Templates: MJML (compiled to HTML)
+- Location: `/public/templates/email/`
+
+### Environment Variables
+```
+SMTP_HOST, SMTP_PORT (465), SMTP_SECURE (true)
+SMTP_USER, SMTP_PASSWORD
+SMTP_FROM_NAME ("Парадная")
+SMTP_FROM_EMAIL, SMTP_REPLY_TO
+```
+
+## Notifications Service
+
+### Event Types
+- User registration / email verification
+- Password reset (requested/completed)
+- Account linking/unlinking (OAuth)
+- Property claims (submitted/approved/rejected)
+- Security alerts (login, suspicious activity)
+
+### Usage
+```typescript
+import { notifyAsync } from "~/server/notifications";
+
+notifyAsync({
+  type: "user.registered",
+  userId: user.id,
+  email: user.email,
+  name: user.name,
+});
+```
+
 ## Data Flow
 
-### Server Component Data Flow
-
+### Server Component
 ```mermaid
 graph LR
     A[Server Component] --> B[api.router.procedure]
     B --> C[tRPC Router]
     C --> D[Drizzle Query]
     D --> E[PostgreSQL]
-    E --> D
-    D --> C
-    C --> B
-    B --> A
+    E --> D --> C --> B --> A
     A --> F[Rendered HTML]
-
-    style A fill:#4a90e2,stroke:#2d5f8f,color:#fff
-    style C fill:#50c878,stroke:#2d7a4a,color:#fff
-    style D fill:#f39c12,stroke:#b87805,color:#fff
-    style E fill:#e74c3c,stroke:#a83426,color:#fff
 ```
 
-### Client Component Data Flow
-
+### Client Component
 ```mermaid
 graph LR
     A[Client Component] --> B[api.router.procedure.useQuery]
     B --> C[React Query]
     C --> D[HTTP Request]
-    D --> E[tRPC HTTP Handler]
+    D --> E[tRPC Handler]
     E --> F[tRPC Router]
     F --> G[Drizzle Query]
     G --> H[PostgreSQL]
-    H --> G
-    G --> F
-    F --> E
-    E --> D
-    D --> C
-    C --> B
-    B --> A
-
-    style A fill:#4a90e2,stroke:#2d5f8f,color:#fff
-    style C fill:#9b59b6,stroke:#6c3a7d,color:#fff
-    style F fill:#50c878,stroke:#2d7a4a,color:#fff
-    style G fill:#f39c12,stroke:#b87805,color:#fff
-    style H fill:#e74c3c,stroke:#a83426,color:#fff
+    H --> G --> F --> E --> D --> C --> B --> A
 ```
 
-## Authentication Flow
+## Development Workflow
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant B as Browser
-    participant N as Next.js
-    participant NA as NextAuth
-    participant Y as Yandex OAuth
-    participant DB as Database
+### Commands
 
-    U->>B: Click "Login with Yandex"
-    B->>N: Navigate to /api/auth/signin
-    N->>NA: Initiate OAuth flow
-    NA->>Y: Redirect to Yandex
-    Y->>U: Show consent screen
-    U->>Y: Approve
-    Y->>NA: Redirect with code
-    NA->>Y: Exchange code for token
-    Y->>NA: Return user info
-    NA->>DB: Create/update user
-    NA->>B: Set session cookie
-    B->>N: Redirect to dashboard
-    N->>U: Show authenticated page
+```bash
+# Development
+bun dev                  # Start dev server (port 3000, Turbopack)
+bun run build            # Build for production
+bun run preview          # Preview production build
+bun run start            # Start production server
+
+# Code Quality
+bun run check            # Lint + TypeScript check
+bun run lint             # ESLint check
+bun run lint:fix         # ESLint fix
+bun run format:check     # Prettier check
+bun run format:write     # Prettier format
+bun run typecheck        # TypeScript check
+
+# Database
+bun run db:push          # Push schema to database
+bun run db:generate      # Generate migrations
+bun run db:migrate       # Run migrations
+bun run db:studio        # Drizzle Studio
+bun run db:seed          # Seed database
+bun run db:reset         # Reset database
+bun run db:init          # Initialize (push + seed)
+
+# Email & Crons
+bun run email:compile    # Compile email templates (MJML → HTML)
+bun run cron:listing-expiration  # Process listing expiration
 ```
 
-## tRPC Pattern
-
-### 1. Define Schema (Database)
-
-```typescript
-// src/server/db/schema.ts
-export const properties = pgTable("property", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: varchar("user_id", { length: 255 }).notNull(),
-  buildingId: uuid("building_id").references(() => buildings.id),
-  number: integer("number").notNull(),
-  type: text("type", { enum: ["apartment", "parking"] }).notNull(),
-});
+### Quick Start
+```bash
+docker-compose up -d     # Start PostgreSQL
+bun run db:push          # Push schema
+bun dev                  # Start dev server
 ```
 
-### 2. Create Router (API)
-
-```typescript
-// src/server/api/routers/property.ts
-export const propertyRouter = createTRPCRouter({
-  getAll: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.db.query.properties.findMany({
-      where: eq(properties.userId, ctx.session.user.id),
-    });
-  }),
-
-  register: protectedProcedure
-    .input(z.object({
-      buildingId: z.string(),
-      number: z.number(),
-      type: z.enum(["apartment", "parking"]),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db.insert(properties).values({
-        ...input,
-        userId: ctx.session.user.id,
-      });
-    }),
-});
-```
-
-### 3. Use in Server Component
-
-```typescript
-// src/app/my/property/page.tsx
-export default async function PropertyPage() {
-  const properties = await api.property.getAll();
-  return (
-    <div>
-      {properties.map(p => (
-        <div key={p.id}>{p.number}</div>
-      ))}
-    </div>
-  );
-}
-```
-
-### 4. Use in Client Component
-
-```typescript
-// src/components/property-form.tsx
-"use client";
-
-export function PropertyForm() {
-  const utils = api.useUtils();
-  const register = api.property.register.useMutation({
-    onSuccess: () => utils.property.getAll.invalidate(),
-  });
-
-  const onSubmit = (data) => {
-    register.mutate(data);
-  };
-
-  return <form onSubmit={handleSubmit(onSubmit)}>...</form>;
-}
-```
+### Access Points
+- **Frontend**: http://localhost:3000
+- **Database Studio**: `bun run db:studio`
 
 ## Type Safety Chain
 
@@ -261,143 +402,67 @@ React Components
 - **Mutations**: Data updates with optimistic updates
 - **Invalidation**: Automatic cache invalidation
 
-### Client State (React Hooks)
-- **useState**: Local component state
-- **useReducer**: Complex state logic
-- **useContext**: Shared state (sparingly)
+### Client State
+- **Zustand**: Theme management, global state
+- **useState/useReducer**: Local component state
 
 ### URL State (Next.js Router)
 - **Search params**: Filters, pagination
 - **Route params**: Resource IDs
 
-## Caching Strategy
-
-### React Query (via tRPC)
-```typescript
-// Default configuration
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30 * 1000, // 30 seconds
-      gcTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-});
-```
-
-### Next.js Caching
-- **Server Components**: Automatic request memoization
-- **Route Cache**: Cached by default in production
-- **Data Cache**: Can be controlled with `revalidate`
-
-## Database Schema
-
-### Core Tables
-- **users**: User accounts (managed by NextAuth)
-- **accounts**: OAuth accounts (managed by NextAuth)
-- **sessions**: User sessions (managed by NextAuth)
-- **verification_tokens**: Email verification (managed by NextAuth)
-- **buildings**: Building information
-- **properties**: User-owned properties (apartments, parking)
-
-### Relationships
-```
-users (1) ──→ (n) properties
-buildings (1) ──→ (n) properties
-users (1) ──→ (n) accounts
-```
-
-## Development Workflow
-
-### 1. Start Database
-```bash
-docker-compose up -d
-```
-
-### 2. Push Schema Changes
-```bash
-bun run db:push
-```
-
-### 3. Start Development Server
-```bash
-bun dev
-```
-
-### 4. Access Application
-- **Frontend**: http://localhost:3000
-- **Database Studio**: `bun run db:studio`
-
-## Testing Strategy
-
-### Unit Tests (Jest + RTL)
-- Component rendering
-- Hook behavior
-- Utility functions
-
-### Integration Tests (Jest)
-- tRPC procedures
-- Database operations
-- Authentication flows
-
-### E2E Tests (Playwright)
-- User journeys
-- Form submissions
-- Navigation flows
-
-## Deployment Architecture
-
-```mermaid
-graph TB
-    subgraph "Production"
-        N[Next.js Server]
-        P[PostgreSQL]
-        N --> P
-    end
-
-    subgraph "GitHub Actions"
-        B[Build]
-        T[Test]
-        D[Deploy]
-        B --> T
-        T --> D
-    end
-
-    subgraph "Vercel/VPS"
-        S[Standalone Build]
-    end
-
-    D --> S
-    S --> N
-```
-
-## Environment Variables
-
-Required environment variables (see `.env.example`):
-- `DATABASE_URL` - PostgreSQL connection string
-- `DATABASE_NAME` - Database name
-- `NEXTAUTH_SECRET` - NextAuth encryption key
-- `NEXTAUTH_URL` - Application URL
-- `YANDEX_CLIENT_ID` - Yandex OAuth client ID
-- `YANDEX_CLIENT_SECRET` - Yandex OAuth client secret
-
-## Performance Optimizations
-
-1. **Server Components by Default** - Reduce client JavaScript
-2. **Automatic Code Splitting** - Per-route bundles
-3. **Image Optimization** - `next/image` component
-4. **Font Optimization** - `next/font` with Geist
-5. **Database Connection Pooling** - Reuse connections
-6. **React Query Caching** - Minimize API calls
-
 ## Security Measures
 
 1. **NextAuth Session Management** - Secure, HTTP-only cookies
 2. **tRPC Protected Procedures** - Server-side auth checks
-3. **Zod Input Validation** - Runtime type checking
-4. **Drizzle Parameterized Queries** - SQL injection prevention
-5. **CSRF Protection** - Built into Next.js
-6. **Environment Variable Validation** - @t3-oss/env-nextjs
+3. **RBAC with Feature Flags** - Granular permission control
+4. **Zod Input Validation** - Runtime type checking
+5. **Drizzle Parameterized Queries** - SQL injection prevention
+6. **bcrypt Password Hashing** - Secure password storage
+7. **Email Verification** - Required for password-based accounts
+8. **CSRF Protection** - Built into Next.js
+9. **Environment Variable Validation** - @t3-oss/env-nextjs
+
+## UI Components
+
+### Radix UI + Shadcn (30+)
+- accordion, avatar, button, button-group
+- card, command, dialog, dropdown-menu
+- form, input, label, menubar
+- navigation-menu, popover, radio-group
+- scroll-area, select, separator, sheet
+- tabs, textarea, toast (sonner), tooltip
+- breadcrumb, badge, calendar, checkbox
+
+## Environment Variables
+
+### Required
+```bash
+# Database
+DATABASE_URL
+DATABASE_NAME
+
+# Auth
+AUTH_SECRET
+NEXTAUTH_URL
+
+# OAuth (Primary)
+YANDEX_CLIENT_ID
+YANDEX_CLIENT_SECRET
+
+# Email
+SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD
+```
+
+### Optional OAuth
+```bash
+VK_CLIENT_ID, VK_CLIENT_SECRET
+GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+MAILRU_CLIENT_ID, MAILRU_CLIENT_SECRET
+OK_CLIENT_ID, OK_CLIENT_SECRET, OK_PUBLIC_KEY
+SBER_CLIENT_ID, SBER_CLIENT_SECRET
+TINKOFF_CLIENT_ID, TINKOFF_CLIENT_SECRET
+TELEGRAM_BOT_TOKEN
+```
 
 ## Key Conventions
 
@@ -407,6 +472,14 @@ Required environment variables (see `.env.example`):
 4. **Database Queries**: Use Drizzle query builder
 5. **Styling**: TailwindCSS utility classes
 6. **Type Safety**: Let TypeScript infer, don't manually type
+7. **Auth Checks**: Use protectedProcedure for authenticated routes
+8. **Admin Checks**: Use adminProcedureWithFeature for granular access
+
+## Project Status
+
+- **Phase**: Active development (not production)
+- **Breaking Changes**: Allowed
+- **Testing**: Jest + React Testing Library (setup ready)
 
 ---
 

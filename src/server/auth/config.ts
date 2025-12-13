@@ -1,18 +1,28 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import bcrypt from "bcryptjs";
 import { and, eq, gt, isNotNull } from "drizzle-orm";
-import { type DefaultSession, type NextAuthConfig } from "next-auth";
+import { type DefaultSession, type NextAuthConfig, CredentialsSignin } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import MailRuProvider from "next-auth/providers/mailru";
 import VKProvider from "next-auth/providers/vk";
 import YandexProvider from "next-auth/providers/yandex";
 
+// Custom error classes for auth
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "EMAIL_NOT_VERIFIED";
+}
+
+class UserBlockedError extends CredentialsSignin {
+  code = "USER_BLOCKED";
+}
+
 import { db } from "~/server/db";
 import {
   accounts,
   sessions,
   telegramAuthTokens,
+  userBlocks,
   userRoles,
   users,
   verificationTokens,
@@ -116,6 +126,23 @@ async function getOrCreateTestUser(accountKey: string) {
 
 // Check if development mode
 const isDev = process.env.NODE_ENV === "development";
+
+// Helper to check if user is blocked
+async function isUserBlocked(userId: string): Promise<boolean> {
+  try {
+    const activeBlock = await db.query.userBlocks.findFirst({
+      where: and(
+        eq(userBlocks.userId, userId),
+        eq(userBlocks.isActive, true)
+      ),
+    });
+    return !!activeBlock;
+  } catch (error) {
+    // If table doesn't exist yet or query fails, allow login
+    console.error("[auth] Error checking user block status:", error);
+    return false;
+  }
+}
 
 // Build providers array dynamically based on available credentials
 function buildProviders() {
@@ -259,6 +286,11 @@ function buildProviders() {
 
           if (!user) return null;
 
+          // Check if user is blocked
+          if (await isUserBlocked(user.id)) {
+            throw new UserBlockedError();
+          }
+
           // Create/update account link
           const existingAccount = await db.query.accounts.findFirst({
             where: and(
@@ -319,14 +351,18 @@ function buildProviders() {
 
         // Check if email is verified for password-based accounts
         if (!user.emailVerified) {
-          // Throw a specific error that can be caught by the frontend
-          throw new Error("EMAIL_NOT_VERIFIED");
+          throw new EmailNotVerifiedError();
         }
 
         // Verify password
         const isValid = await bcrypt.compare(password, user.passwordHash);
         if (!isValid) {
           return null;
+        }
+
+        // Check if user is blocked
+        if (await isUserBlocked(user.id)) {
+          throw new UserBlockedError();
         }
 
         return {
@@ -373,6 +409,29 @@ function buildProviders() {
 export const authConfig = {
   secret: process.env.AUTH_SECRET,
   providers: buildProviders(),
+  logger: {
+    error: (code) => {
+      // Подавляем стандартный стек-трейс для ожидаемых ошибок аутентификации
+      if (code.name === "CredentialsSignin" || code.name === "EmailNotVerifiedError" || code.name === "UserBlockedError") {
+        const errorType = code.name === "EmailNotVerifiedError"
+          ? "email не подтверждён"
+          : code.name === "UserBlockedError"
+            ? "пользователь заблокирован"
+            : "неверные учётные данные";
+        console.log(` ⚠ [auth] ${code.name} - ${errorType}`);
+        return;
+      }
+      console.error("[auth][error]", code);
+    },
+    warn: (code) => {
+      console.warn("[auth][warn]", code);
+    },
+    debug: (code) => {
+      if (isDev) {
+        console.debug("[auth][debug]", code);
+      }
+    },
+  },
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -386,6 +445,17 @@ export const authConfig = {
     signIn: "/login",
   },
   callbacks: {
+    signIn: async ({ user, account }) => {
+      // Check if user is blocked (for OAuth providers)
+      if (user?.id && account?.provider !== "credentials" && account?.provider !== "telegram") {
+        // For credentials and telegram, block check happens in authorize()
+        // For OAuth, we need to check here
+        if (await isUserBlocked(user.id)) {
+          return "/login?error=USER_BLOCKED";
+        }
+      }
+      return true;
+    },
     jwt: async ({ token, user }) => {
       if (user) {
         token.id = user.id;
