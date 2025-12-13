@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { JSONContent } from "@tiptap/react";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
+import { generateSlug } from "~/lib/utils/slug";
 import {
   Select,
   SelectContent,
@@ -19,7 +21,17 @@ import {
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
 import { StandardEditor } from "~/components/editor/rich-editor";
+import { ImageUploader } from "~/components/media";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 import type { NewsStatus, NewsType } from "~/server/db/schema";
@@ -34,52 +46,83 @@ const INITIAL_CONTENT: JSONContent = {
   ],
 };
 
+// Validation schema
+const newsFormSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Заголовок обязателен")
+    .max(255, "Заголовок слишком длинный"),
+  slug: z
+    .string()
+    .max(255, "Slug слишком длинный")
+    .regex(/^[a-z0-9-]*$/i, "Slug может содержать только буквы, цифры и дефисы")
+    .optional()
+    .or(z.literal("")),
+  excerpt: z.string().max(500, "Описание слишком длинное").optional(),
+  coverImage: z.string().optional(),
+  content: z.custom<JSONContent>(),
+  type: z.enum([
+    "announcement",
+    "event",
+    "maintenance",
+    "update",
+    "community",
+    "urgent",
+  ]),
+  status: z.enum(["draft", "scheduled", "published", "archived"]),
+  publishAt: z.string().optional(),
+  isPinned: z.boolean(),
+  isHighlighted: z.boolean(),
+});
+
+type NewsFormValues = z.infer<typeof newsFormSchema>;
+
 export default function NewNewsPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  // Form state
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
-  const [excerpt, setExcerpt] = useState("");
-  const [coverImage, setCoverImage] = useState("");
-  const [content, setContent] = useState<JSONContent>(INITIAL_CONTENT);
-  const [type, setType] = useState<NewsType>("announcement");
-  const [status, setStatus] = useState<NewsStatus>("draft");
-  const [publishAt, setPublishAt] = useState("");
-  const [isPinned, setIsPinned] = useState(false);
-  const [isHighlighted, setIsHighlighted] = useState(false);
+  const form = useForm<NewsFormValues>({
+    resolver: zodResolver(newsFormSchema),
+    defaultValues: {
+      title: "",
+      slug: "",
+      excerpt: "",
+      coverImage: "",
+      content: INITIAL_CONTENT,
+      type: "announcement",
+      status: "draft",
+      publishAt: "",
+      isPinned: false,
+      isHighlighted: false,
+    },
+  });
 
-  // Mutation
   const createMutation = api.news.create.useMutation({
     onSuccess: (data) => {
       toast({ title: "Новость создана" });
       router.push(`/admin/news/${data?.id}`);
     },
     onError: (error) => {
-      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!title.trim()) {
-      toast({ title: "Введите заголовок", variant: "destructive" });
-      return;
-    }
-
+  const onSubmit = (values: NewsFormValues) => {
     createMutation.mutate({
-      title: title.trim(),
-      slug: slug.trim() || undefined,
-      excerpt: excerpt.trim() || undefined,
-      coverImage: coverImage.trim() || undefined,
-      content,
-      type,
-      status,
-      publishAt: publishAt ? new Date(publishAt) : undefined,
-      isPinned,
-      isHighlighted,
+      title: values.title.trim(),
+      slug: values.slug?.trim() || undefined,
+      excerpt: values.excerpt?.trim() || undefined,
+      coverImage: values.coverImage?.trim() || undefined,
+      content: values.content,
+      type: values.type as NewsType,
+      status: values.status as NewsStatus,
+      publishAt: values.publishAt ? new Date(values.publishAt) : undefined,
+      isPinned: values.isPinned,
+      isHighlighted: values.isHighlighted,
     });
   };
 
@@ -100,167 +143,260 @@ export default function NewNewsPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Основная информация</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Заголовок *</Label>
-                  <Input
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Введите заголовок новости"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Основная информация</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Заголовок *</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Введите заголовок новости"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="slug">Slug (URL)</Label>
-                  <Input
-                    id="slug"
-                    value={slug}
-                    onChange={(e) => setSlug(e.target.value)}
-                    placeholder="Автоматически из заголовка и даты"
+                  <FormField
+                    control={form.control}
+                    name="slug"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Slug (URL)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Автоматически из заголовка и даты"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Оставьте пустым для автогенерации
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Оставьте пустым для автогенерации
-                  </p>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="excerpt">Краткое описание</Label>
-                  <Textarea
-                    id="excerpt"
-                    value={excerpt}
-                    onChange={(e) => setExcerpt(e.target.value)}
-                    placeholder="Краткое описание для карточки новости"
-                    rows={2}
+                  <FormField
+                    control={form.control}
+                    name="excerpt"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Краткое описание</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Краткое описание для карточки новости"
+                            rows={2}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="coverImage">Обложка (URL)</Label>
-                  <Input
-                    id="coverImage"
-                    value={coverImage}
-                    onChange={(e) => setCoverImage(e.target.value)}
-                    placeholder="https://example.com/image.jpg"
+                  <FormField
+                    control={form.control}
+                    name="coverImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <ImageUploader
+                          label="Обложка"
+                          value={field.value || null}
+                          onChange={(url) => field.onChange(url ?? "")}
+                          enableCrop
+                          aspectRatio={16 / 9}
+                          maxWidth={1200}
+                          addWatermark={false}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Содержание</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <StandardEditor
-                  content={content}
-                  onChange={setContent}
-                  placeholder="Введите текст новости..."
-                  minHeight="300px"
-                />
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Содержание</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <FormField
+                    control={form.control}
+                    name="content"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <StandardEditor
+                            content={field.value}
+                            onChange={field.onChange}
+                            placeholder="Введите текст новости..."
+                            minHeight="300px"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Публикация</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Статус</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="draft">Черновик</SelectItem>
+                            <SelectItem value="scheduled">
+                              Запланирована
+                            </SelectItem>
+                            <SelectItem value="published">
+                              Опубликована
+                            </SelectItem>
+                            <SelectItem value="archived">В архиве</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="publishAt"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Дата публикации</FormLabel>
+                        <FormControl>
+                          <Input type="datetime-local" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Классификация</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Тип</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="announcement">
+                              Объявление
+                            </SelectItem>
+                            <SelectItem value="event">Мероприятие</SelectItem>
+                            <SelectItem value="maintenance">
+                              Тех. работы
+                            </SelectItem>
+                            <SelectItem value="update">Обновление</SelectItem>
+                            <SelectItem value="community">Сообщество</SelectItem>
+                            <SelectItem value="urgent">Срочное</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="isPinned"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between">
+                        <FormLabel>Закрепить</FormLabel>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="isHighlighted"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between">
+                        <FormLabel>Выделить</FormLabel>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={createMutation.isPending}
+              >
+                {createMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Создать
+              </Button>
+            </div>
           </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Публикация</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Статус</Label>
-                  <Select value={status} onValueChange={(v) => setStatus(v as NewsStatus)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Черновик</SelectItem>
-                      <SelectItem value="scheduled">Запланирована</SelectItem>
-                      <SelectItem value="published">Опубликована</SelectItem>
-                      <SelectItem value="archived">В архиве</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="publishAt">Дата публикации</Label>
-                  <Input
-                    id="publishAt"
-                    type="datetime-local"
-                    value={publishAt}
-                    onChange={(e) => setPublishAt(e.target.value)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Классификация</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Тип</Label>
-                  <Select value={type} onValueChange={(v) => setType(v as NewsType)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="announcement">Объявление</SelectItem>
-                      <SelectItem value="event">Мероприятие</SelectItem>
-                      <SelectItem value="maintenance">Тех. работы</SelectItem>
-                      <SelectItem value="update">Обновление</SelectItem>
-                      <SelectItem value="community">Сообщество</SelectItem>
-                      <SelectItem value="urgent">Срочное</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="isPinned">Закрепить</Label>
-                  <Switch
-                    id="isPinned"
-                    checked={isPinned}
-                    onCheckedChange={setIsPinned}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="isHighlighted">Выделить</Label>
-                  <Switch
-                    id="isHighlighted"
-                    checked={isHighlighted}
-                    onCheckedChange={setIsHighlighted}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={createMutation.isPending}
-            >
-              {createMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              Создать
-            </Button>
-          </div>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   );
 }

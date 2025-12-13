@@ -7,6 +7,7 @@ import {
   Building2,
   ClipboardList,
   FileText,
+  Image as ImageIcon,
   LayoutDashboard,
   LogOut,
   Megaphone,
@@ -36,6 +37,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   UserX,
   Megaphone,
   Newspaper,
+  ImageIcon,
 };
 
 interface AdminNavigationProps {

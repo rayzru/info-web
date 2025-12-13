@@ -36,6 +36,7 @@ import {
 } from "~/components/ui/dialog";
 import { StandardEditor } from "~/components/editor/rich-editor";
 import { TelegramPreviewDialog } from "~/components/admin/telegram-preview-dialog";
+import { ImageUploader } from "~/components/media";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 import type { NewsStatus, NewsType } from "~/server/db/schema";
@@ -250,15 +251,15 @@ export default function EditNewsPage() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="coverImage">Обложка (URL)</Label>
-                  <Input
-                    id="coverImage"
-                    value={coverImage}
-                    onChange={(e) => setCoverImage(e.target.value)}
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
+                <ImageUploader
+                  label="Обложка"
+                  value={coverImage || null}
+                  onChange={(url) => setCoverImage(url ?? "")}
+                  enableCrop
+                  aspectRatio={16 / 9}
+                  maxWidth={1200}
+                  addWatermark={false}
+                />
               </CardContent>
             </Card>
 
@@ -326,17 +327,15 @@ export default function EditNewsPage() {
                   </Button>
                 )}
 
-                {status === "published" && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setTelegramDialogOpen(true)}
-                  >
-                    <Send className="mr-2 h-4 w-4" />
-                    В Telegram
-                  </Button>
-                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setTelegramDialogOpen(true)}
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  Превью Telegram
+                </Button>
               </CardContent>
             </Card>
 

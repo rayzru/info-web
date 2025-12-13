@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 
 import { cn } from "~/lib/utils";
 import { getExtensions, type EditorMode, type RichEditorProps } from "~/lib/editor";
 import { Toolbar } from "./toolbar";
+import { EditorImageDialog } from "./editor-image-dialog";
 
 import "./editor.css";
 
@@ -21,7 +22,13 @@ export function RichEditor({
   minHeight = "120px",
   maxHeight,
 }: RichEditorProps) {
-  const extensions = getExtensions(mode, placeholder);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+
+  // Memoize extensions to prevent recreating on every render
+  const extensions = useMemo(
+    () => getExtensions(mode, placeholder),
+    [mode, placeholder]
+  );
 
   const editor = useEditor({
     extensions,
@@ -44,7 +51,7 @@ export function RichEditor({
         style: `min-height: ${minHeight}; ${maxHeight ? `max-height: ${maxHeight}; overflow-y: auto;` : ""}`,
       },
     },
-    // Ensure SSR compatibility
+    // SSR: render on client only
     immediatelyRender: false,
   });
 
@@ -66,16 +73,37 @@ export function RichEditor({
     }
   }, [editor, editable]);
 
+  const handleImageSelect = (url: string, alt?: string) => {
+    if (editor) {
+      editor.chain().focus().setImage({ src: url, alt: alt ?? "" }).run();
+    }
+  };
+
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-lg border bg-background",
+        "rounded-lg border bg-background",
         !editable && "opacity-60",
         className
       )}
     >
-      {editable && <Toolbar editor={editor} mode={mode} />}
-      <EditorContent editor={editor} />
+      {editable && (
+        <Toolbar
+          editor={editor}
+          mode={mode}
+          onImageUpload={() => setImageDialogOpen(true)}
+        />
+      )}
+      <EditorContent
+        editor={editor}
+        className="[&_.tiptap]:outline-none [&_.ProseMirror_*::selection]:bg-blue-500/50 [&_.ProseMirror_::selection]:bg-blue-500/50"
+      />
+
+      <EditorImageDialog
+        open={imageDialogOpen}
+        onOpenChange={setImageDialogOpen}
+        onImageSelect={handleImageSelect}
+      />
     </div>
   );
 }
