@@ -150,10 +150,13 @@ export const authRouter = createTRPCRouter({
       // Hash new password
       const passwordHash = await bcrypt.hash(input.password, 12);
 
-      // Update user password
+      // Update user password and verify email (user proved email ownership by clicking reset link)
       await ctx.db
         .update(users)
-        .set({ passwordHash })
+        .set({
+          passwordHash,
+          emailVerified: resetToken.user?.emailVerified ?? new Date(),
+        })
         .where(eq(users.id, resetToken.userId));
 
       // Mark token as used

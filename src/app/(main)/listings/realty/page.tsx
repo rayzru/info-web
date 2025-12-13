@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpDown, Building2, Calendar, Home, ListFilter, Phone } from "lucide-react";
+import { ArrowUpDown, Building2, Calendar, Home, ListFilter, Loader2, Phone } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -39,7 +39,7 @@ function getApartmentInfo(listing: ListingData): { building: number; entrance: n
   };
 }
 
-export default function RealtyListingsPage() {
+function RealtyListingsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -331,5 +331,19 @@ export default function RealtyListingsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function RealtyListingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      }
+    >
+      <RealtyListingsPageContent />
+    </Suspense>
   );
 }

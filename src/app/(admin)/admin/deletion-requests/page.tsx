@@ -394,6 +394,8 @@ export default function AdminDeletionRequestsPage() {
     status: statusFilter !== "all" ? (statusFilter as any) : undefined,
   });
 
+  const { data: counts, refetch: refetchCounts } = api.admin.deletionRequests.counts.useQuery();
+
   const setFilter = (status: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (status === "all") {
@@ -404,8 +406,10 @@ export default function AdminDeletionRequestsPage() {
     router.push(`/admin/deletion-requests?${params.toString()}`);
   };
 
-  const pendingCount = requests?.filter(r => r.status === "pending").length ?? 0;
-  const approvedCount = requests?.filter(r => r.status === "approved").length ?? 0;
+  const handleSuccess = () => {
+    void refetch();
+    void refetchCounts();
+  };
 
   const openReviewDialog = (request: any) => {
     setSelectedRequest(request);
@@ -439,7 +443,7 @@ export default function AdminDeletionRequestsPage() {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-yellow-600" />
-              <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
+              <div className="text-2xl font-bold text-yellow-600">{counts?.pending ?? 0}</div>
             </div>
             <p className="text-sm text-muted-foreground">Ожидают</p>
           </CardContent>
@@ -455,7 +459,7 @@ export default function AdminDeletionRequestsPage() {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-green-600" />
-              <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
+              <div className="text-2xl font-bold text-green-600">{counts?.approved ?? 0}</div>
             </div>
             <p className="text-sm text-muted-foreground">К выполнению</p>
           </CardContent>
@@ -471,9 +475,7 @@ export default function AdminDeletionRequestsPage() {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <X className="h-5 w-5 text-red-600" />
-              <div className="text-2xl font-bold text-red-600">
-                {requests?.filter(r => r.status === "rejected").length ?? 0}
-              </div>
+              <div className="text-2xl font-bold text-red-600">{counts?.rejected ?? 0}</div>
             </div>
             <p className="text-sm text-muted-foreground">Отклонено</p>
           </CardContent>
@@ -489,9 +491,7 @@ export default function AdminDeletionRequestsPage() {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Trash2 className="h-5 w-5 text-muted-foreground" />
-              <div className="text-2xl font-bold">
-                {requests?.filter(r => r.status === "completed").length ?? 0}
-              </div>
+              <div className="text-2xl font-bold">{counts?.completed ?? 0}</div>
             </div>
             <p className="text-sm text-muted-foreground">Выполнено</p>
           </CardContent>
@@ -614,7 +614,7 @@ export default function AdminDeletionRequestsPage() {
           request={selectedRequest}
           open={reviewDialogOpen}
           onOpenChange={setReviewDialogOpen}
-          onSuccess={() => refetch()}
+          onSuccess={handleSuccess}
         />
       )}
 
@@ -624,7 +624,7 @@ export default function AdminDeletionRequestsPage() {
           request={selectedRequest}
           open={executeDialogOpen}
           onOpenChange={setExecuteDialogOpen}
-          onSuccess={() => refetch()}
+          onSuccess={handleSuccess}
         />
       )}
     </div>

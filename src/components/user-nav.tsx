@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { auth, signOut } from "~/server/auth";
+import { auth } from "~/server/auth";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
@@ -41,7 +41,7 @@ export async function UserNav() {
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuContent align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm leading-none font-medium">{userName}</p>
@@ -57,24 +57,11 @@ export async function UserNav() {
                   href="/my"
                   className="text-muted-foreground hover:text-primary text-sm leading-none font-medium transition-colors"
                 >
-                  Профиль
+                  Мой кабинет
                   <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <form
-              action={async () => {
-                "use server";
-                await signOut();
-              }}
-            >
-              <DropdownMenuItem asChild>
-                <button className="w-full text-left" type="submit">
-                  Выйти
-                </button>
-              </DropdownMenuItem>
-            </form>
           </DropdownMenuContent>
         </DropdownMenu>
       )}

@@ -1,7 +1,9 @@
 import Link from "next/link";
 
-import { auth, signOut } from "~/server/auth";
+import { auth } from "~/server/auth";
 import { isAdmin, type UserRole } from "~/server/auth/rbac";
+import { getRankConfig } from "~/lib/ranks";
+import { cn } from "~/lib/utils";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
@@ -13,6 +15,7 @@ export async function Navigation() {
   const session = await auth();
   const userRoles = (session?.user?.roles ?? []) as UserRole[];
   const hasAdminAccess = isAdmin(userRoles);
+  const rankConfig = getRankConfig(userRoles);
 
   return (
     <div className="mt-4 flex items-center justify-between">
@@ -31,36 +34,31 @@ export async function Navigation() {
 
         {session && (
           <>
-            {/* Desktop: user menu aligned with sidebar width (w-64 = 256px) */}
-            <div className="hidden lg:flex items-center gap-2 w-64">
-              <Link href="/my" passHref data-testid="nav-user-cabinet" className="flex-1 min-w-0">
-                <Button variant="ghost" size="sm" className="w-full justify-start">
-                  <Avatar className="h-4 w-4 shrink-0">
+            {/* Desktop: user menu with role-colored ring, auto width up to sidebar width */}
+            <div className="hidden lg:flex items-center justify-end max-w-64">
+              <Link href="/my" passHref data-testid="nav-user-cabinet">
+                <Button variant="ghost" size="sm" className="justify-start">
+                  <Avatar className={cn(
+                    "h-5 w-5 shrink-0 ring-2 ring-offset-1 ring-offset-background",
+                    rankConfig.ringColor
+                  )}>
                     <AvatarImage src={session.user.image ?? undefined} />
-                    <AvatarFallback>
+                    <AvatarFallback className="text-[10px]">
                       {session.user.name?.slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                   <span className="truncate">{session.user.name ?? "Кабинет"}</span>
                 </Button>
               </Link>
-              <form
-                action={async () => {
-                  "use server";
-                  await signOut();
-                }}
-                className="shrink-0"
-              >
-                <Button variant="outline" size="sm" type="submit" data-testid="nav-logout">
-                  Выйти
-                </Button>
-              </form>
             </div>
 
-            {/* Mobile/Tablet: only avatar */}
+            {/* Mobile/Tablet: only avatar with role ring */}
             <Link href="/my" passHref data-testid="nav-user-cabinet-mobile" className="lg:hidden">
               <Button variant="ghost" size="icon">
-                <Avatar className="h-6 w-6">
+                <Avatar className={cn(
+                  "h-6 w-6 ring-2 ring-offset-1 ring-offset-background",
+                  rankConfig.ringColor
+                )}>
                   <AvatarImage src={session.user.image ?? undefined} />
                   <AvatarFallback className="text-xs">
                     {session.user.name?.slice(0, 2)}

@@ -56,13 +56,12 @@ export const tags = createTable("tags", {
 export const contactGroupTags = createTable(
   "contact_group_tags",
   {
-    contactGroupId: varchar("contact_group_id", { length: 36 }).references(
-      () => contactGroups.id,
-      { onDelete: "cascade" }
-    ),
-    tagId: varchar("tag_id", { length: 36 }).references(() => tags.id, {
-      onDelete: "cascade",
-    }),
+    contactGroupId: varchar("contact_group_id", { length: 36 })
+      .notNull()
+      .references(() => contactGroups.id, { onDelete: "cascade" }),
+    tagId: varchar("tag_id", { length: 36 })
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
   },
   (t) => [primaryKey({ columns: [t.contactGroupId, t.tagId] })]
 );

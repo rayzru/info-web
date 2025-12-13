@@ -34,3 +34,37 @@ export const registerInputSchema = z.object({
 });
 
 export type RegisterInput = z.infer<typeof registerInputSchema>;
+
+// Login form schema
+export const loginFormSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Введите email")
+    .email("Некорректный формат email"),
+  password: z.string().min(1, "Введите пароль"),
+});
+
+export type LoginFormData = z.infer<typeof loginFormSchema>;
+
+// Forgot password form schema
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Введите email")
+    .email("Некорректный формат email"),
+});
+
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+// Reset password form schema
+export const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Подтвердите пароль"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Пароли не совпадают",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;

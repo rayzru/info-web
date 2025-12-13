@@ -60,6 +60,13 @@ export const users = createTable("user", {
   image: varchar("image", { length: 255 }),
   // Password for email/password auth (bcrypt hash)
   passwordHash: varchar("password_hash", { length: 255 }),
+  // Registration date
+  createdAt: timestamp("created_at", {
+    mode: "date",
+    withTimezone: true,
+  })
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
   // Soft delete fields
   isDeleted: boolean("is_deleted").notNull().default(false),
   deletedAt: timestamp("deleted_at", {
@@ -309,3 +316,87 @@ export const telegramAuthTokens = createTable(
     index("telegram_auth_token_telegram_id_idx").on(table.telegramId),
   ]
 );
+
+// Enum для категорий блокировки
+export const blockCategoryEnum = pgEnum("block_category_enum", [
+  "rules_violation",    // Нарушение правил сообщества
+  "fraud",              // Мошенничество
+  "spam",               // Спам
+  "abuse",              // Оскорбления/травля
+  "other",              // Другая причина
+]);
+
+// Пункты правил для нарушений
+export const rulesViolationEnum = pgEnum("rules_violation_enum", [
+  "3.1", // Запрещённый контент
+  "3.2", // Недостоверная информация
+  "3.3", // Нарушение приватности
+  "3.4", // Коммерческая реклама
+  "3.5", // Оскорбления и агрессия
+  "4.1", // Фиктивные объявления
+  "4.2", // Завышение/занижение цен
+  "4.3", // Скрытые условия
+  "5.1", // Множественные аккаунты
+  "5.2", // Обход блокировки
+]);
+
+// Таблица блокировок пользователей
+export const userBlocks = createTable(
+  "user_block",
+  {
+    id: varchar("id", { length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // Кто заблокировал
+    blockedBy: varchar("blocked_by", { length: 255 })
+      .notNull()
+      .references(() => users.id),
+    // Категория блокировки
+    category: blockCategoryEnum("category").notNull(),
+    // Нарушенные пункты правил (для rules_violation)
+    violatedRules: text("violated_rules"), // JSON array of rule codes
+    // Причина блокировки (для категории "other" или дополнительный комментарий)
+    reason: text("reason"),
+    // Активна ли блокировка
+    isActive: boolean("is_active").notNull().default(true),
+    // Дата создания
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    // Дата снятия блокировки
+    unblockedAt: timestamp("unblocked_at", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    // Кто снял блокировку
+    unblockedBy: varchar("unblocked_by", { length: 255 })
+      .references(() => users.id),
+    // Причина снятия блокировки
+    unblockReason: text("unblock_reason"),
+  },
+  (table) => [
+    index("user_block_user_id_idx").on(table.userId),
+    index("user_block_is_active_idx").on(table.isActive),
+  ]
+);
+
+export const userBlocksRelations = relations(userBlocks, ({ one }) => ({
+  user: one(users, { fields: [userBlocks.userId], references: [users.id] }),
+  blockedByUser: one(users, {
+    fields: [userBlocks.blockedBy],
+    references: [users.id],
+    relationName: "blockedByUser",
+  }),
+  unblockedByUser: one(users, {
+    fields: [userBlocks.unblockedBy],
+    references: [users.id],
+    relationName: "unblockedByUser",
+  }),
+}));

@@ -1,16 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
-import { AlertCircle } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import {
   Tooltip,
   TooltipContent,
@@ -18,6 +25,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
+import { loginFormSchema, type LoginFormData } from "~/lib/validations/auth";
 
 import { VkIdStack } from "./auth/vk-id-stack";
 
@@ -31,49 +39,102 @@ export function LoginForm({
   const callbackUrl = searchParams.get("callbackUrl") ?? "/my";
   const errorParam = searchParams.get("error");
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showResendLink, setShowResendLink] = useState(errorParam === "EMAIL_NOT_VERIFIED");
-  const [error, setError] = useState<string | null>(
-    errorParam === "CredentialsSignin" ? "Неверный email или пароль" :
-    errorParam === "EMAIL_NOT_VERIFIED" ? "Email не подтверждён. Проверьте почту или запросите повторную отправку." : null
+
+  // Маппинг серверных ошибок (из URL или code параметра)
+  const codeParam = searchParams.get("code");
+
+  const getInitialServerError = () => {
+    const errorCode = codeParam ?? errorParam;
+
+    if (errorCode === "CredentialsSignin") {
+      return "Неверный email или пароль";
+    }
+    if (errorCode === "EMAIL_NOT_VERIFIED") {
+      return "Email не подтверждён. Проверьте почту или запросите повторную отправку.";
+    }
+    if (errorCode === "USER_BLOCKED") {
+      return "blocked"; // Special marker for block message
+    }
+    return null;
+  };
+
+  const isBlocked = (codeParam ?? errorParam) === "USER_BLOCKED";
+
+  const [serverError, setServerError] = useState<string | null>(getInitialServerError());
+  const [showResendLink, setShowResendLink] = useState(
+    codeParam === "EMAIL_NOT_VERIFIED" || errorParam === "EMAIL_NOT_VERIFIED"
   );
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    mode: "onSubmit", // Не показываем ошибки валидации полей
+  });
+
+  // Минимальные условия для разблокировки кнопки (без показа ошибок)
+  const email = form.watch("email");
+  const password = form.watch("password");
+  const canSubmit = email.includes("@") && password.length >= 1;
+
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    setError(null);
+    setServerError(null);
 
     try {
       const result = await signIn("credentials", {
-        email,
-        password,
+        email: data.email,
+        password: data.password,
         redirect: false,
       });
 
       if (result?.error) {
-        // Handle specific error types
-        if (result.error === "EMAIL_NOT_VERIFIED") {
-          setError("Email не подтверждён. Проверьте почту или запросите повторную отправку.");
+        // NextAuth v5 returns the error code in result.code for CredentialsSignin subclasses
+        const errorCode = result.code ?? result.error;
+
+        if (errorCode === "EMAIL_NOT_VERIFIED") {
+          setServerError("Email не подтверждён. Проверьте почту или запросите повторную отправку.");
           setShowResendLink(true);
-        } else if (result.error === "CredentialsSignin") {
-          setError("Неверный email или пароль");
+        } else if (errorCode === "USER_BLOCKED") {
+          setServerError("blocked");
+          setShowResendLink(false);
+        } else if (errorCode === "CredentialsSignin" || result.error === "CredentialsSignin") {
+          setServerError("Неверный email или пароль");
           setShowResendLink(false);
         } else {
-          setError("Произошла ошибка при входе. Попробуйте позже.");
+          setServerError("Произошла ошибка при входе. Попробуйте позже.");
           setShowResendLink(false);
         }
       } else if (result?.ok) {
-        // Success - redirect manually
         window.location.href = callbackUrl;
       }
     } catch {
-      setError("Произошла ошибка при входе. Попробуйте позже.");
+      setServerError("Произошла ошибка при входе. Попробуйте позже.");
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Block message component
+  const BlockedMessage = () => (
+    <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm">
+      <h3 className="mb-2 font-semibold text-destructive">Аккаунт заблокирован</h3>
+      <p className="mb-3 text-muted-foreground">
+        Ваш аккаунт заблокирован за нарушение Правил пользования ресурсом.
+      </p>
+      <p className="mb-3 text-muted-foreground">
+        Если вы считаете, что блокировка применена ошибочно, вы можете обратиться к администрации
+        для разъяснения обстоятельств дела.
+      </p>
+      <p className="text-xs text-muted-foreground/70">
+        Для обжалования решения или получения дополнительной информации направьте обращение на адрес
+        электронной почты администрации ресурса.
+      </p>
+    </div>
+  );
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -81,70 +142,83 @@ export function LoginForm({
         ПАРАДНАЯ
       </h1>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {error}
-            {showResendLink && (
-              <>
-                {" "}
-                <Link
-                  href="/resend-verification"
-                  className="underline underline-offset-2 hover:text-destructive-foreground"
-                >
-                  Отправить повторно
-                </Link>
-              </>
-            )}
-          </AlertDescription>
-        </Alert>
-      )}
+      {(isBlocked || serverError === "blocked") && <BlockedMessage />}
 
-      {/* Email/Password Form */}
-      <form onSubmit={handleEmailSignIn} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="email@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            data-testid="login-email"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="email@example.com"
+                    disabled={isLoading}
+                    data-testid="login-email"
+                    {...field}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Пароль</Label>
-            <Link
-              href="/forgot-password"
-              className="text-xs text-muted-foreground hover:text-foreground hover:underline"
-            >
-              Забыли пароль?
-            </Link>
-          </div>
-          <Input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            data-testid="login-password"
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center justify-between">
+                  <FormLabel>Пароль</FormLabel>
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+                  >
+                    Забыли пароль?
+                  </Link>
+                </div>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    disabled={isLoading}
+                    data-testid="login-password"
+                    {...field}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
-        </div>
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={isLoading}
-          data-testid="login-submit"
-        >
-          {isLoading ? "Вход..." : "Войти"}
-        </Button>
-      </form>
+
+          {serverError && serverError !== "blocked" && (
+            <p className="text-sm text-destructive" data-testid="login-error">
+              {serverError}
+              {showResendLink && (
+                <>
+                  {" "}
+                  <Link
+                    href="/resend-verification"
+                    className="underline underline-offset-2 hover:text-destructive/80"
+                  >
+                    Отправить повторно
+                  </Link>
+                </>
+              )}
+            </p>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={!canSubmit || isLoading}
+            data-testid="login-submit"
+          >
+            {isLoading ? "Вход..." : "Войти"}
+          </Button>
+        </form>
+      </Form>
 
       {/* Divider */}
       <div className="relative">
