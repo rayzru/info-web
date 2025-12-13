@@ -35,6 +35,7 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { StandardEditor } from "~/components/editor/rich-editor";
+import { TelegramPreviewDialog } from "~/components/admin/telegram-preview-dialog";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 import type { NewsStatus, NewsType } from "~/server/db/schema";
@@ -423,30 +424,14 @@ export default function EditNewsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Telegram Dialog */}
-      <Dialog open={telegramDialogOpen} onOpenChange={setTelegramDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Опубликовать в Telegram?</DialogTitle>
-            <DialogDescription>
-              Новость будет опубликована в Telegram канал.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setTelegramDialogOpen(false)}>
-              Отмена
-            </Button>
-            <Button
-              onClick={() => telegramMutation.mutate({ id })}
-              disabled={telegramMutation.isPending}
-            >
-              {telegramMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <Send className="mr-2 h-4 w-4" />
-              Опубликовать
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Telegram Dialog with Preview */}
+      <TelegramPreviewDialog
+        open={telegramDialogOpen}
+        onOpenChange={setTelegramDialogOpen}
+        newsId={id}
+        onSend={() => telegramMutation.mutate({ id })}
+        isSending={telegramMutation.isPending}
+      />
     </div>
   );
 }
