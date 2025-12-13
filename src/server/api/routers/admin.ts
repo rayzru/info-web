@@ -741,6 +741,174 @@ export const adminRouter = createTRPCRouter({
 
         return { success: true };
       }),
+
+    // Search users for mentions
+    search: adminProcedure
+      .input(z.object({ query: z.string().min(1).max(100) }))
+      .query(async ({ ctx, input }) => {
+        const results = await ctx.db
+          .select({
+            id: users.id,
+            name: users.name,
+            image: users.image,
+          })
+          .from(users)
+          .where(ilike(users.name, `%${input.query}%`))
+          .limit(10);
+
+        return results.map((user) => ({
+          id: user.id,
+          label: user.name ?? "Без имени",
+          type: "user" as const,
+          image: user.image ?? undefined,
+        }));
+      }),
+  }),
+
+  // Structure search for mentions (#b1, #b1e2, #b1kv123, #b1p45)
+  structures: createTRPCRouter({
+    search: adminProcedure
+      .input(z.object({ query: z.string().min(1).max(50) }))
+      .query(async ({ ctx, input }) => {
+        const query = input.query.toLowerCase();
+        const results: Array<{
+          id: string;
+          code: string;
+          label: string;
+          type: "building" | "entrance" | "apartment" | "parking";
+        }> = [];
+
+        // Parse query pattern: #b<num>, #b<num>e<num>, #b<num>kv<num>, #b<num>p<num>
+        const buildingMatch = query.match(/^#?b(\d+)$/);
+        const entranceMatch = query.match(/^#?b(\d+)e(\d+)$/);
+        const apartmentMatch = query.match(/^#?b(\d+)kv(\d+)$/);
+        const parkingMatch = query.match(/^#?b(\d+)p(\d+)$/);
+
+        if (buildingMatch) {
+          // Search building by number
+          const buildingNum = parseInt(buildingMatch[1]!);
+          const building = await ctx.db.query.buildings.findFirst({
+            where: eq(buildings.number, buildingNum),
+          });
+          if (building) {
+            results.push({
+              id: building.id,
+              code: `#b${building.number}`,
+              label: `Корпус ${building.number}${building.title ? ` (${building.title})` : ""}`,
+              type: "building",
+            });
+          }
+        } else if (entranceMatch) {
+          // Search entrance
+          const buildingNum = parseInt(entranceMatch[1]!);
+          const entranceNum = parseInt(entranceMatch[2]!);
+          const building = await ctx.db.query.buildings.findFirst({
+            where: eq(buildings.number, buildingNum),
+            with: {
+              entrances: {
+                where: eq(entrances.entranceNumber, entranceNum),
+              },
+            },
+          });
+          if (building && building.entrances[0]) {
+            results.push({
+              id: building.entrances[0].id,
+              code: `#b${building.number}e${entranceNum}`,
+              label: `Корпус ${building.number}, подъезд ${entranceNum}`,
+              type: "entrance",
+            });
+          }
+        } else if (apartmentMatch) {
+          // Search apartment
+          const buildingNum = parseInt(apartmentMatch[1]!);
+          const aptNum = apartmentMatch[2]!;
+          const building = await ctx.db.query.buildings.findFirst({
+            where: eq(buildings.number, buildingNum),
+            with: {
+              entrances: {
+                with: {
+                  floors: {
+                    with: {
+                      apartments: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+          if (building) {
+            for (const entrance of building.entrances) {
+              for (const floor of entrance.floors) {
+                const apt = floor.apartments.find((a) => a.number === aptNum);
+                if (apt) {
+                  results.push({
+                    id: apt.id,
+                    code: `#b${building.number}kv${aptNum}`,
+                    label: `Корпус ${building.number}, кв. ${aptNum}`,
+                    type: "apartment",
+                  });
+                  break;
+                }
+              }
+              if (results.length > 0) break;
+            }
+          }
+        } else if (parkingMatch) {
+          // Search parking spot
+          const buildingNum = parseInt(parkingMatch[1]!);
+          const spotNum = parseInt(parkingMatch[2]!);
+          const building = await ctx.db.query.buildings.findFirst({
+            where: eq(buildings.number, buildingNum),
+            with: {
+              parkings: {
+                with: {
+                  floors: {
+                    with: {
+                      spots: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+          if (building) {
+            for (const parking of building.parkings) {
+              for (const floor of parking.floors) {
+                const spot = floor.spots.find((s) => s.number === String(spotNum));
+                if (spot) {
+                  results.push({
+                    id: spot.id,
+                    code: `#b${building.number}p${spotNum}`,
+                    label: `Корпус ${building.number}, парковка ${spotNum}`,
+                    type: "parking",
+                  });
+                  break;
+                }
+              }
+              if (results.length > 0) break;
+            }
+          }
+        } else if (query.startsWith("#b") || query.startsWith("b")) {
+          // Suggest buildings if just typing #b or b
+          const allBuildings = await ctx.db.query.buildings.findMany({
+            where: eq(buildings.active, true),
+            orderBy: (b, { asc }) => [asc(b.number)],
+            limit: 10,
+          });
+          for (const b of allBuildings) {
+            if (b.number) {
+              results.push({
+                id: b.id,
+                code: `#b${b.number}`,
+                label: `Корпус ${b.number}${b.title ? ` (${b.title})` : ""}`,
+                type: "building",
+              });
+            }
+          }
+        }
+
+        return results;
+      }),
   }),
 
   // Buildings management

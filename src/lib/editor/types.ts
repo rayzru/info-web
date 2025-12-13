@@ -57,7 +57,8 @@ export type NodeType =
 export interface MentionAttrs {
   id: string;
   label: string;
-  type: "user" | "role" | "team";
+  type: "user" | "role" | "team" | "building" | "entrance" | "apartment" | "parking";
+  code?: string; // For structure mentions: #b1, #b1e2, #b1kv123, #b1p45
 }
 
 export interface ReferenceCardAttrs {
