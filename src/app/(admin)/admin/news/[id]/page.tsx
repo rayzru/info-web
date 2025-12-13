@@ -59,6 +59,7 @@ export default function EditNewsPage() {
   const [publishAt, setPublishAt] = useState("");
   const [isPinned, setIsPinned] = useState(false);
   const [isHighlighted, setIsHighlighted] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   // Dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -124,6 +125,7 @@ export default function EditNewsPage() {
       );
       setIsPinned(news.isPinned);
       setIsHighlighted(news.isHighlighted);
+      setIsAnonymous(news.isAnonymous);
     }
   }, [news]);
 
@@ -152,6 +154,7 @@ export default function EditNewsPage() {
       publishAt: publishAt ? new Date(publishAt) : null,
       isPinned,
       isHighlighted,
+      isAnonymous,
     });
   };
 
@@ -376,6 +379,20 @@ export default function EditNewsPage() {
                     id="isHighlighted"
                     checked={isHighlighted}
                     onCheckedChange={setIsHighlighted}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="isAnonymous">Анонимно</Label>
+                    <p className="text-muted-foreground text-xs">
+                      От имени ресурса
+                    </p>
+                  </div>
+                  <Switch
+                    id="isAnonymous"
+                    checked={isAnonymous}
+                    onCheckedChange={setIsAnonymous}
                   />
                 </div>
               </CardContent>

@@ -64,6 +64,7 @@ export const news = createTable(
     // Flags
     isPinned: boolean("is_pinned").notNull().default(false), // Закреплено
     isHighlighted: boolean("is_highlighted").notNull().default(false), // Выделено
+    isAnonymous: boolean("is_anonymous").notNull().default(false), // От имени ресурса (без автора)
 
     // Author
     authorId: varchar("author_id", { length: 255 })

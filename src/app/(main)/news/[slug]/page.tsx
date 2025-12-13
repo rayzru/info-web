@@ -134,15 +134,19 @@ export default async function NewsDetailPage({ params }: PageProps) {
           {/* Meta */}
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             {/* Author */}
-            <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={news.author.image ?? undefined} />
-                <AvatarFallback>
-                  <User className="h-3 w-3" />
-                </AvatarFallback>
-              </Avatar>
-              <span>{news.author.name ?? "Автор"}</span>
-            </div>
+            {news.author ? (
+              <div className="flex items-center gap-2">
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={news.author.image ?? undefined} />
+                  <AvatarFallback>
+                    <User className="h-3 w-3" />
+                  </AvatarFallback>
+                </Avatar>
+                <span>{news.author.name ?? "Автор"}</span>
+              </div>
+            ) : (
+              <span>Редакция</span>
+            )}
 
             <span className="text-muted-foreground/50">•</span>
 

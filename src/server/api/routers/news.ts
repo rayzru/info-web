@@ -29,6 +29,7 @@ const createNewsSchema = z.object({
   publishAt: z.date().optional(),
   isPinned: z.boolean().default(false),
   isHighlighted: z.boolean().default(false),
+  isAnonymous: z.boolean().default(false),
 });
 
 const updateNewsSchema = z.object({
@@ -43,6 +44,7 @@ const updateNewsSchema = z.object({
   publishAt: z.date().nullable().optional(),
   isPinned: z.boolean().optional(),
   isHighlighted: z.boolean().optional(),
+  isAnonymous: z.boolean().optional(),
 });
 
 // ============================================================================
@@ -250,8 +252,14 @@ export const newsRouter = createTRPCRouter({
         nextCursor = nextItem?.id;
       }
 
+      // Hide author for anonymous posts
+      const processedItems = items.map((item) => ({
+        ...item,
+        author: item.isAnonymous ? null : item.author,
+      }));
+
       return {
-        items,
+        items: processedItems,
         nextCursor,
       };
     }),
@@ -318,7 +326,11 @@ export const newsRouter = createTRPCRouter({
         });
       }
 
-      return item;
+      // Hide author for anonymous posts
+      return {
+        ...item,
+        author: item.isAnonymous ? null : item.author,
+      };
     }),
 
   // ========================================
