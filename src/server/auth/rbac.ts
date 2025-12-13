@@ -231,6 +231,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     feature: "directory:manage",
   },
   {
+    title: "Новости",
+    href: "/admin/news",
+    icon: "Newspaper",
+    feature: "directory:manage",
+  },
+  {
     title: "Настройки",
     href: "/admin/settings",
     icon: "Settings",

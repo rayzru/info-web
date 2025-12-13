@@ -1,0 +1,39 @@
+import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
+
+import { db } from "~/server/db";
+import { systemSettings, SETTING_KEYS, type MaintenanceSettings } from "~/server/db/schema";
+import { auth } from "~/server/auth";
+
+export async function GET() {
+  try {
+    // Get maintenance settings
+    const setting = await db.query.systemSettings.findFirst({
+      where: eq(systemSettings.key, SETTING_KEYS.MAINTENANCE_MODE),
+    });
+
+    const maintenanceSettings = setting?.value as MaintenanceSettings | undefined;
+    const maintenanceEnabled = maintenanceSettings?.enabled ?? false;
+
+    // Check if user is admin
+    let isAdmin = false;
+    try {
+      const session = await auth();
+      isAdmin = session?.user?.isAdmin ?? false;
+    } catch {
+      // Session check failed, treat as not admin
+    }
+
+    return NextResponse.json({
+      maintenanceEnabled,
+      isAdmin,
+    });
+  } catch (error) {
+    console.error("Maintenance check error:", error);
+    // On error, return maintenance disabled to avoid locking users out
+    return NextResponse.json({
+      maintenanceEnabled: false,
+      isAdmin: false,
+    });
+  }
+}

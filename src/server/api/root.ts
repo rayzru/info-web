@@ -7,6 +7,7 @@ import { newsRouter } from "~/server/api/routers/news";
 import { notificationsRouter } from "~/server/api/routers/notifications";
 import { postRouter } from "~/server/api/routers/post";
 import { profileRouter } from "~/server/api/routers/profile";
+import { settingsRouter } from "~/server/api/routers/settings";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -24,6 +25,7 @@ export const appRouter = createTRPCRouter({
   directory: directoryRouter,
   news: newsRouter,
   notifications: notificationsRouter,
+  settings: settingsRouter,
 });
 
 // export type definition of API
