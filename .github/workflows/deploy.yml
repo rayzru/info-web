@@ -87,6 +87,8 @@ jobs:
           YANDEX_CLIENT_SECRET: "placeholder"
 
       - name: Prepare SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
 
@@ -98,8 +100,8 @@ jobs:
             echo "UserKnownHostsFile /dev/null" >> ~/.ssh/config
           fi
 
-          # Create SSH private key with proper formatting
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          # Create SSH private key - use env var to preserve newlines
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
 
           # Ensure proper permissions and line endings
           chmod 600 ~/.ssh/id_ed25519
