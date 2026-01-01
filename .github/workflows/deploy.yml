@@ -1,14 +1,14 @@
-name: Deploy (Next.js standalone)
+name: Deploy (Beta SR2 standalone)
 
 on:
   push:
-    branches: [ main, development ]
+    branches: [main, development]
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: "Environment to deploy"
         required: true
-        default: 'production'
+        default: "production"
         type: choice
         options:
           - production
@@ -176,8 +176,8 @@ jobs:
           echo "=== Updating symlink and restarting app ($PM2_APP_NAME) ==="
           ssh "$USER@$HOST" "cd $TARGET && rm -rf current && ln -sfn $REL current && echo 'Symlink created:' && ls -la current && echo 'Target directory:' && ls -la && cd current && echo 'Current directory:' && pwd && echo 'All files in current:' && ls -la && echo 'Check .next directory:' && ls -la .next/ && echo 'Check BUILD_ID:' && cat .next/BUILD_ID && echo 'Check .env file:' && ls -la .env && echo '=== Restarting PM2 ($PM2_APP_NAME) ===' && (pm2 delete $PM2_APP_NAME 2>/dev/null || true) && PM2_APP_NAME=$PM2_APP_NAME pm2 start ecosystem.config.cjs && pm2 save && echo 'PM2 app restarted successfully'"
         env:
-          USER:   ${{ secrets.SSH_USER }}
-          HOST:   ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USER }}
+          HOST: ${{ secrets.SSH_HOST }}
           TARGET: ${{ secrets.SSH_TARGET_DIR }}
           # Environment variables for .env file creation
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
@@ -198,6 +198,6 @@ jobs:
 
           ssh "$USER@$HOST" bash -lc 'cd "'"$TARGET"'"/releases && ls -1t | tail -n +6 | xargs -r rm -rf'
         env:
-          USER:   ${{ secrets.SSH_USER }}
-          HOST:   ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USER }}
+          HOST: ${{ secrets.SSH_HOST }}
           TARGET: ${{ secrets.SSH_TARGET_DIR }}
