@@ -21,7 +21,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/development' && 'beta' || 'production' }}
+    environment: ${{ github.ref == 'refs/heads/development' && 'Beta' || 'production' }}
     env:
       NODE_VERSION: "22"
       BUN_VERSION: "1.2.9"
