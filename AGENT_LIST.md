@@ -8,19 +8,19 @@ All agents are consolidated in `/.claude/agents/` with clear naming conventions.
 
 **Which agent should I use?**
 
-| Situation | Use This Agent |
-|-----------|----------------|
-| Planning new feature | `@feature-planner` |
-| Implementing from spec | `@feature-builder` |
-| Code review needed | `@code-reviewer` |
-| Frontend/React work | `@frontend-developer` |
-| Writing tests | `@test-writer` |
-| E2E/Playwright tests | `@e2e-test-specialist` |
-| Test failures (>3) | `@test-analyzer` |
-| Security concerns | `@security-expert` |
-| Complex debugging | `@debugger` |
-| System architecture | `@architect` |
-| Local dev environment | `@dev-automation` |
+| Situation              | Use This Agent         |
+| ---------------------- | ---------------------- |
+| Planning new feature   | `@feature-planner`     |
+| Implementing from spec | `@feature-builder`     |
+| Code review needed     | `@code-reviewer`       |
+| Frontend/React work    | `@frontend-developer`  |
+| Writing tests          | `@test-writer`         |
+| E2E/Playwright tests   | `@e2e-test-specialist` |
+| Test failures (>3)     | `@test-analyzer`       |
+| Security concerns      | `@security-expert`     |
+| Complex debugging      | `@debugger`            |
+| System architecture    | `@architect`           |
+| Local dev environment  | `@dev-automation`      |
 
 ---
 
@@ -179,11 +179,11 @@ All agent definitions in `/.claude/agents/`:
 
 ## MCP Tools Integration
 
-| MCP Server | Primary Agents | Purpose |
-|------------|----------------|---------|
-| **Playwright** | dev-automation, e2e-test-specialist | Browser automation |
-| **Chrome DevTools** | dev-automation, frontend-developer | Debugging, performance |
+| MCP Server          | Primary Agents                      | Purpose                |
+| ------------------- | ----------------------------------- | ---------------------- |
+| **Playwright**      | dev-automation, e2e-test-specialist | Browser automation     |
+| **Chrome DevTools** | dev-automation, frontend-developer  | Debugging, performance |
 
 ---
 
-*For detailed agent instructions, see individual files in `/.claude/agents/`*
+_For detailed agent instructions, see individual files in `/.claude/agents/`_
