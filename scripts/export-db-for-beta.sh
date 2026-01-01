@@ -4,27 +4,18 @@
 
 set -e
 
-# Load environment variables
-source .env
+# Get container name
+CONTAINER=$(docker compose ps -q database 2>/dev/null || docker ps -q -f "ancestor=postgres")
 
-# Extract connection details from DATABASE_URL
-# Format: postgresql://user:pass@host:port/dbname
-DB_URL="${DATABASE_URL}"
-DB_NAME="${DATABASE_NAME}"
-
-# Parse connection string
-if [[ $DB_URL =~ postgresql://([^:]+):([^@]+)@([^:]+):([^/]+)/(.+) ]]; then
-    DB_USER="${BASH_REMATCH[1]}"
-    DB_PASS="${BASH_REMATCH[2]}"
-    DB_HOST="${BASH_REMATCH[3]}"
-    DB_PORT="${BASH_REMATCH[4]}"
-    DB_NAME="${BASH_REMATCH[5]}"
-else
-    echo "Error: Could not parse DATABASE_URL"
+if [ -z "$CONTAINER" ]; then
+    echo "Error: PostgreSQL container not found. Make sure 'docker compose up -d' is running."
     exit 1
 fi
 
-export PGPASSWORD="$DB_PASS"
+# Database credentials (from docker-compose.yml defaults)
+DB_USER="${POSTGRES_USER:-postgres}"
+DB_PASS="${POSTGRES_PASSWORD:-postgres}"
+DB_NAME="${POSTGRES_DB:-sr2-community}"
 
 OUTPUT_DIR="./db-export"
 mkdir -p "$OUTPUT_DIR"
@@ -35,7 +26,8 @@ DATA_FILE="$OUTPUT_DIR/data_${TIMESTAMP}.sql"
 FULL_FILE="$OUTPUT_DIR/beta_db_${TIMESTAMP}.sql"
 
 echo "=== Exporting database for beta environment ==="
-echo "Source: $DB_NAME @ $DB_HOST"
+echo "Container: $CONTAINER"
+echo "Database: $DB_NAME"
 echo ""
 
 # Tables to EXCLUDE (user data and related)
@@ -73,7 +65,8 @@ for table in "${EXCLUDE_TABLES[@]}"; do
 done
 
 echo "=== Step 1: Exporting full schema (structure only) ==="
-pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
+docker exec -e PGPASSWORD="$DB_PASS" "$CONTAINER" \
+    pg_dump -U "$DB_USER" -d "$DB_NAME" \
     --schema-only \
     --no-owner \
     --no-privileges \
@@ -82,7 +75,8 @@ echo "Schema exported to: $SCHEMA_FILE"
 
 echo ""
 echo "=== Step 2: Exporting data (excluding user tables) ==="
-pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
+docker exec -e PGPASSWORD="$DB_PASS" "$CONTAINER" \
+    pg_dump -U "$DB_USER" -d "$DB_NAME" \
     --data-only \
     --no-owner \
     --no-privileges \
