@@ -145,6 +145,7 @@ jobs:
           # Create production .env file locally and upload
           echo "Creating production .env file..."
           cat > .env << EOF
+
           # Next Auth
           AUTH_SECRET="$AUTH_SECRET"
           NEXTAUTH_SECRET="$NEXTAUTH_SECRET"
