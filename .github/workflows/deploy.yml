@@ -99,9 +99,7 @@ jobs:
           fi
 
           # Create SSH private key with proper formatting
-          cat > ~/.ssh/id_ed25519 << 'EOF'
-          ${{ secrets.SSH_PRIVATE_KEY }}
-          EOF
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
 
           # Ensure proper permissions and line endings
           chmod 600 ~/.ssh/id_ed25519
