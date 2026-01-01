@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   AlertTriangle,
@@ -23,9 +22,9 @@ import {
   Wrench,
 } from "lucide-react";
 
+import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -127,7 +126,6 @@ export default function AdminNewsPage() {
   const [newsToPublish, setNewsToPublish] = useState<{ id: string; title: string } | null>(null);
 
   // Queries
-  const { data: stats } = api.news.stats.useQuery();
   const { data, isLoading, refetch } = api.news.adminList.useQuery({
     page,
     limit: 20,
@@ -245,71 +243,17 @@ export default function AdminNewsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Новости</h1>
-          <p className="text-muted-foreground mt-1">
-            Управление новостями и объявлениями
-          </p>
-        </div>
+      <AdminPageHeader
+        title="Новости"
+        description="Управление новостями и объявлениями"
+      >
         <Link href="/admin/news/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             Создать новость
           </Button>
         </Link>
-      </div>
-
-      {/* Stats */}
-      {stats && (
-        <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "all" ? "ring-2 ring-primary ring-offset-2" : ""
-            }`}
-            onClick={() => setStatusFilter("all")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-sm text-muted-foreground">Всего</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "draft" ? "ring-2 ring-yellow-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setStatusFilter("draft")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-yellow-600">{stats.draft}</div>
-              <p className="text-sm text-muted-foreground">Черновики</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "scheduled" ? "ring-2 ring-blue-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setStatusFilter("scheduled")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-blue-600">{stats.scheduled}</div>
-              <p className="text-sm text-muted-foreground">Запланировано</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "published" ? "ring-2 ring-green-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setStatusFilter("published")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-600">{stats.published}</div>
-              <p className="text-sm text-muted-foreground">Опубликовано</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      </AdminPageHeader>
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
@@ -362,137 +306,137 @@ export default function AdminNewsPage() {
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : data?.items && data.items.length > 0 ? (
-        <div className="space-y-3">
+        <div className="rounded-lg border">
+          {/* Table Header */}
+          <div className="flex items-center gap-4 border-b bg-muted/50 px-4 py-3 text-sm font-medium text-muted-foreground">
+            <div className="w-24">Дата</div>
+            <div className="flex-1 min-w-0">Заголовок</div>
+            <div className="w-28 hidden sm:block">Тип</div>
+            <div className="w-32 hidden md:block">Автор</div>
+            <div className="w-28">Статус</div>
+            <div className="w-10"></div>
+          </div>
+
+          {/* Table Body */}
           {data.items.map((item) => {
             const typeConfig = NEWS_TYPE_CONFIG[item.type];
             const statusConfig = NEWS_STATUS_CONFIG[item.status];
             const Icon = typeConfig.icon;
 
             return (
-              <Card key={item.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    {/* Cover Image */}
-                    {item.coverImage ? (
-                      <div className="relative h-20 w-32 flex-shrink-0 overflow-hidden rounded-md">
-                        <Image
-                          src={item.coverImage}
-                          alt={item.title}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-20 w-32 flex-shrink-0 items-center justify-center rounded-md bg-muted">
-                        <Icon className="h-8 w-8 text-muted-foreground/30" />
+              <div
+                key={item.id}
+                className="flex items-center gap-4 border-b px-4 py-3 last:border-b-0 hover:bg-muted/30 transition-colors"
+              >
+                {/* Date Column */}
+                <div className="w-24 shrink-0">
+                  <div className="text-sm">
+                    <div className="font-medium">
+                      {new Date(item.createdAt).toLocaleDateString("ru-RU", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </div>
+                    {item.publishAt && (
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(item.publishAt).toLocaleDateString("ru-RU", {
+                          day: "numeric",
+                          month: "short",
+                        })}
                       </div>
                     )}
+                  </div>
+                </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Link
-                          href={`/admin/news/${item.id}`}
-                          className="font-medium hover:underline"
-                        >
-                          {item.title}
+                {/* Title Column */}
+                <div className="flex-1 min-w-0">
+                  <Link
+                    href={`/admin/news/${item.id}`}
+                    className="font-medium hover:underline line-clamp-2"
+                  >
+                    {item.title}
+                  </Link>
+                </div>
+
+                {/* Type Column */}
+                <div className="w-28 hidden sm:block">
+                  <Badge variant="outline" className={`${typeConfig.color} text-xs`}>
+                    <Icon className="mr-1 h-3 w-3" />
+                    {typeConfig.label}
+                  </Badge>
+                </div>
+
+                {/* Author Column */}
+                <div className="w-32 hidden md:block">
+                  <span className="text-sm text-muted-foreground truncate block">
+                    {item.author?.name ?? "—"}
+                  </span>
+                </div>
+
+                {/* Status Column */}
+                <div className="w-28 shrink-0">
+                  <Badge variant={statusConfig.variant} className="text-xs">
+                    {statusConfig.label}
+                  </Badge>
+                </div>
+
+                {/* Actions Column */}
+                <div className="w-10 shrink-0">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link href={`/admin/news/${item.id}`}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Редактировать
                         </Link>
-                        <Badge variant={statusConfig.variant}>
-                          {statusConfig.label}
-                        </Badge>
-                        <Badge variant="outline" className={typeConfig.color}>
-                          <Icon className="mr-1 h-3 w-3" />
-                          {typeConfig.label}
-                        </Badge>
-                      </div>
-
-                      {item.excerpt && (
-                        <p className="mt-1 text-sm text-muted-foreground line-clamp-1">
-                          {item.excerpt}
-                        </p>
-                      )}
-
-                      <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
-                        <span>/{item.slug}</span>
-                        <span>·</span>
-                        <span>
-                          {new Date(item.createdAt).toLocaleDateString("ru-RU")}
-                        </span>
-                        {item.publishAt && (
-                          <>
-                            <span>·</span>
-                            <span>
-                              Публикация:{" "}
-                              {new Date(item.publishAt).toLocaleDateString("ru-RU")}
-                            </span>
-                          </>
-                        )}
-                        {item.author && (
-                          <>
-                            <span>·</span>
-                            <span>{item.author.name}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      </DropdownMenuItem>
+                      {item.status === "published" && (
                         <DropdownMenuItem asChild>
-                          <Link href={`/admin/news/${item.id}`}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Редактировать
+                          <Link href={`/news/${item.slug}`} target="_blank">
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Открыть на сайте
                           </Link>
                         </DropdownMenuItem>
-                        {item.status === "published" && (
-                          <DropdownMenuItem asChild>
-                            <Link href={`/news/${item.slug}`} target="_blank">
-                              <ExternalLink className="mr-2 h-4 w-4" />
-                              Открыть на сайте
-                            </Link>
-                          </DropdownMenuItem>
-                        )}
-                        {item.status === "draft" && (
-                          <DropdownMenuItem
-                            onClick={() => publishMutation.mutate({ id: item.id })}
-                          >
-                            <Megaphone className="mr-2 h-4 w-4" />
-                            Опубликовать
-                          </DropdownMenuItem>
-                        )}
-                        {item.status === "published" && (
-                          <DropdownMenuItem
-                            onClick={() => openTelegramDialog({ id: item.id, title: item.title })}
-                          >
-                            <Send className="mr-2 h-4 w-4" />
-                            В Telegram
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
+                      )}
+                      {item.status === "draft" && (
                         <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => openDeleteDialog({ id: item.id, title: item.title })}
+                          onClick={() => publishMutation.mutate({ id: item.id })}
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Удалить
+                          <Megaphone className="mr-2 h-4 w-4" />
+                          Опубликовать
                         </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </CardContent>
-              </Card>
+                      )}
+                      {item.status === "published" && (
+                        <DropdownMenuItem
+                          onClick={() => openTelegramDialog({ id: item.id, title: item.title })}
+                        >
+                          <Send className="mr-2 h-4 w-4" />
+                          В Telegram
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => openDeleteDialog({ id: item.id, title: item.title })}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Удалить
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
             );
           })}
 
           {/* Pagination */}
           {data.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
+            <div className="flex items-center justify-center gap-2 py-4 border-t">
               <Button
                 variant="outline"
                 size="icon"
@@ -516,11 +460,9 @@ export default function AdminNewsPage() {
           )}
         </div>
       ) : (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            {searchQuery ? "Ничего не найдено" : "Новостей пока нет"}
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border py-12 text-center text-muted-foreground">
+          {searchQuery ? "Ничего не найдено" : "Новостей пока нет"}
+        </div>
       )}
 
       {/* Delete Dialog */}

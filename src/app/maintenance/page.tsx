@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { Wrench, Clock, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { Wrench, Clock, ShieldCheck } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { db } from "~/server/db";
@@ -98,12 +99,22 @@ export default async function MaintenancePage() {
           </p>
           <Button variant="outline" asChild>
             <a
-              href="https://t.me/sr2_news"
+              href="https://t.me/sr2.today"
               target="_blank"
               rel="noopener noreferrer"
             >
               Telegram канал
             </a>
+          </Button>
+        </div>
+
+        {/* Admin access */}
+        <div className="pt-4">
+          <Button variant="ghost" size="sm" className="text-muted-foreground" asChild>
+            <Link href="/admin">
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              Панель администратора
+            </Link>
           </Button>
         </div>
       </div>

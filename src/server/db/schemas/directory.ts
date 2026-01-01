@@ -13,6 +13,7 @@ import {
 
 import { buildings } from "./buildings";
 import { createTable } from "./create-table";
+import { users } from "./users";
 
 // ============== ENUMS ==============
 
@@ -298,6 +299,80 @@ export const directoryEntryStats = createTable(
   ]
 );
 
+// ============== KNOWLEDGE BASE (HowTos) ==============
+
+export const knowledgeBaseStatusEnum = pgEnum("knowledge_base_status", [
+  "draft",
+  "published",
+  "archived",
+]);
+
+// Статья базы знаний
+export const knowledgeBaseArticles = createTable(
+  "knowledge_base_article",
+  {
+    id: varchar("id", { length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    slug: varchar("slug", { length: 255 }).notNull().unique(),
+    title: varchar("title", { length: 255 }).notNull(),
+    // Краткое описание для превью и поиска
+    excerpt: text("excerpt"),
+    // Полнотекстовое содержимое (TipTap JSON)
+    content: text("content"),
+    // Статус публикации
+    status: knowledgeBaseStatusEnum("status").notNull().default("draft"),
+    // Привязка к корпусу (опционально)
+    buildingId: varchar("building_id", { length: 255 }).references(
+      () => buildings.id,
+      { onDelete: "set null" }
+    ),
+    // Иконка (Lucide icon name)
+    icon: varchar("icon", { length: 50 }),
+    // Автор
+    authorId: varchar("author_id", { length: 255 }).references(
+      () => users.id,
+      { onDelete: "set null" }
+    ),
+    // Порядок сортировки
+    order: integer("order").default(0),
+    // Счётчик просмотров
+    viewCount: integer("view_count").notNull().default(0),
+    // Полезность (можно добавить лайки/дизлайки позже)
+    helpfulCount: integer("helpful_count").notNull().default(0),
+    notHelpfulCount: integer("not_helpful_count").notNull().default(0),
+    // Даты
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    publishedAt: timestamp("published_at"),
+  },
+  (table) => [
+    index("kb_article_slug_idx").on(table.slug),
+    index("kb_article_status_idx").on(table.status),
+    index("kb_article_building_idx").on(table.buildingId),
+    index("kb_article_author_idx").on(table.authorId),
+  ]
+);
+
+// Связь статей KB с тегами справочника (переиспользуем directoryTags)
+export const knowledgeBaseArticleTags = createTable(
+  "knowledge_base_article_tag",
+  {
+    articleId: varchar("article_id", { length: 255 })
+      .notNull()
+      .references(() => knowledgeBaseArticles.id, { onDelete: "cascade" }),
+    tagId: varchar("tag_id", { length: 255 })
+      .notNull()
+      .references(() => directoryTags.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.articleId, table.tagId] }),
+    index("kb_article_tag_article_idx").on(table.articleId),
+    index("kb_article_tag_tag_idx").on(table.tagId),
+  ]
+);
+
 // ============== RELATIONS ==============
 
 export const directoryEntriesRelations = relations(
@@ -413,6 +488,36 @@ export const directoryEntryStatsRelations = relations(
     entry: one(directoryEntries, {
       fields: [directoryEntryStats.entryId],
       references: [directoryEntries.id],
+    }),
+  })
+);
+
+// Knowledge Base relations
+export const knowledgeBaseArticlesRelations = relations(
+  knowledgeBaseArticles,
+  ({ one, many }) => ({
+    building: one(buildings, {
+      fields: [knowledgeBaseArticles.buildingId],
+      references: [buildings.id],
+    }),
+    author: one(users, {
+      fields: [knowledgeBaseArticles.authorId],
+      references: [users.id],
+    }),
+    articleTags: many(knowledgeBaseArticleTags),
+  })
+);
+
+export const knowledgeBaseArticleTagsRelations = relations(
+  knowledgeBaseArticleTags,
+  ({ one }) => ({
+    article: one(knowledgeBaseArticles, {
+      fields: [knowledgeBaseArticleTags.articleId],
+      references: [knowledgeBaseArticles.id],
+    }),
+    tag: one(directoryTags, {
+      fields: [knowledgeBaseArticleTags.tagId],
+      references: [directoryTags.id],
     }),
   })
 );

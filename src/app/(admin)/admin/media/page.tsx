@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 
+import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -171,41 +172,35 @@ export default function AdminMediaPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Медиабиблиотека</h1>
-          <p className="text-muted-foreground mt-1">
-            Управление загруженными изображениями
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Input
-            type="file"
-            id="upload-input"
-            className="hidden"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            multiple
-            onChange={(e) => {
-              if (e.target.files?.length) {
-                handleUpload(e.target.files);
-              }
-              e.target.value = "";
-            }}
-          />
-          <Button
-            onClick={() => document.getElementById("upload-input")?.click()}
-            disabled={isUploading}
-          >
-            {isUploading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Upload className="mr-2 h-4 w-4" />
-            )}
-            Загрузить
-          </Button>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="Медиабиблиотека"
+        description="Управление загруженными изображениями"
+      >
+        <Input
+          type="file"
+          id="upload-input"
+          className="hidden"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          multiple
+          onChange={(e) => {
+            if (e.target.files?.length) {
+              handleUpload(e.target.files);
+            }
+            e.target.value = "";
+          }}
+        />
+        <Button
+          onClick={() => document.getElementById("upload-input")?.click()}
+          disabled={isUploading}
+        >
+          {isUploading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Upload className="mr-2 h-4 w-4" />
+          )}
+          Загрузить
+        </Button>
+      </AdminPageHeader>
 
       <div className="grid gap-6 lg:grid-cols-4">
         {/* Main content */}

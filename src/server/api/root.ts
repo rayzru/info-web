@@ -1,13 +1,17 @@
 import { adminRouter } from "~/server/api/routers/admin";
+import { auditRouter } from "~/server/api/routers/audit";
 import { authRouter } from "~/server/api/routers/auth";
 import { claimsRouter } from "~/server/api/routers/claims";
 import { directoryRouter } from "~/server/api/routers/directory";
+import { feedbackRouter } from "~/server/api/routers/feedback";
+import { knowledgeRouter } from "~/server/api/routers/knowledge";
 import { listingsRouter } from "~/server/api/routers/listings";
 import { mediaRouter } from "~/server/api/routers/media";
 import { newsRouter } from "~/server/api/routers/news";
 import { notificationsRouter } from "~/server/api/routers/notifications";
 import { postRouter } from "~/server/api/routers/post";
 import { profileRouter } from "~/server/api/routers/profile";
+import { publicationsRouter } from "~/server/api/routers/publications";
 import { settingsRouter } from "~/server/api/routers/settings";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
@@ -19,14 +23,18 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 export const appRouter = createTRPCRouter({
   post: postRouter,
   admin: adminRouter,
+  audit: auditRouter,
   auth: authRouter,
   profile: profileRouter,
   claims: claimsRouter,
+  feedback: feedbackRouter,
+  knowledge: knowledgeRouter,
   listings: listingsRouter,
   directory: directoryRouter,
   media: mediaRouter,
   news: newsRouter,
   notifications: notificationsRouter,
+  publications: publicationsRouter,
   settings: settingsRouter,
 });
 

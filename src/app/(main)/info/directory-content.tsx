@@ -1,24 +1,23 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Search,
-  Phone,
+  BookOpen,
+  Building,
+  Droplet,
+  ExternalLink,
+  FileText,
+  Globe,
+  Headphones,
+  HelpCircle,
+  Mail,
   MapPin,
   MessageCircle,
-  Globe,
-  Building,
-  AlertTriangle,
-  Wrench,
-  Users,
-  Mail,
-  ExternalLink,
-  Zap,
-  Droplet,
+  Phone,
+  Search,
   UserCheck,
-  Headphones,
   X,
-  HelpCircle,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
@@ -156,9 +155,27 @@ export function DirectoryContent({
     { enabled: searchQuery.length >= 2 }
   );
 
-  // Contacts by tag (when a tag is clicked)
+  // Knowledge base articles search
+  const articlesResults = api.knowledge.search.useQuery(
+    { query: searchQuery, limit: 5 },
+    { enabled: searchQuery.length >= 2 }
+  );
+
+  // Contacts by tag (when a tag is clicked) - flat list
   const contactsByTag = api.directory.contactsByTag.useQuery(
     { tagSlug: selectedTagSlug ?? "", limit: 50 },
+    { enabled: !!selectedTagSlug }
+  );
+
+  // Entries grouped by child tags (for hierarchical display)
+  const entriesGrouped = api.directory.entriesGroupedByTag.useQuery(
+    { tagSlug: selectedTagSlug ?? "", limit: 50 },
+    { enabled: !!selectedTagSlug }
+  );
+
+  // Knowledge base articles by tag (when a tag is clicked)
+  const articlesByTag = api.knowledge.getByTag.useQuery(
+    { tagSlug: selectedTagSlug ?? "", limit: 10 },
     { enabled: !!selectedTagSlug }
   );
 
@@ -194,6 +211,40 @@ export function DirectoryContent({
     : isFiltering
       ? contactsByTag.data?.contacts ?? []
       : [];
+
+  // Group contacts by entry for search results
+  const searchEntriesGrouped = useMemo(() => {
+    if (!isSearching || !contactResults.data?.contacts) return [];
+
+    const entriesMap = new Map<
+      string,
+      {
+        id: string;
+        slug: string;
+        title: string;
+        subtitle: string | null;
+        icon: string | null;
+        contacts: typeof displayContacts;
+      }
+    >();
+
+    for (const contact of contactResults.data.contacts) {
+      const entryId = contact.entryId;
+      if (!entriesMap.has(entryId)) {
+        entriesMap.set(entryId, {
+          id: entryId,
+          slug: contact.entrySlug,
+          title: contact.entryTitle,
+          subtitle: null,
+          icon: contact.entryIcon,
+          contacts: [],
+        });
+      }
+      entriesMap.get(entryId)!.contacts.push(contact);
+    }
+
+    return Array.from(entriesMap.values());
+  }, [isSearching, contactResults.data?.contacts]);
 
   const matchedTags = isSearching ? contactResults.data?.matchedTags ?? [] : [];
 
@@ -244,7 +295,7 @@ export function DirectoryContent({
   };
 
   return (
-    <div className="flex flex-col min-h-[60vh]">
+    <div className="flex flex-col min-h-[40vh]">
       {/* Search Section */}
       <div
         className={cn(
@@ -505,14 +556,17 @@ export function DirectoryContent({
               {isSearching && contactResults.data && (
                 pluralizeRecords(contactResults.data.total)
               )}
-              {isFiltering && contactsByTag.data && (
+              {isFiltering && entriesGrouped.data && entriesGrouped.data.groups.length > 0 && (
+                pluralizeRecords(entriesGrouped.data.total)
+              )}
+              {isFiltering && entriesGrouped.data?.groups.length === 0 && contactsByTag.data && (
                 pluralizeRecords(contactsByTag.data.total)
               )}
             </span>
           </div>
 
           {/* Loading */}
-          {(contactResults.isLoading || contactsByTag.isLoading) && (
+          {(contactResults.isLoading || contactsByTag.isLoading || entriesGrouped.isLoading) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
@@ -523,34 +577,115 @@ export function DirectoryContent({
           {/* Empty state */}
           {!contactResults.isLoading &&
             !contactsByTag.isLoading &&
-            displayContacts.length === 0 && (
+            !entriesGrouped.isLoading &&
+            displayContacts.length === 0 &&
+            (!entriesGrouped.data || entriesGrouped.data.groups.length === 0) && (
               <div className="py-12 text-center text-muted-foreground">
                 {isSearching ? "Ничего не найдено" : "Нет контактов с этим тегом"}
               </div>
             )}
 
-          {/* Contact cards grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {displayContacts.map((contact) => (
-              <ContactCard
-                key={contact.id}
-                contact={contact}
-                onPhoneClick={(contactId) =>
-                  trackEvent.mutate({
-                    eventType: "entry_call",
-                    contactId,
-                  })
-                }
-                onLinkClick={(contactId) =>
-                  trackEvent.mutate({
-                    eventType: "entry_link",
-                    contactId,
-                  })
-                }
-                onTagClick={handleTagClick}
-              />
-            ))}
-          </div>
+          {/* Knowledge base articles (when searching or filtering by tag) */}
+          {(() => {
+            const articles = isSearching
+              ? articlesResults.data?.articles
+              : isFiltering
+                ? articlesByTag.data?.articles
+                : null;
+
+            if (!articles || articles.length === 0) return null;
+
+            return (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Полезные статьи</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {articles.map((article) => (
+                    <ArticleCard
+                      key={article.id}
+                      article={article}
+                      onTagClick={handleTagClick}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Search results - grouped by entry */}
+          {isSearching && searchEntriesGrouped.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {searchEntriesGrouped.map((entry) => (
+                <EntryCard
+                  key={entry.id}
+                  entry={entry}
+                  onPhoneClick={(contactId) =>
+                    trackEvent.mutate({
+                      eventType: "entry_call",
+                      contactId,
+                    })
+                  }
+                  onLinkClick={(contactId) =>
+                    trackEvent.mutate({
+                      eventType: "entry_link",
+                      contactId,
+                    })
+                  }
+                  onTagClick={handleTagClick}
+                />
+              ))}
+            </div>
+          ) : /* Grouped entries (when filtering by tag) */
+          isFiltering && entriesGrouped.data && entriesGrouped.data.groups.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {entriesGrouped.data.groups.flatMap((group) =>
+                group.entries.map((entry) => (
+                  <EntryCard
+                    key={entry.id}
+                    entry={entry}
+                    onPhoneClick={(contactId) =>
+                      trackEvent.mutate({
+                        eventType: "entry_call",
+                        contactId,
+                      })
+                    }
+                    onLinkClick={(contactId) =>
+                      trackEvent.mutate({
+                        eventType: "entry_link",
+                        contactId,
+                      })
+                    }
+                    onTagClick={handleTagClick}
+                  />
+                ))
+              )}
+            </div>
+          ) : (
+            /* Contact cards grid (flat list fallback) */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {displayContacts.map((contact) => (
+                <ContactCard
+                  key={contact.id}
+                  contact={contact}
+                  onPhoneClick={(contactId) =>
+                    trackEvent.mutate({
+                      eventType: "entry_call",
+                      contactId,
+                    })
+                  }
+                  onLinkClick={(contactId) =>
+                    trackEvent.mutate({
+                      eventType: "entry_link",
+                      contactId,
+                    })
+                  }
+                  onTagClick={handleTagClick}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -804,5 +939,286 @@ function ContactCard({
         </div>
       )}
     </div>
+  );
+}
+
+// Entry card - shows entry with all its contacts
+function EntryCard({
+  entry,
+  onPhoneClick,
+  onLinkClick,
+  onTagClick,
+}: {
+  entry: {
+    id: string;
+    slug: string;
+    title: string;
+    subtitle: string | null;
+    icon: string | null;
+    contacts: {
+      id: string;
+      type: string;
+      value: string;
+      label: string | null;
+      subtitle: string | null;
+      isPrimary: number;
+      hasWhatsApp: number;
+      hasTelegram: number;
+      is24h: number;
+      order: number | null;
+    }[];
+  };
+  onPhoneClick?: (contactId: string) => void;
+  onLinkClick?: (contactId: string) => void;
+  onTagClick?: (tagSlug: string, tagId: string) => void;
+}) {
+  // Group contacts by type for better organization
+  const phoneContacts = entry.contacts.filter((c) => c.type === "phone");
+  const messengerContacts = entry.contacts.filter((c) =>
+    ["telegram", "whatsapp"].includes(c.type)
+  );
+  const otherContacts = entry.contacts.filter(
+    (c) => !["phone", "telegram", "whatsapp"].includes(c.type)
+  );
+
+  // Build contact href
+  const getContactHref = (contact: typeof entry.contacts[0]) => {
+    switch (contact.type) {
+      case "phone":
+        return `tel:${contact.value}`;
+      case "telegram":
+        return contact.value.startsWith("http")
+          ? contact.value
+          : `https://t.me/${contact.value.replace("@", "")}`;
+      case "whatsapp":
+        return contact.value.startsWith("http")
+          ? contact.value
+          : `https://wa.me/${contact.value.replace(/\D/g, "")}`;
+      case "email":
+        return `mailto:${contact.value}`;
+      default:
+        return contact.value;
+    }
+  };
+
+  const isExternalLink = (type: string) =>
+    ["telegram", "whatsapp", "website", "vk"].includes(type);
+
+  return (
+    <div className="rounded-lg border bg-card p-4 transition-all hover:shadow-md hover:border-primary/30 flex flex-col">
+      {/* Header: Entry title */}
+      <Link
+        href={`/info/${entry.slug}`}
+        className="group flex items-start justify-between gap-2 mb-3"
+      >
+        <div className="min-w-0">
+          <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+            {entry.title}
+          </h3>
+          {entry.subtitle && (
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {entry.subtitle}
+            </p>
+          )}
+        </div>
+        <ExternalLink className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary shrink-0 mt-1" />
+      </Link>
+
+      {/* Contacts list */}
+      <div className="space-y-2 flex-1">
+        {/* Phone contacts */}
+        {phoneContacts.map((contact) => (
+          <a
+            key={contact.id}
+            href={getContactHref(contact)}
+            onClick={() => onPhoneClick?.(contact.id)}
+            className="group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors"
+          >
+            <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium group-hover:text-primary transition-colors">
+                  {contact.value}
+                </span>
+                {contact.is24h === 1 && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-red-500/10 text-red-600 dark:text-red-400 rounded">
+                    24/7
+                  </span>
+                )}
+              </div>
+              {(contact.label || contact.subtitle) && (
+                <span className="text-xs text-muted-foreground">
+                  {[contact.label, contact.subtitle].filter(Boolean).join(" — ")}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              {contact.hasWhatsApp === 1 && (
+                <a
+                  href={`https://wa.me/${contact.value.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onLinkClick?.(contact.id);
+                  }}
+                  className="p-1 rounded hover:bg-green-100 dark:hover:bg-green-900/30"
+                  title="WhatsApp"
+                >
+                  <MessageCircle className="h-4 w-4 text-green-600" />
+                </a>
+              )}
+              {contact.hasTelegram === 1 && (
+                <a
+                  href={`https://t.me/+${contact.value.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onLinkClick?.(contact.id);
+                  }}
+                  className="p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                  title="Telegram"
+                >
+                  <MessageCircle className="h-4 w-4 text-blue-500" />
+                </a>
+              )}
+            </div>
+          </a>
+        ))}
+
+        {/* Messenger contacts (Telegram, WhatsApp links) */}
+        {messengerContacts.map((contact) => {
+          const Icon = CONTACT_ICONS[contact.type] ?? MessageCircle;
+          return (
+            <a
+              key={contact.id}
+              href={getContactHref(contact)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => onLinkClick?.(contact.id)}
+              className="group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors"
+            >
+              <Icon
+                className={cn(
+                  "h-4 w-4 shrink-0",
+                  contact.type === "whatsapp" && "text-green-600",
+                  contact.type === "telegram" && "text-blue-500"
+                )}
+              />
+              <div className="min-w-0 flex-1">
+                <span className="text-sm group-hover:text-primary transition-colors">
+                  {contact.label ?? contact.value}
+                </span>
+                {contact.subtitle && (
+                  <span className="text-xs text-muted-foreground ml-2">
+                    {contact.subtitle}
+                  </span>
+                )}
+              </div>
+            </a>
+          );
+        })}
+
+        {/* Other contacts (email, website, address, etc.) */}
+        {otherContacts.map((contact) => {
+          const Icon = CONTACT_ICONS[contact.type] ?? ExternalLink;
+          const isLink = isExternalLink(contact.type) || contact.type === "email";
+          const href = getContactHref(contact);
+
+          return (
+            <a
+              key={contact.id}
+              href={href}
+              target={isLink ? "_blank" : undefined}
+              rel={isLink ? "noopener noreferrer" : undefined}
+              onClick={() => onLinkClick?.(contact.id)}
+              className="group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors"
+            >
+              <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="min-w-0 flex-1">
+                <span className="text-sm group-hover:text-primary transition-colors truncate block">
+                  {contact.label ?? contact.value}
+                </span>
+                {contact.subtitle && (
+                  <span className="text-xs text-muted-foreground block truncate">
+                    {contact.subtitle}
+                  </span>
+                )}
+              </div>
+            </a>
+          );
+        })}
+      </div>
+
+      {/* Empty state if no contacts */}
+      {entry.contacts.length === 0 && (
+        <p className="text-sm text-muted-foreground italic">
+          Нет контактной информации
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Article card for knowledge base results
+function ArticleCard({
+  article,
+  onTagClick,
+}: {
+  article: {
+    id: string;
+    slug: string;
+    title: string;
+    excerpt: string | null;
+    icon: string | null;
+    tags: { id: string; name: string; slug: string }[];
+  };
+  onTagClick?: (tagSlug: string, tagId: string) => void;
+}) {
+  return (
+    <Link
+      href={`/howtos/${article.slug}`}
+      className="group relative rounded-lg border bg-linear-to-br from-primary/5 to-transparent p-4 transition-all hover:shadow-md hover:border-primary/30 overflow-hidden flex flex-col min-h-30"
+    >
+      {/* Icon in corner */}
+      <FileText className="absolute -bottom-4 -right-4 h-20 w-20 text-primary/10" />
+
+      {/* Title */}
+      <h3 className="relative font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2 pr-8">
+        {article.title}
+      </h3>
+
+      {/* Excerpt */}
+      {article.excerpt && (
+        <p className="relative mt-1.5 text-sm text-muted-foreground line-clamp-2">
+          {article.excerpt}
+        </p>
+      )}
+
+      {/* Tags */}
+      {article.tags.length > 0 && (
+        <div className="relative mt-auto pt-3 flex flex-wrap gap-1.5">
+          {article.tags.slice(0, 2).map((tag) => (
+            <span
+              key={tag.id}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onTagClick?.(tag.slug, tag.id);
+              }}
+              className={cn(
+                "text-[11px] px-2 py-0.5 rounded-full cursor-pointer",
+                "bg-background border border-primary/20 text-muted-foreground",
+                "hover:border-primary hover:text-foreground",
+                "transition-all duration-150"
+              )}
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      )}
+    </Link>
   );
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, AlertTriangle, Camera, Loader2, Map, MessageCircle, Trash2 } from "lucide-react";
+import { AlertCircle, AlertTriangle, Loader2, MessageCircle, Trash2 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
+import { AvatarCropper } from "~/components/avatar-cropper";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -38,6 +38,8 @@ interface ProfileFormProps {
     lastName: string | null;
     middleName: string | null;
     displayName: string | null;
+    tagline: string | null;
+    taglineSetByAdmin: boolean;
     phone: string | null;
     hidePhone: boolean;
     hideName: boolean;
@@ -55,6 +57,10 @@ interface ProfileFormProps {
     hideMessengers: boolean;
     mapProvider: "yandex" | "2gis" | "google" | "apple" | "osm" | null;
   } | null;
+  // Computed tagline from API (either custom or auto-generated from roles)
+  effectiveTagline?: string | null;
+  // Whether tagline was set by admin (user cannot edit)
+  taglineSetByAdmin?: boolean;
 }
 
 // Компонент чекбокса приватности
@@ -83,13 +89,14 @@ function PrivacyCheckbox({
   );
 }
 
-export function ProfileForm({ user, profile }: ProfileFormProps) {
+export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin }: ProfileFormProps) {
   const { toast } = useToast();
   const utils = api.useUtils();
 
   const [displayName, setDisplayName] = useState(
     profile?.displayName ?? user?.name ?? ""
   );
+  const [tagline, setTagline] = useState(profile?.tagline ?? "");
   const [firstName] = useState(profile?.firstName ?? "");
   const [lastName] = useState(profile?.lastName ?? "");
   const [middleName] = useState(profile?.middleName ?? "");
@@ -117,9 +124,6 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
   const [hideMessengers, setHideMessengers] = useState(
     profile?.hideMessengers ?? false
   );
-  const [mapProvider, setMapProvider] = useState<string>(
-    profile?.mapProvider ?? "yandex"
-  );
 
   const updateProfile = api.profile.update.useMutation({
     onSuccess: () => {
@@ -138,16 +142,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
     },
   });
 
-  const updateAvatar = api.profile.updateAvatar.useMutation({
-    onSuccess: (result) => {
-      if (!result.success) {
-        toast({
-          title: "Функция недоступна",
-          description: result.message,
-        });
-      }
-    },
-  });
+  const [currentAvatar, setCurrentAvatar] = useState(profile?.avatar ?? user?.image ?? null);
 
   const [deletionReason, setDeletionReason] = useState("");
   const [showDeletionForm, setShowDeletionForm] = useState(false);
@@ -218,12 +213,14 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
       maxUsername: maxUsername || null,
       whatsappPhone: whatsappPhone || null,
       hideMessengers,
-      mapProvider: mapProvider as "yandex" | "2gis" | "google" | "apple" | "osm",
+      // Include tagline only if not set by admin
+      tagline: taglineSetByAdmin ? undefined : (tagline || null),
     });
   };
 
-  const handleAvatarClick = () => {
-    updateAvatar.mutate({});
+  const handleAvatarChange = (url: string | null) => {
+    setCurrentAvatar(url);
+    void utils.profile.get.invalidate();
   };
 
   const userRoles = user?.roles ?? ["Guest" as UserRole];
@@ -234,30 +231,14 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
       {/* Avatar Section */}
       <section>
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-          <div className="relative">
-            <Avatar className={cn(
-              "h-24 w-24 rounded-xl ring-[3px] ring-offset-2 ring-offset-background",
-              rankConfig.ringColor
-            )}>
-              <AvatarImage
-                src={profile?.avatar ?? user?.image ?? ""}
-                alt=""
-                className="object-cover rounded-xl"
-              />
-              <AvatarFallback className={cn("text-3xl rounded-xl", rankConfig.badgeColor, "text-white")}>
-                {displayName?.charAt(0) ?? "?"}
-              </AvatarFallback>
-            </Avatar>
-            <Button
-              type="button"
-              size="icon"
-              variant="secondary"
-              className="absolute -bottom-1 -right-1 h-8 w-8 rounded-lg shadow-md"
-              onClick={handleAvatarClick}
-            >
-              <Camera className="h-4 w-4" />
-            </Button>
-          </div>
+          <AvatarCropper
+            currentAvatar={currentAvatar}
+            fallback={displayName?.charAt(0) ?? "?"}
+            onAvatarChange={handleAvatarChange}
+            size="lg"
+            ringColor={rankConfig.ringColor}
+            badgeColor={rankConfig.badgeColor}
+          />
           <div className="text-center sm:text-left">
             <h2 className="text-xl font-semibold">{displayName || "Имя не указано"}</h2>
             <p className={cn("text-sm font-medium", rankConfig.textColor)}>
@@ -295,6 +276,44 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
             <p className="text-sm text-muted-foreground order-2 lg:pt-6">
               Это имя видят другие жители в комментариях, объявлениях и сообщениях.
               Можете использовать никнейм или настоящее имя.
+            </p>
+          </div>
+
+          {/* Подпись профиля */}
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
+            <div className="space-y-3 order-1">
+              <Label htmlFor="tagline">Подпись профиля</Label>
+              {taglineSetByAdmin ? (
+                <>
+                  <Input
+                    id="tagline"
+                    value={effectiveTagline ?? ""}
+                    disabled
+                    className="bg-muted/50"
+                  />
+                  <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    <span>Подпись установлена администратором</span>
+                  </p>
+                </>
+              ) : (
+                <Input
+                  id="tagline"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                  placeholder={effectiveTagline ?? "Ваша роль или профессия"}
+                  maxLength={100}
+                />
+              )}
+              {!taglineSetByAdmin && !tagline && effectiveTagline && (
+                <p className="text-xs text-muted-foreground">
+                  Если оставить пустым, будет использоваться: «{effectiveTagline}»
+                </p>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
+              Подпись отображается рядом с вашим именем в публикациях, комментариях
+              и объявлениях. Можете указать профессию или роль в сообществе.
             </p>
           </div>
 
@@ -498,39 +517,6 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
               onCheckedChange={setHideMessengers}
               label="Скрывать все мессенджеры от других пользователей"
             />
-          </div>
-        </div>
-      </section>
-
-      {/* Настройки приложения */}
-      <section>
-        <h2 className="text-lg font-medium pb-3 border-b mb-8 flex items-center gap-2">
-          <Map className="h-5 w-5" />
-          Настройки приложения
-        </h2>
-
-        <div className="space-y-8">
-          {/* Провайдер карт */}
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="space-y-3 order-1">
-              <Label htmlFor="mapProvider">Провайдер карт</Label>
-              <Select value={mapProvider} onValueChange={setMapProvider}>
-                <SelectTrigger className="w-full sm:w-64">
-                  <SelectValue placeholder="Выберите провайдера карт" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yandex">Яндекс Карты</SelectItem>
-                  <SelectItem value="2gis">2ГИС</SelectItem>
-                  <SelectItem value="google">Google Карты</SelectItem>
-                  <SelectItem value="apple">Apple Maps</SelectItem>
-                  <SelectItem value="osm">OpenStreetMap</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
-              Адреса в приложении будут открываться в выбранном картографическом
-              сервисе. Яндекс Карты и 2ГИС рекомендуются для России.
-            </p>
           </div>
         </div>
       </section>

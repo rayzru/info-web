@@ -253,6 +253,12 @@ export const userProfiles = createTable("user_profile", {
   lastName: varchar("last_name", { length: 255 }),
   middleName: varchar("middle_name", { length: 255 }),
   displayName: varchar("display_name", { length: 255 }),
+  // Подпись профиля (роль/профессия/должность)
+  // Если не задана - автоматически генерируется из ролей пользователя
+  // Может быть назначена администратором (например для представителей УК)
+  tagline: varchar("tagline", { length: 100 }),
+  // Кастомная подпись установлена администратором (не может быть изменена пользователем)
+  taglineSetByAdmin: boolean("tagline_set_by_admin").notNull().default(false),
   phone: varchar("phone", { length: 20 }), // E.164 format: +7XXXXXXXXXX (max 20 chars)
   hidePhone: boolean("hide_phone").notNull().default(false),
   hideName: boolean("hide_name").notNull().default(false),
@@ -400,3 +406,49 @@ export const userBlocksRelations = relations(userBlocks, ({ one }) => ({
     relationName: "unblockedByUser",
   }),
 }));
+
+// ============================================================================
+// User Interest Buildings (область интересов - строения)
+// ============================================================================
+
+// Forward declaration for buildings reference
+import { buildings } from "./buildings";
+
+export const userInterestBuildings = createTable(
+  "user_interest_building",
+  {
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    buildingId: varchar("building_id", { length: 255 })
+      .notNull()
+      .references(() => buildings.id, { onDelete: "cascade" }),
+    // Автоматически добавлено при регистрации собственности
+    autoAdded: boolean("auto_added").notNull().default(false),
+    createdAt: timestamp("created_at", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.buildingId] }),
+    index("user_interest_building_user_idx").on(table.userId),
+    index("user_interest_building_building_idx").on(table.buildingId),
+  ]
+);
+
+export const userInterestBuildingsRelations = relations(
+  userInterestBuildings,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [userInterestBuildings.userId],
+      references: [users.id],
+    }),
+    building: one(buildings, {
+      fields: [userInterestBuildings.buildingId],
+      references: [buildings.id],
+    }),
+  })
+);

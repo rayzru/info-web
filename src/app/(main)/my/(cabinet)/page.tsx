@@ -2,6 +2,8 @@ import {
   Home,
   KeyRound,
   Megaphone,
+  MessageSquare,
+  Settings,
   User,
 } from "lucide-react";
 import Link from "next/link";
@@ -94,6 +96,32 @@ export default async function CabinetPage() {
               <CardTitle className="text-xl">Безопасность</CardTitle>
               <CardDescription>
                 Пароль и способы входа
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        {/* Settings - smaller */}
+        <Link href="/my/settings" className="group sm:col-span-1 lg:col-span-2">
+          <Card className="relative flex min-h-28 sm:min-h-50 h-full flex-col overflow-hidden transition-all hover:bg-slate-50 hover:border-slate-200 hover:shadow-lg dark:hover:bg-slate-950/30 dark:hover:border-slate-800">
+            <Settings className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <CardHeader className="relative z-10 flex-1">
+              <CardTitle className="text-xl">Настройки</CardTitle>
+              <CardDescription>
+                Область интересов и тема
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        {/* Publications - larger */}
+        <Link href="/my/publications" className="group sm:col-span-1 lg:col-span-3">
+          <Card className="relative flex min-h-28 sm:min-h-50 h-full flex-col overflow-hidden transition-all hover:bg-cyan-50 hover:border-cyan-200 hover:shadow-lg dark:hover:bg-cyan-950/30 dark:hover:border-cyan-800">
+            <MessageSquare className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <CardHeader className="relative z-10 flex-1">
+              <CardTitle className="text-xl">Публикации</CardTitle>
+              <CardDescription>
+                Объявления для соседей
               </CardDescription>
             </CardHeader>
           </Card>

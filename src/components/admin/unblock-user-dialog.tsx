@@ -22,12 +22,14 @@ interface UnblockUserDialogProps {
   userId: string;
   userName: string | null;
   onUnblocked?: () => void;
+  asMenuItem?: boolean;
 }
 
 export function UnblockUserDialog({
   userId,
   userName,
   onUnblocked,
+  asMenuItem = false,
 }: UnblockUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -63,16 +65,29 @@ export function UnblockUserDialog({
     });
   };
 
+  const trigger = asMenuItem ? (
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden hover:bg-green-600/10 focus:bg-green-600/10 w-full text-green-600"
+    >
+      <ShieldCheck className="size-4 shrink-0" />
+      Разблокировать
+    </button>
+  ) : (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="text-green-600 hover:text-green-600 hover:bg-green-600/10"
+    >
+      <ShieldCheck className="h-4 w-4" />
+    </Button>
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-green-600 hover:text-green-600 hover:bg-green-600/10"
-        >
-          <ShieldCheck className="h-4 w-4" />
-        </Button>
+        {trigger}
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>

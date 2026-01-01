@@ -7,19 +7,16 @@ import {
   LayoutDashboard,
   LogOut,
   Megaphone,
-  Monitor,
-  Moon,
+  MessageSquare,
+  Settings,
   Shield,
-  Sun,
   User,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "~/lib/utils";
-import { useThemeStore, type Theme } from "~/stores/theme-store";
 import { api } from "~/trpc/react";
 
 interface NavigationItem {
@@ -61,6 +58,12 @@ const navigationItems: NavigationEntry[] = [
     testId: "nav-notifications",
     showBadge: true,
   },
+  {
+    title: "Настройки",
+    href: "/my/settings",
+    icon: Settings,
+    testId: "nav-settings",
+  },
   "separator",
   {
     title: "Недвижимость",
@@ -73,6 +76,12 @@ const navigationItems: NavigationEntry[] = [
     href: "/my/ads",
     icon: Megaphone,
     testId: "nav-ads",
+  },
+  {
+    title: "Публикации",
+    href: "/my/publications",
+    icon: MessageSquare,
+    testId: "nav-publications",
   },
 ];
 
@@ -87,19 +96,6 @@ export default function CabinetLayout({
     undefined,
     { refetchInterval: 30000 }, // Refetch every 30 seconds
   );
-  const { theme, setTheme } = useThemeStore();
-  const { setTheme: setNextTheme } = useTheme();
-
-  const handleThemeChange = (newTheme: Theme) => {
-    setTheme(newTheme);
-    setNextTheme(newTheme);
-  };
-
-  const themeOptions = [
-    { value: "system" as Theme, label: "Система", icon: Monitor },
-    { value: "light" as Theme, label: "Светлая", icon: Sun },
-    { value: "dark" as Theme, label: "Тёмная", icon: Moon },
-  ];
 
   const isAdmin = session?.user?.isAdmin;
 
@@ -111,7 +107,7 @@ export default function CabinetLayout({
 
         {/* Sidebar Navigation (Right side) */}
         <aside className="hidden md:block w-64 shrink-0">
-          <nav className="space-y-1 sticky top-6">
+          <nav className="space-y-1 sticky top-6 pt-14">
             {navigationItems.map((entry, index) => {
               if (entry === "separator") {
                 return <div key={`sep-${index}`} className="my-2 border-t" />;
@@ -162,33 +158,6 @@ export default function CabinetLayout({
                 </Link>
               );
             })}
-
-            {/* Theme selector - compact icon-only */}
-            <div className="my-3 border-t" />
-            <div className="px-3 py-2 flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Тема</span>
-              <div className="flex rounded-lg border bg-muted/50 p-0.5">
-                {themeOptions.map((option) => {
-                  const Icon = option.icon;
-                  const isSelected = theme === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      title={option.label}
-                      className={cn(
-                        "p-1.5 rounded-md transition-all",
-                        isSelected
-                          ? "bg-background text-primary shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                      onClick={() => handleThemeChange(option.value)}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
             {/* Admin Link */}
             {isAdmin && (

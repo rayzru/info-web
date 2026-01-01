@@ -39,6 +39,25 @@ export interface MaintenanceSettings {
 }
 
 // ============================================================================
+// Publication Moderation Settings Type
+// ============================================================================
+
+export interface PublicationModerationSettings {
+  /** Включена ли многоуровневая модерация */
+  enabled: boolean;
+  /** Минимальное количество одобрений для публикации */
+  requiredApprovals: number;
+  /** Роли, которые могут участвовать в модерации */
+  allowedRoles: string[];
+  /** Максимальное количество отклонений до автоотклонения */
+  maxRejections: number;
+  /** Разрешить автору видеть голоса модераторов */
+  showVotesToAuthor: boolean;
+  /** Требуется ли комментарий при одобрении */
+  requireApprovalComment: boolean;
+}
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -51,6 +70,17 @@ export type NewSystemSetting = typeof systemSettings.$inferInsert;
 
 export const SETTING_KEYS = {
   MAINTENANCE_MODE: "maintenance_mode",
+  PUBLICATION_MODERATION: "publication_moderation",
 } as const;
+
+/** Default values for publication moderation settings */
+export const DEFAULT_PUBLICATION_MODERATION: PublicationModerationSettings = {
+  enabled: true,
+  requiredApprovals: 2,
+  allowedRoles: ["Moderator", "Admin", "SuperAdmin", "Root"],
+  maxRejections: 1,
+  showVotesToAuthor: false,
+  requireApprovalComment: false,
+};
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];

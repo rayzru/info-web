@@ -17,6 +17,8 @@ import {
   Bell,
   Building2,
   Megaphone,
+  MessageSquare,
+  BookOpen,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -45,6 +47,12 @@ const navigation = [
     testId: "nav-info",
   },
   {
+    title: "Чего",
+    link: "/howtos",
+    icon: BookOpen,
+    testId: "nav-howtos",
+  },
+  {
     title: "Объявления",
     link: "/listings",
     icon: Tag,
@@ -55,6 +63,12 @@ const navigation = [
     link: "/community",
     icon: Users,
     testId: "nav-community",
+  },
+  {
+    title: "Обратная связь",
+    link: "/feedback",
+    icon: MessageSquare,
+    testId: "nav-feedback",
   },
 ];
 
@@ -277,7 +291,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                       )}
                     >
                       <Shield className="h-5 w-5" />
-                      Админ-панель
+                      Админ
                     </Button>
                   </Link>
                 </div>

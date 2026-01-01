@@ -221,14 +221,14 @@ export function RegisterForm({
               <Button
                 variant="ghost"
                 type="button"
-                className="group/vk h-11 w-11 p-0 transition-all duration-300 hover:w-20"
-                onClick={async () => await signIn("vk", { callbackUrl })}
+                className="group/vk h-11 w-11 p-0 opacity-50 pointer-events-none"
                 data-testid="register-vk"
+                disabled
               >
                 <VkIdStack />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>VK ID</TooltipContent>
+            <TooltipContent>VK ID (скоро)</TooltipContent>
           </Tooltip>
 
           <Tooltip>

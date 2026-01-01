@@ -108,7 +108,7 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
     const building = apartment.floor?.entrance?.building?.number;
     const entrance = apartment.floor?.entrance?.entranceNumber;
     const floor = apartment.floor?.floorNumber;
-    return `Д.${building} / П.${entrance} / Эт.${floor} / Кв.${apartment.number}`;
+    return `Стр.${building} / П.${entrance} / Эт.${floor} / Кв.${apartment.number}`;
   };
 
   const formatParkingLabel = (spot: {
@@ -117,7 +117,7 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
   }) => {
     const building = spot.floor?.parking?.building?.number;
     const floor = spot.floor?.floorNumber;
-    return `Д.${building} / Эт.${floor} / М.${spot.number}`;
+    return `Стр.${building} / Эт.${floor} / М.${spot.number}`;
   };
 
   if (isLoading) {

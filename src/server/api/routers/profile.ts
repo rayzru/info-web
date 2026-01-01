@@ -1,10 +1,46 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { deletionRequests, userProfiles, userRoles, users } from "~/server/db/schema";
+import {
+  buildings,
+  deletionRequests,
+  userInterestBuildings,
+  userProfiles,
+  userRoles,
+  users,
+} from "~/server/db/schema";
 import type { UserRole } from "~/server/auth/rbac";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+
+// Helper to generate tagline from user roles
+export function generateTaglineFromRoles(roles: UserRole[]): string | null {
+  // Priority order for role-based taglines
+  const rolePriority: Record<string, string> = {
+    Root: "Администратор",
+    SuperAdmin: "Администратор",
+    Admin: "Администратор",
+    ComplexChairman: "Председатель комплекса",
+    BuildingChairman: "Председатель дома",
+    ComplexRepresenative: "Представитель УК",
+    StoreOwner: "Владелец магазина",
+    StoreRepresenative: "Представитель магазина",
+    Editor: "Редактор",
+    Moderator: "Модератор",
+    ApartmentOwner: "Собственник",
+    ParkingOwner: "Собственник",
+    ApartmentResident: "Жилец",
+    ParkingResident: "Арендатор",
+  };
+
+  for (const [role, tagline] of Object.entries(rolePriority)) {
+    if (roles.includes(role as UserRole)) {
+      return tagline;
+    }
+  }
+
+  return null;
+}
 
 // Zod schema for gender enum
 const genderSchema = z.enum(["Male", "Female", "Unspecified"]);
@@ -33,6 +69,10 @@ export const profileRouter = createTRPCRouter({
 
     const userRolesList = roles.map((r) => r.role as UserRole);
 
+    // Compute effective tagline
+    const effectiveTagline =
+      profile?.tagline ?? generateTaglineFromRoles(userRolesList);
+
     return {
       user: {
         id: user?.id,
@@ -42,6 +82,10 @@ export const profileRouter = createTRPCRouter({
         roles: userRolesList.length > 0 ? userRolesList : (["Guest"] as UserRole[]),
       },
       profile: profile ?? null,
+      // Computed tagline (either custom or auto-generated from roles)
+      effectiveTagline,
+      // Whether tagline was set by admin (user cannot edit)
+      taglineSetByAdmin: profile?.taglineSetByAdmin ?? false,
     };
   }),
 
@@ -80,6 +124,8 @@ export const profileRouter = createTRPCRouter({
         hideMessengers: z.boolean().optional(),
         // Настройки приложения
         mapProvider: mapProviderSchema.optional().nullable(),
+        // Подпись профиля
+        tagline: z.string().max(100).optional().nullable(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -91,6 +137,10 @@ export const profileRouter = createTRPCRouter({
       });
 
       if (existingProfile) {
+        // Only update tagline if not set by admin
+        const taglineUpdate =
+          existingProfile.taglineSetByAdmin ? {} : { tagline: input.tagline };
+
         // Update existing profile
         await ctx.db
           .update(userProfiles)
@@ -113,6 +163,8 @@ export const profileRouter = createTRPCRouter({
             hideMessengers: input.hideMessengers,
             // Настройки приложения
             mapProvider: input.mapProvider,
+            // Подпись профиля (если не установлена администратором)
+            ...taglineUpdate,
           })
           .where(eq(userProfiles.id, existingProfile.id));
       } else {
@@ -137,6 +189,8 @@ export const profileRouter = createTRPCRouter({
           hideMessengers: input.hideMessengers ?? false,
           // Настройки приложения
           mapProvider: input.mapProvider ?? "yandex",
+          // Подпись профиля
+          tagline: input.tagline,
         });
       }
 
@@ -239,5 +293,100 @@ export const profileRouter = createTRPCRouter({
       success: true,
       message: "Заявка на удаление аккаунта отменена.",
     };
+  }),
+
+  // ============================================================================
+  // Interest Buildings (область интересов - строения)
+  // ============================================================================
+
+  // Get user's interest buildings
+  getInterestBuildings: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    const interests = await ctx.db.query.userInterestBuildings.findMany({
+      where: eq(userInterestBuildings.userId, userId),
+      with: {
+        building: true,
+      },
+      orderBy: (t, { asc }) => [asc(t.createdAt)],
+    });
+
+    return interests.map((i) => ({
+      buildingId: i.buildingId,
+      buildingNumber: i.building.number,
+      buildingTitle: i.building.title,
+      autoAdded: i.autoAdded,
+      createdAt: i.createdAt,
+    }));
+  }),
+
+  // Add building to interests
+  addInterestBuilding: protectedProcedure
+    .input(z.object({ buildingId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Check building exists
+      const building = await ctx.db.query.buildings.findFirst({
+        where: eq(buildings.id, input.buildingId),
+      });
+
+      if (!building) {
+        return { success: false, message: "Строение не найдено" };
+      }
+
+      // Check if already added
+      const existing = await ctx.db.query.userInterestBuildings.findFirst({
+        where: and(
+          eq(userInterestBuildings.userId, userId),
+          eq(userInterestBuildings.buildingId, input.buildingId)
+        ),
+      });
+
+      if (existing) {
+        return { success: true, message: "Строение уже добавлено" };
+      }
+
+      // Add interest
+      await ctx.db.insert(userInterestBuildings).values({
+        userId,
+        buildingId: input.buildingId,
+        autoAdded: false,
+      });
+
+      return { success: true };
+    }),
+
+  // Remove building from interests
+  removeInterestBuilding: protectedProcedure
+    .input(z.object({ buildingId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      await ctx.db
+        .delete(userInterestBuildings)
+        .where(
+          and(
+            eq(userInterestBuildings.userId, userId),
+            eq(userInterestBuildings.buildingId, input.buildingId)
+          )
+        );
+
+      return { success: true };
+    }),
+
+  // Get all available buildings for selection
+  getAvailableBuildings: protectedProcedure.query(async ({ ctx }) => {
+    const allBuildings = await ctx.db.query.buildings.findMany({
+      where: eq(buildings.active, true),
+      orderBy: (b, { asc }) => [asc(b.number)],
+    });
+
+    return allBuildings.map((b) => ({
+      id: b.id,
+      number: b.number,
+      title: b.title,
+      liter: b.liter,
+    }));
   }),
 });

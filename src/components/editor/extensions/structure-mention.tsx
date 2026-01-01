@@ -164,7 +164,7 @@ const StructureList = forwardRef<StructureListRef, StructureListProps>(
     if (items.length === 0) {
       return (
         <div className="rounded-lg border bg-popover p-2 text-sm text-muted-foreground shadow-md">
-          Введите код: #b1 (корпус), #b1e2 (подъезд), #b1kv123 (квартира), #b1p45 (парковка)
+          Введите код: #b1 (строение), #b1e2 (подъезд), #b1kv123 (квартира), #b1p45 (парковка)
         </div>
       );
     }

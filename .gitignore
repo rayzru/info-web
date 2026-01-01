@@ -34,8 +34,8 @@ yarn-error.log*
 # local env files
 # do not commit any .env files to git, except for the .env.example file. https://create.t3.gg/en/usage/env-variables#using-environment-variables
 .env
-.env.local
-.env*.local
+.env.*
+.env*.*
 
 
 # vercel
@@ -50,3 +50,7 @@ yarn-error.log*
 # uploads (keep .gitkeep)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# avatars (keep .gitkeep)
+/public/avatars/*
+!/public/avatars/.gitkeep
