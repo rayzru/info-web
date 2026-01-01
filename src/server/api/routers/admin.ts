@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, count, desc, eq, ilike, isNull, or } from "drizzle-orm";
+import { and, count, desc, eq, gte, ilike, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { hasFeatureAccess, type UserRole } from "~/server/auth/rbac";
@@ -9,11 +9,15 @@ import {
   buildings,
   deletionRequests,
   entrances,
+  feedback,
   floors,
   listings,
+  news,
   parkingFloors,
   parkings,
   parkingSpots,
+  propertyClaims,
+  publications,
   sessions,
   userApartments,
   userBlocks,
@@ -107,7 +111,7 @@ export const adminRouter = createTRPCRouter({
             )
           : undefined;
 
-        // Get users with pagination
+        // Get users with pagination (including tagline from profiles)
         const usersQuery = ctx.db
           .select({
             id: users.id,
@@ -116,8 +120,10 @@ export const adminRouter = createTRPCRouter({
             image: users.image,
             emailVerified: users.emailVerified,
             createdAt: users.createdAt,
+            tagline: userProfiles.tagline,
           })
           .from(users)
+          .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
           .where(searchCondition)
           .orderBy(desc(users.createdAt))
           .limit(limit)
@@ -162,6 +168,7 @@ export const adminRouter = createTRPCRouter({
         let filteredUsers = usersResult.map((user) => ({
           ...user,
           roles: rolesByUser[user.id] ?? [],
+          tagline: user.tagline ?? null,
         }));
 
         if (roleFilter) {
@@ -304,6 +311,76 @@ export const adminRouter = createTRPCRouter({
 
         // Delete user (cascades to roles, sessions, etc.)
         await ctx.db.delete(users).where(eq(users.id, userId));
+
+        return { success: true };
+      }),
+
+    // Get user's tagline (for admin editing)
+    getTagline: adminProcedureWithFeature("users:manage")
+      .input(z.object({ userId: z.string().uuid() }))
+      .query(async ({ ctx, input }) => {
+        const { userId } = input;
+
+        const profile = await ctx.db.query.userProfiles.findFirst({
+          where: eq(userProfiles.userId, userId),
+          columns: {
+            tagline: true,
+            taglineSetByAdmin: true,
+          },
+        });
+
+        return {
+          tagline: profile?.tagline ?? null,
+          taglineSetByAdmin: profile?.taglineSetByAdmin ?? false,
+        };
+      }),
+
+    // Update user's tagline (admin only)
+    updateTagline: adminProcedureWithFeature("users:manage")
+      .input(
+        z.object({
+          userId: z.string().uuid(),
+          tagline: z.string().max(100).nullable(),
+          setByAdmin: z.boolean().default(true),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { userId, tagline, setByAdmin } = input;
+
+        // Verify user exists
+        const user = await ctx.db.query.users.findFirst({
+          where: eq(users.id, userId),
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+          });
+        }
+
+        // Check if profile exists
+        const existingProfile = await ctx.db.query.userProfiles.findFirst({
+          where: eq(userProfiles.userId, userId),
+        });
+
+        if (existingProfile) {
+          // Update existing profile
+          await ctx.db
+            .update(userProfiles)
+            .set({
+              tagline,
+              taglineSetByAdmin: setByAdmin,
+            })
+            .where(eq(userProfiles.userId, userId));
+        } else {
+          // Create new profile with tagline
+          await ctx.db.insert(userProfiles).values({
+            userId,
+            tagline,
+            taglineSetByAdmin: setByAdmin,
+          });
+        }
 
         return { success: true };
       }),
@@ -794,7 +871,7 @@ export const adminRouter = createTRPCRouter({
             results.push({
               id: building.id,
               code: `#b${building.number}`,
-              label: `Корпус ${building.number}${building.title ? ` (${building.title})` : ""}`,
+              label: `Строение ${building.number}${building.title ? ` (${building.title})` : ""}`,
               type: "building",
             });
           }
@@ -814,7 +891,7 @@ export const adminRouter = createTRPCRouter({
             results.push({
               id: building.entrances[0].id,
               code: `#b${building.number}e${entranceNum}`,
-              label: `Корпус ${building.number}, подъезд ${entranceNum}`,
+              label: `Строение ${building.number}, подъезд ${entranceNum}`,
               type: "entrance",
             });
           }
@@ -844,7 +921,7 @@ export const adminRouter = createTRPCRouter({
                   results.push({
                     id: apt.id,
                     code: `#b${building.number}kv${aptNum}`,
-                    label: `Корпус ${building.number}, кв. ${aptNum}`,
+                    label: `Строение ${building.number}, кв. ${aptNum}`,
                     type: "apartment",
                   });
                   break;
@@ -879,7 +956,7 @@ export const adminRouter = createTRPCRouter({
                   results.push({
                     id: spot.id,
                     code: `#b${building.number}p${spotNum}`,
-                    label: `Корпус ${building.number}, парковка ${spotNum}`,
+                    label: `Строение ${building.number}, м/м ${spotNum}`,
                     type: "parking",
                   });
                   break;
@@ -900,7 +977,7 @@ export const adminRouter = createTRPCRouter({
               results.push({
                 id: b.id,
                 code: `#b${b.number}`,
-                label: `Корпус ${b.number}${b.title ? ` (${b.title})` : ""}`,
+                label: `Строение ${b.number}${b.title ? ` (${b.title})` : ""}`,
                 type: "building",
               });
             }
@@ -1006,13 +1083,150 @@ export const adminRouter = createTRPCRouter({
     }),
   }),
 
-  // Get dashboard stats
-  stats: adminProcedure.query(async ({ ctx }) => {
-    const usersCount = await ctx.db.select({ count: count() }).from(users);
+  // Get dashboard stats with moderation counts
+  dashboardStats: adminProcedure.query(async ({ ctx }) => {
+    const userRolesData = ctx.userRoles;
 
-    return {
-      totalUsers: usersCount[0]?.count ?? 0,
-    };
+    // Helper to get today's start
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    // Initialize result
+    const result: {
+      users?: { pending: number; todayNew: number };
+      claims?: { pending: number; todayNew: number };
+      listings?: { pending: number; todayNew: number };
+      publications?: { pending: number; todayNew: number };
+      news?: { pending: number; todayNew: number };
+      feedback?: { pending: number; todayNew: number };
+      deletionRequests?: { pending: number; todayNew: number };
+    } = {};
+
+    // Users stats (if has users:view)
+    if (hasFeatureAccess(userRolesData, "users:view")) {
+      const [pendingDeletions] = await ctx.db
+        .select({ count: count() })
+        .from(deletionRequests)
+        .where(eq(deletionRequests.status, "pending"));
+
+      const [todayUsers] = await ctx.db
+        .select({ count: count() })
+        .from(users)
+        .where(gte(users.createdAt, todayStart));
+
+      result.users = {
+        pending: pendingDeletions?.count ?? 0,
+        todayNew: todayUsers?.count ?? 0,
+      };
+    }
+
+    // Claims stats (if has claims:view)
+    if (hasFeatureAccess(userRolesData, "claims:view")) {
+      const [pendingClaims] = await ctx.db
+        .select({ count: count() })
+        .from(propertyClaims)
+        .where(eq(propertyClaims.status, "pending"));
+
+      const [todayClaims] = await ctx.db
+        .select({ count: count() })
+        .from(propertyClaims)
+        .where(gte(propertyClaims.createdAt, todayStart));
+
+      result.claims = {
+        pending: pendingClaims?.count ?? 0,
+        todayNew: todayClaims?.count ?? 0,
+      };
+    }
+
+    // Listings stats (if has listings:view)
+    if (hasFeatureAccess(userRolesData, "listings:view")) {
+      const [pendingListings] = await ctx.db
+        .select({ count: count() })
+        .from(listings)
+        .where(eq(listings.status, "pending_moderation"));
+
+      const [todayListings] = await ctx.db
+        .select({ count: count() })
+        .from(listings)
+        .where(gte(listings.createdAt, todayStart));
+
+      result.listings = {
+        pending: pendingListings?.count ?? 0,
+        todayNew: todayListings?.count ?? 0,
+      };
+    }
+
+    // Publications stats (if has content:moderate)
+    if (hasFeatureAccess(userRolesData, "content:moderate")) {
+      const [pendingPubs] = await ctx.db
+        .select({ count: count() })
+        .from(publications)
+        .where(eq(publications.status, "pending"));
+
+      const [todayPubs] = await ctx.db
+        .select({ count: count() })
+        .from(publications)
+        .where(gte(publications.createdAt, todayStart));
+
+      result.publications = {
+        pending: pendingPubs?.count ?? 0,
+        todayNew: todayPubs?.count ?? 0,
+      };
+
+      // News stats
+      const [pendingNews] = await ctx.db
+        .select({ count: count() })
+        .from(news)
+        .where(eq(news.status, "draft"));
+
+      const [todayNews] = await ctx.db
+        .select({ count: count() })
+        .from(news)
+        .where(gte(news.createdAt, todayStart));
+
+      result.news = {
+        pending: pendingNews?.count ?? 0,
+        todayNew: todayNews?.count ?? 0,
+      };
+    }
+
+    // Feedback stats (if has users:manage)
+    if (hasFeatureAccess(userRolesData, "users:manage")) {
+      const [pendingFeedback] = await ctx.db
+        .select({ count: count() })
+        .from(feedback)
+        .where(eq(feedback.status, "new"));
+
+      const [todayFeedback] = await ctx.db
+        .select({ count: count() })
+        .from(feedback)
+        .where(gte(feedback.createdAt, todayStart));
+
+      result.feedback = {
+        pending: pendingFeedback?.count ?? 0,
+        todayNew: todayFeedback?.count ?? 0,
+      };
+    }
+
+    // Deletion requests stats (if has users:delete)
+    if (hasFeatureAccess(userRolesData, "users:delete")) {
+      const [pendingDeletions] = await ctx.db
+        .select({ count: count() })
+        .from(deletionRequests)
+        .where(eq(deletionRequests.status, "pending"));
+
+      const [todayDeletions] = await ctx.db
+        .select({ count: count() })
+        .from(deletionRequests)
+        .where(gte(deletionRequests.createdAt, todayStart));
+
+      result.deletionRequests = {
+        pending: pendingDeletions?.count ?? 0,
+        todayNew: todayDeletions?.count ?? 0,
+      };
+    }
+
+    return result;
   }),
 
   // Deletion requests management

@@ -3,7 +3,7 @@ import { ProfileForm } from "~/components/profile-form";
 import { api } from "~/trpc/server";
 
 export default async function ProfilePage() {
-  const { user, profile } = await api.profile.get();
+  const { user, profile, effectiveTagline, taglineSetByAdmin } = await api.profile.get();
 
   return (
     <div>
@@ -12,7 +12,12 @@ export default async function ProfilePage() {
         description={`Настройки профиля и приватности`}
       />
 
-      <ProfileForm user={user} profile={profile} />
+      <ProfileForm
+        user={user}
+        profile={profile}
+        effectiveTagline={effectiveTagline}
+        taglineSetByAdmin={taglineSetByAdmin}
+      />
     </div>
   );
 }

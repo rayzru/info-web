@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -423,12 +424,10 @@ export default function AdminDeletionRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Заявки на удаление аккаунтов</h1>
-        <p className="text-muted-foreground mt-1">
-          Рассмотрение запросов пользователей на удаление персональных данных
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Заявки на удаление аккаунтов"
+        description="Рассмотрение запросов пользователей на удаление персональных данных"
+      />
 
       {/* Stats Cards */}
       <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">

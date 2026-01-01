@@ -106,7 +106,7 @@ export default async function DirectoryEntryPage({ params }: Props) {
                 Расположение
               </h3>
               <div className="text-sm text-muted-foreground">
-                {entry.building && <span>Дом {entry.building.number}</span>}
+                {entry.building && <span>Строение {entry.building.number}</span>}
                 {entry.floorNumber !== null && (
                   <span>
                     {entry.building && ", "}

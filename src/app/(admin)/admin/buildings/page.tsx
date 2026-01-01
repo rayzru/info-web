@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Building2, DoorOpen, Home, Layers, ParkingSquare, Car } from "lucide-react";
 
+import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { BuildingTree } from "~/components/admin/building-tree";
 import { auth } from "~/server/auth";
 import { hasFeatureAccess, type UserRole } from "~/server/auth/rbac";
@@ -28,18 +29,10 @@ export default async function BuildingsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-          <Building2 className="h-5 w-5 text-primary-foreground" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">Здания и помещения</h1>
-          <p className="text-sm text-muted-foreground">
-            Визуализация структуры зданий комплекса
-          </p>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="Здания и помещения"
+        description="Визуализация структуры зданий комплекса"
+      />
 
       {/* Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">

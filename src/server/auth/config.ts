@@ -65,6 +65,16 @@ const TEST_ACCOUNTS: Record<string, { name: string; email: string; roles: UserRo
     email: "editor@test.local",
     roles: ["Editor"],
   },
+  chairman: {
+    name: "Test Chairman",
+    email: "chairman@test.local",
+    roles: ["BuildingChairman"],
+  },
+  ukRep: {
+    name: "Test UK Rep",
+    email: "ukrep@test.local",
+    roles: ["ComplexRepresenative"],
+  },
 };
 
 /**
@@ -385,7 +395,7 @@ function buildProviders() {
           account: {
             label: "Account Type",
             type: "text",
-            placeholder: "admin, moderator, owner, resident, guest, editor",
+            placeholder: "admin, moderator, owner, resident, guest, editor, chairman, ukRep",
           },
         },
         async authorize(credentials) {

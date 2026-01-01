@@ -98,7 +98,7 @@ const FEATURE_PERMISSIONS: Record<AdminFeature, UserRole[]> = {
   "listings:view": ["Root", "SuperAdmin", "Admin", "Moderator"],
   "listings:moderate": ["Root", "SuperAdmin", "Admin", "Moderator"],
   "content:view": ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"],
-  "content:moderate": ["Root", "SuperAdmin", "Admin", "Moderator"],
+  "content:moderate": ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"],
   "directory:manage": ["Root", "SuperAdmin", "Admin", "Editor"],
   "system:settings": ["Root", "SuperAdmin"],
   "system:logs": ["Root"],
@@ -191,74 +191,127 @@ export interface AdminNavItem {
   href: string;
   icon: string; // Icon name for lucide-react
   feature: AdminFeature;
+  group?: string; // Logical group for organization
 }
 
+export type AdminNavGroup = {
+  title: string;
+  items: AdminNavItem[];
+};
+
+// Grouped navigation structure
+export const ADMIN_NAV_GROUPS: { group: string; title: string }[] = [
+  { group: "users", title: "Пользователи" },
+  { group: "property", title: "Недвижимость" },
+  { group: "content", title: "Контент" },
+  { group: "system", title: "Система" },
+];
+
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
+  // ========== Пользователи ==========
   {
     title: "Пользователи",
     href: "/admin/users",
     icon: "Users",
     feature: "users:view",
-  },
-  {
-    title: "Здания",
-    href: "/admin/buildings",
-    icon: "Building2",
-    feature: "buildings:view",
-  },
-  {
-    title: "Заявки",
-    href: "/admin/claims",
-    icon: "ClipboardList",
-    feature: "claims:view",
-  },
-  {
-    title: "Объявления",
-    href: "/admin/listings",
-    icon: "Megaphone",
-    feature: "listings:view",
-  },
-  {
-    title: "Контент",
-    href: "/admin/content",
-    icon: "FileText",
-    feature: "content:view",
-  },
-  {
-    title: "Справочная",
-    href: "/admin/directory",
-    icon: "BookOpen",
-    feature: "directory:manage",
-  },
-  {
-    title: "Новости",
-    href: "/admin/news",
-    icon: "Newspaper",
-    feature: "directory:manage",
-  },
-  {
-    title: "Медиа",
-    href: "/admin/media",
-    icon: "ImageIcon",
-    feature: "directory:manage",
-  },
-  {
-    title: "Настройки",
-    href: "/admin/settings",
-    icon: "Settings",
-    feature: "system:settings",
-  },
-  {
-    title: "Логи",
-    href: "/admin/logs",
-    icon: "ScrollText",
-    feature: "system:logs",
+    group: "users",
   },
   {
     title: "Запросы на удаление",
     href: "/admin/deletion-requests",
     icon: "UserX",
     feature: "users:delete",
+    group: "users",
+  },
+  {
+    title: "Обратная связь",
+    href: "/admin/feedback",
+    icon: "MessageSquare",
+    feature: "users:manage",
+    group: "users",
+  },
+
+  // ========== Недвижимость ==========
+  {
+    title: "Здания",
+    href: "/admin/buildings",
+    icon: "Building2",
+    feature: "buildings:view",
+    group: "property",
+  },
+  {
+    title: "Заявки на собственность",
+    href: "/admin/claims",
+    icon: "ClipboardList",
+    feature: "claims:view",
+    group: "property",
+  },
+  {
+    title: "Объявления",
+    href: "/admin/listings",
+    icon: "Megaphone",
+    feature: "listings:view",
+    group: "property",
+  },
+
+  // ========== Контент ==========
+  {
+    title: "Новости",
+    href: "/admin/news",
+    icon: "Newspaper",
+    feature: "content:moderate",
+    group: "content",
+  },
+  {
+    title: "Мероприятия",
+    href: "/admin/events",
+    icon: "Calendar",
+    feature: "content:moderate",
+    group: "content",
+  },
+  {
+    title: "Публикации",
+    href: "/admin/publications",
+    icon: "MessageSquare",
+    feature: "content:moderate",
+    group: "content",
+  },
+  {
+    title: "Справочная",
+    href: "/admin/directory",
+    icon: "BookOpen",
+    feature: "directory:manage",
+    group: "content",
+  },
+  {
+    title: "База знаний",
+    href: "/admin/howtos",
+    icon: "FileText",
+    feature: "directory:manage",
+    group: "content",
+  },
+  {
+    title: "Медиа",
+    href: "/admin/media",
+    icon: "ImageIcon",
+    feature: "directory:manage",
+    group: "content",
+  },
+
+  // ========== Система ==========
+  {
+    title: "Настройки",
+    href: "/admin/settings",
+    icon: "Settings",
+    feature: "system:settings",
+    group: "system",
+  },
+  {
+    title: "Логи",
+    href: "/admin/logs",
+    icon: "ScrollText",
+    feature: "system:logs",
+    group: "system",
   },
 ];
 
@@ -269,4 +322,16 @@ export function getAdminNavItems(userRoles: UserRole[]): AdminNavItem[] {
   return ADMIN_NAV_ITEMS.filter((item) =>
     hasFeatureAccess(userRoles, item.feature),
   );
+}
+
+/**
+ * Get navigation items grouped by category
+ */
+export function getGroupedAdminNavItems(userRoles: UserRole[]): AdminNavGroup[] {
+  const accessibleItems = getAdminNavItems(userRoles);
+
+  return ADMIN_NAV_GROUPS.map((group) => ({
+    title: group.title,
+    items: accessibleItems.filter((item) => item.group === group.group),
+  })).filter((group) => group.items.length > 0);
 }

@@ -16,6 +16,7 @@ import {
   parkingSpots,
   propertyClaims,
   userApartments,
+  userInterestBuildings,
   userParkingSpots,
   userRoles,
 } from "~/server/db/schema";
@@ -61,6 +62,29 @@ const claimedRoleSchema = z.enum([
   "StoreOwner",
   "StoreRepresenative",
 ]);
+
+// Helper function to add building to user's interest buildings
+async function addBuildingToUserInterests(
+  db: typeof import("~/server/db").db,
+  userId: string,
+  buildingId: string
+) {
+  // Check if already added
+  const existing = await db.query.userInterestBuildings.findFirst({
+    where: and(
+      eq(userInterestBuildings.userId, userId),
+      eq(userInterestBuildings.buildingId, buildingId)
+    ),
+  });
+
+  if (!existing) {
+    await db.insert(userInterestBuildings).values({
+      userId,
+      buildingId,
+      autoAdded: true,
+    });
+  }
+}
 
 export const claimsRouter = createTRPCRouter({
   // Get current user's claims
@@ -659,6 +683,8 @@ export const claimsRouter = createTRPCRouter({
 
         // If approved, create user-property relationship
         if (input.status === "approved") {
+          let buildingId: string | null = null;
+
           if (claim.apartmentId) {
             await ctx.db.insert(userApartments).values({
               userId: claim.userId,
@@ -666,6 +692,19 @@ export const claimsRouter = createTRPCRouter({
               status: "approved",
               role: claim.claimedRole as UserRole,
             });
+
+            // Get building ID from apartment
+            const apartment = await ctx.db.query.apartments.findFirst({
+              where: eq(apartments.id, claim.apartmentId),
+              with: {
+                floor: {
+                  with: {
+                    entrance: true,
+                  },
+                },
+              },
+            });
+            buildingId = apartment?.floor?.entrance?.buildingId ?? null;
           } else if (claim.parkingSpotId) {
             await ctx.db.insert(userParkingSpots).values({
               userId: claim.userId,
@@ -673,6 +712,24 @@ export const claimsRouter = createTRPCRouter({
               status: "approved",
               role: claim.claimedRole as UserRole,
             });
+
+            // Get building ID from parking spot
+            const spot = await ctx.db.query.parkingSpots.findFirst({
+              where: eq(parkingSpots.id, claim.parkingSpotId),
+              with: {
+                floor: {
+                  with: {
+                    parking: true,
+                  },
+                },
+              },
+            });
+            buildingId = spot?.floor?.parking?.buildingId ?? null;
+          }
+
+          // Add building to user's interest buildings
+          if (buildingId) {
+            await addBuildingToUserInterests(ctx.db, claim.userId, buildingId);
           }
 
           // Assign role
@@ -913,6 +970,8 @@ export const claimsRouter = createTRPCRouter({
 
         // If approved, create user-property relationship and assign role
         if (input.status === "approved") {
+          let buildingId: string | null = null;
+
           if (claim.apartmentId) {
             await ctx.db.insert(userApartments).values({
               userId: claim.userId,
@@ -920,6 +979,19 @@ export const claimsRouter = createTRPCRouter({
               status: "approved",
               role: claim.claimedRole as UserRole,
             });
+
+            // Get building ID from apartment
+            const apartment = await ctx.db.query.apartments.findFirst({
+              where: eq(apartments.id, claim.apartmentId),
+              with: {
+                floor: {
+                  with: {
+                    entrance: true,
+                  },
+                },
+              },
+            });
+            buildingId = apartment?.floor?.entrance?.buildingId ?? null;
           } else if (claim.parkingSpotId) {
             await ctx.db.insert(userParkingSpots).values({
               userId: claim.userId,
@@ -927,6 +999,24 @@ export const claimsRouter = createTRPCRouter({
               status: "approved",
               role: claim.claimedRole as UserRole,
             });
+
+            // Get building ID from parking spot
+            const spot = await ctx.db.query.parkingSpots.findFirst({
+              where: eq(parkingSpots.id, claim.parkingSpotId),
+              with: {
+                floor: {
+                  with: {
+                    parking: true,
+                  },
+                },
+              },
+            });
+            buildingId = spot?.floor?.parking?.buildingId ?? null;
+          }
+
+          // Add building to user's interest buildings
+          if (buildingId) {
+            await addBuildingToUserInterests(ctx.db, claim.userId, buildingId);
           }
 
           // Assign the claimed role to the user

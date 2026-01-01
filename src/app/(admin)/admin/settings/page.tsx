@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, AlertTriangle, Save, Wrench } from "lucide-react";
 
+import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -89,12 +90,10 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Настройки</h1>
-        <p className="text-muted-foreground mt-1">
-          Системные настройки сайта
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Настройки"
+        description="Системные настройки сайта"
+      />
 
       {/* Maintenance Mode Card */}
       <Card>

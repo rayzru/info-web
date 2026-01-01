@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 import {
   BookOpen,
   Building2,
+  Calendar,
   ClipboardList,
   FileText,
   Image as ImageIcon,
   LayoutDashboard,
   LogOut,
   Megaphone,
+  MessageSquare,
   Newspaper,
   ScrollText,
   Settings,
@@ -23,7 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { cn } from "~/lib/utils";
-import { type AdminNavItem } from "~/server/auth/rbac";
+import { type AdminNavGroup } from "~/server/auth/rbac";
 
 // Icon mapping for dynamic rendering
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -38,6 +40,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Megaphone,
   Newspaper,
   ImageIcon,
+  Calendar,
+  MessageSquare,
 };
 
 interface AdminNavigationProps {
@@ -47,14 +51,14 @@ interface AdminNavigationProps {
     email?: string | null;
     image?: string | null;
   };
-  navItems: AdminNavItem[];
+  navGroups: AdminNavGroup[];
 }
 
-export function AdminNavigation({ user, navItems }: AdminNavigationProps) {
+export function AdminNavigation({ user, navGroups }: AdminNavigationProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-4 flex h-[calc(100vh-2rem)] w-64 flex-col rounded-lg border bg-card">
+    <aside className="sticky top-4 flex h-[calc(100vh-2rem)] w-full flex-col rounded-lg border bg-card">
       {/* User Profile Section */}
       <div className="p-4">
         <div className="flex items-center gap-3">
@@ -82,35 +86,44 @@ export function AdminNavigation({ user, navItems }: AdminNavigationProps) {
 
       <Separator />
 
-      {/* Navigation Items */}
+      {/* Navigation Items - Grouped */}
       <nav className="flex-1 overflow-y-auto p-2">
-        <ul className="space-y-1">
-          {navItems.map((item) => {
-            const Icon = iconMap[item.icon];
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        <div className="space-y-4">
+          {navGroups.map((group) => (
+            <div key={group.title}>
+              <h3 className="mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+                {group.title}
+              </h3>
+              <ul className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = iconMap[item.icon];
+                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-            // Generate testId from href: /admin/users -> admin-nav-users
-            const testId = `admin-nav-${item.href.split("/").pop() ?? "item"}`;
+                  // Generate testId from href: /admin/users -> admin-nav-users
+                  const testId = `admin-nav-${item.href.split("/").pop() ?? "item"}`;
 
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                  data-testid={testId}
-                >
-                  {Icon && <Icon className="h-4 w-4 opacity-60" />}
-                  {item.title}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                          isActive
+                            ? "bg-accent text-accent-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        )}
+                        data-testid={testId}
+                      >
+                        {Icon && <Icon className="h-4 w-4 opacity-60" />}
+                        {item.title}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
       </nav>
 
       <Separator />

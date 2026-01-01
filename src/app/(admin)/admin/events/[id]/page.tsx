@@ -1,0 +1,918 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Eye,
+  FileText,
+  Loader2,
+  MapPin,
+  Repeat,
+  Save,
+  Send,
+  Users,
+  Link as LinkIcon,
+  Phone,
+  User,
+  UserX,
+} from "lucide-react";
+import Link from "next/link";
+import { z } from "zod";
+
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Separator } from "~/components/ui/separator";
+import { Textarea } from "~/components/ui/textarea";
+import { Switch } from "~/components/ui/switch";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { useToast } from "~/hooks/use-toast";
+import { api } from "~/trpc/react";
+import { ImageUploader } from "~/components/media/image-uploader";
+import { DateTimePicker } from "~/components/ui/date-picker";
+import type { JSONContent } from "@tiptap/react";
+import { EVENT_RECURRENCE_TYPE_LABELS, type EventRecurrenceType } from "~/server/db/schema";
+
+// Zod validation schema for event form
+const eventFormSchema = z
+  .object({
+    title: z
+      .string()
+      .min(1, "Введите название мероприятия")
+      .max(255, "Название слишком длинное (макс. 255 символов)"),
+    description: z.string().max(5000, "Описание слишком длинное").optional(),
+    coverImage: z.string().max(500).optional(),
+    publishAt: z.date().optional(),
+    eventStartAt: z.date({ error: "Укажите дату и время начала" }),
+    eventEndAt: z.date().optional(),
+    eventLocation: z
+      .string()
+      .max(500, "Адрес слишком длинный (макс. 500 символов)")
+      .optional(),
+    eventMaxAttendees: z
+      .string()
+      .optional()
+      .transform((val) => {
+        if (!val) return undefined;
+        const num = parseInt(val, 10);
+        return isNaN(num) ? undefined : num;
+      }),
+    eventExternalUrl: z
+      .string()
+      .max(500, "Ссылка слишком длинная")
+      .optional()
+      .refine(
+        (val) =>
+          !val || val.startsWith("http://") || val.startsWith("https://"),
+        {
+          message: "Ссылка должна начинаться с http:// или https://",
+        },
+      ),
+    eventOrganizer: z
+      .string()
+      .max(255, "Имя организатора слишком длинное")
+      .optional(),
+    eventOrganizerPhone: z
+      .string()
+      .max(20, "Номер телефона слишком длинный")
+      .optional(),
+    buildingId: z.string().optional(),
+    isUrgent: z.boolean().default(false),
+    isAnonymous: z.boolean().default(false),
+    publishToTelegram: z.boolean().default(false),
+  })
+  .refine(
+    (data) => {
+      if (data.eventEndAt && data.eventStartAt) {
+        return data.eventEndAt > data.eventStartAt;
+      }
+      return true;
+    },
+    {
+      message: "Время окончания должно быть позже времени начала",
+      path: ["eventEndAt"],
+    },
+  );
+
+type EventFormData = z.infer<typeof eventFormSchema>;
+type FormErrors = Partial<Record<keyof EventFormData | "root", string>>;
+
+// Extract text from TipTap JSON content
+function extractTextFromContent(content: JSONContent | null): string {
+  if (!content) return "";
+
+  let text = "";
+
+  function traverse(node: JSONContent) {
+    if (node.type === "text" && node.text) {
+      text += node.text;
+    }
+    if (node.content) {
+      node.content.forEach(traverse);
+    }
+  }
+
+  traverse(content);
+  return text;
+}
+
+export default function EditEventPage() {
+  const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+  const { toast } = useToast();
+  const { data: session } = useSession();
+  const utils = api.useUtils();
+
+  // Form state
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [publishAt, setPublishAt] = useState<Date | undefined>();
+  const [eventStartAt, setEventStartAt] = useState<Date | undefined>();
+  const [eventEndAt, setEventEndAt] = useState<Date | undefined>();
+  const [eventLocation, setEventLocation] = useState("");
+  const [eventMaxAttendees, setEventMaxAttendees] = useState("");
+  const [eventExternalUrl, setEventExternalUrl] = useState("");
+  const [eventOrganizer, setEventOrganizer] = useState("");
+  const [eventOrganizerPhone, setEventOrganizerPhone] = useState("");
+  const [buildingId, setBuildingId] = useState<string>("");
+  const [isUrgent, setIsUrgent] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [publishToTelegram, setPublishToTelegram] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Recurrence state
+  const [eventRecurrenceType, setEventRecurrenceType] = useState<EventRecurrenceType>("none");
+  const [eventRecurrenceStartDay, setEventRecurrenceStartDay] = useState<string>("");
+  const [eventRecurrenceEndDay, setEventRecurrenceEndDay] = useState<string>("");
+  const [linkedArticleId, setLinkedArticleId] = useState<string>("");
+
+  // Check if user is admin
+  const isAdmin =
+    session?.user?.roles?.some((r) =>
+      ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"].includes(r),
+    ) ?? false;
+
+  // Get buildings for selector
+  const { data: buildings } = api.profile.getAvailableBuildings.useQuery();
+
+  // Get articles for linked article selector
+  const { data: articlesData } = api.knowledge.admin.list.useQuery({
+    page: 1,
+    limit: 50,
+    status: "published",
+  });
+
+  // Fetch existing event data
+  const { data: event, isLoading: isLoadingEvent } =
+    api.publications.byId.useQuery({ id }, { enabled: !!id });
+
+  // Initialize form with event data
+  useEffect(() => {
+    if (event && !isInitialized) {
+      setTitle(event.title);
+      setDescription(extractTextFromContent(event.content as JSONContent));
+      setCoverImage(event.coverImage ?? null);
+      setPublishAt(event.publishAt ? new Date(event.publishAt) : undefined);
+      setEventStartAt(
+        event.eventStartAt ? new Date(event.eventStartAt) : undefined,
+      );
+      setEventEndAt(event.eventEndAt ? new Date(event.eventEndAt) : undefined);
+      setEventLocation(event.eventLocation ?? "");
+      setEventMaxAttendees(event.eventMaxAttendees?.toString() ?? "");
+      setEventExternalUrl(event.eventExternalUrl ?? "");
+      setEventOrganizer(event.eventOrganizer ?? "");
+      setEventOrganizerPhone(event.eventOrganizerPhone ?? "");
+      setBuildingId(event.buildingId ?? "");
+      setIsUrgent(event.isUrgent);
+      setIsAnonymous(event.isAnonymous);
+      setPublishToTelegram(event.publishToTelegram);
+      // Recurrence fields
+      setEventRecurrenceType((event.eventRecurrenceType as EventRecurrenceType) ?? "none");
+      setEventRecurrenceStartDay(event.eventRecurrenceStartDay?.toString() ?? "");
+      setEventRecurrenceEndDay(event.eventRecurrenceEndDay?.toString() ?? "");
+      setLinkedArticleId(event.linkedArticleId ?? "");
+      setIsInitialized(true);
+    }
+  }, [event, isInitialized]);
+
+  // Update mutation
+  const updateMutation = api.publications.update.useMutation({
+    onSuccess: async () => {
+      await utils.publications.admin.list.invalidate();
+      await utils.publications.byId.invalidate({ id });
+      toast({ title: "Мероприятие обновлено" });
+      router.push("/admin/events");
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    const formData = {
+      title: title.trim(),
+      description: description.trim() || undefined,
+      coverImage: coverImage || undefined,
+      publishAt,
+      eventStartAt,
+      eventEndAt,
+      eventLocation: eventLocation.trim() || undefined,
+      eventMaxAttendees: eventMaxAttendees || undefined,
+      eventExternalUrl: eventExternalUrl.trim() || undefined,
+      eventOrganizer: eventOrganizer.trim() || undefined,
+      eventOrganizerPhone: eventOrganizerPhone.trim() || undefined,
+      buildingId: buildingId || undefined,
+      isUrgent,
+      isAnonymous,
+      publishToTelegram,
+    };
+
+    const result = eventFormSchema.safeParse(formData);
+
+    if (!result.success) {
+      const fieldErrors: FormErrors = {};
+      result.error.issues.forEach((issue) => {
+        const path = issue.path[0] as keyof EventFormData;
+        if (path && !fieldErrors[path]) {
+          fieldErrors[path] = issue.message;
+        }
+      });
+      setErrors(fieldErrors);
+
+      const firstIssue = result.error.issues[0];
+      if (firstIssue) {
+        toast({
+          title: "Ошибка валидации",
+          description: firstIssue.message,
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
+    const validData = result.data;
+
+    updateMutation.mutate({
+      id,
+      title: validData.title,
+      content: validData.description
+        ? {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: validData.description }],
+              },
+            ],
+          }
+        : { type: "doc", content: [] },
+      coverImage: validData.coverImage,
+      buildingId: validData.buildingId || undefined,
+      isUrgent: validData.isUrgent,
+      isAnonymous: validData.isAnonymous,
+      publishAt: validData.publishAt,
+      publishToTelegram: validData.publishToTelegram,
+      eventStartAt: validData.eventStartAt,
+      eventEndAt: validData.eventEndAt,
+      eventLocation: validData.eventLocation,
+      eventMaxAttendees: validData.eventMaxAttendees,
+      eventExternalUrl: validData.eventExternalUrl,
+      eventOrganizer: validData.eventOrganizer,
+      eventOrganizerPhone: validData.eventOrganizerPhone,
+      // Recurrence fields
+      eventRecurrenceType: eventRecurrenceType !== "none" ? eventRecurrenceType : null,
+      eventRecurrenceStartDay: eventRecurrenceStartDay ? parseInt(eventRecurrenceStartDay, 10) : null,
+      eventRecurrenceEndDay: eventRecurrenceEndDay ? parseInt(eventRecurrenceEndDay, 10) : null,
+      linkedArticleId: linkedArticleId || null,
+    });
+  };
+
+  const handlePreview = () => {
+    toast({
+      title: "Превью",
+      description: "Функция превью будет добавлена позже",
+    });
+  };
+
+  if (isLoadingEvent) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
+        <h2 className="text-xl font-semibold">Мероприятие не найдено</h2>
+        <Link href="/admin/events">
+          <Button>Вернуться к списку</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  // Check if event has already started
+  const eventHasStarted =
+    event.eventStartAt && new Date(event.eventStartAt) <= new Date();
+
+  if (eventHasStarted) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Link href="/admin/events">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="flex items-center gap-2 text-2xl font-semibold">
+              <Calendar className="h-6 w-6" />
+              {event.title}
+            </h1>
+          </div>
+        </div>
+
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Редактирование недоступно</AlertTitle>
+          <AlertDescription>
+            Это мероприятие уже началось или прошло. Редактирование мероприятий
+            возможно только до их начала.
+          </AlertDescription>
+        </Alert>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Информация о мероприятии</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label className="text-muted-foreground">Дата начала</Label>
+                <p className="font-medium">
+                  {new Date(event.eventStartAt!).toLocaleString("ru-RU", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+              {event.eventEndAt && (
+                <div>
+                  <Label className="text-muted-foreground">
+                    Дата окончания
+                  </Label>
+                  <p className="font-medium">
+                    {new Date(event.eventEndAt).toLocaleString("ru-RU", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              )}
+              {event.eventLocation && (
+                <div>
+                  <Label className="text-muted-foreground">Место</Label>
+                  <p className="font-medium">{event.eventLocation}</p>
+                </div>
+              )}
+              <div>
+                <Label className="text-muted-foreground">Статус</Label>
+                <p className="font-medium">
+                  {event.status === "published" ? "Опубликовано" : event.status}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Link href="/admin/events">
+          <Button>Вернуться к списку мероприятий</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Link href="/admin/events">
+          <Button variant="ghost" size="icon">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold">
+            <Calendar className="h-6 w-6" />
+            Редактирование мероприятия
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Изменение события для сообщества
+          </p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <div className="flex gap-6">
+          {/* Main Content - Left Side */}
+          <div className="flex-1 space-y-6">
+            {/* Basic Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Основная информация</CardTitle>
+                <CardDescription>
+                  Название и описание мероприятия
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Название *</Label>
+                  <Input
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Например: Субботник во дворе"
+                    className={errors.title ? "border-destructive" : ""}
+                  />
+                  {errors.title && (
+                    <p className="text-destructive text-sm">{errors.title}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Описание</Label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Подробности о мероприятии..."
+                    rows={6}
+                    className={errors.description ? "border-destructive" : ""}
+                  />
+                  {errors.description && (
+                    <p className="text-destructive text-sm">
+                      {errors.description}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Date & Time */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Дата и время
+                </CardTitle>
+                <CardDescription>Когда состоится мероприятие</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Начало мероприятия *</Label>
+                  <DateTimePicker
+                    value={eventStartAt}
+                    onChange={setEventStartAt}
+                    placeholder="Выберите дату и время начала"
+                    className={errors.eventStartAt ? "border-destructive" : ""}
+                  />
+                  {errors.eventStartAt && (
+                    <p className="text-destructive text-sm">
+                      {errors.eventStartAt}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Окончание мероприятия</Label>
+                  <DateTimePicker
+                    value={eventEndAt}
+                    onChange={setEventEndAt}
+                    placeholder="Выберите дату и время окончания"
+                    fromDate={eventStartAt}
+                    className={errors.eventEndAt ? "border-destructive" : ""}
+                  />
+                  {errors.eventEndAt && (
+                    <p className="text-destructive text-sm">
+                      {errors.eventEndAt}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recurrence */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Repeat className="h-5 w-5" />
+                  Повторение
+                </CardTitle>
+                <CardDescription>Настройка регулярных мероприятий</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Тип повторения</Label>
+                  <Select
+                    value={eventRecurrenceType}
+                    onValueChange={(v) => setEventRecurrenceType(v as EventRecurrenceType)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(EVENT_RECURRENCE_TYPE_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {eventRecurrenceType === "monthly" && (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="recurrenceStartDay">Начало периода (день месяца)</Label>
+                      <Input
+                        id="recurrenceStartDay"
+                        type="number"
+                        min="1"
+                        max="31"
+                        value={eventRecurrenceStartDay}
+                        onChange={(e) => setEventRecurrenceStartDay(e.target.value)}
+                        placeholder="Например: 18"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="recurrenceEndDay">Конец периода (день месяца)</Label>
+                      <Input
+                        id="recurrenceEndDay"
+                        type="number"
+                        min="1"
+                        max="31"
+                        value={eventRecurrenceEndDay}
+                        onChange={(e) => setEventRecurrenceEndDay(e.target.value)}
+                        placeholder="Например: 26"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {eventRecurrenceType !== "none" && eventRecurrenceStartDay && eventRecurrenceEndDay && (
+                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                    Событие будет повторяться ежемесячно с {eventRecurrenceStartDay} по {eventRecurrenceEndDay} число
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Linked Article */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Связанная статья
+                </CardTitle>
+                <CardDescription>Ссылка на статью базы знаний</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Select
+                  value={linkedArticleId || "none"}
+                  onValueChange={(v) => setLinkedArticleId(v === "none" ? "" : v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите статью (опционально)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Без связанной статьи</SelectItem>
+                    {articlesData?.articles.map((article) => (
+                      <SelectItem key={article.id} value={article.id}>
+                        {article.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Подробная инструкция будет показана в карточке события
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Location */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Место проведения
+                </CardTitle>
+                <CardDescription>Где состоится мероприятие</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="location">Адрес / место</Label>
+                  <Input
+                    id="location"
+                    value={eventLocation}
+                    onChange={(e) => setEventLocation(e.target.value)}
+                    placeholder="Например: Двор строения 1, детская площадка"
+                    className={errors.eventLocation ? "border-destructive" : ""}
+                  />
+                  {errors.eventLocation && (
+                    <p className="text-destructive text-sm">
+                      {errors.eventLocation}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="building">Строение</Label>
+                  <Select
+                    value={buildingId || "all"}
+                    onValueChange={(v) => setBuildingId(v === "all" ? "" : v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите строение (опционально)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Все строения</SelectItem>
+                      {buildings?.map((b) => (
+                        <SelectItem key={b.id} value={b.id}>
+                          Строение {b.number} {b.title && `- ${b.title}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Additional Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Дополнительно</CardTitle>
+                <CardDescription>Организатор и ограничения</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="organizer"
+                      className="flex items-center gap-2"
+                    >
+                      <User className="h-4 w-4" />
+                      Организатор
+                    </Label>
+                    <Input
+                      id="organizer"
+                      value={eventOrganizer}
+                      onChange={(e) => setEventOrganizer(e.target.value)}
+                      placeholder="Имя организатора"
+                      className={
+                        errors.eventOrganizer ? "border-destructive" : ""
+                      }
+                    />
+                    {errors.eventOrganizer && (
+                      <p className="text-destructive text-sm">
+                        {errors.eventOrganizer}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="organizerPhone"
+                      className="flex items-center gap-2"
+                    >
+                      <Phone className="h-4 w-4" />
+                      Телефон организатора
+                    </Label>
+                    <Input
+                      id="organizerPhone"
+                      value={eventOrganizerPhone}
+                      onChange={(e) => setEventOrganizerPhone(e.target.value)}
+                      placeholder="+7 (999) 123-45-67"
+                      className={
+                        errors.eventOrganizerPhone ? "border-destructive" : ""
+                      }
+                    />
+                    {errors.eventOrganizerPhone && (
+                      <p className="text-destructive text-sm">
+                        {errors.eventOrganizerPhone}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="maxAttendees"
+                      className="flex items-center gap-2"
+                    >
+                      <Users className="h-4 w-4" />
+                      Макс. участников
+                    </Label>
+                    <Input
+                      id="maxAttendees"
+                      type="number"
+                      min="0"
+                      value={eventMaxAttendees}
+                      onChange={(e) => setEventMaxAttendees(e.target.value)}
+                      placeholder="Без ограничений"
+                      className={
+                        errors.eventMaxAttendees ? "border-destructive" : ""
+                      }
+                    />
+                    {errors.eventMaxAttendees && (
+                      <p className="text-destructive text-sm">
+                        {errors.eventMaxAttendees}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="externalUrl"
+                      className="flex items-center gap-2"
+                    >
+                      <LinkIcon className="h-4 w-4" />
+                      Внешняя ссылка
+                    </Label>
+                    <Input
+                      id="externalUrl"
+                      type="url"
+                      value={eventExternalUrl}
+                      onChange={(e) => setEventExternalUrl(e.target.value)}
+                      placeholder="https://zoom.us/..."
+                      className={
+                        errors.eventExternalUrl ? "border-destructive" : ""
+                      }
+                    />
+                    {errors.eventExternalUrl && (
+                      <p className="text-destructive text-sm">
+                        {errors.eventExternalUrl}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar - Right Side */}
+          <div className="w-80 space-y-4">
+            {/* Actions */}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              <Save className="mr-2 h-4 w-4" />
+              Сохранить
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handlePreview}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              Превью
+            </Button>
+
+            <div className="my-6 flex items-center gap-3">
+              <Switch
+                id="urgent"
+                checked={isUrgent}
+                onCheckedChange={setIsUrgent}
+              />
+              <Label htmlFor="urgent">Срочное мероприятие</Label>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="anonymous"
+                checked={isAnonymous}
+                onCheckedChange={(checked) => setIsAnonymous(checked === true)}
+              />
+              <div className="space-y-1">
+                <Label
+                  htmlFor="anonymous"
+                  className="cursor-pointer text-sm font-medium"
+                >
+                  Опубликовать анонимно
+                </Label>
+                <p className="text-muted-foreground text-xs">
+                  Имя и фото автора не будут показаны
+                </p>
+              </div>
+            </div>
+
+            {/* Publication Settings */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                  <Clock className="h-4 w-4" />
+                  Публикация
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-1">
+                  <Label className="text-xs">Дата и время публикации</Label>
+                  <DateTimePicker
+                    value={publishAt}
+                    onChange={setPublishAt}
+                    placeholder="Сразу после создания"
+                    className="text-sm"
+                  />
+                </div>
+                <p className="text-muted-foreground text-xs">
+                  {publishAt
+                    ? "Отложенная публикация"
+                    : "Публикация сразу после создания"}
+                </p>
+
+                <Separator />
+
+                {/* Telegram toggle */}
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="telegram"
+                    checked={publishToTelegram}
+                    onCheckedChange={(checked) =>
+                      setPublishToTelegram(checked === true)
+                    }
+                    disabled={!isAdmin}
+                  />
+                  <div className="space-y-1">
+                    <Label
+                      htmlFor="telegram"
+                      className={`pointer-events-none flex cursor-pointer items-center gap-2 text-sm font-medium opacity-30 ${!isAdmin ? "text-muted-foreground" : ""}`}
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                      Опубликовать в Telegram
+                    </Label>
+                    <p className="text-muted-foreground text-xs">
+                      {isAdmin
+                        ? "Отправить в Telegram-канал"
+                        : "Только для администраторов"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Author Section */}
+
+            {/* Cover Image */}
+
+            <ImageUploader
+              value={coverImage}
+              onChange={(url) => setCoverImage(url)}
+              aspectRatio={16 / 9}
+              placeholder="Добавить обложку"
+            />
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+}

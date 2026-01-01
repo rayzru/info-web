@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, Tag, Users } from "lucide-react";
+import { BookOpen, Info, MessageSquareText, Tag, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,6 +15,12 @@ const navigation = [
     testId: "nav-info",
   },
   {
+    title: "Чего",
+    link: "/howtos",
+    icon: BookOpen,
+    testId: "nav-howtos",
+  },
+  {
     title: "Объявления",
     link: "/listings",
     icon: Tag,
@@ -25,6 +31,12 @@ const navigation = [
     link: "/community",
     icon: Users,
     testId: "nav-community",
+  },
+  {
+    title: "Обратная связь",
+    link: "/feedback",
+    icon: MessageSquareText,
+    testId: "nav-feedback",
   },
 ];
 

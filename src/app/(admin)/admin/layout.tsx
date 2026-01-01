@@ -1,9 +1,9 @@
 import { type Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { AdminNavigation } from "~/components/admin/admin-navigation";
+import { AdminNavMenu } from "~/components/admin/admin-nav-menu";
 import { auth } from "~/server/auth";
-import { getAdminNavItems, type UserRole } from "~/server/auth/rbac";
+import { getGroupedAdminNavItems, type UserRole } from "~/server/auth/rbac";
 
 export const metadata: Metadata = {
   title: "Админ-панель | Сердце Ростова 2",
@@ -27,25 +27,23 @@ export default async function AdminLayout({
   }
 
   const userRoles = (session.user.roles ?? []) as UserRole[];
-  const navItems = getAdminNavItems(userRoles);
+  const navGroups = getGroupedAdminNavItems(userRoles);
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto flex gap-6 p-6">
-        {/* Main Content Area - Left Side */}
-        <main className="flex-1">{children}</main>
+      {/* Horizontal Navigation */}
+      <AdminNavMenu
+        user={{
+          id: session.user.id,
+          name: session.user.name,
+          email: session.user.email,
+          image: session.user.image,
+        }}
+        navGroups={navGroups}
+      />
 
-        {/* Admin Navigation - Right Side */}
-        <AdminNavigation
-          user={{
-            id: session.user.id,
-            name: session.user.name,
-            email: session.user.email,
-            image: session.user.image,
-          }}
-          navItems={navItems}
-        />
-      </div>
+      {/* Main Content */}
+      <main className="container mx-auto p-6">{children}</main>
     </div>
   );
 }

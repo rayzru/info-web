@@ -1,4 +1,4 @@
-import { and, count, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import {
@@ -1087,6 +1087,159 @@ export const directoryRouter = createTRPCRouter({
         tag: { id: tag.id, name: tag.name, slug: tag.slug },
         contacts: sortedContacts,
         total: sortedContacts.length,
+      };
+    }),
+
+  // Get entries grouped by tag (for structured display)
+  // Looks at both entry-level and contact-level tags, groups contacts by their parent entry
+  entriesGroupedByTag: publicProcedure
+    .input(
+      z.object({
+        tagSlug: z.string(),
+        limit: z.number().min(1).max(100).default(50),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { tagSlug, limit } = input;
+
+      // Get the requested tag
+      const tag = await ctx.db.query.directoryTags.findFirst({
+        where: eq(directoryTags.slug, tagSlug),
+      });
+
+      if (!tag) {
+        return { tag: null, groups: [], total: 0 };
+      }
+
+      // Collect all tag IDs (including children)
+      const allTags = await ctx.db.query.directoryTags.findMany();
+      const collectDescendantIds = (parentId: string): string[] => {
+        const children = allTags.filter(t => t.parentId === parentId);
+        return [
+          parentId,
+          ...children.flatMap(child => collectDescendantIds(child.id)),
+        ];
+      };
+      const tagIds = collectDescendantIds(tag.id);
+
+      // Strategy 1: Get contacts with direct contact-level tags
+      const contactsWithDirectTags = await ctx.db
+        .selectDistinct({ contactId: directoryContactTags.contactId })
+        .from(directoryContactTags)
+        .where(inArray(directoryContactTags.tagId, tagIds));
+
+      // Strategy 2: Get entries with matching tags, then get their contacts
+      const entriesWithTags = await ctx.db
+        .selectDistinct({ entryId: directoryEntryTags.entryId })
+        .from(directoryEntryTags)
+        .innerJoin(directoryEntries, eq(directoryEntryTags.entryId, directoryEntries.id))
+        .where(
+          and(
+            inArray(directoryEntryTags.tagId, tagIds),
+            eq(directoryEntries.isActive, 1)
+          )
+        );
+
+      const entryIdsFromTags = entriesWithTags.map(e => e.entryId);
+
+      // Get contacts from matched entries
+      let contactsFromEntries: { contactId: string }[] = [];
+      if (entryIdsFromTags.length > 0) {
+        contactsFromEntries = await ctx.db
+          .select({ contactId: directoryContacts.id })
+          .from(directoryContacts)
+          .where(inArray(directoryContacts.entryId, entryIdsFromTags));
+      }
+
+      // Combine both sources
+      const allContactIds = new Set<string>([
+        ...contactsWithDirectTags.map(c => c.contactId),
+        ...contactsFromEntries.map(c => c.contactId),
+      ]);
+
+      if (allContactIds.size === 0) {
+        return {
+          tag: { id: tag.id, name: tag.name, slug: tag.slug },
+          groups: [],
+          total: 0,
+        };
+      }
+
+      // Get contacts with entry info
+      const contacts = await ctx.db
+        .select({
+          contact: directoryContacts,
+          entry: directoryEntries,
+        })
+        .from(directoryContacts)
+        .innerJoin(directoryEntries, eq(directoryContacts.entryId, directoryEntries.id))
+        .where(
+          and(
+            inArray(directoryContacts.id, Array.from(allContactIds)),
+            eq(directoryEntries.isActive, 1)
+          )
+        )
+        .orderBy(directoryEntries.order, directoryEntries.title, desc(directoryContacts.isPrimary), directoryContacts.order)
+        .limit(limit);
+
+      // Group contacts by entry
+      const entriesMap = new Map<string, {
+        id: string;
+        slug: string;
+        title: string;
+        subtitle: string | null;
+        icon: string | null;
+        order: number | null;
+        contacts: typeof contacts[0]["contact"][];
+      }>();
+
+      for (const row of contacts) {
+        const existing = entriesMap.get(row.entry.id);
+        if (existing) {
+          existing.contacts.push(row.contact);
+        } else {
+          entriesMap.set(row.entry.id, {
+            id: row.entry.id,
+            slug: row.entry.slug,
+            title: row.entry.title,
+            subtitle: row.entry.subtitle,
+            icon: row.entry.icon,
+            order: row.entry.order,
+            contacts: [row.contact],
+          });
+        }
+      }
+
+      // Convert to array and sort
+      const entries = Array.from(entriesMap.values()).sort((a, b) => {
+        const orderA = a.order ?? 999;
+        const orderB = b.order ?? 999;
+        if (orderA !== orderB) return orderA - orderB;
+        return a.title.localeCompare(b.title, "ru");
+      });
+
+      // Return as a single group with the tag name
+      return {
+        tag: { id: tag.id, name: tag.name, slug: tag.slug },
+        groups: [{
+          tag: { id: tag.id, name: tag.name, slug: tag.slug, order: tag.order },
+          entries: entries.map(e => ({
+            ...e,
+            contacts: e.contacts.map(c => ({
+              id: c.id,
+              type: c.type,
+              value: c.value,
+              label: c.label,
+              subtitle: c.subtitle,
+              isPrimary: c.isPrimary,
+              hasWhatsApp: c.hasWhatsApp,
+              hasTelegram: c.hasTelegram,
+              is24h: c.is24h,
+              order: c.order,
+            })),
+          })),
+        }],
+        total: entries.length,
       };
     }),
 

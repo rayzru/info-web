@@ -21,9 +21,10 @@ import { api } from "~/trpc/react";
 interface DeleteUserDialogProps {
   userId: string;
   userName: string | null;
+  asMenuItem?: boolean;
 }
 
-export function DeleteUserDialog({ userId, userName }: DeleteUserDialogProps) {
+export function DeleteUserDialog({ userId, userName, asMenuItem = false }: DeleteUserDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const utils = api.useUtils();
@@ -50,16 +51,29 @@ export function DeleteUserDialog({ userId, userName }: DeleteUserDialogProps) {
     createDeletionRequest.mutate({ userId });
   };
 
+  const trigger = asMenuItem ? (
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden hover:bg-destructive/10 focus:bg-destructive/10 w-full text-destructive"
+    >
+      <Trash2 className="size-4 shrink-0" />
+      Удалить
+    </button>
+  ) : (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+    >
+      <Trash2 className="h-4 w-4" />
+    </Button>
+  );
+
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        {trigger}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

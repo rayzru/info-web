@@ -11,6 +11,7 @@ import {
   Save,
   Send,
   Trash2,
+  User,
 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -25,7 +26,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -145,15 +147,21 @@ export default function EditNewsPage() {
       return;
     }
 
+    // Validate status is one of allowed values
+    const validStatuses = ["draft", "scheduled", "published", "archived"] as const;
+    const validStatus = validStatuses.includes(status as typeof validStatuses[number])
+      ? status
+      : undefined;
+
     updateMutation.mutate({
       id,
       title: title.trim(),
-      slug: slug.trim(),
+      slug: slug.trim() || undefined,
       excerpt: excerpt.trim() || undefined,
       coverImage: coverImage.trim() || null,
       content,
       type,
-      status,
+      status: validStatus,
       publishAt: publishAt ? new Date(publishAt) : null,
       isPinned,
       isHighlighted,
@@ -407,6 +415,38 @@ export default function EditNewsPage() {
                     checked={isAnonymous}
                     onCheckedChange={setIsAnonymous}
                   />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Author Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Автор
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={news.author?.image ?? undefined} />
+                    <AvatarFallback>
+                      {news.author?.name?.slice(0, 2).toUpperCase() ?? "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {news.author?.name ?? "Неизвестен"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(news.createdAt).toLocaleDateString("ru-RU", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

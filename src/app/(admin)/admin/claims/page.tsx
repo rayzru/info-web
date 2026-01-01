@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -395,12 +396,10 @@ export default function AdminClaimsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Заявки на недвижимость</h1>
-        <p className="text-muted-foreground mt-1">
-          Рассмотрение заявок пользователей
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Заявки на недвижимость"
+        description="Рассмотрение заявок пользователей"
+      />
 
       {/* Stats */}
       {stats && (

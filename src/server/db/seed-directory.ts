@@ -60,9 +60,9 @@ const TAGS: TagDefinition[] = [
   },
   {
     id: "tag-buildings",
-    name: "Корпуса",
+    name: "Строения",
     slug: "buildings",
-    description: "Корпуса и строения ЖК",
+    description: "Строения ЖК",
     scope: "core",
     synonyms: ["корпус", "дом", "строение", "литер"],
     icon: "Building",

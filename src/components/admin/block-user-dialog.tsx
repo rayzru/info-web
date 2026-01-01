@@ -36,12 +36,14 @@ interface BlockUserDialogProps {
   userId: string;
   userName: string | null;
   onBlocked?: () => void;
+  asMenuItem?: boolean;
 }
 
 export function BlockUserDialog({
   userId,
   userName,
   onBlocked,
+  asMenuItem = false,
 }: BlockUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<BlockCategory | "">("");
@@ -98,16 +100,29 @@ export function BlockUserDialog({
     (category !== "rules_violation" || selectedRules.length > 0) &&
     (category !== "other" || reason.trim().length > 0);
 
+  const trigger = asMenuItem ? (
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden hover:bg-destructive/10 focus:bg-destructive/10 w-full text-destructive"
+    >
+      <Ban className="size-4 shrink-0" />
+      Заблокировать
+    </button>
+  ) : (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+    >
+      <Ban className="h-4 w-4" />
+    </Button>
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-        >
-          <Ban className="h-4 w-4" />
-        </Button>
+        {trigger}
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>

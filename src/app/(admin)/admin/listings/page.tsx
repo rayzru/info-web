@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -330,12 +331,10 @@ export default function AdminListingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Модерация объявлений</h1>
-        <p className="text-muted-foreground mt-1">
-          Рассмотрение объявлений пользователей
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Модерация объявлений"
+        description="Рассмотрение объявлений пользователей"
+      />
 
       {/* Stats */}
       {stats && (

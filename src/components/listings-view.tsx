@@ -411,7 +411,7 @@ export function ListingsView({
           </CardHeader>
           <CardContent className="text-center">
             <Button asChild>
-              <Link href="/my/declare">Подать заявку</Link>
+              <Link href="/my/property">Перейти к недвижимости</Link>
             </Button>
           </CardContent>
         </Card>

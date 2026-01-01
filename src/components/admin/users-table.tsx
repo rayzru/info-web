@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Ban, Building2, KeyRound, Search, ShieldAlert, Trash2, UserCog } from "lucide-react";
+import { Ban, Building2, KeyRound, MoreHorizontal, Search, Trash2, UserCog, MessageSquareText } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
@@ -17,11 +17,12 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { type UserRole } from "~/server/auth/rbac";
 import { getRankConfig } from "~/lib/ranks";
 import { cn } from "~/lib/utils";
@@ -29,6 +30,7 @@ import { api } from "~/trpc/react";
 
 import { BlockUserDialog } from "./block-user-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
+import { EditTaglineDialog } from "./edit-tagline-dialog";
 import { UnblockUserDialog } from "./unblock-user-dialog";
 
 interface User {
@@ -38,6 +40,7 @@ interface User {
   image: string | null;
   roles: UserRole[];
   createdAt: Date | null;
+  tagline: string | null;
 }
 
 interface UsersTableProps {
@@ -47,11 +50,11 @@ interface UsersTableProps {
 
 function formatDate(date: Date | null): string {
   if (!date) return "—";
-  return new Intl.DateTimeFormat("ru-RU", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(date));
+  const d = new Date(date);
+  const day = d.getDate().toString().padStart(2, "0");
+  const month = (d.getMonth() + 1).toString().padStart(2, "0");
+  const year = d.getFullYear().toString().slice(-2);
+  return `${day}.${month}.${year}`;
 }
 
 // Row component to handle block status loading per user
@@ -78,14 +81,14 @@ function UserRow({
         <div className="relative">
           <Avatar
             className={cn(
-              "h-8 w-8 ring-2 ring-offset-1 ring-offset-background",
+              "h-6 w-6 ring-2 ring-offset-1 ring-offset-background",
               isBlocked ? "ring-destructive/50" : rankConfig.ringColor
             )}
           >
             <AvatarImage src={user.image ?? undefined} />
             <AvatarFallback
               className={cn(
-                "text-xs",
+                "text-[10px]",
                 isBlocked ? "bg-destructive/20 text-destructive" : rankConfig.badgeColor,
                 !isBlocked && "text-white"
               )}
@@ -95,7 +98,7 @@ function UserRow({
           </Avatar>
           {isBlocked && (
             <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-destructive p-0.5">
-              <Ban className="h-2.5 w-2.5 text-white" />
+              <Ban className="h-2 w-2 text-white" />
             </div>
           )}
         </div>
@@ -112,103 +115,75 @@ function UserRow({
               </Badge>
             )}
           </div>
-          <p className={cn("text-xs", isBlocked ? "text-destructive/70" : rankConfig.textColor)}>
-            {rankConfig.label}
-          </p>
+          <p className="text-xs text-muted-foreground">{user.email}</p>
         </div>
       </TableCell>
-      <TableCell className="text-muted-foreground">{user.email}</TableCell>
       <TableCell>
-        <div className="flex flex-wrap gap-1">
-          {user.roles.length > 0 ? (
-            user.roles.map((role) => {
-              const roleConfig = getRankConfig([role]);
-              return (
-                <span
-                  key={role}
-                  className={cn(
-                    "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                    roleConfig.badgeColor.replace("bg-", "bg-") + "/15",
-                    roleConfig.textColor
-                  )}
-                >
-                  {roleConfig.shortLabel}
-                </span>
-              );
-            })
-          ) : (
-            <span className="text-sm text-muted-foreground">—</span>
-          )}
-        </div>
+        {user.roles.length > 0 ? (
+          <span
+            className={cn(
+              "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+              rankConfig.badgeColor + "/15",
+              rankConfig.textColor
+            )}
+          >
+            {rankConfig.shortLabel}
+            {user.roles.length > 1 && (
+              <span className="ml-1 text-muted-foreground">(+{user.roles.length - 1})</span>
+            )}
+          </span>
+        ) : (
+          <span className="text-sm text-muted-foreground">—</span>
+        )}
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
         {formatDate(user.createdAt)}
       </TableCell>
       <TableCell>
-        <div className="flex items-center justify-end gap-1">
-          {canManageRoles && (
-            <>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/admin/users/${user.id}/roles`}>
-                      <UserCog className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Управление ролями</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/admin/users/${user.id}/properties`}>
-                      <Building2 className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Собственность</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <KeyRound className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Сбросить пароль</TooltipContent>
-              </Tooltip>
-              {/* Block/Unblock button */}
-              {isBlocked ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>
-                      <UnblockUserDialog userId={user.id} userName={user.name} />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>Разблокировать</TooltipContent>
-                </Tooltip>
-              ) : (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>
-                      <BlockUserDialog userId={user.id} userName={user.name} />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>Заблокировать</TooltipContent>
-                </Tooltip>
-              )}
-            </>
-          )}
-          {canDeleteUsers && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <DeleteUserDialog userId={user.id} userName={user.name} />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>Удалить</TooltipContent>
-            </Tooltip>
-          )}
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {canManageRoles && (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link href={`/admin/users/${user.id}/roles`}>
+                    <UserCog className="mr-2 h-4 w-4" />
+                    Управление ролями
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/admin/users/${user.id}/properties`}>
+                    <Building2 className="mr-2 h-4 w-4" />
+                    Собственность
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <EditTaglineDialog userId={user.id} userName={user.name} asMenuItem />
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <KeyRound className="mr-2 h-4 w-4" />
+                  Сбросить пароль
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {isBlocked ? (
+                  <UnblockUserDialog userId={user.id} userName={user.name} asMenuItem />
+                ) : (
+                  <BlockUserDialog userId={user.id} userName={user.name} asMenuItem />
+                )}
+              </>
+            )}
+            {canDeleteUsers && (
+              <>
+                {canManageRoles && <DropdownMenuSeparator />}
+                <DeleteUserDialog userId={user.id} userName={user.name} asMenuItem />
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </TableCell>
     </TableRow>
   );
@@ -232,7 +207,6 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
   };
 
   return (
-    <TooltipProvider>
     <div className="space-y-4">
       {/* Search */}
       <form onSubmit={handleSearch} className="flex gap-2">
@@ -255,22 +229,21 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
             <TableRow>
               <TableHead className="w-12"></TableHead>
               <TableHead>Пользователь</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Роли</TableHead>
               <TableHead>Регистрация</TableHead>
-              <TableHead className="w-auto text-right">Действия</TableHead>
+              <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
+                <TableCell colSpan={5} className="text-center">
                   Загрузка...
                 </TableCell>
               </TableRow>
             ) : data?.users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
+                <TableCell colSpan={5} className="text-center">
                   Пользователи не найдены
                 </TableCell>
               </TableRow>
@@ -315,6 +288,5 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
         </div>
       )}
     </div>
-    </TooltipProvider>
   );
 }
