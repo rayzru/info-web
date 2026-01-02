@@ -150,6 +150,9 @@ jobs:
           # Database (PostgreSQL)
           DATABASE_URL="$DATABASE_URL"
           DATABASE_NAME="$DATABASE_NAME"
+
+          # Trust host for auth
+          AUTH_TRUST_HOST=true
           EOF
 
           # Upload .env file to server
