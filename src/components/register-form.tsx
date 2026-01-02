@@ -221,14 +221,14 @@ export function RegisterForm({
               <Button
                 variant="ghost"
                 type="button"
-                className="group/vk h-11 w-11 p-0 opacity-50 pointer-events-none"
+                className="group/vk h-11 w-11 p-0"
+                onClick={async () => await signIn("vk", { callbackUrl })}
                 data-testid="register-vk"
-                disabled
               >
                 <VkIdStack />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>VK ID (скоро)</TooltipContent>
+            <TooltipContent>VK ID</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -252,68 +252,6 @@ export function RegisterForm({
             <TooltipContent>Google</TooltipContent>
           </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                type="button"
-                className="size-11 p-0 opacity-50 pointer-events-none"
-                data-testid="register-sber"
-                disabled
-              >
-                <Image
-                  src="/logos/sber.svg"
-                  alt="Сбер ID"
-                  width={36}
-                  height={36}
-                  className="rounded-full"
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Сбер ID (скоро)</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                type="button"
-                className="size-11 p-0 opacity-50 pointer-events-none"
-                data-testid="register-tbank"
-                disabled
-              >
-                <Image
-                  src="/logos/tbank.svg"
-                  alt="Т-Банк"
-                  width={36}
-                  height={36}
-                  className="rounded-full"
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Т-Банк (скоро)</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                type="button"
-                className="size-11 p-0 opacity-50 pointer-events-none"
-                data-testid="register-telegram"
-                disabled
-              >
-                <Image
-                  src="/logos/telegram.svg"
-                  alt="Telegram"
-                  width={36}
-                  height={36}
-                  className="rounded-full"
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Telegram (скоро)</TooltipContent>
-          </Tooltip>
         </div>
       </TooltipProvider>
 
