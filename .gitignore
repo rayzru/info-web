@@ -54,3 +54,6 @@ yarn-error.log*
 # avatars (keep .gitkeep)
 /public/avatars/*
 !/public/avatars/.gitkeep
+
+# database exports
+/db-export/
