@@ -31,10 +31,7 @@ import { VkIdStack } from "./auth/vk-id-stack";
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"div"> {}
 
-export function LoginForm({
-  className,
-  ...props
-}: Readonly<LoginFormProps>) {
+export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/my";
   const errorParam = searchParams.get("error");
@@ -61,9 +58,11 @@ export function LoginForm({
 
   const isBlocked = (codeParam ?? errorParam) === "USER_BLOCKED";
 
-  const [serverError, setServerError] = useState<string | null>(getInitialServerError());
+  const [serverError, setServerError] = useState<string | null>(
+    getInitialServerError(),
+  );
   const [showResendLink, setShowResendLink] = useState(
-    codeParam === "EMAIL_NOT_VERIFIED" || errorParam === "EMAIL_NOT_VERIFIED"
+    codeParam === "EMAIL_NOT_VERIFIED" || errorParam === "EMAIL_NOT_VERIFIED",
   );
 
   const form = useForm<LoginFormData>({
@@ -96,12 +95,17 @@ export function LoginForm({
         const errorCode = result.code ?? result.error;
 
         if (errorCode === "EMAIL_NOT_VERIFIED") {
-          setServerError("Email не подтверждён. Проверьте почту или запросите повторную отправку.");
+          setServerError(
+            "Email не подтверждён. Проверьте почту или запросите повторную отправку.",
+          );
           setShowResendLink(true);
         } else if (errorCode === "USER_BLOCKED") {
           setServerError("blocked");
           setShowResendLink(false);
-        } else if (errorCode === "CredentialsSignin" || result.error === "CredentialsSignin") {
+        } else if (
+          errorCode === "CredentialsSignin" ||
+          result.error === "CredentialsSignin"
+        ) {
           setServerError("Неверный email или пароль");
           setShowResendLink(false);
         } else {
@@ -120,32 +124,37 @@ export function LoginForm({
 
   // Block message component
   const BlockedMessage = () => (
-    <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm">
-      <h3 className="mb-2 font-semibold text-destructive">Аккаунт заблокирован</h3>
-      <p className="mb-3 text-muted-foreground">
+    <div className="border-destructive/20 bg-destructive/5 rounded-lg border p-4 text-sm">
+      <h3 className="text-destructive mb-2 font-semibold">
+        Аккаунт заблокирован
+      </h3>
+      <p className="text-muted-foreground mb-3">
         Ваш аккаунт заблокирован за нарушение Правил пользования ресурсом.
       </p>
-      <p className="mb-3 text-muted-foreground">
-        Если вы считаете, что блокировка применена ошибочно, вы можете обратиться к администрации
-        для разъяснения обстоятельств дела.
+      <p className="text-muted-foreground mb-3">
+        Если вы считаете, что блокировка применена ошибочно, вы можете
+        обратиться к администрации для разъяснения обстоятельств дела.
       </p>
-      <p className="text-xs text-muted-foreground/70">
-        Для обжалования решения или получения дополнительной информации направьте обращение на адрес
-        электронной почты администрации ресурса.
+      <p className="text-muted-foreground/70 text-xs">
+        Для обжалования решения или получения дополнительной информации
+        направьте обращение на адрес электронной почты администрации ресурса.
       </p>
     </div>
   );
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <h1 className="text-center text-lg font-bold uppercase tracking-[0.2em] text-foreground/90 [text-shadow:inset_0_1px_2px_rgba(0,0,0,0.1)]">
-        ПАРАДНАЯ
+      <h1 className="text-foreground/90 text-center text-lg font-bold tracking-[0.2em] uppercase [text-shadow:inset_0_1px_2px_rgba(0,0,0,0.1)]">
+        ПОДЪЕЗД
       </h1>
 
       {(isBlocked || serverError === "blocked") && <BlockedMessage />}
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-4"
+        >
           <FormField
             control={form.control}
             name="email"
@@ -174,7 +183,7 @@ export function LoginForm({
                   <FormLabel>Пароль</FormLabel>
                   <Link
                     href="/forgot-password"
-                    className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+                    className="text-muted-foreground hover:text-foreground text-xs hover:underline"
                   >
                     Забыли пароль?
                   </Link>
@@ -193,14 +202,14 @@ export function LoginForm({
           />
 
           {serverError && serverError !== "blocked" && (
-            <p className="text-sm text-destructive" data-testid="login-error">
+            <p className="text-destructive text-sm" data-testid="login-error">
               {serverError}
               {showResendLink && (
                 <>
                   {" "}
                   <Link
                     href="/resend-verification"
-                    className="underline underline-offset-2 hover:text-destructive/80"
+                    className="hover:text-destructive/80 underline underline-offset-2"
                   >
                     Отправить повторно
                   </Link>
@@ -226,7 +235,7 @@ export function LoginForm({
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
+          <span className="bg-background text-muted-foreground px-2">
             Или войти через
           </span>
         </div>
@@ -294,17 +303,20 @@ export function LoginForm({
             </TooltipTrigger>
             <TooltipContent>Google</TooltipContent>
           </Tooltip>
-
         </div>
       </TooltipProvider>
 
       <div className="mt-4 text-center text-sm">
-        <span className="text-muted-foreground/70">Еще не регистрировались?</span>{" "}
-        <Link href="/register" className="font-medium underline underline-offset-4 hover:text-foreground">
+        <span className="text-muted-foreground/70">
+          Еще не регистрировались?
+        </span>{" "}
+        <Link
+          href="/register"
+          className="hover:text-foreground font-medium underline underline-offset-4"
+        >
           Зарегистрируйтесь
         </Link>
       </div>
-
     </div>
   );
 }
