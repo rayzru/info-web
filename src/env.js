@@ -49,9 +49,9 @@ export const env = createEnv({
       .transform((v) => v === "true"),
     SMTP_USER: z.string().optional(),
     SMTP_PASSWORD: z.string().optional(),
-    SMTP_FROM_NAME: z.string().optional().default("Портал SR2"),
-    SMTP_FROM_EMAIL: z.string().email().optional().default("robot@sr2.ru"),
-    SMTP_REPLY_TO: z.string().email().optional().default("help@sr2.ru"),
+    SMTP_FROM_NAME: z.string().optional().default("Сообщество соседей ЖК СР2"),
+    SMTP_FROM_EMAIL: z.email().optional().default("robot@sr2.ru"),
+    SMTP_REPLY_TO: z.email().optional().default("help@sr2.ru"),
 
     DATABASE_URL: z.string().url(),
     DATABASE_NAME: z.string(),
