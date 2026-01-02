@@ -1,21 +1,14 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import bcrypt from "bcryptjs";
 import { and, eq, gt, isNotNull } from "drizzle-orm";
-import { type DefaultSession, type NextAuthConfig, CredentialsSignin } from "next-auth";
+import {
+  CredentialsSignin,
+  type DefaultSession,
+  type NextAuthConfig,
+} from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import MailRuProvider from "next-auth/providers/mailru";
-import VKProvider from "next-auth/providers/vk";
 import YandexProvider from "next-auth/providers/yandex";
-
-// Custom error classes for auth
-class EmailNotVerifiedError extends CredentialsSignin {
-  code = "EMAIL_NOT_VERIFIED";
-}
-
-class UserBlockedError extends CredentialsSignin {
-  code = "USER_BLOCKED";
-}
 
 import { db } from "~/server/db";
 import {
@@ -27,14 +20,27 @@ import {
   users,
   verificationTokens,
 } from "~/server/db/schema";
-import { notifyAsync, getProviderDisplayName } from "~/server/notifications";
-import OdnoklassnikiProvider from "./providers/odnoklassniki";
+import { getProviderDisplayName, notifyAsync } from "~/server/notifications";
+
 import SberProvider from "./providers/sber";
 import TinkoffProvider from "./providers/tinkoff";
-import { type UserRole, isAdmin } from "./rbac";
+import VKIDProvider from "./providers/vkid";
+import { isAdmin, type UserRole } from "./rbac";
+
+// Custom error classes for auth
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "EMAIL_NOT_VERIFIED";
+}
+
+class UserBlockedError extends CredentialsSignin {
+  code = "USER_BLOCKED";
+}
 
 // Test accounts for development
-const TEST_ACCOUNTS: Record<string, { name: string; email: string; roles: UserRole[] }> = {
+const TEST_ACCOUNTS: Record<
+  string,
+  { name: string; email: string; roles: UserRole[] }
+> = {
   admin: {
     name: "Test Admin",
     email: "admin@test.local",
@@ -126,7 +132,7 @@ async function getOrCreateTestUser(accountKey: string) {
         account.roles.map((role) => ({
           userId: user!.id,
           role,
-        }))
+        })),
       );
     }
   }
@@ -141,10 +147,7 @@ const isDev = process.env.NODE_ENV === "development";
 async function isUserBlocked(userId: string): Promise<boolean> {
   try {
     const activeBlock = await db.query.userBlocks.findFirst({
-      where: and(
-        eq(userBlocks.userId, userId),
-        eq(userBlocks.isActive, true)
-      ),
+      where: and(eq(userBlocks.userId, userId), eq(userBlocks.isActive, true)),
     });
     return !!activeBlock;
   } catch (error) {
@@ -163,16 +166,17 @@ function buildProviders() {
     YandexProvider({
       clientId: process.env.YANDEX_CLIENT_ID!,
       clientSecret: process.env.YANDEX_CLIENT_SECRET!,
-    })
+      authorization: "https://oauth.yandex.ru/authorize?scope=login:email",
+    }),
   );
 
-  // VK (optional)
+  // VK ID (id.vk.com) - custom provider
   if (process.env.VK_CLIENT_ID && process.env.VK_CLIENT_SECRET) {
     providers.push(
-      VKProvider({
+      VKIDProvider({
         clientId: process.env.VK_CLIENT_ID,
         clientSecret: process.env.VK_CLIENT_SECRET,
-      })
+      }),
     );
   }
 
@@ -182,32 +186,7 @@ function buildProviders() {
       GoogleProvider({
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      })
-    );
-  }
-
-  // Mail.ru (optional)
-  if (process.env.MAILRU_CLIENT_ID && process.env.MAILRU_CLIENT_SECRET) {
-    providers.push(
-      MailRuProvider({
-        clientId: process.env.MAILRU_CLIENT_ID,
-        clientSecret: process.env.MAILRU_CLIENT_SECRET,
-      })
-    );
-  }
-
-  // Одноклассники (optional)
-  if (
-    process.env.OK_CLIENT_ID &&
-    process.env.OK_CLIENT_SECRET &&
-    process.env.OK_PUBLIC_KEY
-  ) {
-    providers.push(
-      OdnoklassnikiProvider({
-        clientId: process.env.OK_CLIENT_ID,
-        clientSecret: process.env.OK_CLIENT_SECRET,
-        publicKey: process.env.OK_PUBLIC_KEY,
-      })
+      }),
     );
   }
 
@@ -217,7 +196,7 @@ function buildProviders() {
       SberProvider({
         clientId: process.env.SBER_CLIENT_ID,
         clientSecret: process.env.SBER_CLIENT_SECRET,
-      })
+      }),
     );
   }
 
@@ -227,7 +206,7 @@ function buildProviders() {
       TinkoffProvider({
         clientId: process.env.TINKOFF_CLIENT_ID,
         clientSecret: process.env.TINKOFF_CLIENT_SECRET,
-      })
+      }),
     );
   }
 
@@ -251,7 +230,7 @@ function buildProviders() {
               eq(telegramAuthTokens.code, code),
               eq(telegramAuthTokens.verified, true),
               isNotNull(telegramAuthTokens.telegramId),
-              gt(telegramAuthTokens.expires, new Date())
+              gt(telegramAuthTokens.expires, new Date()),
             ),
           });
 
@@ -305,7 +284,7 @@ function buildProviders() {
           const existingAccount = await db.query.accounts.findFirst({
             where: and(
               eq(accounts.provider, "telegram"),
-              eq(accounts.providerAccountId, token.telegramId!)
+              eq(accounts.providerAccountId, token.telegramId!),
             ),
           });
 
@@ -325,9 +304,72 @@ function buildProviders() {
             image: user.image,
           };
         },
-      })
+      }),
     );
   }
+
+  // VK ID Session (used by custom VK callback flow)
+  providers.push(
+    CredentialsProvider({
+      id: "vk-session",
+      name: "VK Session",
+      credentials: {
+        userId: { label: "User ID", type: "text" },
+        token: { label: "Token", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.userId || !credentials?.token) return null;
+
+        const userId = credentials.userId as string;
+        const token = credentials.token as string;
+
+        // Verify the token matches expected format (simple HMAC validation)
+        // Token format: base64(userId:timestamp:signature)
+        try {
+          const decoded = Buffer.from(token, "base64").toString();
+          const [tokenUserId, timestamp, signature] = decoded.split(":");
+
+          if (tokenUserId !== userId) return null;
+
+          // Check timestamp is within 5 minutes
+          const tokenTime = parseInt(timestamp || "0", 10);
+          const now = Date.now();
+          if (now - tokenTime > 5 * 60 * 1000) return null;
+
+          // Verify signature using AUTH_SECRET
+          const crypto = await import("crypto");
+          const expectedSig = crypto
+            .createHmac("sha256", process.env.AUTH_SECRET!)
+            .update(`${userId}:${timestamp}`)
+            .digest("hex")
+            .substring(0, 16);
+
+          if (signature !== expectedSig) return null;
+        } catch {
+          return null;
+        }
+
+        // Find user in database
+        const user = await db.query.users.findFirst({
+          where: eq(users.id, userId),
+        });
+
+        if (!user) return null;
+
+        // Check if user is blocked
+        if (await isUserBlocked(user.id)) {
+          throw new UserBlockedError();
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
+      },
+    }),
+  );
 
   // Email + Password Credentials
   providers.push(
@@ -349,7 +391,7 @@ function buildProviders() {
           where: eq(users.email, email),
         });
 
-        if (!user || !user.passwordHash) {
+        if (!user?.passwordHash) {
           // User doesn't exist or doesn't have password set
           return null;
         }
@@ -382,7 +424,7 @@ function buildProviders() {
           image: user.image,
         };
       },
-    })
+    }),
   );
 
   // Development-only test credentials provider
@@ -395,7 +437,8 @@ function buildProviders() {
           account: {
             label: "Account Type",
             type: "text",
-            placeholder: "admin, moderator, owner, resident, guest, editor, chairman, ukRep",
+            placeholder:
+              "admin, moderator, owner, resident, guest, editor, chairman, ukRep",
           },
         },
         async authorize(credentials) {
@@ -409,7 +452,7 @@ function buildProviders() {
             name: user.name,
           };
         },
-      })
+      }),
     );
   }
 
@@ -422,16 +465,25 @@ export const authConfig = {
   logger: {
     error: (code) => {
       // Подавляем стандартный стек-трейс для ожидаемых ошибок аутентификации
-      if (code.name === "CredentialsSignin" || code.name === "EmailNotVerifiedError" || code.name === "UserBlockedError") {
-        const errorType = code.name === "EmailNotVerifiedError"
-          ? "email не подтверждён"
-          : code.name === "UserBlockedError"
-            ? "пользователь заблокирован"
-            : "неверные учётные данные";
+      if (
+        code.name === "CredentialsSignin" ||
+        code.name === "EmailNotVerifiedError" ||
+        code.name === "UserBlockedError"
+      ) {
+        const errorType =
+          code.name === "EmailNotVerifiedError"
+            ? "email не подтверждён"
+            : code.name === "UserBlockedError"
+              ? "пользователь заблокирован"
+              : "неверные учётные данные";
         console.log(` ⚠ [auth] ${code.name} - ${errorType}`);
         return;
       }
       console.error("[auth][error]", code);
+      // Выводим cause для отладки VK ID
+      if (code.cause) {
+        console.error("[auth][error][cause]", JSON.stringify(code.cause, null, 2));
+      }
     },
     warn: (code) => {
       console.warn("[auth][warn]", code);
@@ -457,7 +509,11 @@ export const authConfig = {
   callbacks: {
     signIn: async ({ user, account }) => {
       // Check if user is blocked (for OAuth providers)
-      if (user?.id && account?.provider !== "credentials" && account?.provider !== "telegram") {
+      if (
+        user?.id &&
+        account?.provider !== "credentials" &&
+        account?.provider !== "telegram"
+      ) {
         // For credentials and telegram, block check happens in authorize()
         // For OAuth, we need to check here
         if (await isUserBlocked(user.id)) {
@@ -486,7 +542,7 @@ export const authConfig = {
         .from(userRoles)
         .where(eq(userRoles.userId, userId));
 
-      const userRolesList = roles.map((r) => r.role) as UserRole[];
+      const userRolesList = roles.map((r) => r.role);
 
       return {
         ...session,
@@ -543,7 +599,11 @@ export function getAvailableProviders() {
   }
 
   if (process.env.OK_CLIENT_ID) {
-    available.push({ id: "odnoklassniki", name: "Одноклассники", type: "oauth" });
+    available.push({
+      id: "odnoklassniki",
+      name: "Одноклассники",
+      type: "oauth",
+    });
   }
 
   if (process.env.SBER_CLIENT_ID) {
