@@ -8,25 +8,37 @@ import { env } from "~/env";
  */
 export const emailConfig = {
   from: {
-    name: env.SMTP_FROM_NAME,
-    address: env.SMTP_FROM_EMAIL,
+    name: env.SMTP_FROM_NAME ?? "Портал SR2",
+    address: env.SMTP_FROM_EMAIL ?? "robot@sr2.ru",
   },
-  replyTo: env.SMTP_REPLY_TO,
+  replyTo: env.SMTP_REPLY_TO ?? "help@sr2.ru",
 } as const;
 
 /**
  * Create nodemailer transporter
  * Configured for sr2.ru SMTP server
+ * Supports both authenticated and local (no-auth) modes
  */
 export function createTransporter() {
+  const hasAuth = env.SMTP_USER && env.SMTP_PASSWORD;
+
   return nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT,
-    secure: env.SMTP_SECURE, // true for 465, false for other ports
-    auth: {
-      user: env.SMTP_USER,
-      pass: env.SMTP_PASSWORD,
-    },
+    host: env.SMTP_HOST ?? "127.0.0.1",
+    port: env.SMTP_PORT ?? 25,
+    secure: env.SMTP_SECURE ?? false,
+    // Only include auth if credentials are provided
+    ...(hasAuth && {
+      auth: {
+        user: env.SMTP_USER,
+        pass: env.SMTP_PASSWORD,
+      },
+    }),
+    // For local sending without TLS
+    ...(!hasAuth && {
+      tls: {
+        rejectUnauthorized: false,
+      },
+    }),
   });
 }
 
