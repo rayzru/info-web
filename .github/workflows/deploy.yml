@@ -175,7 +175,7 @@ jobs:
 
           # Create symlink and restart app with PM2
           # Determine PM2 app name based on environment
-          PM2_APP_NAME="${{ env.IS_BETA == 'true' && 'sr2-beta' || 'playto-app' }}"
+          PM2_APP_NAME="${{ env.IS_BETA == 'true' && 'sr2-beta' || 'sr2-app' }}"
           echo "=== Updating symlink and restarting app ($PM2_APP_NAME) ==="
           ssh "$USER@$HOST" "cd $TARGET && rm -rf current && ln -sfn $REL current && echo 'Symlink created:' && ls -la current && echo 'Target directory:' && ls -la && cd current && echo 'Current directory:' && pwd && echo 'All files in current:' && ls -la && echo 'Check .next directory:' && ls -la .next/ && echo 'Check BUILD_ID:' && cat .next/BUILD_ID && echo 'Check .env file:' && ls -la .env && echo '=== Restarting PM2 ($PM2_APP_NAME) ===' && (pm2 delete $PM2_APP_NAME 2>/dev/null || true) && PM2_APP_NAME=$PM2_APP_NAME pm2 start ecosystem.config.cjs && pm2 save && echo 'PM2 app restarted successfully'"
         env:

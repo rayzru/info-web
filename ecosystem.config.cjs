@@ -7,8 +7,8 @@ module.exports = {
       exec_mode: "fork",
       env: {
         NODE_ENV: "production",
-        // Beta uses 3001, production uses 3000
-        PORT: process.env.PORT || (process.env.PM2_APP_NAME === "sr2-beta" ? 3001 : 3000),
+        // sr2-beta: 3001, sr2-app (production): 3002
+        PORT: process.env.PORT || (process.env.PM2_APP_NAME === "sr2-beta" ? 3001 : process.env.PM2_APP_NAME === "sr2-app" ? 3002 : 3000),
       },
       // Logging
       error_file: "logs/err.log",
