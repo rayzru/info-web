@@ -39,18 +39,19 @@ export const env = createEnv({
     TELEGRAM_NEWS_CHANNEL_ID: z.string().optional(),
 
     // SMTP Configuration for email sending
-    SMTP_HOST: z.string().optional(),
-    SMTP_PORT: z.coerce.number().optional().default(465),
+    // Default: localhost:25 without auth (for local postfix)
+    SMTP_HOST: z.string().optional().default("127.0.0.1"),
+    SMTP_PORT: z.coerce.number().optional().default(25),
     SMTP_SECURE: z
       .string()
       .optional()
-      .default("true")
+      .default("false")
       .transform((v) => v === "true"),
     SMTP_USER: z.string().optional(),
     SMTP_PASSWORD: z.string().optional(),
-    SMTP_FROM_NAME: z.string().optional().default("Парадная"),
-    SMTP_FROM_EMAIL: z.string().email().optional(),
-    SMTP_REPLY_TO: z.string().email().optional(),
+    SMTP_FROM_NAME: z.string().optional().default("Портал SR2"),
+    SMTP_FROM_EMAIL: z.string().email().optional().default("robot@sr2.ru"),
+    SMTP_REPLY_TO: z.string().email().optional().default("help@sr2.ru"),
 
     DATABASE_URL: z.string().url(),
     DATABASE_NAME: z.string(),
