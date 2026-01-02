@@ -15,7 +15,7 @@ const config = {
   user: process.env.SMTP_USER ?? "robot@sr2.ru",
   password: process.env.SMTP_PASSWORD,
   fromEmail: process.env.SMTP_FROM_EMAIL ?? "robot@sr2.ru",
-  fromName: process.env.SMTP_FROM_NAME ?? "Парадная",
+  fromName: process.env.SMTP_FROM_NAME ?? "Сообщество Соседей ЖК СР2",
 };
 
 async function testSmtp() {
