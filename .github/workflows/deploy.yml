@@ -1,31 +1,21 @@
-name: Deploy (Beta SR2 standalone)
+name: Deploy Beta (SR2 standalone)
 
 on:
   push:
-    branches: [main, development]
+    branches: [development]
   workflow_dispatch:
-    inputs:
-      environment:
-        description: "Environment to deploy"
-        required: true
-        default: "production"
-        type: choice
-        options:
-          - production
-          - beta
 
 concurrency:
-  group: deploy-${{ github.ref }}
+  group: deploy-beta
   cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/development' && 'Beta' || 'production' }}
+    environment: Beta
     env:
       NODE_VERSION: "22"
       BUN_VERSION: "1.2.9"
-      IS_BETA: ${{ github.ref == 'refs/heads/development' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -174,8 +164,7 @@ jobs:
           ssh "$USER@$HOST" "cat $TARGET/$REL/.next/BUILD_ID"
 
           # Create symlink and restart app with PM2
-          # Determine PM2 app name based on environment
-          PM2_APP_NAME="${{ env.IS_BETA == 'true' && 'sr2-beta' || 'sr2-app' }}"
+          PM2_APP_NAME="sr2-beta"
           echo "=== Updating symlink and restarting app ($PM2_APP_NAME) ==="
           ssh "$USER@$HOST" "cd $TARGET && rm -rf current && ln -sfn $REL current && echo 'Symlink created:' && ls -la current && echo 'Target directory:' && ls -la && cd current && echo 'Current directory:' && pwd && echo 'All files in current:' && ls -la && echo 'Check .next directory:' && ls -la .next/ && echo 'Check BUILD_ID:' && cat .next/BUILD_ID && echo 'Check .env file:' && ls -la .env && echo '=== Restarting PM2 ($PM2_APP_NAME) ===' && (pm2 delete $PM2_APP_NAME 2>/dev/null || true) && PM2_APP_NAME=$PM2_APP_NAME pm2 start ecosystem.config.cjs && pm2 save && echo 'PM2 app restarted successfully'"
         env:
