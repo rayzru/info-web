@@ -103,13 +103,17 @@ export const adminRouter = createTRPCRouter({
         const { page, limit, search, roleFilter } = input;
         const offset = (page - 1) * limit;
 
-        // Build where conditions
+        // Build where conditions - always exclude deleted users
+        const baseCondition = eq(users.isDeleted, false);
         const searchCondition = search
-          ? or(
-              ilike(users.name, `%${search}%`),
-              ilike(users.email, `%${search}%`),
+          ? and(
+              baseCondition,
+              or(
+                ilike(users.name, `%${search}%`),
+                ilike(users.email, `%${search}%`),
+              ),
             )
-          : undefined;
+          : baseCondition;
 
         // Get users with pagination (including tagline from profiles)
         const usersQuery = ctx.db
@@ -830,7 +834,12 @@ export const adminRouter = createTRPCRouter({
             image: users.image,
           })
           .from(users)
-          .where(ilike(users.name, `%${input.query}%`))
+          .where(
+            and(
+              eq(users.isDeleted, false),
+              ilike(users.name, `%${input.query}%`),
+            ),
+          )
           .limit(10);
 
         return results.map((user) => ({

@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
+import { DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 
@@ -51,90 +52,101 @@ export function DeleteUserDialog({ userId, userName, asMenuItem = false }: Delet
     createDeletionRequest.mutate({ userId });
   };
 
-  const trigger = asMenuItem ? (
-    <button
-      type="button"
-      onClick={() => setOpen(true)}
-      className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden hover:bg-destructive/10 focus:bg-destructive/10 w-full text-destructive"
-    >
-      <Trash2 className="size-4 shrink-0" />
-      Удалить
-    </button>
-  ) : (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-    >
-      <Trash2 className="h-4 w-4" />
-    </Button>
+  const dialogContent = (
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle className="flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-amber-500" />
+          Удаление пользователя
+        </AlertDialogTitle>
+        <AlertDialogDescription asChild>
+          <div className="space-y-3">
+            <p>
+              Вы собираетесь создать заявку на удаление пользователя{" "}
+              <span className="font-medium text-foreground">
+                {userName ?? "Без имени"}
+              </span>
+            </p>
+
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/50">
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                Важная информация:
+              </p>
+              <ul className="mt-2 space-y-1 text-sm text-amber-700 dark:text-amber-300">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 rounded-full bg-amber-500 shrink-0" />
+                  <span>
+                    Удаление является <strong>мягким</strong> (soft delete) — данные пользователя
+                    будут помечены как удалённые, но сохранятся в базе данных
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 rounded-full bg-amber-500 shrink-0" />
+                  <span>
+                    Пользователь потеряет доступ к аккаунту немедленно после
+                    подтверждения заявки
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 rounded-full bg-amber-500 shrink-0" />
+                  <span>
+                    При необходимости данные можно восстановить в течение 30 дней
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              После создания заявка будет ожидать подтверждения от другого администратора.
+            </p>
+          </div>
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Отмена</AlertDialogCancel>
+        <AlertDialogAction
+          onClick={handleDelete}
+          disabled={createDeletionRequest.isPending}
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        >
+          {createDeletionRequest.isPending ? "Создание..." : "Создать заявку"}
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
   );
+
+  if (asMenuItem) {
+    return (
+      <>
+        <DropdownMenuItem
+          variant="destructive"
+          onSelect={(e) => {
+            e.preventDefault();
+            setOpen(true);
+          }}
+        >
+          <Trash2 className="size-4" />
+          Удалить
+        </DropdownMenuItem>
+        <AlertDialog open={open} onOpenChange={setOpen}>
+          {dialogContent}
+        </AlertDialog>
+      </>
+    );
+  }
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        {trigger}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
-            Удаление пользователя
-          </AlertDialogTitle>
-          <AlertDialogDescription asChild>
-            <div className="space-y-3">
-              <p>
-                Вы собираетесь создать заявку на удаление пользователя{" "}
-                <span className="font-medium text-foreground">
-                  {userName ?? "Без имени"}
-                </span>
-              </p>
-
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/50">
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                  Важная информация:
-                </p>
-                <ul className="mt-2 space-y-1 text-sm text-amber-700 dark:text-amber-300">
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1 w-1 rounded-full bg-amber-500 flex-shrink-0" />
-                    <span>
-                      Удаление является <strong>мягким</strong> (soft delete) — данные пользователя
-                      будут помечены как удалённые, но сохранятся в базе данных
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1 w-1 rounded-full bg-amber-500 flex-shrink-0" />
-                    <span>
-                      Пользователь потеряет доступ к аккаунту немедленно после
-                      подтверждения заявки
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1 w-1 rounded-full bg-amber-500 flex-shrink-0" />
-                    <span>
-                      При необходимости данные можно восстановить в течение 30 дней
-                    </span>
-                  </li>
-                </ul>
-              </div>
-
-              <p className="text-sm text-muted-foreground">
-                После создания заявка будет ожидать подтверждения от другого администратора.
-              </p>
-            </div>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Отмена</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleDelete}
-            disabled={createDeletionRequest.isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {createDeletionRequest.isPending ? "Создание..." : "Создать заявку"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
+      {dialogContent}
     </AlertDialog>
   );
 }

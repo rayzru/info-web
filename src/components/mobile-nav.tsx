@@ -118,16 +118,16 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-full sm:w-[320px] p-0"
+        className="w-full sm:w-[320px] p-0 gap-0! overflow-hidden"
       >
-        <div className="flex flex-col h-full">
-          <SheetHeader className="p-4 pb-2">
+        <div className="flex flex-col h-dvh max-h-full overflow-hidden">
+          <SheetHeader className="p-4 pb-2 shrink-0">
             <SheetTitle>Меню</SheetTitle>
           </SheetHeader>
 
           {/* User section */}
           {user && (
-            <>
+            <div className="shrink-0">
               <div className="px-4 py-3">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
@@ -145,11 +145,11 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                 </div>
               </div>
               <Separator />
-            </>
+            </div>
           )}
 
-          {/* Main navigation */}
-          <nav className="flex-1 overflow-auto p-2">
+          {/* Main navigation - scrollable area */}
+          <nav className="flex-1 min-h-0 overflow-y-auto p-2">
             <div className="flex flex-col gap-1">
               {navigation.map((item) => {
                 const Icon = item.icon;
@@ -300,35 +300,37 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
           </nav>
 
           {/* Theme selector */}
-          <Separator />
-          <div className="p-2">
-            <div className="text-xs text-muted-foreground px-3 py-2">Тема</div>
-            <div className="flex gap-1">
-              {themeOptions.map((option) => {
-                const Icon = option.icon;
-                const isSelected = theme === option.value;
-                return (
-                  <Button
-                    key={option.value}
-                    variant={isSelected ? "secondary" : "ghost"}
-                    size="sm"
-                    className={cn(
-                      "flex-1 gap-2",
-                      isSelected && "bg-primary/10 text-primary"
-                    )}
-                    onClick={(e) => handleThemeChange(option.value, e)}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {option.label}
-                  </Button>
-                );
-              })}
+          <div className="shrink-0">
+            <Separator />
+            <div className="p-2">
+              <div className="text-xs text-muted-foreground px-3 py-2">Тема</div>
+              <div className="flex gap-1">
+                {themeOptions.map((option) => {
+                  const Icon = option.icon;
+                  const isSelected = theme === option.value;
+                  return (
+                    <Button
+                      key={option.value}
+                      variant={isSelected ? "secondary" : "ghost"}
+                      size="sm"
+                      className={cn(
+                        "flex-1 gap-2",
+                        isSelected && "bg-primary/10 text-primary"
+                      )}
+                      onClick={(e) => handleThemeChange(option.value, e)}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {option.label}
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           {/* Footer with logout */}
           {user && (
-            <>
+            <div className="shrink-0">
               <Separator />
               <div className="p-2">
                 <Button
@@ -340,12 +342,12 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                   Выйти
                 </Button>
               </div>
-            </>
+            </div>
           )}
 
           {/* Login button for non-authenticated users */}
           {!user && (
-            <>
+            <div className="shrink-0">
               <Separator />
               <div className="p-2">
                 <Link href="/login" onClick={() => setOpen(false)}>
@@ -354,7 +356,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                   </Button>
                 </Link>
               </div>
-            </>
+            </div>
           )}
         </div>
       </SheetContent>

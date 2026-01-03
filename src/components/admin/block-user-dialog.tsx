@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
+import { DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { Label } from "~/components/ui/label";
 import {
   Select,
@@ -100,144 +101,155 @@ export function BlockUserDialog({
     (category !== "rules_violation" || selectedRules.length > 0) &&
     (category !== "other" || reason.trim().length > 0);
 
-  const trigger = asMenuItem ? (
-    <button
-      type="button"
-      onClick={() => setOpen(true)}
-      className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden hover:bg-destructive/10 focus:bg-destructive/10 w-full text-destructive"
-    >
-      <Ban className="size-4 shrink-0" />
-      Заблокировать
-    </button>
-  ) : (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-    >
-      <Ban className="h-4 w-4" />
-    </Button>
+  const dialogContent = (
+    <DialogContent className="max-w-md">
+      <DialogHeader>
+        <DialogTitle>Блокировка пользователя</DialogTitle>
+        <DialogDescription>
+          Заблокировать {userName ?? "пользователя"}? После блокировки
+          пользователь не сможет войти в систему.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="space-y-4 py-4">
+        {/* Category selection */}
+        <div className="space-y-2">
+          <Label>Категория блокировки</Label>
+          <Select
+            value={category}
+            onValueChange={(value) => {
+              setCategory(value as BlockCategory);
+              if (value !== "rules_violation") {
+                setSelectedRules([]);
+              }
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Выберите категорию" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(BLOCK_CATEGORIES).map(([key, value]) => (
+                <SelectItem key={key} value={key}>
+                  {value.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {category && (
+            <p className="text-xs text-muted-foreground">
+              {BLOCK_CATEGORIES[category]?.description}
+            </p>
+          )}
+        </div>
+
+        {/* Rules selection (for rules_violation category) */}
+        {category === "rules_violation" && (
+          <div className="space-y-2">
+            <Label>Нарушенные пункты правил</Label>
+            <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-3">
+              {Object.entries(RULES_VIOLATIONS).map(([key, value]) => (
+                <div key={key} className="flex items-start space-x-2">
+                  <Checkbox
+                    id={`rule-${key}`}
+                    checked={selectedRules.includes(key as RuleViolation)}
+                    onCheckedChange={() =>
+                      handleRuleToggle(key as RuleViolation)
+                    }
+                  />
+                  <div className="grid gap-0.5 leading-none">
+                    <label
+                      htmlFor={`rule-${key}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {value.label}: {value.title}
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      {value.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {selectedRules.length === 0 && (
+              <p className="text-xs text-destructive">
+                Выберите хотя бы один пункт правил
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Reason input */}
+        <div className="space-y-2">
+          <Label>
+            {category === "other"
+              ? "Причина блокировки (обязательно)"
+              : "Дополнительный комментарий"}
+          </Label>
+          <Textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder={
+              category === "other"
+                ? "Опишите причину блокировки..."
+                : "Дополнительная информация (необязательно)..."
+            }
+            rows={3}
+          />
+          {category === "other" && !reason.trim() && (
+            <p className="text-xs text-destructive">
+              Укажите причину блокировки
+            </p>
+          )}
+        </div>
+      </div>
+
+      <DialogFooter>
+        <Button variant="outline" onClick={() => setOpen(false)}>
+          Отмена
+        </Button>
+        <Button
+          variant="destructive"
+          onClick={handleSubmit}
+          disabled={!isValid || blockUser.isPending}
+        >
+          {blockUser.isPending ? "Блокировка..." : "Заблокировать"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
   );
+
+  if (asMenuItem) {
+    return (
+      <>
+        <DropdownMenuItem
+          variant="destructive"
+          onSelect={(e) => {
+            e.preventDefault();
+            setOpen(true);
+          }}
+        >
+          <Ban className="size-4" />
+          Заблокировать
+        </DropdownMenuItem>
+        <Dialog open={open} onOpenChange={setOpen}>
+          {dialogContent}
+        </Dialog>
+      </>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Ban className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Блокировка пользователя</DialogTitle>
-          <DialogDescription>
-            Заблокировать {userName ?? "пользователя"}? После блокировки
-            пользователь не сможет войти в систему.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
-          {/* Category selection */}
-          <div className="space-y-2">
-            <Label>Категория блокировки</Label>
-            <Select
-              value={category}
-              onValueChange={(value) => {
-                setCategory(value as BlockCategory);
-                if (value !== "rules_violation") {
-                  setSelectedRules([]);
-                }
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Выберите категорию" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(BLOCK_CATEGORIES).map(([key, value]) => (
-                  <SelectItem key={key} value={key}>
-                    {value.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {category && (
-              <p className="text-xs text-muted-foreground">
-                {BLOCK_CATEGORIES[category]?.description}
-              </p>
-            )}
-          </div>
-
-          {/* Rules selection (for rules_violation category) */}
-          {category === "rules_violation" && (
-            <div className="space-y-2">
-              <Label>Нарушенные пункты правил</Label>
-              <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-3">
-                {Object.entries(RULES_VIOLATIONS).map(([key, value]) => (
-                  <div key={key} className="flex items-start space-x-2">
-                    <Checkbox
-                      id={`rule-${key}`}
-                      checked={selectedRules.includes(key as RuleViolation)}
-                      onCheckedChange={() =>
-                        handleRuleToggle(key as RuleViolation)
-                      }
-                    />
-                    <div className="grid gap-0.5 leading-none">
-                      <label
-                        htmlFor={`rule-${key}`}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        {value.label}: {value.title}
-                      </label>
-                      <p className="text-xs text-muted-foreground">
-                        {value.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {selectedRules.length === 0 && (
-                <p className="text-xs text-destructive">
-                  Выберите хотя бы один пункт правил
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Reason input */}
-          <div className="space-y-2">
-            <Label>
-              {category === "other"
-                ? "Причина блокировки (обязательно)"
-                : "Дополнительный комментарий"}
-            </Label>
-            <Textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder={
-                category === "other"
-                  ? "Опишите причину блокировки..."
-                  : "Дополнительная информация (необязательно)..."
-              }
-              rows={3}
-            />
-            {category === "other" && !reason.trim() && (
-              <p className="text-xs text-destructive">
-                Укажите причину блокировки
-              </p>
-            )}
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Отмена
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleSubmit}
-            disabled={!isValid || blockUser.isPending}
-          >
-            {blockUser.isPending ? "Блокировка..." : "Заблокировать"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+      {dialogContent}
     </Dialog>
   );
 }

@@ -147,6 +147,14 @@ jobs:
           YANDEX_CLIENT_ID="$YANDEX_CLIENT_ID"
           YANDEX_CLIENT_SECRET="$YANDEX_CLIENT_SECRET"
 
+          # VK OAuth
+          VK_CLIENT_ID="$VK_CLIENT_ID"
+          VK_CLIENT_SECRET="$VK_CLIENT_SECRET"
+
+          # Google OAuth
+          GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID"
+          GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET"
+
           # Database (PostgreSQL)
           DATABASE_URL="$DATABASE_URL"
           DATABASE_NAME="$DATABASE_NAME"
@@ -180,6 +188,10 @@ jobs:
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           YANDEX_CLIENT_ID: ${{ secrets.YANDEX_CLIENT_ID }}
           YANDEX_CLIENT_SECRET: ${{ secrets.YANDEX_CLIENT_SECRET }}
+          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
+          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
 

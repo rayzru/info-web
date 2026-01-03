@@ -161,9 +161,7 @@ function UserRow({
                     Собственность
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <EditTaglineDialog userId={user.id} userName={user.name} asMenuItem />
-                </DropdownMenuItem>
+                <EditTaglineDialog userId={user.id} userName={user.name} asMenuItem />
                 <DropdownMenuItem>
                   <KeyRound className="mr-2 h-4 w-4" />
                   Сбросить пароль
