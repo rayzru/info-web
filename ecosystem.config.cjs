@@ -11,8 +11,7 @@ module.exports = {
       max_memory_restart: '500M',
       env_production: {
         NODE_ENV: 'production',
-        PORT: '3001',
-        // Telegram bot credentials will be loaded from .env file
+        PORT: '3002',
       },
       error_file: './logs/pm2-error.log',
       out_file: './logs/pm2-out.log',
