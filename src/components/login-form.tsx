@@ -183,7 +183,7 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
                   <FormLabel>Пароль</FormLabel>
                   <Link
                     href="/forgot-password"
-                    className="text-muted-foreground hover:text-foreground text-xs hover:underline"
+                    className="text-primary hover:text-primary/80 text-xs hover:underline"
                   >
                     Забыли пароль?
                   </Link>
@@ -312,7 +312,7 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
         </span>{" "}
         <Link
           href="/register"
-          className="hover:text-foreground font-medium underline underline-offset-4"
+          className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"
         >
           Зарегистрируйтесь
         </Link>

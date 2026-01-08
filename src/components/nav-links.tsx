@@ -49,7 +49,7 @@ export function NavLinks() {
   };
 
   return (
-    <div className="hidden lg:flex items-center gap-1">
+    <div className="hidden xl:flex items-center gap-1">
       {navigation.map((item) => {
         const active = isActive(item.link);
         return (
