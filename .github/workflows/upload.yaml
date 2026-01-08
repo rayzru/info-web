@@ -9,6 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: 🚚 Checkout code
@@ -17,39 +18,48 @@ jobs:
       - name: 📂 Ensure target directory exists
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          password: ${{ secrets.PASSWORD }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # Ensure target directory exists
-            mkdir -p /var/www/sr2/data/www/sr2.ru
+            mkdir -p ${{ secrets.SSH_TARGET_DIR }}
 
       - name: 📦 Sync files to server
         run: |
-          # Install sshpass for password-based rsync
-          sudo apt-get update && sudo apt-get install -y sshpass rsync
+          # Setup SSH key
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
 
           # Sync project files to server
-          sshpass -p "${{ secrets.PASSWORD }}" rsync -avz --delete \
+          rsync -avz --delete \
             --exclude='.git' \
             --exclude='.DS_Store' \
             --exclude='node_modules' \
             --exclude='.env' \
+            --exclude='.env.*' \
             --exclude='logs' \
             --exclude='.github' \
             --exclude='.next' \
             --exclude='.husky' \
-            -e "ssh -o StrictHostKeyChecking=no" \
-            ./ ${{ secrets.USER }}@${{ secrets.HOST }}:/var/www/sr2/data/www/sr2.ru/
+            --exclude='_legacy*' \
+            --exclude='.claude' \
+            --exclude='.conductor' \
+            --exclude='.playwright-mcp' \
+            --exclude='db-export' \
+            --exclude='docs' \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_TARGET_DIR }}/
 
       - name: 🔧 Install dependencies, build and restart
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          password: ${{ secrets.PASSWORD }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/sr2/data/www/sr2.ru
+            cd ${{ secrets.SSH_TARGET_DIR }}
 
             # Install dependencies
             npm ci
