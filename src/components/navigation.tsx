@@ -35,7 +35,7 @@ export async function Navigation() {
         {session && (
           <>
             {/* Desktop: user menu with role-colored ring, auto width up to sidebar width */}
-            <div className="hidden lg:flex items-center justify-end max-w-64">
+            <div className="hidden xl:flex items-center justify-end max-w-64">
               <Link href="/my" passHref data-testid="nav-user-cabinet">
                 <Button variant="ghost" size="sm" className="justify-start">
                   <Avatar className={cn(
@@ -53,7 +53,7 @@ export async function Navigation() {
             </div>
 
             {/* Mobile/Tablet: only avatar with role ring */}
-            <Link href="/my" passHref data-testid="nav-user-cabinet-mobile" className="lg:hidden">
+            <Link href="/my" passHref data-testid="nav-user-cabinet-mobile" className="xl:hidden">
               <Button variant="ghost" size="icon">
                 <Avatar className={cn(
                   "h-6 w-6 ring-2 ring-offset-1 ring-offset-background",
