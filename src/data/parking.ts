@@ -988,7 +988,91 @@ const parkingData: ParkingOfferInfo[] = [
       hasWhatsApp: true,
     },
     dateUpdated: 1765207910456,
-  }
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 7,
+    parkingNumber: 83,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Залог за брелок 3000. ',
+    },
+    contact: {
+      hasTelegram: false,
+      phone: '+7 (928) 901-05-19',
+    },
+    dateUpdated: 1767092734899,
+  },
+  {
+    variant: 'standard',
+    level: -2,
+    building: 2,
+    parkingNumber: 89,
+    offer: {
+      type: 'rent',
+      price: 5000,
+    },
+    contact: {
+      phone: '+7 (918) 502-40-83',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    dateUpdated: 1766938788270,
+  },
+
+  {
+    variant: 'standard',
+    level: -1,
+    building: 5,
+    parkingNumber: 13,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Размер 2,75х5,40 (5,85) м, Площадь 15 (16) м2',
+    },
+    contact: {
+      hasTelegram: true,
+      hasWhatsApp: true,
+      phone: '+7 (906) 439-63-78',
+    },
+    dateUpdated: 1766938788270,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 4,
+    contact: {
+      phone: '+7 (988) 566-22-99',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    parkingNumber: 40,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Двойное место, широкое рядом с лифтом. Удобные въезд.',
+    },
+    dateUpdated: 1766125095617,
+  },
+  {
+    variant: 'standard',
+    level: -1,
+    building: 4,
+    contact: {
+      phone: '+7 (988) 566-22-99',
+      hasTelegram: true,
+      hasWhatsApp: true,
+    },
+    parkingNumber: 41,
+    offer: {
+      type: 'rent',
+      price: 7000,
+      description: 'Двойное место, широкое рядом с лифтом. Удобные въезд.',
+    },
+    dateUpdated: 1766125095617,
+  },
 ];
 
 export default parkingData;
