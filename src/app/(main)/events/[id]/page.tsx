@@ -187,8 +187,9 @@ export default async function EventDetailPage({ params }: PageProps) {
                 src={event.coverImage}
                 alt={event.title}
                 fill
-                className="object-cover"
+                className="object-cover object-center"
                 priority
+                unoptimized={event.coverImage.startsWith("/uploads/")}
               />
             </div>
           )}
