@@ -1,10 +1,9 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import { Newspaper, ArrowLeft } from "lucide-react";
+import { Newspaper } from "lucide-react";
 
 import { api } from "~/trpc/server";
-import { Button } from "~/components/ui/button";
 import { NewsCardGrid } from "~/components/news-card";
+import { PageHeader } from "~/components/page-header";
 import { NewsFilters } from "./news-filters";
 import type { NewsType } from "~/server/db/schema";
 
@@ -24,26 +23,12 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
 
   return (
     <div className="container py-8">
-      {/* Header */}
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild className="mb-4">
-          <Link href="/" className="gap-1">
-            <ArrowLeft className="h-4 w-4" />
-            На главную
-          </Link>
-        </Button>
-
-        <div className="flex items-center gap-2">
-          <Newspaper className="h-6 w-6 text-muted-foreground" />
-          <h1 className="text-2xl font-bold">Новости</h1>
-        </div>
-        <p className="text-muted-foreground mt-1">
-          Объявления, мероприятия и важная информация
-        </p>
-      </div>
-
-      {/* Filters */}
-      <NewsFilters currentType={params.type} />
+      <PageHeader
+        title="Новости"
+        description="Объявления, мероприятия и важная информация"
+      >
+        <NewsFilters currentType={params.type} />
+      </PageHeader>
 
       {/* News List */}
       <Suspense fallback={<NewsListSkeleton />}>

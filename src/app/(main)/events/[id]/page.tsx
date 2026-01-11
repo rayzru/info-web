@@ -36,6 +36,14 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+const siteUrl = "https://sr2.ru";
+
+function getAbsoluteImageUrl(image: string | null | undefined): string | undefined {
+  if (!image) return undefined;
+  if (image.startsWith("http")) return image;
+  return `${siteUrl}${image}`;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
 
@@ -50,6 +58,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const description = event.eventLocation
       ? `${event.eventLocation}${startAt ? ` • ${formatMetaDate(startAt)}` : ""}`
       : (startAt ? formatMetaDate(startAt) : `Мероприятие: ${event.title}`);
+    const imageUrl = getAbsoluteImageUrl(event.coverImage);
 
     return {
       title: event.title,
@@ -59,8 +68,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         type: "article",
         title: event.title,
         description,
-        images: event.coverImage ? [{
-          url: event.coverImage,
+        images: imageUrl ? [{
+          url: imageUrl,
           width: 1200,
           height: 630,
           alt: event.title,
@@ -69,10 +78,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         section: "Мероприятия",
       },
       twitter: {
-        card: event.coverImage ? "summary_large_image" : "summary",
+        card: imageUrl ? "summary_large_image" : "summary",
         title: event.title,
         description,
-        images: event.coverImage ? [event.coverImage] : undefined,
+        images: imageUrl ? [imageUrl] : undefined,
       },
       alternates: {
         canonical: `/events/${id}`,
@@ -189,7 +198,7 @@ export default async function EventDetailPage({ params }: PageProps) {
                 fill
                 className="object-cover object-center"
                 priority
-                unoptimized={event.coverImage.startsWith("/uploads/")}
+                unoptimized={event.coverImage.includes("/uploads/")}
               />
             </div>
           )}
