@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Calendar, Clock, MapPin, Users } from "lucide-react";
+import { Calendar, Clock, MapPin, Users } from "lucide-react";
 
 import { api } from "~/trpc/server";
-import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
+import { PageHeader } from "~/components/page-header";
 import { cn } from "~/lib/utils";
 
 export const metadata = {
@@ -17,23 +17,10 @@ export const metadata = {
 export default async function EventsPage() {
   return (
     <div className="container py-8">
-      {/* Header */}
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild className="mb-4">
-          <Link href="/" className="gap-1">
-            <ArrowLeft className="h-4 w-4" />
-            На главную
-          </Link>
-        </Button>
-
-        <div className="flex items-center gap-2">
-          <Calendar className="h-6 w-6 text-muted-foreground" />
-          <h1 className="text-2xl font-bold">Мероприятия</h1>
-        </div>
-        <p className="text-muted-foreground mt-1">
-          Предстоящие и прошедшие мероприятия нашего ЖК
-        </p>
-      </div>
+      <PageHeader
+        title="Мероприятия"
+        description="Предстоящие и прошедшие мероприятия нашего ЖК"
+      />
 
       {/* Events List */}
       <Suspense fallback={<EventsListSkeleton />}>
@@ -128,6 +115,7 @@ function EventsGrid({ events, isPast }: { events: EventItem[]; isPast?: boolean 
                   alt={event.title}
                   fill
                   className="object-cover transition-transform group-hover:scale-105"
+                  unoptimized={event.coverImage.includes("/uploads/")}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">

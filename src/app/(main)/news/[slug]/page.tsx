@@ -69,12 +69,21 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+const siteUrl = "https://sr2.ru";
+
+function getAbsoluteImageUrl(image: string | null | undefined): string | undefined {
+  if (!image) return undefined;
+  if (image.startsWith("http")) return image;
+  return `${siteUrl}${image}`;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
 
   try {
     const news = await api.news.bySlug({ slug });
     const publishDate = news.publishAt ?? news.createdAt;
+    const imageUrl = getAbsoluteImageUrl(news.coverImage);
 
     return {
       title: news.title,
@@ -84,8 +93,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         type: "article",
         title: news.title,
         description: news.excerpt ?? `Новость: ${news.title}`,
-        images: news.coverImage ? [{
-          url: news.coverImage,
+        images: imageUrl ? [{
+          url: imageUrl,
           width: 1200,
           height: 630,
           alt: news.title,
@@ -97,10 +106,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         tags: [NEWS_TYPE_CONFIG[news.type].label],
       },
       twitter: {
-        card: news.coverImage ? "summary_large_image" : "summary",
+        card: imageUrl ? "summary_large_image" : "summary",
         title: news.title,
         description: news.excerpt ?? `Новость: ${news.title}`,
-        images: news.coverImage ? [news.coverImage] : undefined,
+        images: imageUrl ? [imageUrl] : undefined,
       },
       alternates: {
         canonical: `/news/${slug}`,
@@ -188,7 +197,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
               fill
               className="object-cover object-center"
               priority
-              unoptimized={news.coverImage.startsWith("/uploads/")}
+              unoptimized={news.coverImage.includes("/uploads/")}
             />
           </div>
         )}

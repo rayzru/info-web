@@ -146,7 +146,7 @@ export async function UpcomingEvents({ variant = "grid" }: UpcomingEventsProps) 
                     alt={event.title}
                     fill
                     className="object-cover transition-transform group-hover:scale-105"
-                    unoptimized={event.coverImage.startsWith("/uploads/")}
+                    unoptimized={event.coverImage.includes("/uploads/")}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
