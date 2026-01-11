@@ -6,6 +6,9 @@ import { directoryEntries, news, publications } from "~/server/db/schema";
 
 const siteUrl = "https://sr2.ru";
 
+// Force dynamic rendering - sitemap needs database access
+export const dynamic = "force-dynamic";
+
 // Revalidate sitemap once per day
 export const revalidate = 86400;
 
