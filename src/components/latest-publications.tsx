@@ -185,7 +185,7 @@ export async function LatestPublications({ variant = "grid" }: LatestPublication
                     alt={pub.title}
                     fill
                     className="object-cover transition-transform group-hover:scale-105"
-                    unoptimized={pub.coverImage.startsWith("/uploads/")}
+                    unoptimized={pub.coverImage.includes("/uploads/")}
                   />
                 </div>
               ) : (

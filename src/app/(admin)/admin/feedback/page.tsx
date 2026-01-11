@@ -271,6 +271,7 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
                           alt={`Фото ${idx + 1}`}
                           fill
                           className="object-cover"
+                          unoptimized={photo.includes("/uploads/")}
                         />
                       </div>
                     ))}

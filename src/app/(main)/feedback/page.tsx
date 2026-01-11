@@ -377,6 +377,7 @@ export default function FeedbackPage() {
                       alt={`Фото ${index + 1}`}
                       fill
                       className="object-cover"
+                      unoptimized={photo.includes("/uploads/")}
                     />
                     <button
                       type="button"

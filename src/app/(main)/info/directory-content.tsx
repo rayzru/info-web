@@ -743,7 +743,6 @@ const SEARCH_HINTS = [
   "ук",
   "паркинг",
   "интернет",
-  "уборка",
 ];
 
 // Generate random pair of hints

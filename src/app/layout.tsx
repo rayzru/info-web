@@ -12,7 +12,8 @@ import "~/styles/globals.css";
 
 const siteUrl = "https://sr2.ru";
 const siteName = "Сердце Ростова 2";
-const siteDescription = "Информационный портал жилого комплекса Сердце Ростова 2. Новости, события, объявления и полезная информация для жителей.";
+const siteDescription =
+  "Информационный портал жилого комплекса Сердце Ростова 2. Новости, события, объявления и полезная информация для жителей.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -21,7 +22,14 @@ export const metadata: Metadata = {
     template: `%s | ${siteName}`,
   },
   description: siteDescription,
-  keywords: ["Сердце Ростова 2", "ЖК", "Ростов-на-Дону", "жилой комплекс", "новости", "события"],
+  keywords: [
+    "Сердце Ростова 2",
+    "ЖК",
+    "Ростов-на-Дону",
+    "жилой комплекс",
+    "новости",
+    "события",
+  ],
   authors: [{ name: siteName }],
   creator: siteName,
   publisher: siteName,
@@ -42,7 +50,7 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: [
       {
-        url: "/sr2-full-logo.svg",
+        url: `${siteUrl}/sr2-block-banner.png`,
         width: 1200,
         height: 630,
         alt: siteName,
@@ -53,7 +61,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteName,
     description: siteDescription,
-    images: ["/sr2-full-logo.svg"],
+    images: [`${siteUrl}/sr2-block-banner.png`],
   },
   alternates: {
     canonical: siteUrl,
@@ -71,7 +79,7 @@ export const metadata: Metadata = {
     "geo.region": "RU-ROS",
     "geo.placename": "Ростов-на-Дону",
     "geo.position": "47.222078;39.720358",
-    "ICBM": "47.222078, 39.720358",
+    ICBM: "47.222078, 39.720358",
   },
 };
 
