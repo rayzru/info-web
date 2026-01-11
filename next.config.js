@@ -8,6 +8,20 @@ import "./src/env.js";
 const config = {
   output: "standalone",
   serverExternalPackages: ["sharp"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "sr2.ru",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "https",
+        hostname: "beta.sr2.ru",
+        pathname: "/uploads/**",
+      },
+    ],
+  },
 };
 
 export default config;
