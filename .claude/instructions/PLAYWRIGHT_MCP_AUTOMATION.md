@@ -1,12 +1,33 @@
 # Playwright MCP Automation - AI Execution Guide
 
-**Purpose**: AI agent instructions for efficient Playwright MCP automation of the Intrigma scheduler application.
+**Purpose**: AI agent instructions for efficient Playwright MCP automation of the application.
 
 **CRITICAL**: This document is written FOR AI AGENTS. Humans should read frontend testing guides.
 
 ---
 
 ## 🎯 AI Execution Principles
+---
+
+**For human developers**: See [PLAYWRIGHT_TESTING_GUIDE.md](../guidelines/PLAYWRIGHT_TESTING_GUIDE.md) for Playwright setup, configuration, and testing philosophy.
+
+---
+
+## Related Guidelines
+
+**Token Efficiency**: Follow [TOKEN_EFFICIENCY.md](../guidelines/TOKEN_EFFICIENCY.md) principles:
+- Use parallel tool calls when possible
+- Prefer `take_snapshot` (50ms) over `take_screenshot` (1500ms)
+- Batch operations with `fill_form` instead of loops
+
+**Validation**: Follow [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md):
+- Critical UI changes (auth, PHI/PII) require Codex validation
+- Visual testing for Medium+ risk changes with Figma designs
+
+**Visual Testing**: See [VISUAL_TESTING_PROTOCOL.md](VISUAL_TESTING_PROTOCOL.md) for Figma design comparison workflow.
+
+---
+
 
 ### Performance Rules (MANDATORY)
 
@@ -31,6 +52,125 @@
 ✅ Check `take_snapshot` results for element state before screenshots
 ✅ Understand page context (which view? filters? selections?)
 ✅ Select sections FIRST before expecting calendar data
+
+---
+
+## ⚡ Simple Tasks Fast Path (< 5 MCP calls)
+
+**For agents**: If your task fits one of these patterns, use this fast path. Otherwise, read full document below.
+
+### Pattern 1: Navigate + Screenshot
+```javascript
+mcp__playwright__browser_navigate({ url: "http://localhost:3000/app/scheduler" })
+mcp__playwright__browser_take_screenshot({ filename: "specs/visual-tests/scheduler.png" })
+```
+**Use when**: User wants visual proof of page state (no interaction needed)
+
+### Pattern 2: Navigate + Element Screenshot
+```javascript
+mcp__playwright__browser_navigate({ url: "http://localhost:3000/app/scheduler" })
+mcp__playwright__browser_snapshot()
+mcp__playwright__browser_take_screenshot({
+  element: "Dialog",
+  ref: "[ref-from-snapshot]",
+  filename: "specs/visual-tests/dialog.png"
+})
+```
+**Use when**: User wants screenshot of specific visible element
+
+### Pattern 3: Click + Screenshot
+```javascript
+mcp__playwright__browser_snapshot()
+mcp__playwright__browser_click({ element: "Settings button", ref: "[ref-from-snapshot]" })
+mcp__playwright__browser_wait_for({ time: 1 })
+mcp__playwright__browser_take_screenshot({ filename: "specs/visual-tests/after_click.png" })
+```
+**Use when**: User wants to see result of single interaction
+
+**If your task is NOT one of these simple patterns** (e.g., requires authentication, complex interactions, form filling), continue reading full document below.
+
+---
+
+## 🎯 Chrome DevTools vs Playwright Decision Tree
+
+**Choose the right tool for your task:**
+
+### Use Chrome DevTools MCP (`claude --chrome`)
+
+**When**:
+- ✅ **Development debugging** - Real-time console errors, network inspection
+- ✅ **UI verification during development** - Live browser with authenticated session
+- ✅ **Testing with authenticated sessions** - Uses existing Chrome login state (session sharing)
+- ✅ **Console error investigation** - Native console API access
+- ✅ **Visual testing with live feedback** - GIF recording, interactive debugging
+- ✅ **Interactive workflows** - Can pause for manual input (CAPTCHAs, confirmations)
+
+**Advantages**:
+- Session sharing (skip re-authentication 70% of the time)
+- Console logs and network requests inspection
+- GIF recording for documentation
+- Live debugging with visible browser state
+
+**Limitations**:
+- Chrome only (no Firefox, Safari)
+- Requires visible browser window (no headless mode)
+- Beta feature (less stable than Playwright)
+- WSL not supported
+
+**Token Efficiency**:
+- Existing session: 450 tokens vs 1,500 (70% savings)
+- Console inspection: Direct API vs manual screenshot analysis
+
+### Use Playwright MCP
+
+**When**:
+- ✅ **Formal E2E test suites** - Headless automation for CI/CD
+- ✅ **Cross-browser testing** - Chrome, Firefox, Safari support
+- ✅ **Visual regression testing** - Screenshot comparison workflows
+- ✅ **Automated test runs** - No user interaction needed
+- ✅ **Stable production testing** - Mature, reliable, production-ready
+
+**Advantages**:
+- Headless automation (CI/CD friendly)
+- Cross-browser support
+- Mature and stable
+- Screenshot-based visual regression
+
+**Limitations**:
+- No session sharing (must re-authenticate each time)
+- No console inspection capabilities
+- No GIF recording
+- Cannot pause for manual input
+
+**Token Efficiency**:
+- Consistent performance (no session variability)
+- Optimized for batch operations
+
+### Decision Matrix
+
+| Use Case | Recommended Tool | Rationale |
+|----------|-----------------|-----------|
+| **Implementing new feature** → verify it works | Chrome DevTools | Session sharing, console errors, live debugging |
+| **Visual testing against Figma** | Chrome DevTools | Live browser, authenticated session, GIF recording |
+| **Debugging "app not working" issue** | Chrome DevTools | Console inspection, network analysis, real-time errors |
+| **Pre-commit verification** | Chrome DevTools | Fast (session sharing), console check, visual verification |
+| **Writing E2E test suite** | Playwright | Headless, cross-browser, CI/CD integration |
+| **Visual regression tests (automated)** | Playwright | Screenshot comparison, stable baselines |
+| **Cross-browser compatibility testing** | Playwright | Multi-browser support |
+
+### Skills Integration
+
+**Chrome DevTools Skills** (use with `claude --chrome`):
+- `/debug-console` - Capture and analyze console errors (60% token savings)
+- `/auth-verify` - Authenticate with session sharing (70% token savings when session exists)
+- `/visual-test-figma` - Live visual comparison with Figma designs
+
+**Playwright Workflows** (no Chrome required):
+- E2E test creation (headless, CI/CD)
+- Cross-browser testing
+- Screenshot-based visual regression
+
+**Rule of Thumb**: Chrome DevTools for development/debugging, Playwright for testing/CI.
 
 ---
 
@@ -470,6 +610,32 @@ TOTAL: ~1,700ms (1.7 seconds)
 
 **7x FASTER** with context awareness and batch operations!
 
+### Token Efficiency Metrics
+
+**Goal**: Minimize tokens consumed while maintaining quality (see [TOKEN_EFFICIENCY.md](../guidelines/TOKEN_EFFICIENCY.md))
+
+| Pattern | MCP Calls | Time | Tokens Read | Efficiency Rating |
+|---------|-----------|------|-------------|-------------------|
+| Simple screenshot | 2 | 1.5s | 500 | ✅ Optimal |
+| Login workflow | 4-6 | 2-5s | 1,500 | ✅ Optimal |
+| Calendar setup | 7-10 | 5s | 3,000 | ✅ Good |
+| Complex workflow | 8-15 | 5-12s | 5,000 | ✅ Good |
+| Screenshot-based (OLD) | 20+ | 30s+ | 10,000+ | ❌ Avoid |
+
+**Token Efficiency Rules** (from [TOKEN_EFFICIENCY.md](../guidelines/TOKEN_EFFICIENCY.md)):
+
+1. **Parallel tool calls** → Reduce API round-trips (save 30-50% tokens)
+2. **Bounded exploration** → Use `head_limit` on snapshots (save 80-95% tokens)
+3. **DOM validation** → `snapshot` (50 tokens) > `screenshot` (2,000 tokens)
+4. **Batch operations** → `fill_form` > loop of individual fills (save 40-60% tokens)
+5. **Skip full read** → Use Simple Tasks fast path if task is simple (save 90% tokens)
+
+**Performance Targets**:
+- Simple tasks (<5 MCP calls): <1,000 tokens
+- Complex workflows (5-15 calls): <5,000 tokens
+- Token waste: <5% (failed/duplicate operations)
+- Success rate: >95% (context-aware execution)
+
 ---
 
 ## 🎯 Selector Priority Reference
@@ -679,204 +845,69 @@ NOT for:
 
 ## 📝 Complete Workflow Examples
 
-### Example 1: "Show me all shifts for today"
+**Format**: Concise workflow tables (see Simple Tasks section for basic patterns)
+
+| Workflow | Prerequisites | Key Steps | Operations | Success Criteria |
+|----------|--------------|-----------|------------|------------------|
+| **Show all shifts for today** | snapshot → check auth + sections | 1. snapshot → verify today visible<br>2. click +X more (if exists)<br>3. snapshot → count shifts | 8-12 calls<br>5-8 sec | [data-kind="shift"] count > 0 in today's cell or day view |
+| **Verify login works (E2E test)** | none | 1. navigate → /auth/sign-in<br>2. snapshot → get refs<br>3. fill_form → email/password<br>4. click → Sign in<br>5. wait 2s<br>6. snapshot → verify URL, avatar | 6 calls<br>5 sec | URL = /app/*, [data-slot="avatar"] present, "Schedule" heading exists |
+| **Find Support shifts on Oct 31** | snapshot → check auth + sections | 1. snapshot → find [data-date="2025-10-31"]<br>2. click → Oct 31 cell or +X more<br>3. type → "Support" in search<br>4. snapshot → count filtered shifts | 10-15 calls<br>8-12 sec | [data-kind="shift"] containing "Support" text, count > 0 |
+
+### Context-Aware Workflow Pattern
+
+**All complex workflows follow this pattern**:
 
 ```javascript
-// Context awareness: Start with snapshot
+// 1. Check prerequisites (snapshot → parse state)
 mcp__playwright__browser_snapshot()
-// Analyze snapshot results:
-// - Look for [data-slot="avatar"] element → if present, authenticated = true
-// - Check URL contains "/app/" → if yes, authenticated = true
+// Parse: authenticated? ([data-slot="avatar"] exists)
+// Parse: sections selected? (combobox shows "+N more")
+// Parse: correct page/view? (URL, headings, dialogs)
 
-// Decision: Am I authenticated?
-// Check: Does snapshot contain user avatar element [data-slot="avatar"]?
-const user_avatar_present = /* check snapshot for [data-slot="avatar"] */;
-if (!user_avatar_present) {
-  // Run authentication workflow first
-  mcp__playwright__browser_navigate({ url: "http://localhost:3000/app/auth/sign-in" })
-  // ... complete auth steps from Authentication workflow ...
-}
+// 2. Execute missing prerequisites (if needed)
+if (!authenticated) { /* run auth workflow */ }
+if (!sections_selected) { /* run calendar setup */ }
 
-// Decision: Are sections selected?
+// 3. Execute main task (batched operations)
+mcp__playwright__browser_click({ element: "...", ref: "..." })
+mcp__playwright__browser_type({ element: "...", ref: "...", text: "..." })
+// Wait after state changes: mcp__playwright__browser_wait_for({ time: 1 })
+
+// 4. Validate with DOM (snapshot → query elements)
 mcp__playwright__browser_snapshot()
-// Check: Does sections combobox (2nd combobox) show "+N more" or single name?
-// - Text like "123, +25 more" → sections selected = true
-// - Text like "123" only → sections selected = false
-const sections_combobox_text = /* extract text from 2nd [role="combobox"] */;
-if (sections_combobox_text.includes("+") && sections_combobox_text.includes("more")) {
-  // Sections are selected, continue
-} else {
-  // Run calendar setup workflow
-  // ... complete section selection from Calendar Setup workflow ...
-}
-
-// Decision: Is today's date visible?
-mcp__playwright__browser_snapshot()
-// Check: Are there calendar cells with today's date attribute [data-date="2025-11-03"]?
-const today_cell_present = /* check snapshot for [data-date="2025-11-03"] */;
-if (!today_cell_present) {
-  // Click "Today" button
-  mcp__playwright__browser_click({ element: "Today button", ref: "[today-btn-ref]" })
-  mcp__playwright__browser_wait_for({ time: 1 })
-}
-
-// Decision: How many shifts today?
-mcp__playwright__browser_snapshot()
-// Check: Does today's cell contain text matching /\+\d+ more/?
-const more_indicator_present = /* check for "+X more" text in today's cell */;
-if (more_indicator_present) {
-  // Click "+X more" to open day view
-  mcp__playwright__browser_click({ element: "+X more", ref: "[more-ref]" })
-  mcp__playwright__browser_snapshot()
-  // All shifts now visible in day view
-} else {
-  // Shifts already visible on main calendar
-  // Count [data-kind="shift"] elements in today's cell
-}
-
-// Validate: DOM query for shift count
-const shift_count = /* count [data-kind="shift"] elements */;
-// Result: Report shift_count and details to user
+// Query: [data-kind="shift"] count, text content, attributes
+// Success: Expected elements exist with correct state
 ```
 
-**Operations**: ~8-12 MCP calls (context-dependent)
-**Time**: ~5-8 seconds
-**Old approach**: 20+ calls, 30+ seconds
+### Detailed Example Walkthrough
 
----
+**Workflow**: "Show me all shifts for today"
 
-### Example 2: "Create a test to verify login works"
+**Step-by-step execution**:
 
-```javascript
-// E2E Test: Login functionality
+1. **Initial context check**:
+   - `snapshot` → Check for `[data-slot="avatar"]` (authenticated?)
+   - `snapshot` → Check 2nd `[role="combobox"]` text (sections selected?)
+   - If missing → Run prerequisite workflows first
 
-// Step 1: Navigate to login page
-mcp__playwright__browser_navigate({
-  url: "http://localhost:3000/app/auth/sign-in"
-})
+2. **Navigate to today**:
+   - `snapshot` → Find `[data-date="YYYY-MM-DD"]` for today
+   - If not visible → Click "Today" button
+   - `wait_for({ time: 1 })` → Wait for calendar refetch (500ms)
 
-// Step 2: Take snapshot for context and refs
-mcp__playwright__browser_snapshot()
-// Expected: Login form with email, password fields and submit button
+3. **Access day shifts**:
+   - `snapshot` → Check today's cell for `+X more` text
+   - If `+X more` exists → Click it to open day view
+   - If not → Shifts already visible, count them
 
-// Step 3: Fill credentials (batch operation)
-mcp__playwright__browser_fill_form({
-  fields: [
-    {
-      name: "Work Email Address",
-      type: "textbox",
-      ref: "[email-ref-from-snapshot]",
-      value: "Renee.Waters61@gmail.com"
-    },
-    {
-      name: "Password",
-      type: "textbox",
-      ref: "[password-ref-from-snapshot]",
-      value: "password"
-    }
-  ]
-})
+4. **Validate result**:
+   - `snapshot` → Count `[data-kind="shift"]` elements
+   - Report count and shift details to user
 
-// Step 4: Submit form
-mcp__playwright__browser_click({
-  element: "Sign in button",
-  ref: "[submit-ref-from-snapshot]"
-})
-
-// Step 5: Wait for navigation
-mcp__playwright__browser_wait_for({ time: 2 })
-
-// Step 6: Validate success with DOM query
-mcp__playwright__browser_snapshot()
-// Assert 1: URL changed to /app/scheduler or /app/
-// Assert 2: "Schedule" heading present
-// Assert 3: User avatar visible (authenticated state)
-// Assert 4: No error messages present
-
-// Result: Login test passes in ~6 operations, ~5 seconds
-```
-
----
-
-### Example 3: "Find Support shifts on October 31"
-
-```javascript
-// Prerequisite checks (context awareness)
-mcp__playwright__browser_snapshot()
-
-// Check 1: Authenticated?
-// Look for [data-slot="avatar"] element in snapshot
-const user_avatar_present = /* check snapshot for [data-slot="avatar"] */;
-if (!user_avatar_present) {
-  // Run auth workflow first
-  // ... complete Authentication workflow ...
-}
-
-// Check 2: Sections selected?
-// Check sections combobox (2nd [role="combobox"]) text
-const sections_combobox_text = /* extract text from 2nd [role="combobox"] */;
-const sections_selected = sections_combobox_text.includes("+") && sections_combobox_text.includes("more");
-if (!sections_selected) {
-  // Run calendar setup workflow
-  // ... complete Calendar Setup workflow ...
-}
-
-// Step 1: Navigate to October 31 if not visible
-mcp__playwright__browser_snapshot()
-// Check: Does snapshot contain calendar cell with [data-date="2025-10-31"]?
-const october_31_cell = /* find [data-date="2025-10-31"] in snapshot */;
-if (!october_31_cell) {
-  // Use Previous/Next buttons or period combobox
-  // Example: Click Previous button repeatedly until October 31 appears
-  // (Logic depends on current date vs target date)
-  // Then take fresh snapshot to confirm
-}
-
-// Step 2: Check if day has shifts
-mcp__playwright__browser_snapshot()
-// Look for October 31 calendar cell content
-// Check: Does cell contain text matching /\+\d+ more/?
-const oct_31_cell_content = /* extract content from [data-date="2025-10-31"] cell */;
-const has_more_indicator = oct_31_cell_content.match(/\+\d+ more/);
-
-if (has_more_indicator) {
-  // Many shifts - open day view
-  mcp__playwright__browser_click({
-    element: "+X more for Oct 31",
-    ref: "[more-ref-from-oct-31-cell]"
-  })
-  mcp__playwright__browser_snapshot()
-} else {
-  // Few shifts or need day view for search
-  // Click day cell to open day view
-  mcp__playwright__browser_click({
-    element: "Oct 31 day cell",
-    ref: "[day-cell-ref]"
-  })
-  mcp__playwright__browser_snapshot()
-}
-
-// Step 3: Search for "Support" shifts
-// Look for search input in day view: input[placeholder="Search"]
-mcp__playwright__browser_type({
-  element: "Search input in day view",
-  ref: "[search-input-ref]",
-  text: "Support"
-})
-
-// Step 4: Results filter in real-time
-mcp__playwright__browser_snapshot()
-// Query: Count [data-kind="shift"] elements in day view
-// Filter: Only those containing "Support" in text content
-const support_shifts = /* filter [data-kind="shift"] elements with "Support" text */;
-const support_shift_count = support_shifts.length;
-
-// Result: Report support_shift_count and details (time, type, assignment) to user
-```
-
-**Operations**: ~10-15 (context-dependent)
-**Time**: ~8-12 seconds
-**Old approach**: 30+ calls, 45+ seconds
+**Token efficiency**:
+- Old approach: 200 lines of pseudocode (~4,000 tokens)
+- New approach: 4-step table (~400 tokens)
+- **Savings**: 90% token reduction
 
 ---
 

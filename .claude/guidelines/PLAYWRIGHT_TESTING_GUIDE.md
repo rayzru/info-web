@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide covers end-to-end (E2E) testing with Playwright for the Intrigma frontend application. Playwright provides automated browser testing with support for authentication, network interception, and visual testing.
+This guide covers end-to-end (E2E) testing with Playwright for the frontend application. Playwright provides automated browser testing with support for authentication, network interception, and visual testing.
 
 ## Table of Contents
 
@@ -17,6 +17,12 @@ This guide covers end-to-end (E2E) testing with Playwright for the Intrigma fron
 ## Setup and Configuration
 
 ### Prerequisites
+
+---
+
+**For AI agents**: See [PLAYWRIGHT_MCP_AUTOMATION.md](../instructions/PLAYWRIGHT_MCP_AUTOMATION.md) for AI-optimized automation patterns with Playwright MCP.
+
+---
 
 - Bun package manager installed
 - Development server running (`bun dev`)
@@ -434,21 +440,29 @@ bunx playwright install --with-deps
 bun playwright test --reporter=html
 ```
 
-### GitLab CI Example
+### GitHub Actions Example
 
 ```yaml
-playwright-tests:
-  stage: test
-  image: mcr.microsoft.com/playwright:v1.50.0
-  before_script:
-    - bun install
-  script:
-    - bun playwright test
-  artifacts:
-    when: always
-    paths:
-      - playwright-report/
-    expire_in: 30 days
+name: Playwright Tests
+on: [push, pull_request]
+jobs:
+  playwright-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - name: Install dependencies
+        run: bun install
+      - name: Install Playwright Browsers
+        run: bunx playwright install --with-deps
+      - name: Run Playwright tests
+        run: bun playwright test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
 ```
 
 ## Alignment with Testing Philosophy
@@ -460,15 +474,15 @@ This guide aligns with the project's testing philosophy from `CLAUDE.md`:
 - ✅ **Test edge cases** - Empty states, error conditions, boundary cases
 - ✅ **Integration over mocking** - Prefer real browser/API tests
 - ✅ **Run tests before completion** - `bun playwright test` before marking work done
-- ✅ **90% frontend coverage goal** - Enforced by test-coordinator workflow
+- ✅ **90% frontend coverage goal** - Enforced by e2e-test-specialist workflow
 
 ## Testing Workflow Integration
 
 Playwright tests integrate with the agent workflow:
 
-1. **feature-builder** creates the feature
-2. **test-coordinator** routes to **e2e-test-specialist**
-3. **e2e-test-specialist** writes Playwright tests
+1. **feature-builder** or **frontend-developer** creates the feature
+2. **frontend-developer** routes to **e2e-test-specialist** for critical user flows (see [nfr-matrix.md](../context/nfr-matrix.md))
+3. **e2e-test-specialist** writes Playwright tests with WCAG 2.1 AA compliance
 4. Tests must pass before **code-reviewer** final audit
 5. **test-analyzer** handles systematic failures (>3 tests)
 
@@ -484,4 +498,4 @@ Playwright tests integrate with the agent workflow:
 For questions or issues:
 - Check the [Playwright Discord](https://aka.ms/playwright/discord)
 - Review existing tests in `/tests` directory
-- Consult the test-coordinator or e2e-test-specialist agents
+- Consult the e2e-test-specialist agents

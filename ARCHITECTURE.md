@@ -16,42 +16,48 @@ This project uses the [T3 Stack](https://create.t3.gg/) - a modern, full-stack T
 ## Technology Stack
 
 ### Framework Layer
-| Package | Version | Purpose |
-|---------|---------|---------|
-| Next.js | 16 | React framework with App Router |
-| React | 19 | UI library with Server Components |
-| TypeScript | 5 | Type-safe JavaScript (strict mode) |
+
+| Package    | Version | Purpose                            |
+| ---------- | ------- | ---------------------------------- |
+| Next.js    | 16      | React framework with App Router    |
+| React      | 19      | UI library with Server Components  |
+| TypeScript | 5       | Type-safe JavaScript (strict mode) |
 
 ### API Layer
-| Package | Version | Purpose |
-|---------|---------|---------|
-| tRPC | 11 | End-to-end type-safe APIs |
-| React Query | 5 | Data fetching and caching |
-| Zod | 4 | Runtime validation and type inference |
+
+| Package     | Version | Purpose                               |
+| ----------- | ------- | ------------------------------------- |
+| tRPC        | 11      | End-to-end type-safe APIs             |
+| React Query | 5       | Data fetching and caching             |
+| Zod         | 4       | Runtime validation and type inference |
 
 ### Data Layer
-| Package | Version | Purpose |
-|---------|---------|---------|
-| Drizzle ORM | 0.45 | Type-safe SQL query builder |
-| PostgreSQL | - | Relational database |
-| postgres.js | - | PostgreSQL client |
+
+| Package     | Version | Purpose                     |
+| ----------- | ------- | --------------------------- |
+| Drizzle ORM | 0.45    | Type-safe SQL query builder |
+| PostgreSQL  | -       | Relational database         |
+| postgres.js | -       | PostgreSQL client           |
 
 ### Authentication
-| Package | Version | Purpose |
-|---------|---------|---------|
+
+| Package  | Version  | Purpose                  |
+| -------- | -------- | ------------------------ |
 | NextAuth | 5 (beta) | Authentication framework |
-| bcryptjs | - | Password hashing |
+| bcryptjs | -        | Password hashing         |
 
 ### Styling & UI
-| Package | Version | Purpose |
-|---------|---------|---------|
-| TailwindCSS | 4 | Utility-first CSS |
-| Radix UI | - | Accessible component primitives |
+
+| Package     | Version | Purpose                         |
+| ----------- | ------- | ------------------------------- |
+| TailwindCSS | 4       | Utility-first CSS               |
+| Radix UI    | -       | Accessible component primitives |
 
 ### State Management
-| Package | Version | Purpose |
-|---------|---------|---------|
-| Zustand | 5 | Lightweight global state |
+
+| Package | Version | Purpose                  |
+| ------- | ------- | ------------------------ |
+| Zustand | 5       | Lightweight global state |
 
 ## Project Structure
 
@@ -85,7 +91,7 @@ src/
 │   ├── admin/             # Admin-specific components
 │   ├── auth/              # Authentication components
 │   ├── community/         # Community features
-│   ├── social-icons/      # Social provider icons
+│   ├── icons/      # Icons
 │   └── ui/                # Radix UI + Shadcn components (30+)
 │
 ├── hooks/                 # Custom React hooks
@@ -133,24 +139,24 @@ src/
 
 ### Available Routers (8)
 
-| Router | Description | Procedures |
-|--------|-------------|------------|
-| `auth` | Authentication | register, login, password reset, email verification, OAuth linking |
-| `profile` | User profile | get/update profile, messengers, privacy settings |
-| `listings` | Real estate listings | CRUD, photos, status management, moderation |
-| `claims` | Property claims | submit, status tracking, document upload |
-| `directory` | Building directory | entries, contacts, tags, scope filtering |
-| `notifications` | User notifications | get, mark read, real-time |
-| `admin` | Admin operations | user/building management, feature control |
-| `post` | Posts/content | create, read |
+| Router          | Description          | Procedures                                                         |
+| --------------- | -------------------- | ------------------------------------------------------------------ |
+| `auth`          | Authentication       | register, login, password reset, email verification, OAuth linking |
+| `profile`       | User profile         | get/update profile, messengers, privacy settings                   |
+| `listings`      | Real estate listings | CRUD, photos, status management, moderation                        |
+| `claims`        | Property claims      | submit, status tracking, document upload                           |
+| `directory`     | Building directory   | entries, contacts, tags, scope filtering                           |
+| `notifications` | User notifications   | get, mark read, real-time                                          |
+| `admin`         | Admin operations     | user/building management, feature control                          |
+| `post`          | Posts/content        | create, read                                                       |
 
 ### Procedure Types
 
 ```typescript
-publicProcedure      // No auth required
-protectedProcedure   // User auth required
-adminProcedure       // Admin role required
-adminProcedureWithFeature(feature)  // Feature-based access
+publicProcedure; // No auth required
+protectedProcedure; // User auth required
+adminProcedure; // Admin role required
+adminProcedureWithFeature(feature); // Feature-based access
 ```
 
 ## Database Schema
@@ -158,6 +164,7 @@ adminProcedureWithFeature(feature)  // Feature-based access
 ### Core Tables (13+)
 
 #### Authentication & Users
+
 ```
 users
 ├── accounts (OAuth accounts)
@@ -170,6 +177,7 @@ users
 ```
 
 #### Buildings & Properties
+
 ```
 buildings
 ├── buildingChannels (Telegram, Email, WhatsApp)
@@ -183,12 +191,14 @@ parkings
 ```
 
 #### User-Property Relationships
+
 ```
 userApartments (user_id, apartment_id, status, role)
 userParkingSpots (user_id, parking_spot_id, status, role)
 ```
 
 #### Listings
+
 ```
 listings
 ├── listingPhotos (up to 20)
@@ -197,6 +207,7 @@ listings
 ```
 
 #### Claims
+
 ```
 propertyClaims
 ├── Types: apartment, parking, commercial
@@ -205,6 +216,7 @@ propertyClaims
 ```
 
 #### Organizations & Directory
+
 ```
 organizations
 └── organizationTags
@@ -217,6 +229,7 @@ directoryEntries
 ```
 
 #### Other
+
 ```
 notifications
 deletionRequests
@@ -227,12 +240,14 @@ posts
 ## Authentication System
 
 ### OAuth Providers (8)
+
 - **Primary**: Yandex
 - **Standard**: VK, Google, Mail.ru
 - **Custom**: Одноклассники, Sber, Tinkoff
 - **Bot**: Telegram
 
 ### Credentials
+
 - Email/password with bcrypt hashing
 - Email verification required
 - Password reset flow
@@ -240,6 +255,7 @@ posts
 ### RBAC (Role-Based Access Control)
 
 #### User Roles (12)
+
 ```
 Root, SuperAdmin, Admin
 Editor, Moderator
@@ -251,6 +267,7 @@ Guest
 ```
 
 #### Admin Features (16)
+
 ```
 admin:access
 users:view, users:manage, users:roles, users:delete
@@ -264,23 +281,26 @@ system:settings, system:logs
 ```
 
 ### Test Accounts (Development)
-| Account | Email | Roles |
-|---------|-------|-------|
-| admin | admin@test.local | Root, SuperAdmin, Admin |
-| moderator | moderator@test.local | Moderator |
-| owner | owner@test.local | ApartmentOwner, ParkingOwner |
-| resident | resident@test.local | ApartmentResident |
-| editor | editor@test.local | Editor |
-| guest | guest@test.local | Guest |
+
+| Account   | Email                | Roles                        |
+| --------- | -------------------- | ---------------------------- |
+| admin     | admin@test.local     | Root, SuperAdmin, Admin      |
+| moderator | moderator@test.local | Moderator                    |
+| owner     | owner@test.local     | ApartmentOwner, ParkingOwner |
+| resident  | resident@test.local  | ApartmentResident            |
+| editor    | editor@test.local    | Editor                       |
+| guest     | guest@test.local     | Guest                        |
 
 ## Email System
 
 ### Configuration
+
 - Provider: Nodemailer
 - Templates: MJML (compiled to HTML)
 - Location: `/public/templates/email/`
 
 ### Environment Variables
+
 ```
 SMTP_HOST, SMTP_PORT (465), SMTP_SECURE (true)
 SMTP_USER, SMTP_PASSWORD
@@ -291,6 +311,7 @@ SMTP_FROM_EMAIL, SMTP_REPLY_TO
 ## Notifications Service
 
 ### Event Types
+
 - User registration / email verification
 - Password reset (requested/completed)
 - Account linking/unlinking (OAuth)
@@ -298,6 +319,7 @@ SMTP_FROM_EMAIL, SMTP_REPLY_TO
 - Security alerts (login, suspicious activity)
 
 ### Usage
+
 ```typescript
 import { notifyAsync } from "~/server/notifications";
 
@@ -312,6 +334,7 @@ notifyAsync({
 ## Data Flow
 
 ### Server Component
+
 ```mermaid
 graph LR
     A[Server Component] --> B[api.router.procedure]
@@ -323,6 +346,7 @@ graph LR
 ```
 
 ### Client Component
+
 ```mermaid
 graph LR
     A[Client Component] --> B[api.router.procedure.useQuery]
@@ -369,6 +393,7 @@ bun run cron:listing-expiration  # Process listing expiration
 ```
 
 ### Quick Start
+
 ```bash
 docker-compose up -d     # Start PostgreSQL
 bun run db:push          # Push schema
@@ -376,6 +401,7 @@ bun dev                  # Start dev server
 ```
 
 ### Access Points
+
 - **Frontend**: http://localhost:3000
 - **Database Studio**: `bun run db:studio`
 
@@ -398,15 +424,18 @@ React Components
 ## State Management
 
 ### Server State (React Query via tRPC)
+
 - **Queries**: Data fetching with caching
 - **Mutations**: Data updates with optimistic updates
 - **Invalidation**: Automatic cache invalidation
 
 ### Client State
+
 - **Zustand**: Theme management, global state
 - **useState/useReducer**: Local component state
 
 ### URL State (Next.js Router)
+
 - **Search params**: Filters, pagination
 - **Route params**: Resource IDs
 
@@ -425,6 +454,7 @@ React Components
 ## UI Components
 
 ### Radix UI + Shadcn (30+)
+
 - accordion, avatar, button, button-group
 - card, command, dialog, dropdown-menu
 - form, input, label, menubar
@@ -436,6 +466,7 @@ React Components
 ## Environment Variables
 
 ### Required
+
 ```bash
 # Database
 DATABASE_URL
@@ -454,6 +485,7 @@ SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD
 ```
 
 ### Optional OAuth
+
 ```bash
 VK_CLIENT_ID, VK_CLIENT_SECRET
 GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET

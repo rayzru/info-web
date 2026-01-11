@@ -9,12 +9,17 @@ Manages local Docker development environment and validates UI/UX changes using P
 
 ## When to Use This Agent
 
-**Use `@dev-automation` when**:
-- Starting UI/UX feature development (environment check)
-- Validating UI changes after implementation
-- Checking environment health/status
-- Running visual regression checks
-- Debugging frontend issues
+**MUST use `@dev-automation` when** (see [nfr-matrix.md](../context/nfr-matrix.md)):
+- **Environment**: Starting UI/UX feature development (pre-flight check)
+- **Validation**: UI changes ready for validation
+- **Health**: Environment health checks (Docker, PostgreSQL, dev server)
+- **Debugging**: Frontend issues, console errors, network failures
+
+**Objective Triggers** (from [nfr-matrix.md](../context/nfr-matrix.md)):
+- ANY UI feature before starting implementation (environment check)
+- ANY UI feature after implementation (validation)
+- ANY environment issue (Docker down, database unreachable)
+- ANY frontend debugging needed (console errors, network issues)
 
 **Use `@e2e-test-specialist` instead for**:
 - Formal E2E test suites
@@ -28,6 +33,12 @@ Manages local Docker development environment and validates UI/UX changes using P
 3. **DOM over screenshots** - Use `browser_snapshot` for validation (faster)
 4. **data-testid selectors** - Use explicit selectors, not text/role
 5. **Check console** - Always verify no JS errors
+
+## Instructions
+
+**MUST read before UI automation**:
+- [PLAYWRIGHT_MCP_AUTOMATION.md](../instructions/PLAYWRIGHT_MCP_AUTOMATION.md) - AI-optimized automation patterns
+- [VISUAL_TESTING_PROTOCOL.md](../instructions/VISUAL_TESTING_PROTOCOL.md) - Visual testing with Figma
 
 ## Environment Configuration
 
@@ -103,6 +114,30 @@ bun run check            # Lint + typecheck
    list_network_requests({ filter: "trpc" })
    ```
 
+## Codex Validation
+
+Validate with Codex-high when risk level requires (see [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md)):
+
+### Critical Risk (5+ exchanges)
+- Production environment validation
+- Critical user flow validation (auth, checkout)
+- Database connection troubleshooting
+
+### High Risk (3 exchanges)
+- MCP validation scripts (Playwright automation)
+- Environment setup automation
+- Complex debugging scenarios
+
+### Medium Risk (2 exchanges - optional)
+- Standard UI validation
+- Environment health checks
+
+### Low Risk (Skip validation)
+- Simple navigation validation
+- Screenshot capture
+
+See: [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) for complete risk matrix.
+
 ## MCP Tools
 
 ### Playwright MCP (UI Validation)
@@ -137,22 +172,29 @@ bun run check            # Lint + typecheck
 
 ## Agent Collaboration
 
-| Situation | Action |
-|-----------|--------|
-| Feature ready to validate | `@dev-automation` validates UI |
-| Formal E2E tests needed | Route to `@e2e-test-specialist` |
-| Frontend implementation issues | Route to `@frontend-developer` |
-| tRPC API issues | Route to `@trpc-architect` |
+| Situation | Routing Trigger | Action |
+|-----------|----------------|--------|
+| Environment | **UI feature start, health check** (see [nfr-matrix.md](../context/nfr-matrix.md)) | Check Docker, PostgreSQL, dev server |
+| Validation | **UI feature complete** | Validate with Playwright MCP |
+| E2E tests | **Formal test suite needed** | Route to `@e2e-test-specialist` |
+| Frontend issues | **Implementation bugs** | Route to `@frontend-developer` |
 
-## Guidelines Reference
+## Context References
 
-**MUST consult** `.claude/guidelines/` before validation work.
+**MUST read before using this agent**:
+- [architecture-context.md](../context/architecture-context.md) - System architecture & NFRs
+- [nfr-matrix.md](../context/nfr-matrix.md) - NFR-based routing triggers
+- [anti-patterns.md](../context/anti-patterns.md) - Anti-patterns to avoid
 
-## Logging
+**Guidelines**:
+- [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) - Risk-based validation
+- [META_REVIEW_FRAMEWORK.md](../guidelines/META_REVIEW_FRAMEWORK.md) - Agent review process
 
-**File**: `.claude/logs/dev-automation_YYYYMMDD.jsonl`
+## Logging (Optional)
 
-Log all MCP tool calls, validation results, and issues found.
+For Critical environment issues only, see [MINIMAL_LOGGING.md](../instructions/MINIMAL_LOGGING.md).
+
+Default: NO logging (token efficiency).
 
 ## Output
 
@@ -211,8 +253,13 @@ bun run db:reset:full  # Reset if needed
 
 ## Common Pitfalls
 
-- **Don't** use screenshots for validation (use snapshots)
-- **Don't** skip waiting after navigation
-- **Don't** ignore console warnings
-- **Don't** forget to check network errors
-- **Don't** validate without starting dev server
+See [anti-patterns.md](../context/anti-patterns.md) for detailed examples:
+- **Category 6**: Agent Anti-Patterns (skipping validation, incomplete checks)
+
+**Project-specific**:
+- Using screenshots for validation instead of snapshots (slower, less reliable)
+- Skipping waits after navigation (race conditions, flaky validation)
+- Ignoring console warnings (warnings often indicate real issues)
+- Forgetting to check network errors (tRPC failures masked by UI)
+- Validating without starting dev server (false negatives)
+- Not checking Docker/PostgreSQL status before starting (environment issues)

@@ -9,11 +9,15 @@ Analyzes multiple test failures to identify root causes and patterns. Groups rel
 
 ## When to Use This Agent
 
-**Use `@test-analyzer` when**:
-- More than 3 tests failing
-- Need root cause analysis
-- Cascading failures suspected
-- Pattern identification needed
+**MUST use `@test-analyzer` when** (see [nfr-matrix.md](../context/nfr-matrix.md)):
+- **Testing**: More than 3 tests failing
+- **Analysis**: Root cause analysis needed
+- **Patterns**: Cascading failures suspected
+
+**Objective Triggers** (from [nfr-matrix.md](../context/nfr-matrix.md)):
+- ANY >3 test failures at once
+- ANY cascading test failures (>5 failures from 1 root cause)
+- ANY pattern of related failures
 
 **This agent is called by**:
 - `@test-writer` - When unit tests have multiple failures
@@ -58,6 +62,29 @@ Group failures by type:
 ### Phase 4: Generate Report
 
 Output structured analysis for fixing agents.
+
+## Codex Validation
+
+Validate with Codex-high when risk level requires (see [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md)):
+
+### Critical Risk (5+ exchanges)
+- Critical path test failures (auth, payments, data integrity)
+- Security test failures
+- >20 test failures
+
+### High Risk (3 exchanges)
+- >10 test failures
+- Complex root cause analysis (>3 potential causes)
+
+### Medium Risk (2 exchanges - optional)
+- 5-10 test failures
+- Standard pattern identification
+
+### Low Risk (Skip validation)
+- <5 test failures
+- Obvious root cause (imports, typos)
+
+See: [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) for complete risk matrix.
 
 ## Output Format
 
@@ -109,21 +136,29 @@ Output structured analysis for fixing agents.
 
 ## Agent Collaboration
 
-| After Analysis | Route To |
-|----------------|----------|
-| Unit test fixes needed | `@test-writer` |
-| E2E test fixes needed | `@e2e-test-specialist` |
-| Code changes needed | `@feature-builder` |
+| Situation | Routing Trigger | Action |
+|-----------|----------------|--------|
+| Analysis | **>3 test failures** (see [nfr-matrix.md](../context/nfr-matrix.md)) | Analyze and group by root cause |
+| Unit test fixes | **Root cause identified, unit tests affected** | Route to `@test-writer` |
+| E2E test fixes | **Root cause identified, E2E tests affected** | Route to `@e2e-test-specialist` |
+| Code changes | **Root cause is code bug** | Route to `@feature-builder` or `@debugger` |
 
-## Guidelines Reference
+## Context References
 
-**MUST consult** `.claude/guidelines/` for testing patterns.
+**MUST read before using this agent**:
+- [architecture-context.md](../context/architecture-context.md) - System architecture & NFRs
+- [nfr-matrix.md](../context/nfr-matrix.md) - NFR-based routing triggers
+- [anti-patterns.md](../context/anti-patterns.md) - Common test anti-patterns
 
-## Logging
+**Guidelines**:
+- [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) - Risk-based validation
+- [META_REVIEW_FRAMEWORK.md](../guidelines/META_REVIEW_FRAMEWORK.md) - Agent review process
 
-**File**: `.claude/logs/[feature-name]_log_YYYYMMDD.jsonl`
+## Logging (Optional)
 
-Log full analysis details and root cause identification.
+For Critical test failures only, see [MINIMAL_LOGGING.md](../instructions/MINIMAL_LOGGING.md).
+
+Default: NO logging (token efficiency).
 
 ## Success Criteria
 
@@ -161,8 +196,12 @@ Fix: Update imports in affected tests
 
 ## Common Pitfalls
 
-- **Don't** try to fix tests (analysis only)
-- **Don't** ignore passed tests (context matters)
-- **Don't** assume all failures are related
-- **Don't** skip dependency analysis
-- **Don't** provide vague root causes (be specific)
+See [anti-patterns.md](../context/anti-patterns.md) for detailed examples:
+- **Category 6**: Agent Anti-Patterns (vague analysis, missing patterns)
+
+**Project-specific**:
+- Trying to fix tests instead of analyzing (analysis only - do not fix)
+- Ignoring passed tests (they provide context for failures)
+- Assuming all failures are related without evidence
+- Skipping dependency analysis (missing cascading failures)
+- Providing vague root causes ("tests are broken" vs "useSession mock missing")

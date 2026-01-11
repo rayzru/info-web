@@ -19,8 +19,16 @@
 # Version Management:
 #   - Automatically checks for updates to critical tools
 #   - Prompts for optional updates (npm, bun, gemini)
-#   - Auto-updates required tools if below minimum versions
-#   - Ensures Node.js >= 22.0.0, npm >= 10.0.0
+#   - Installs/updates Node.js to latest Current (not LTS) using NVM
+#   - Automatically installs NVM if not present
+#
+# Node.js Management:
+#   - Prefers latest Current version over LTS for cutting-edge features
+#   - Uses NVM (Node Version Manager) for version management
+#   - Automatically installs NVM if not present
+#   - Prompts before updating to give user control
+#   - Auto-cleanup: Offers to remove old Node.js versions after updates
+#   - Keeps only the current/active version to save disk space
 #
 # Options:
 #   --fast, --no-health-checks    Skip slow health checks for faster runs
@@ -46,7 +54,7 @@ GEMINI_API_KEY_FILE="$HOME/.gemini_mcp_api_key"
 # Track what mode we're in
 MODE="unknown"
 MCPS_INSTALLED=0
-MCPS_TOTAL=10
+MCPS_TOTAL=15
 NEEDS_UPDATE=false
 FIRST_TIME_SETUP=false
 SKIP_HEALTH_CHECKS=false
@@ -120,23 +128,13 @@ print_updating() {
 # Version Checking and Update Functions
 #############################################################################
 
-# Minimum required versions
-MIN_NODE_VERSION="22.0.0"
-MIN_NPM_VERSION="10.0.0"
-MIN_BUN_VERSION="1.0.0"
+# Codex model configuration - update this when new models are released
+CODEX_TARGET_MODEL="gpt-5.2-codex"
 
-# Parse semantic version string into comparable format
-version_to_number() {
-    echo "$1" | awk -F. '{ printf("%d%03d%03d\n", $1,$2,$3); }'
-}
-
-# Compare two semantic versions
-# Returns 0 if version1 >= version2, 1 otherwise
-version_gte() {
-    local ver1=$(version_to_number "$1")
-    local ver2=$(version_to_number "$2")
-    [ "$ver1" -ge "$ver2" ]
-}
+# NVM configuration
+# Using master branch ensures we always get the latest stable version
+# This is the official recommendation from the NVM team
+NVM_INSTALL_URL="https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh"
 
 # Get latest version from npm registry
 get_latest_npm_version() {
@@ -144,26 +142,289 @@ get_latest_npm_version() {
     npm view "$package" version 2>/dev/null || echo "0.0.0"
 }
 
-check_and_update_node() {
-    print_section "Node.js Version Check"
+# Check if NVM is installed and properly sourced
+check_nvm_installed() {
+    # Try to source NVM if not already available
+    if [ ! -f "$HOME/.nvm/nvm.sh" ] && [ -z "$NVM_DIR" ]; then
+        return 1
+    fi
 
+    # Source NVM if needed
+    if ! command -v nvm &> /dev/null; then
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+    fi
+
+    command -v nvm &> /dev/null
+}
+
+# Get latest Node.js Current version
+get_latest_node_version() {
+    # Try to get from nvm if available
+    if check_nvm_installed; then
+        nvm version-remote node 2>/dev/null | sed 's/v//' || echo "23.0.0"
+    else
+        # Fallback: try to fetch from nodejs.org
+        curl -sS https://nodejs.org/dist/index.json 2>/dev/null | \
+            grep -oE '"version":"v[0-9]+\.[0-9]+\.[0-9]+"' | \
+            head -1 | \
+            grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "23.0.0"
+    fi
+}
+
+# Install NVM
+install_nvm() {
+    print_section "Installing NVM (Node Version Manager)"
+
+    print_info "NVM allows easy Node.js version management"
+    read -p "Install NVM now? (y/n): " -n 1 -r
+    echo
+
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        print_warning "NVM installation skipped"
+        return 1
+    fi
+
+    print_installing "NVM"
+    if curl -o- "$NVM_INSTALL_URL" | bash 2>&1 | tee -a "$LOG_FILE"; then
+        # Source NVM immediately
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+        print_success "NVM installed successfully"
+        print_info "Please restart your terminal or run:"
+        print_info "  source ~/.nvm/nvm.sh"
+        return 0
+    else
+        print_error "Failed to install NVM"
+        return 1
+    fi
+}
+
+# Clean up old Node.js versions, keeping only the latest and current
+cleanup_old_node_versions() {
+    if ! check_nvm_installed; then
+        return 0  # No cleanup needed if NVM not installed
+    fi
+
+    print_section "Node.js Version Cleanup"
+
+    # Get list of installed versions (use ls-remote to get available, then filter by installed)
+    local installed_versions=$(nvm list 2>/dev/null | grep -v 'default' | grep -v 'system' | grep -v '->' | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | sed 's/v//' | sort -u || echo "")
+
+    if [ -z "$installed_versions" ]; then
+        print_info "No Node.js versions to clean up"
+        return 0
+    fi
+
+    # Count installed versions
+    local version_count=$(echo "$installed_versions" | grep -c '^' || echo "0")
+
+    if [ "$version_count" -le 1 ]; then
+        print_info "Only one Node.js version installed, no cleanup needed"
+        return 0
+    fi
+
+    print_info "Found $version_count Node.js versions installed"
+
+    # Get current version
+    local current_version=$(node -v 2>/dev/null | sed 's/v//' || echo "")
+    if [ -z "$current_version" ]; then
+        print_warning "Could not determine current Node.js version"
+        return 0
+    fi
+
+    print_info "Current version: v$current_version"
+    print_info "Installed versions:"
+    echo "$installed_versions" | while read -r ver; do
+        if [ -n "$ver" ]; then
+            if [ "$ver" = "$current_version" ]; then
+                echo "  v$ver (current)"
+            else
+                echo "  v$ver"
+            fi
+        fi
+    done
+
+    # Ask user if they want to clean up old versions
+    echo
+    read -p "Remove old Node.js versions? (keeps only current version) (y/n): " -n 1 -r
+    echo
+
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        print_info "Cleanup skipped"
+        return 0
+    fi
+
+    # Remove old versions
+    local removed_count=0
+    local failed_count=0
+
+    while IFS= read -r ver; do
+        if [ -n "$ver" ] && [ "$ver" != "$current_version" ]; then
+            print_info "Removing Node.js v$ver..."
+            if nvm uninstall "$ver" >/dev/null 2>&1; then
+                ((removed_count++))
+                print_success "Removed v$ver"
+            else
+                # Silently skip if version doesn't exist or can't be removed
+                :
+            fi
+        fi
+    done <<< "$installed_versions"
+
+    if [ "$removed_count" -gt 0 ]; then
+        print_success "Removed $removed_count old Node.js version(s)"
+    else
+        print_info "No versions were removed"
+    fi
+
+    return 0
+}
+
+check_and_update_node() {
+    print_section "Node.js Version Check & Update"
+
+    # Check if NVM is installed first
+    local has_nvm=false
+    if check_nvm_installed; then
+        has_nvm=true
+        print_info "NVM is installed"
+    else
+        print_warning "NVM is not installed (recommended for Node.js management)"
+    fi
+
+    # Check if Node.js is installed
     if ! command -v node &> /dev/null; then
         print_error "Node.js is not installed"
-        return 1
+
+        if [ "$has_nvm" = true ]; then
+            print_info "Installing latest Node.js Current version using NVM..."
+            local latest_version=$(get_latest_node_version)
+            print_updating "Node.js to v$latest_version"
+
+            if nvm install node 2>&1 | tee -a "$LOG_FILE"; then
+                nvm use node 2>&1 | tee -a "$LOG_FILE"
+                nvm alias default node 2>&1 | tee -a "$LOG_FILE"
+                print_success "Node.js v$(node -v | sed 's/v//') installed successfully"
+
+                # Note: No cleanup needed for fresh install, but function handles this gracefully
+                return 0
+            else
+                print_error "Failed to install Node.js"
+                return 1
+            fi
+        else
+            print_info "Please install NVM first, or install Node.js manually"
+            return 1
+        fi
     fi
 
+    # Node.js is installed, check version
     local current_version=$(node -v | sed 's/v//')
-    print_info "Current Node.js version: $current_version"
+    local latest_version=$(get_latest_node_version)
 
-    if ! version_gte "$current_version" "$MIN_NODE_VERSION"; then
-        print_warning "Node.js version is below minimum required ($MIN_NODE_VERSION)"
-        print_info "Please update Node.js using NVM:"
-        print_info "  nvm install --lts && nvm use --lts"
-        return 1
+    print_info "Current Node.js version: $current_version"
+    print_info "Latest Node.js Current version: $latest_version"
+
+    # Check if update is needed
+    if [ "$current_version" = "$latest_version" ]; then
+        print_success "Node.js is already at the latest Current version"
+        return 0
     fi
 
-    print_success "Node.js version is sufficient"
-    return 0
+    print_warning "Node.js has a newer version available ($latest_version)"
+
+    # Update if NVM is available
+    if [ "$has_nvm" = true ]; then
+        print_info "Updating Node.js to latest Current version using NVM..."
+        read -p "Update Node.js now? (y/n): " -n 1 -r
+        echo
+
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            print_updating "Node.js to v$latest_version"
+
+            if nvm install node 2>&1 | tee -a "$LOG_FILE"; then
+                # Use --delete-prefix to fix .npmrc conflicts
+                nvm use --delete-prefix node 2>&1 | tee -a "$LOG_FILE"
+                nvm alias default node 2>&1 | tee -a "$LOG_FILE"
+
+                # Verify the switch worked
+                local new_version=$(node -v | sed 's/v//')
+                print_success "Node.js updated to v$new_version"
+
+                # Offer to clean up old versions after successful update
+                echo
+                cleanup_old_node_versions
+
+                return 0
+            else
+                print_error "Failed to update Node.js"
+                return 1
+            fi
+        else
+            print_warning "Node.js update skipped"
+            return 0
+        fi
+    else
+        # No NVM - offer to install it
+        print_info "To update Node.js, NVM (Node Version Manager) is recommended"
+        echo
+        read -p "Would you like to install NVM now? (y/n): " -n 1 -r
+        echo
+
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            # Install NVM
+            if install_nvm; then
+                # NVM installed, now offer to install latest Node.js
+                print_info "NVM installed successfully!"
+                echo
+                read -p "Install latest Node.js Current version now? (y/n): " -n 1 -r
+                echo
+
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    if check_nvm_installed; then
+                        print_updating "Node.js to v$latest_version"
+                        if nvm install node 2>&1 | tee -a "$LOG_FILE"; then
+                            # Use --delete-prefix to fix .npmrc conflicts
+                            nvm use --delete-prefix node 2>&1 | tee -a "$LOG_FILE"
+                            nvm alias default node 2>&1 | tee -a "$LOG_FILE"
+
+                            # Verify the switch worked
+                            local new_version=$(node -v | sed 's/v//')
+                            print_success "Node.js updated to v$new_version"
+
+                            # Offer to clean up old versions after successful update
+                            echo
+                            cleanup_old_node_versions
+                            return 0
+                        else
+                            print_error "Failed to install Node.js"
+                            return 1
+                        fi
+                    else
+                        print_error "NVM not available. Please restart your terminal and run this script again"
+                        return 1
+                    fi
+                else
+                    print_warning "Node.js installation skipped"
+                    print_info "You can install later with: nvm install node && nvm use node"
+                    return 0
+                fi
+            else
+                print_warning "NVM installation skipped"
+                print_info "Alternative: Download Node.js manually from https://nodejs.org/"
+                return 0
+            fi
+        else
+            print_info "NVM installation skipped"
+            print_info "Alternative options:"
+            print_info "  1. Install NVM manually: curl -o- $NVM_INSTALL_URL | bash"
+            print_info "  2. Download from https://nodejs.org/ (get Current, not LTS)"
+            return 0
+        fi
+    fi
 }
 
 check_and_update_npm() {
@@ -180,23 +441,25 @@ check_and_update_npm() {
     print_info "Current npm version: $current_version"
     print_info "Latest npm version: $latest_version"
 
-    if ! version_gte "$current_version" "$MIN_NPM_VERSION"; then
-        print_warning "npm version is below minimum required ($MIN_NPM_VERSION)"
-        print_updating "npm"
-        if npm install -g npm@latest 2>&1 | tee -a "$LOG_FILE"; then
-            print_success "npm updated to $(npm -v)"
-        else
-            print_error "Failed to update npm"
-            return 1
-        fi
-    elif [ "$current_version" != "$latest_version" ]; then
+    if [ "$current_version" != "$latest_version" ]; then
         print_warning "npm has a newer version available ($latest_version)"
         read -p "Update npm now? (y/n): " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             print_updating "npm"
-            npm install -g npm@latest 2>&1 | tee -a "$LOG_FILE"
-            print_success "npm updated to $(npm -v)"
+            if npm install -g npm@latest 2>&1 | tee -a "$LOG_FILE"; then
+                hash -r  # Clear command cache
+                local new_version=$(npm -v)
+                if [ "$new_version" = "$latest_version" ]; then
+                    print_success "npm updated to $new_version"
+                else
+                    print_warning "npm install completed but version shows $new_version (expected $latest_version)"
+                    print_warning "This may indicate shadowed installations - check your PATH"
+                fi
+            else
+                print_error "Failed to update npm"
+                return 1
+            fi
         fi
     else
         print_success "npm is up to date"
@@ -217,28 +480,23 @@ check_and_update_bun() {
     local current_version=$(bun -v)
     print_info "Current Bun version: $current_version"
 
-    if ! version_gte "$current_version" "$MIN_BUN_VERSION"; then
-        print_warning "Bun version is below recommended ($MIN_BUN_VERSION)"
-        print_updating "Bun"
-        if bun upgrade 2>&1 | tee -a "$LOG_FILE"; then
-            print_success "Bun updated to $(bun -v)"
-        else
-            print_error "Failed to update Bun"
-            return 1
-        fi
+    print_info "Checking for Bun updates..."
+    local update_output=$(bun upgrade --dry-run 2>&1 || echo "")
+    if echo "$update_output" | grep -qi "already on.*latest"; then
+        print_success "Bun is up to date"
     else
-        print_info "Checking for Bun updates..."
-        local update_output=$(bun upgrade --dry-run 2>&1 || echo "")
-        if echo "$update_output" | grep -qi "already on.*latest"; then
-            print_success "Bun is up to date"
-        else
-            print_warning "Bun has a newer version available"
-            read -p "Update Bun now? (y/n): " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                print_updating "Bun"
-                bun upgrade 2>&1 | tee -a "$LOG_FILE"
-                print_success "Bun updated to $(bun -v)"
+        print_warning "Bun has a newer version available"
+        read -p "Update Bun now? (y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            print_updating "Bun"
+            if bun upgrade 2>&1 | tee -a "$LOG_FILE"; then
+                hash -r  # Clear command cache
+                local new_version=$(bun -v)
+                print_success "Bun updated to $new_version"
+            else
+                print_error "Failed to update Bun"
+                return 1
             fi
         fi
     fi
@@ -262,13 +520,25 @@ check_and_update_claude() {
 
     if [ "$current_version" != "$latest_version" ] && [ "$latest_version" != "0.0.0" ]; then
         print_warning "Claude Code CLI has a newer version available"
-        print_updating "Claude Code CLI"
-        if npm install -g @anthropic-ai/claude-code@latest 2>&1 | tee -a "$LOG_FILE"; then
-            local new_version=$(claude --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
-            print_success "Claude Code CLI updated to $new_version"
+        read -p "Update Claude Code CLI now? (y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            print_updating "Claude Code CLI"
+            if npm install -g @anthropic-ai/claude-code@latest 2>&1 | tee -a "$LOG_FILE"; then
+                hash -r  # Clear command cache
+                local new_version=$(claude --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+                if [ "$new_version" = "$latest_version" ]; then
+                    print_success "Claude Code CLI updated to $new_version"
+                else
+                    print_warning "Claude Code CLI install completed but version shows $new_version (expected $latest_version)"
+                    print_warning "This may indicate shadowed installations - check your PATH"
+                fi
+            else
+                print_error "Failed to update Claude Code CLI"
+                return 1
+            fi
         else
-            print_error "Failed to update Claude Code CLI"
-            return 1
+            print_info "Claude Code CLI update skipped"
         fi
     else
         print_success "Claude Code CLI is up to date"
@@ -293,12 +563,24 @@ check_and_update_codex() {
 
     if [ "$current_version" != "$latest_version" ] && [ "$latest_version" != "0.0.0" ]; then
         print_warning "Codex has a newer version available"
-        print_updating "Codex"
-        if npm install -g @openai/codex@latest 2>&1 | tee -a "$LOG_FILE"; then
-            local new_version=$(codex --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
-            print_success "Codex updated to $new_version"
+        read -p "Update Codex now? (y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            print_updating "Codex"
+            if npm install -g @openai/codex@latest 2>&1 | tee -a "$LOG_FILE"; then
+                hash -r  # Clear command cache
+                local new_version=$(codex --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+                if [ "$new_version" = "$latest_version" ]; then
+                    print_success "Codex updated to $new_version"
+                else
+                    print_warning "Codex install completed but version shows $new_version (expected $latest_version)"
+                    print_warning "This may indicate shadowed installations - check your PATH"
+                fi
+            else
+                print_warning "Failed to update Codex"
+            fi
         else
-            print_warning "Failed to update Codex"
+            print_info "Codex update skipped"
         fi
     else
         print_success "Codex is up to date"
@@ -323,12 +605,24 @@ check_and_update_gemini() {
 
     if [ "$current_version" != "$latest_version" ] && [ "$latest_version" != "0.0.0" ]; then
         print_warning "Gemini CLI has a newer version available"
-        print_updating "Gemini CLI"
-        if npm install -g @google/gemini-cli@latest 2>&1 | tee -a "$LOG_FILE"; then
-            local new_version=$(gemini --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
-            print_success "Gemini CLI updated to $new_version"
+        read -p "Update Gemini CLI now? (y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            print_updating "Gemini CLI"
+            if npm install -g @google/gemini-cli@latest 2>&1 | tee -a "$LOG_FILE"; then
+                hash -r  # Clear command cache
+                local new_version=$(gemini --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+                if [ "$new_version" = "$latest_version" ]; then
+                    print_success "Gemini CLI updated to $new_version"
+                else
+                    print_warning "Gemini CLI install completed but version shows $new_version (expected $latest_version)"
+                    print_warning "This may indicate shadowed installations - check your PATH"
+                fi
+            else
+                print_warning "Failed to update Gemini CLI"
+            fi
         else
-            print_warning "Failed to update Gemini CLI"
+            print_info "Gemini CLI update skipped"
         fi
     else
         print_success "Gemini CLI is up to date"
@@ -429,14 +723,16 @@ check_command() {
 
 check_node_version() {
     if command -v node &> /dev/null; then
-        local node_version=$(node -v | sed 's/v//' | cut -d. -f1)
-        if [ "$node_version" -ge 22 ]; then
-            print_success "Node.js version is 22+ LTS ($(node -v))"
-            return 0
+        local current_version=$(node -v | sed 's/v//')
+        local latest_version=$(get_latest_node_version)
+
+        if [ "$current_version" = "$latest_version" ]; then
+            print_success "Node.js is at the latest version (v$current_version)"
         else
-            print_error "Node.js version is less than 22 LTS ($(node -v)). Please upgrade to current LTS."
-            return 1
+            print_info "Current Node.js: v$current_version"
+            print_info "Latest available: v$latest_version (update available)"
         fi
+        return 0
     else
         return 1
     fi
@@ -465,11 +761,38 @@ install_prerequisites() {
     # Check Node.js
     if ! command -v node &> /dev/null; then
         print_warning "Node.js is not installed"
-        print_error "Please install Node.js 22+ LTS using NVM (Node Version Manager)"
-        print_info "Install NVM: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
-        print_info "Then install Node.js: nvm install --lts && nvm use --lts"
-        print_info "Alternative: Download from https://nodejs.org/"
-        prereq_failed=true
+
+        # Check if NVM is available
+        if check_nvm_installed; then
+            print_info "NVM is available, attempting to install latest Node.js Current..."
+            if nvm install node && nvm use node && nvm alias default node; then
+                print_success "Node.js installed successfully via NVM"
+                # Cleanup not needed for fresh install
+            else
+                print_error "Failed to install Node.js via NVM"
+                prereq_failed=true
+            fi
+        else
+            print_error "Node.js is not installed and NVM is not available"
+            print_info "Recommended: Install NVM (Node Version Manager) first"
+
+            # Offer to install NVM
+            if install_nvm; then
+                print_info "Now installing latest Node.js Current version..."
+                if check_nvm_installed && nvm install node && nvm use node && nvm alias default node; then
+                    print_success "Node.js installed successfully"
+                    # Cleanup not needed for fresh install
+                else
+                    print_error "Failed to install Node.js after NVM installation"
+                    print_info "Please restart your terminal and run this script again"
+                    prereq_failed=true
+                fi
+            else
+                print_info "Alternative: Download Node.js manually from https://nodejs.org/"
+                print_info "Recommended version: Latest Current (not LTS)"
+                prereq_failed=true
+            fi
+        fi
     fi
 
     if ! check_node_version; then
@@ -482,27 +805,27 @@ install_prerequisites() {
     fi
 
     # Check npx
-    if ! check_command "npx" "Installing npx..." "npm install -g npx"; then
+    if ! check_command "npx" "Installing npx..." "npm install -g npx@latest"; then
         prereq_failed=true
     fi
 
     # Check Claude Code CLI
-    if ! check_command "claude" "Installing Claude Code CLI..." "npm install -g @anthropic-ai/claude-code"; then
+    if ! check_command "claude" "Installing Claude Code CLI..." "npm install -g @anthropic-ai/claude-code@latest"; then
         print_error "Failed to install Claude Code CLI"
-        print_info "Try running: npm install -g @anthropic-ai/claude-code"
+        print_info "Try running: npm install -g @anthropic-ai/claude-code@latest"
         prereq_failed=true
     fi
 
     # Check Codex
-    if ! check_command "codex" "Installing Codex..." "npm install -g @openai/codex"; then
+    if ! check_command "codex" "Installing Codex..." "npm install -g @openai/codex@latest"; then
         print_warning "Codex installation failed - some features may not work"
-        print_info "Try running: npm install -g @openai/codex"
+        print_info "Try running: npm install -g @openai/codex@latest"
     fi
 
     # Check Gemini CLI
-    if ! check_command "gemini" "Installing Gemini CLI..." "npm install -g @google/gemini-cli"; then
+    if ! check_command "gemini" "Installing Gemini CLI..." "npm install -g @google/gemini-cli@latest"; then
         print_warning "Gemini CLI installation failed - Gemini MCP will not work"
-        print_info "Try running: npm install -g @google/gemini-cli"
+        print_info "Try running: npm install -g @google/gemini-cli@latest"
     fi
 
     # Check CodeRabbit CLI
@@ -534,6 +857,28 @@ check_mcp_installed() {
     else
         return 1
     fi
+}
+
+# Get current model configured for a Codex MCP
+get_codex_mcp_model() {
+    local mcp_name=$1
+    claude mcp list 2>/dev/null | grep "^$mcp_name:" | grep -oE 'model=[^ ]+' | head -1 | cut -d'=' -f2
+}
+
+# Check if Codex MCP needs model update
+codex_mcp_needs_update() {
+    local mcp_name=$1
+    local current_model=$(get_codex_mcp_model "$mcp_name")
+
+    if [ -z "$current_model" ]; then
+        return 1  # Not installed, doesn't need update (needs install)
+    fi
+
+    if [ "$current_model" != "$CODEX_TARGET_MODEL" ]; then
+        return 0  # Needs update
+    fi
+
+    return 1  # Already on target model
 }
 
 install_playwright_mcp() {
@@ -647,7 +992,7 @@ install_gitlab_mcp() {
         --env GITLAB_PERSONAL_ACCESS_TOKEN="$gitlab_token" \
         --env GITLAB_API_URL=https://gitlab.com/api/v4 \
         --env GITLAB_READ_ONLY_MODE=false \
-        -- npx -y @zereight/mcp-gitlab 2>&1 | tee -a "$LOG_FILE"; then
+        -- npx -y @zereight/mcp-gitlab@latest 2>&1 | tee -a "$LOG_FILE"; then
         print_success "GitLab MCP installed successfully"
         return 0
     else
@@ -657,16 +1002,35 @@ install_gitlab_mcp() {
 }
 
 install_codex_high_mcp() {
-    print_section "Codex High MCP (GPT-5)"
+    print_section "Codex High MCP ($CODEX_TARGET_MODEL)"
 
+    # Check if installed with outdated model
     if check_mcp_installed "codex-high"; then
-        print_success "Codex High MCP is already installed"
-        return 0
+        local current_model=$(get_codex_mcp_model "codex-high")
+        if [ "$current_model" = "$CODEX_TARGET_MODEL" ]; then
+            print_success "Codex High MCP is already installed with $CODEX_TARGET_MODEL"
+            return 0
+        else
+            print_warning "Codex High MCP has outdated model: $current_model (target: $CODEX_TARGET_MODEL)"
+            print_info "Removing old configuration from all scopes..."
+            # Remove from both local and project scopes to handle multi-scope configs
+            claude mcp remove codex-high -s local 2>/dev/null
+            claude mcp remove codex-high -s project 2>/dev/null
+            claude mcp remove codex-high -s user 2>/dev/null
+            print_success "Old Codex High MCP removed"
+        fi
     fi
 
-    print_installing "Codex High MCP with GPT-5"
-    if claude mcp add codex-high -- codex mcp-server -c model="gpt-5-codex" -c model_reasoning_effort="high" 2>&1 | tee -a "$LOG_FILE"; then
-        print_success "Codex High MCP (GPT-5) installed successfully"
+    print_installing "Codex High MCP with $CODEX_TARGET_MODEL"
+    if claude mcp add codex-high -- codex mcp-server \
+        --model "$CODEX_TARGET_MODEL" \
+        --sandbox workspace-write \
+        --enable web_search_request \
+        -c model_reasoning_effort=high \
+        -c model_reasoning_summaries=detailed \
+        -c sandbox_workspace_write.network_access=true \
+        -c shell_environment_policy.inherit=all 2>&1 | tee -a "$LOG_FILE"; then
+        print_success "Codex High MCP ($CODEX_TARGET_MODEL) installed successfully"
         return 0
     else
         print_error "Failed to install Codex High MCP"
@@ -675,16 +1039,35 @@ install_codex_high_mcp() {
 }
 
 install_codex_medium_mcp() {
-    print_section "Codex Medium MCP (GPT-5)"
+    print_section "Codex Medium MCP ($CODEX_TARGET_MODEL)"
 
+    # Check if installed with outdated model
     if check_mcp_installed "codex-medium"; then
-        print_success "Codex Medium MCP is already installed"
-        return 0
+        local current_model=$(get_codex_mcp_model "codex-medium")
+        if [ "$current_model" = "$CODEX_TARGET_MODEL" ]; then
+            print_success "Codex Medium MCP is already installed with $CODEX_TARGET_MODEL"
+            return 0
+        else
+            print_warning "Codex Medium MCP has outdated model: $current_model (target: $CODEX_TARGET_MODEL)"
+            print_info "Removing old configuration from all scopes..."
+            # Remove from both local and project scopes to handle multi-scope configs
+            claude mcp remove codex-medium -s local 2>/dev/null
+            claude mcp remove codex-medium -s project 2>/dev/null
+            claude mcp remove codex-medium -s user 2>/dev/null
+            print_success "Old Codex Medium MCP removed"
+        fi
     fi
 
-    print_installing "Codex Medium MCP with GPT-5"
-    if claude mcp add codex-medium -- codex mcp-server -c model="gpt-5-codex" -c model_reasoning_effort="medium" 2>&1 | tee -a "$LOG_FILE"; then
-        print_success "Codex Medium MCP (GPT-5) installed successfully"
+    print_installing "Codex Medium MCP with $CODEX_TARGET_MODEL"
+    if claude mcp add codex-medium -- codex mcp-server \
+        --model "$CODEX_TARGET_MODEL" \
+        --sandbox workspace-write \
+        --enable web_search_request \
+        -c model_reasoning_effort=medium \
+        -c model_reasoning_summaries=detailed \
+        -c sandbox_workspace_write.network_access=true \
+        -c shell_environment_policy.inherit=all 2>&1 | tee -a "$LOG_FILE"; then
+        print_success "Codex Medium MCP ($CODEX_TARGET_MODEL) installed successfully"
         return 0
     else
         print_error "Failed to install Codex Medium MCP"
@@ -736,7 +1119,7 @@ install_gemini_mcp() {
     print_installing "Gemini CLI MCP"
     if claude mcp add gemini-cli \
         --env GEMINI_API_KEY="$gemini_api_key" \
-        -- npx -y gemini-mcp-tool 2>&1 | tee -a "$LOG_FILE"; then
+        -- npx -y gemini-mcp-tool@latest 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Gemini CLI MCP installed successfully"
         return 0
     else
@@ -809,7 +1192,7 @@ install_mermaid_generator_mcp() {
     # Install globally to avoid dependency download issues
     if ! command -v mcp-mermaid &> /dev/null; then
         print_info "Installing mcp-mermaid globally..."
-        if npm install -g mcp-mermaid 2>&1 | tee -a "$LOG_FILE"; then
+        if npm install -g mcp-mermaid@latest 2>&1 | tee -a "$LOG_FILE"; then
             print_success "mcp-mermaid installed globally"
         else
             print_error "Failed to install mcp-mermaid globally"
@@ -844,6 +1227,101 @@ install_chrome_devtools_mcp() {
         return 0
     else
         print_error "Failed to install Chrome DevTools MCP"
+        return 1
+    fi
+}
+
+install_nextjs_devtools_mcp() {
+    print_section "Next.js DevTools MCP"
+
+    if check_mcp_installed "next-devtools"; then
+        print_success "Next.js DevTools MCP is already installed"
+        return 0
+    fi
+
+    print_warning "Next.js DevTools MCP requires Next.js 16+ with dev server running"
+    print_info "Features: Error detection, live state queries, page metadata, server actions"
+    print_info "Auto-discovers Next.js instances at http://localhost:PORT/_next/mcp"
+
+    print_installing "Next.js DevTools MCP"
+    if claude mcp add next-devtools npx -y next-devtools-mcp@latest 2>&1 | tee -a "$LOG_FILE"; then
+        print_success "Next.js DevTools MCP installed successfully"
+        print_info "Start your Next.js dev server to enable real-time integration"
+        return 0
+    else
+        print_error "Failed to install Next.js DevTools MCP"
+        return 1
+    fi
+}
+
+install_linear_mcp() {
+    print_section "Linear MCP"
+
+    if check_mcp_installed "linear"; then
+        print_success "Linear MCP is already installed"
+        return 0
+    fi
+
+    print_info "Linear MCP connects to Linear project management"
+    print_info "Tools: Find, create, and update issues, projects, and comments"
+    print_info "Authentication: OAuth 2.1 (will prompt on first use)"
+    print_info "Docs: https://linear.app/docs/mcp"
+
+    print_installing "Linear MCP"
+    if claude mcp add --transport http linear https://mcp.linear.app/mcp 2>&1 | tee -a "$LOG_FILE"; then
+        print_success "Linear MCP installed successfully"
+        print_info "Run '/mcp' in Claude to complete OAuth authentication"
+        return 0
+    else
+        print_error "Failed to install Linear MCP"
+        return 1
+    fi
+}
+
+install_asana_mcp() {
+    print_section "Asana MCP"
+
+    if check_mcp_installed "asana"; then
+        print_success "Asana MCP is already installed"
+        return 0
+    fi
+
+    print_info "Asana MCP connects to Asana project management"
+    print_info "Tools: Manage tasks, projects, and team collaboration"
+    print_info "Authentication: OAuth (will prompt on first use)"
+    print_info "Docs: https://developers.asana.com/docs/using-asanas-mcp-server"
+
+    print_installing "Asana MCP"
+    if claude mcp add --transport sse asana https://mcp.asana.com/sse 2>&1 | tee -a "$LOG_FILE"; then
+        print_success "Asana MCP installed successfully"
+        print_info "Run '/mcp' in Claude to complete OAuth authentication"
+        return 0
+    else
+        print_error "Failed to install Asana MCP"
+        return 1
+    fi
+}
+
+install_notion_mcp() {
+    print_section "Notion MCP"
+
+    if check_mcp_installed "notion"; then
+        print_success "Notion MCP is already installed"
+        return 0
+    fi
+
+    print_info "Notion MCP connects to Notion workspace"
+    print_info "Tools: Search, read, create, and update pages and databases"
+    print_info "Authentication: OAuth (will prompt on first use)"
+    print_info "Docs: https://developers.notion.com/docs/mcp"
+
+    print_installing "Notion MCP"
+    if claude mcp add --transport http notion https://mcp.notion.com/mcp 2>&1 | tee -a "$LOG_FILE"; then
+        print_success "Notion MCP installed successfully"
+        print_info "Run '/mcp' in Claude to complete OAuth authentication"
+        return 0
+    else
+        print_error "Failed to install Notion MCP"
         return 1
     fi
 }
@@ -900,13 +1378,21 @@ perform_health_checks() {
 
     # Test Codex
     if check_mcp_installed "codex-high"; then
-        print_info "Codex High MCP (GPT-5): Ready for advanced AI tasks"
+        local codex_high_model=$(get_codex_mcp_model "codex-high")
+        print_info "Codex High MCP ($codex_high_model): Ready for advanced AI tasks"
+        if [ "$codex_high_model" != "$CODEX_TARGET_MODEL" ]; then
+            print_warning "  Model outdated - run script again to update to $CODEX_TARGET_MODEL"
+        fi
     else
         print_warning "Codex High MCP: Not installed"
     fi
 
     if check_mcp_installed "codex-medium"; then
-        print_info "Codex Medium MCP (GPT-5): Ready for standard AI tasks"
+        local codex_medium_model=$(get_codex_mcp_model "codex-medium")
+        print_info "Codex Medium MCP ($codex_medium_model): Ready for standard AI tasks"
+        if [ "$codex_medium_model" != "$CODEX_TARGET_MODEL" ]; then
+            print_warning "  Model outdated - run script again to update to $CODEX_TARGET_MODEL"
+        fi
     else
         print_warning "Codex Medium MCP: Not installed"
     fi
@@ -952,6 +1438,43 @@ perform_health_checks() {
         print_info "  Requires Chrome browser installed"
     else
         print_warning "Chrome DevTools MCP: Not installed"
+    fi
+
+    # Test Next.js DevTools
+    if check_mcp_installed "next-devtools"; then
+        print_info "Next.js DevTools MCP: Ready for Next.js development integration"
+        print_info "  Tools: Error detection, live state queries, page metadata, server actions"
+        print_info "  Requires Next.js 16+ with dev server running"
+        print_info "  Auto-discovers endpoint at http://localhost:PORT/_next/mcp"
+    else
+        print_warning "Next.js DevTools MCP: Not installed"
+    fi
+
+    # Test Linear
+    if check_mcp_installed "linear"; then
+        print_info "Linear MCP: Ready for project management integration"
+        print_info "  Tools: Find, create, update issues, projects, comments"
+        print_info "  Authentication via OAuth (run /mcp to authenticate)"
+    else
+        print_warning "Linear MCP: Not installed"
+    fi
+
+    # Test Asana
+    if check_mcp_installed "asana"; then
+        print_info "Asana MCP: Ready for project management integration"
+        print_info "  Tools: Manage tasks, projects, and team collaboration"
+        print_info "  Authentication via OAuth (run /mcp to authenticate)"
+    else
+        print_warning "Asana MCP: Not installed"
+    fi
+
+    # Test Notion
+    if check_mcp_installed "notion"; then
+        print_info "Notion MCP: Ready for workspace integration"
+        print_info "  Tools: Search, read, create, update pages and databases"
+        print_info "  Authentication via OAuth (run /mcp to authenticate)"
+    else
+        print_warning "Notion MCP: Not installed"
     fi
 
     if [ "$all_healthy" = true ]; then
@@ -1002,7 +1525,7 @@ generate_summary() {
     echo -e "${BOLD}MCP Configuration Status:${NC}"
     echo "────────────────────────────────────────"
 
-    for mcp in "playwright" "context7" "gitlab" "figma" "codex-high" "codex-medium" "gemini-cli" "mermaid-validator" "mermaid-generator" "chrome-devtools"; do
+    for mcp in "playwright" "context7" "gitlab" "figma" "codex-high" "codex-medium" "gemini-cli" "mermaid-validator" "mermaid-generator" "chrome-devtools" "next-devtools" "linear" "asana" "notion"; do
         if check_mcp_installed "$mcp"; then
             echo -e "  ${GREEN}✓${NC} $mcp ${GREEN}(ready)${NC}"
             ((installed_count++))
@@ -1070,7 +1593,7 @@ detect_system_state() {
 
     # Count installed MCPs
     local installed_mcps=()
-    for mcp in "playwright" "context7" "gitlab" "figma" "codex-high" "codex-medium" "gemini-cli" "mermaid-validator" "mermaid-generator" "chrome-devtools"; do
+    for mcp in "playwright" "context7" "gitlab" "figma" "codex-high" "codex-medium" "gemini-cli" "mermaid-validator" "mermaid-generator" "chrome-devtools" "next-devtools" "linear" "asana" "notion"; do
         if check_mcp_installed "$mcp"; then
             installed_mcps+=("$mcp")
         fi
@@ -1150,19 +1673,11 @@ smart_install_mcps() {
         print_success "GitLab MCP already configured"
     fi
 
-    # Codex High
-    if should_install_mcp "codex-high"; then
-        install_codex_high_mcp && any_installed=true || any_failed=true
-    else
-        print_success "Codex High MCP already configured"
-    fi
+    # Codex High - always check (handles model version updates internally)
+    install_codex_high_mcp && any_installed=true || any_failed=true
 
-    # Codex Medium
-    if should_install_mcp "codex-medium"; then
-        install_codex_medium_mcp && any_installed=true || any_failed=true
-    else
-        print_success "Codex Medium MCP already configured"
-    fi
+    # Codex Medium - always check (handles model version updates internally)
+    install_codex_medium_mcp && any_installed=true || any_failed=true
 
     # Gemini CLI
     if should_install_mcp "gemini-cli"; then
@@ -1197,6 +1712,34 @@ smart_install_mcps() {
         install_chrome_devtools_mcp && any_installed=true || any_failed=true
     else
         print_success "Chrome DevTools MCP already configured"
+    fi
+
+    # Next.js DevTools
+    if should_install_mcp "next-devtools"; then
+        install_nextjs_devtools_mcp && any_installed=true || any_failed=true
+    else
+        print_success "Next.js DevTools MCP already configured"
+    fi
+
+    # Linear
+    if should_install_mcp "linear"; then
+        install_linear_mcp && any_installed=true || any_failed=true
+    else
+        print_success "Linear MCP already configured"
+    fi
+
+    # Asana
+    if should_install_mcp "asana"; then
+        install_asana_mcp && any_installed=true || any_failed=true
+    else
+        print_success "Asana MCP already configured"
+    fi
+
+    # Notion
+    if should_install_mcp "notion"; then
+        install_notion_mcp && any_installed=true || any_failed=true
+    else
+        print_success "Notion MCP already configured"
     fi
 
     if [ "$any_installed" = true ]; then
@@ -1284,12 +1827,12 @@ main() {
         "first_time")
             echo "📦 First-time setup detected"
             echo "  → Install prerequisites (Node.js, npm, Claude Code CLI)"
-            echo "  → Install all 10 MCP servers"
+            echo "  → Install all 15 MCP servers"
             echo "  → Configure and verify everything"
             ;;
         "install")
             echo "🆕 Fresh MCP installation needed"
-            echo "  → Install all 10 MCP servers"
+            echo "  → Install all 15 MCP servers"
             echo "  → Configure each server"
             echo "  → Run health checks"
             ;;

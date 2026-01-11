@@ -21,6 +21,18 @@ Visual testing may be skipped for:
 3. ❌ Pure data/state management changes with no UI impact
 4. ❌ Unit test additions without UI changes
 
+## Risk-Based Visual Testing
+
+**Follow validation risk matrix** from [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md):
+- **Critical Risk** (PHI/PII UI, auth flows): Visual testing + Codex validation MANDATORY
+- **High Risk** (Multi-component layouts): Visual testing MANDATORY
+- **Medium Risk** (Single component with Figma): Visual testing RECOMMENDED
+- **Low Risk** (Minor CSS tweaks): Visual testing OPTIONAL
+
+**Token Efficiency**: See [TOKEN_EFFICIENCY.md](../guidelines/TOKEN_EFFICIENCY.md) for efficient screenshot workflows and when to use Playwright MCP vs manual testing.
+
+**Browser Automation**: See [PLAYWRIGHT_MCP_AUTOMATION.md](PLAYWRIGHT_MCP_AUTOMATION.md) for AI-optimized automation patterns.
+
 ## Visual Testing Workflow
 
 ### Phase 1: Design Reference Acquisition
@@ -73,7 +85,7 @@ Visual testing may be skipped for:
 4. **Fix issues** and repeat Phase 2-3 until alignment is achieved
 
 ### Phase 4: Documentation
-1. **Update implementation tracking file** with visual test results:
+1. **Document visual test results** in spec file or commit message:
    ```markdown
    ## Visual Testing Results
 

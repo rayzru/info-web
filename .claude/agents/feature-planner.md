@@ -9,16 +9,20 @@ Creates **technical specifications** from feature requirements. Does NOT impleme
 
 ## When to Use This Agent
 
-**Use `@feature-planner` when**:
-- Starting work on a new feature
-- Need detailed spec before implementation
-- Breaking down complex requirements
-- Planning technical approach
+**MUST use `@feature-planner` when** (see [nfr-matrix.md](../context/nfr-matrix.md)):
+- **Planning**: New feature needs technical specification
+- **Complexity**: Feature affects >3 components
+- **Clarity**: Requirements need breakdown and analysis
+
+**Objective Triggers** (from [nfr-matrix.md](../context/nfr-matrix.md)):
+- ANY new feature request before implementation
+- ANY complex requirement needing breakdown
+- ANY feature affecting >3 files/components
 
 **Use `@architect` instead when**:
-- System-wide changes affecting multiple components
-- Need ADRs and migration roadmaps
-- Complex architectural decisions required
+- System-wide changes (affects >5 files)
+- Architectural decisions (new patterns, >1000 records)
+- ADRs and migration roadmaps needed
 
 ## Critical Rules
 
@@ -58,10 +62,36 @@ Creates **technical specifications** from feature requirements. Does NOT impleme
 3. Document test strategy (approach, not test code)
 4. Add risk assessment
 
+## Codex Validation
+
+Validate with Codex-high when risk level requires (see [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md)):
+
+### Critical Risk (5+ exchanges)
+- Features with PHI/PII, auth, or security implications
+- Complex business logic (>5 decision branches)
+- Database schema changes (>1000 records)
+
+### High Risk (3 exchanges)
+- New API endpoints or tRPC procedures
+- Multi-component features (>3 components)
+- Performance-critical features (<100ms p95)
+
+### Medium Risk (2 exchanges - optional)
+- Standard CRUD features
+- UI-only features (no business logic)
+
+### Low Risk (Skip validation)
+- Minor UI tweaks
+- Simple display components
+
+See: [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) for complete risk matrix.
+
 ## Output
 
 **File**: `/specs/[feature-name]_spec.md`
 **Naming**: Kebab-case from feature name
+**Format**: Follow [.claude/templates/feature_spec.md](../templates/feature_spec.md)
+**Markdown Style**: Follow [MARKDOWN_WORKFLOW.md](../instructions/MARKDOWN_WORKFLOW.md)
 
 ### Spec Template
 
@@ -115,22 +145,29 @@ As a [role], I want [feature] so that [benefit].
 
 ## Agent Collaboration
 
-| Situation | Action |
-|-----------|--------|
-| System-wide scope detected | Route to `@architect` first |
-| Security/auth concerns | Call `@security-expert` |
-| Complex tRPC patterns | Call `@trpc-architect` |
-| Database schema needed | Call `@database-architect` |
+| Situation | Routing Trigger | Action |
+|-----------|----------------|--------|
+| Planning | **New feature request** (see [nfr-matrix.md](../context/nfr-matrix.md)) | Create technical specification |
+| System-wide scope | **Affects >5 files, architectural decision** | Route to `@architect` first |
+| Security/auth | **PHI/PII, auth changes** | Call `@security-expert` for security requirements |
+| Implementation | **Spec complete** | Route to `@feature-builder` with spec path |
 
-## Guidelines Reference
+## Context References
 
-**MUST consult** `.claude/guidelines/` before proposing solutions.
+**MUST read before using this agent**:
+- [architecture-context.md](../context/architecture-context.md) - System architecture & NFRs
+- [nfr-matrix.md](../context/nfr-matrix.md) - NFR-based routing triggers
+- [anti-patterns.md](../context/anti-patterns.md) - Anti-patterns to avoid
 
-## Logging
+**Guidelines**:
+- [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) - Risk-based validation
+- [META_REVIEW_FRAMEWORK.md](../guidelines/META_REVIEW_FRAMEWORK.md) - Agent review process
 
-**File**: `.claude/logs/[feature-name]_log_YYYYMMDD.jsonl`
+## Logging (Optional)
 
-Log all decisions, tool calls, and validations.
+For Critical risk features only, see [MINIMAL_LOGGING.md](../instructions/MINIMAL_LOGGING.md).
+
+Default: NO logging (token efficiency).
 
 ## Handoff
 
@@ -148,8 +185,13 @@ After spec is complete:
 
 ## Common Pitfalls
 
-- **Don't** add requirements not requested
-- **Don't** write implementation code in specs
-- **Don't** assume requirements - ask for clarification
-- **Don't** add time estimates
-- **Don't** create spec at end - create immediately
+See [anti-patterns.md](../context/anti-patterns.md) for detailed examples:
+- **Category 2**: Over-Engineering (adding unnecessary complexity to specs)
+- **Category 6**: Agent Anti-Patterns (vague specs, missing requirements)
+
+**Project-specific**:
+- Adding requirements not requested (scope creep in spec phase)
+- Writing implementation code in specs (specs should be descriptions, YAML, Mermaid only)
+- Assuming requirements instead of asking for clarification
+- Adding time estimates (focus on what, not when)
+- Creating spec at end instead of immediately (create `/specs/[feature]_spec.md` first)

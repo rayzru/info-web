@@ -342,6 +342,8 @@ test("user can navigate", async ({ page }) => {
 });
 ```
 
+**For complete E2E testing guide**, see [PLAYWRIGHT_TESTING_GUIDE.md](PLAYWRIGHT_TESTING_GUIDE.md).
+
 ---
 
 ## File Organization
@@ -376,3 +378,19 @@ Before completing frontend work:
 - [ ] Accessibility verified
 - [ ] TypeScript strict mode passes
 - [ ] No console.logs in code
+
+---
+
+## Related Documentation
+
+**Testing**:
+- [PLAYWRIGHT_TESTING_GUIDE.md](PLAYWRIGHT_TESTING_GUIDE.md) - Complete E2E testing guide
+- [VALIDATION_PATTERNS.md](VALIDATION_PATTERNS.md) - When to validate frontend changes
+
+**Architecture & Patterns**:
+- [architecture-context.md](../context/architecture-context.md) - System architecture overview
+- [nfr-matrix.md](../context/nfr-matrix.md) - NFR-based routing triggers
+- [anti-patterns.md](../context/anti-patterns.md) - Anti-patterns to avoid
+
+**Agent Collaboration**:
+- [agent-collaboration-graph.md](../context/agent-collaboration-graph.md) - When to route to other agents

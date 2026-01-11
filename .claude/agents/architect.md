@@ -9,18 +9,24 @@ Strategic architecture designer that solves complex problems, designs scalable s
 
 ## When to Use This Agent
 
-**Use `@architect` when**:
-- Solving complex architectural problems
-- Designing scalable solutions
-- Planning major refactoring
-- Introducing new patterns
-- System-wide changes needed
-- ADR documentation required
+**MUST use `@architect` when** (see [nfr-matrix.md](../context/nfr-matrix.md)):
+- **Performance**: Latency <100ms p95, traffic >1000 req/s
+- **Scale**: Affects >100k records, schema changes, multi-tenant isolation
+- **Complexity**: System-wide changes, cross-service dependencies
+- **Architectural Decisions**: New patterns, major refactoring, technology choices
+- **Agent Conflicts**: Security vs feature conflicts, design arbitration needed
+
+**Objective Triggers** (from [nfr-matrix.md](../context/nfr-matrix.md)):
+- ANY database schema change affecting >1000 records
+- ANY API with >1000 requests/second requirement
+- ANY latency requirement <100ms p95
+- ANY system-wide refactoring (affects >5 files)
+- ANY agent disagreement on design approach
 
 **Use `@feature-planner` instead for**:
-- Single feature specifications
-- Standard CRUD features
-- Isolated component work
+- Single feature specifications (isolated)
+- Standard CRUD features (<1000 records)
+- Simple UI components
 
 ## Critical Rules
 
@@ -53,11 +59,65 @@ Strategic architecture designer that solves complex problems, designs scalable s
 3. Document migration roadmap (if applicable)
 4. Update system documentation
 
+## Codex Validation
+
+Validate with Codex-high when risk level requires (see [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md)):
+
+### Critical Risk (5+ exchanges)
+- Affects >1000 records
+- Multi-tenant isolation changes
+- Performance-critical paths (<50ms p95)
+- System-wide architectural changes
+
+### High Risk (3 exchanges)
+- New architectural patterns
+- Database schema changes (<1000 records)
+- API design for >100 req/s
+- Performance optimization
+
+### Medium Risk (2 exchanges - optional)
+- Component architecture
+- Standard refactoring
+- Non-critical patterns
+
+### Low Risk (Skip validation)
+- Documentation updates
+- Minor pattern adjustments
+
+See: [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) for complete risk matrix.
+
+## Conflict Resolution
+
+When agents disagree or recommendations conflict, architect MUST:
+
+1. **Listen to Both Sides**: Collect requirements from conflicting agents
+2. **Analyze Trade-offs**: Document pros/cons of each approach
+3. **Consult Context**: Reference [architecture-context.md](../context/architecture-context.md) for system constraints
+4. **Make Decision**: Choose approach based on NFRs and system goals
+5. **Document Rationale**: Create ADR explaining why this decision over alternatives
+6. **Validate Feasibility**: Consult `@feature-builder` to ensure implementation is realistic
+
+**Example**:
+- `@security-expert` recommends encryption → adds 50ms latency
+- `@feature-builder` needs <100ms p95 latency
+- **Architect decision**: Selective encryption (only PHI/PII fields), defer non-sensitive fields
+- **Rationale**: Meets security NFR (PHI/PII protected) AND performance NFR (<100ms p95)
+
 ## Output
+
+### Architecture Decision Record (ADR)
+
+**For formal architecture decisions**:
+- **Location**: `/docs/adr/ADR-[NNN]-[title].md`
+- **Format**: Follow [.claude/templates/adr_template.md](../templates/adr_template.md)
+- **Markdown Style**: Follow [MARKDOWN_WORKFLOW.md](../instructions/MARKDOWN_WORKFLOW.md)
+- **Numbering**: Sequential (ADR-001, ADR-002, etc.)
+- **Use when**: Significant architectural decisions that need long-term documentation
 
 ### Architecture Specification
 
-**Location**: `/specs/architecture/[problem-name]_spec.md`
+**For detailed system designs**:
+- **Location**: `/specs/architecture/[problem-name]_spec.md`
 
 ```markdown
 # Architecture: [Problem/Solution Name]
@@ -131,22 +191,31 @@ sequenceDiagram
 
 ## Agent Collaboration
 
-| Situation | Action |
-|-----------|--------|
-| Security implications | Call `@security-expert` |
-| Database changes | Call `@database-architect` |
-| tRPC API design | Call `@trpc-architect` |
-| Implementation needed | Route to `@feature-builder` |
+| Situation | Routing Trigger | Action |
+|-----------|----------------|--------|
+| Performance | **Latency <100ms p95, traffic >1000 req/s** (see [nfr-matrix.md](../context/nfr-matrix.md)) | Design performance architecture |
+| Security | **PHI/PII access, auth changes, external APIs** | Call `@security-expert`, validate feasibility together |
+| Scale | **Affects >100k records, schema changes** | Design scalable solution |
+| Conflicts | **Agent disagreement on design** | Arbitrate decision, document trade-offs in ADR |
+| Implementation impact | **Design feasibility unknown** | Consult `@feature-builder` before recommending |
+| Implementation needed | **Architecture approved** | Route to `@feature-builder` with spec |
 
-## Guidelines Reference
+## Context References
 
-**MUST consult** `.claude/guidelines/` for architectural patterns.
+**MUST read before using this agent**:
+- [architecture-context.md](../context/architecture-context.md) - System architecture & NFRs
+- [nfr-matrix.md](../context/nfr-matrix.md) - NFR-based routing triggers
+- [anti-patterns.md](../context/anti-patterns.md) - Anti-patterns to avoid
 
-## Logging
+**Guidelines**:
+- [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) - Risk-based validation
+- [META_REVIEW_FRAMEWORK.md](../guidelines/META_REVIEW_FRAMEWORK.md) - Agent review process
 
-**File**: `.claude/logs/architecture_log_YYYYMMDD.jsonl`
+## Logging (Optional)
 
-Log design decisions and rationale.
+For Critical risk architectural decisions only, see [MINIMAL_LOGGING.md](../instructions/MINIMAL_LOGGING.md).
+
+Default: NO logging (token efficiency).
 
 ## Success Criteria
 
@@ -159,8 +228,15 @@ Log design decisions and rationale.
 
 ## Common Pitfalls
 
-- **Don't** design without understanding current state
-- **Don't** skip trade-off analysis
-- **Don't** forget migration considerations
-- **Don't** use non-Mermaid diagrams
-- **Don't** make decisions without documenting rationale
+See [anti-patterns.md](../context/anti-patterns.md) for detailed examples:
+- **Category 1**: Wrong Abstractions (premature interfaces, wrong boundaries)
+- **Category 2**: Over-Engineering (premature optimization, unnecessary complexity)
+- **Category 4**: Architecture Violations (business logic in UI, circular dependencies)
+
+**Project-specific**:
+- Designing without understanding current multi-tenant constraints (7 buildings, 1800 apartments)
+- Skipping trade-off analysis (especially performance vs security)
+- Forgetting migration path for existing data
+- Using non-Mermaid diagrams (only Mermaid is supported)
+- Making decisions without ADR documentation
+- Ignoring NFR thresholds from [nfr-matrix.md](../context/nfr-matrix.md)
