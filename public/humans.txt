@@ -1,0 +1,13 @@
+/* TEAM */
+Site: ЖК Сердце Ростова 2
+Contact: sr2.ru
+Location: Ростов-на-Дону, Россия
+
+/* THANKS */
+Built with Next.js, React, tRPC, Drizzle ORM
+UI: Radix UI, Tailwind CSS, shadcn/ui
+
+/* SITE */
+Last update: 2026/01
+Language: Russian
+Standards: HTML5, CSS3, ES6+
