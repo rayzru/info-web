@@ -1,6 +1,6 @@
 # Markdown Documentation Workflow
 
-This reference document contains comprehensive guidelines for creating, maintaining, and validating markdown documentation in the Intrigma project.
+This reference document contains comprehensive guidelines for creating, maintaining, and validating markdown documentation in the project.
 
 **When to read this file:**
 - Creating or updating documentation files (`*.md`)
@@ -53,7 +53,7 @@ fx-backend/
     │
     ├── instructions/                  # Shared instructions (this file)
     │   ├── MARKDOWN_WORKFLOW.md
-    │   └── SIMPLE_LOGGING.md
+    │   └── MINIMAL_LOGGING.md
     │
     └── agents/                        # Agent definitions (*.md)
 ```

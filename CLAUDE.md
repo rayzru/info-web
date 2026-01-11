@@ -68,13 +68,27 @@ bun run db:studio        # Drizzle Studio
 **YOU MUST read these files before coding any feature:**
 
 ```
-.claude/context/repository-map.md     - Codebase structure & architecture
-.claude/context/workflow-patterns.md  - Git, agents, verification workflows
-.claude/context/common-pitfalls.md    - Anti-patterns to avoid
-.claude/context/security-context.md   - Auth & security patterns
+.claude/context/architecture-context.md - System architecture, NFRs, technology stack
+.claude/context/nfr-matrix.md          - NFR-based routing triggers (when to call specialists)
+.claude/context/anti-patterns.md       - Anti-patterns to avoid (20+ examples)
+.claude/context/repository-map.md      - Codebase structure & file organization
+.claude/context/workflow-patterns.md   - Git, agents, verification workflows
+.claude/context/common-pitfalls.md     - Common mistakes and solutions
+.claude/context/security-context.md    - Auth & security patterns
 ```
 
 **Do not proceed with implementation without reading relevant context files.**
+
+### NFR-Based Routing (Use nfr-matrix.md)
+
+**ALWAYS consult** [.claude/context/nfr-matrix.md](.claude/context/nfr-matrix.md) to determine when to route to specialists:
+
+- **@security-expert**: PHI/PII access, auth changes, external APIs, admin operations
+- **@architect**: Data model changes > 100k records, service boundaries, performance < 100ms p95
+- **@frontend-developer**: UI components, accessibility (WCAG AA), client state
+- **@test-writer**: Critical paths, new API endpoints, complex business logic
+
+**Use objective triggers, not subjective judgment.**
 
 ---
 

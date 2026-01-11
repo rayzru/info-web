@@ -9,12 +9,16 @@ Creates end-to-end tests with Playwright and ensures WCAG 2.1 AA accessibility c
 
 ## When to Use This Agent
 
-**Use `@e2e-test-specialist` when**:
-- Writing Playwright E2E tests
-- Testing user journeys
-- Accessibility audits (WCAG 2.1 AA)
-- Cross-browser testing needed
-- Visual regression testing
+**MUST use `@e2e-test-specialist` when** (see [nfr-matrix.md](../context/nfr-matrix.md)):
+- **E2E Testing**: User journeys, critical paths
+- **Accessibility**: WCAG 2.1 AA compliance audits
+- **Cross-browser**: Chrome, Firefox, Safari testing
+
+**Objective Triggers** (from [nfr-matrix.md](../context/nfr-matrix.md)):
+- ANY critical user journey (auth, checkout, data submission)
+- ANY accessibility audit required
+- ANY cross-browser testing needed
+- ANY visual regression testing
 
 **Use `@test-writer` instead for**:
 - Unit tests
@@ -129,6 +133,9 @@ tests/
 
 ## MCP Integration
 
+**For AI-optimized automation**, see [PLAYWRIGHT_MCP_AUTOMATION.md](../instructions/PLAYWRIGHT_MCP_AUTOMATION.md).
+
+
 Use Playwright MCP for validation during development:
 
 | Tool | Purpose |
@@ -161,17 +168,57 @@ Use Playwright MCP for validation during development:
 3. Review accessibility report
 4. Fix flaky tests
 
+## Codex Validation
+
+Validate with Codex-high when risk level requires (see [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md)):
+
+### Critical Risk (5+ exchanges)
+- Authentication flows (login, signup, password reset)
+- Payment/checkout journeys
+- Data submission with PHI/PII
+- Security-critical user journeys
+
+### High Risk (3 exchanges)
+- Complex multi-step user journeys (>5 steps)
+- Cross-browser compatibility issues
+- Accessibility compliance (WCAG 2.1 AA)
+
+### Medium Risk (2 exchanges - optional)
+- Standard user journeys (navigation, search)
+- Visual regression tests
+- Page Object design
+
+### Low Risk (Skip validation)
+- Simple navigation tests
+- Smoke tests
+
+See: [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) for complete risk matrix.
+
 ## Agent Collaboration
 
-| Situation | Action |
-|-----------|--------|
-| >3 tests failing | Call `@test-analyzer` |
-| Unit tests needed | Call `@test-writer` |
-| Frontend issues | Call `@frontend-developer` |
+| Situation | Routing Trigger | Action |
+|-----------|----------------|--------|
+| E2E Testing | **User journey, accessibility** (see [nfr-matrix.md](../context/nfr-matrix.md)) | Write Playwright E2E tests |
+| >3 tests failing | **Multiple test failures** | Call `@test-analyzer` |
+| Unit tests needed | **Component/unit testing** | Call `@test-writer` |
+| Frontend issues | **Implementation bugs** | Call `@frontend-developer` |
 
-## Guidelines Reference
+## Context References
 
-**MUST consult** `.claude/guidelines/` for testing patterns.
+**MUST read before using this agent**:
+- [architecture-context.md](../context/architecture-context.md) - System architecture & NFRs
+- [nfr-matrix.md](../context/nfr-matrix.md) - NFR-based routing triggers
+- [anti-patterns.md](../context/anti-patterns.md) - Anti-patterns to avoid
+
+**Guidelines**:
+- [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) - Risk-based validation
+- [META_REVIEW_FRAMEWORK.md](../guidelines/META_REVIEW_FRAMEWORK.md) - Agent review process
+
+## Logging (Optional)
+
+For Critical E2E tests only, see [MINIMAL_LOGGING.md](../instructions/MINIMAL_LOGGING.md).
+
+Default: NO logging (token efficiency).
 
 ## Output
 
@@ -191,8 +238,13 @@ Use Playwright MCP for validation during development:
 
 ## Common Pitfalls
 
-- **Don't** use text selectors (use data-testid)
-- **Don't** use hardcoded delays
-- **Don't** skip accessibility tests
-- **Don't** make tests order-dependent
-- **Don't** ignore flaky tests (fix them)
+See [anti-patterns.md](../context/anti-patterns.md) for detailed examples:
+- **Category 3**: Code Duplication (copy-paste Page Objects instead of composition)
+- **Category 6**: Agent Anti-Patterns (flaky tests, order-dependent tests)
+
+**Project-specific**:
+- Using text selectors instead of data-testid (brittle, breaks with i18n)
+- Using hardcoded delays instead of Playwright waitFor (flaky tests)
+- Skipping accessibility tests (WCAG 2.1 AA required)
+- Making tests order-dependent (tests should be isolated)
+- Ignoring flaky tests instead of fixing root cause

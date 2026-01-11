@@ -9,11 +9,17 @@ Creates unit and integration tests for T3 Stack applications. Uses Jest and Reac
 
 ## When to Use This Agent
 
-**Use `@test-writer` when**:
-- Writing unit tests for components
-- Writing unit tests for utilities
-- Writing integration tests for tRPC procedures
-- Need test coverage for specific features
+**MUST use `@test-writer` when** (see [nfr-matrix.md](../context/nfr-matrix.md)):
+- **Testing**: New feature needs unit/integration tests
+- **Coverage**: Test coverage below target (80%+)
+- **Critical Paths**: Auth, payments, data mutations need tests
+- **Regression**: Bug fixes need regression tests
+
+**Objective Triggers** (from [nfr-matrix.md](../context/nfr-matrix.md)):
+- ANY new tRPC procedure (unit test required)
+- ANY new React component with logic (RTL test required)
+- ANY utility function with >1 branch (unit test required)
+- ANY bug fix (regression test required)
 
 **Use `@e2e-test-specialist` instead for**:
 - Playwright E2E tests
@@ -140,17 +146,56 @@ src/
 3. Fix failing tests
 4. Document coverage gaps
 
+## Codex Validation
+
+Validate with Codex-high when risk level requires (see [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md)):
+
+### Critical Risk (5+ exchanges)
+- Complex test scenarios (auth, multi-step flows)
+- Mock setup for external APIs
+- Test coverage strategy for critical features
+
+### High Risk (3 exchanges)
+- Integration test design (tRPC procedures)
+- Component test patterns (complex state)
+- Edge case identification
+
+### Medium Risk (2 exchanges - optional)
+- Standard component tests
+- Utility function tests
+- Mock design
+
+### Low Risk (Skip validation)
+- Simple render tests
+- Trivial utility tests
+
+See: [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) for complete risk matrix.
+
 ## Agent Collaboration
 
-| Situation | Action |
-|-----------|--------|
-| >3 tests failing | Call `@test-analyzer` |
-| E2E tests needed | Call `@e2e-test-specialist` |
-| Code changes needed | Return to `@feature-builder` |
+| Situation | Routing Trigger | Action |
+|-----------|----------------|--------|
+| Testing | **New feature, bug fix** (see [nfr-matrix.md](../context/nfr-matrix.md)) | Write unit/integration tests |
+| >3 tests failing | **Multiple test failures** | Call `@test-analyzer` for root cause |
+| E2E tests needed | **User journey, accessibility** | Call `@e2e-test-specialist` |
+| Code changes needed | **Test reveals code issue** | Return to `@feature-builder` |
 
-## Guidelines Reference
+## Context References
 
-**MUST consult** `.claude/guidelines/` for testing patterns.
+**MUST read before using this agent**:
+- [architecture-context.md](../context/architecture-context.md) - System architecture & NFRs
+- [nfr-matrix.md](../context/nfr-matrix.md) - NFR-based routing triggers
+- [anti-patterns.md](../context/anti-patterns.md) - Anti-patterns to avoid
+
+**Guidelines**:
+- [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) - Risk-based validation
+- [META_REVIEW_FRAMEWORK.md](../guidelines/META_REVIEW_FRAMEWORK.md) - Agent review process
+
+## Logging (Optional)
+
+For Critical risk test suites only, see [MINIMAL_LOGGING.md](../instructions/MINIMAL_LOGGING.md).
+
+Default: NO logging (token efficiency).
 
 ## Output
 
@@ -169,8 +214,14 @@ src/
 
 ## Common Pitfalls
 
-- **Don't** test implementation details
-- **Don't** use hardcoded timeouts
-- **Don't** skip error scenarios
-- **Don't** forget cleanup in afterEach
-- **Don't** make tests interdependent
+See [anti-patterns.md](../context/anti-patterns.md) for detailed examples:
+- **Category 3**: Code Duplication (copy-paste test setup instead of factories)
+- **Category 6**: Agent Anti-Patterns (vague test descriptions, missing assertions)
+
+**Project-specific**:
+- Testing implementation details (checking state instead of behavior)
+- Using hardcoded timeouts (use `waitFor` properly)
+- Skipping error scenarios (only testing happy path)
+- Forgetting cleanup in `afterEach` (test pollution)
+- Making tests interdependent (tests should be isolated)
+- Not mocking tRPC context for procedure tests

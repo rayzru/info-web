@@ -8,7 +8,7 @@ While **guidelines** define WHAT patterns to follow (technical standards), **ins
 
 ## Current Instructions
 
-- **SIMPLE_LOGGING.md** - Standardized logging for agent communications using feature-based naming (`[feature-name]_log_YYYYMMDD-HHMMSS.jsonl`)
+- **MINIMAL_LOGGING.md** - Optional logging for critical tasks and debugging (token-efficient)
 
 ## Difference from Other Directories
 
@@ -16,7 +16,7 @@ While **guidelines** define WHAT patterns to follow (technical standards), **ins
 |-----------|---------|---------|
 | `/agents` | Individual agent definitions | feature-planner.md (builds specs) |
 | `/guidelines` | Domain-specific patterns | GRAPHQL_GUIDELINE.MD (GraphQL patterns) |
-| `/instructions` | Operational procedures | SIMPLE_LOGGING.md (how to log) |
+| `/instructions` | Operational procedures | MINIMAL_LOGGING.md (how to log) |
 | `/contexts` | Work area contexts | backend-context.md (backend overview) |
 
 ## When to Create New Instructions

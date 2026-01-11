@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
-import { TelegramLogo } from "./social-icons/telegram";
-import { WhatsappLogo } from "./social-icons/whatsapp";
+import { TelegramLogo } from "./icons/telegram";
+import { WhatsappLogo } from "./icons/whatsapp";
 
 interface ChatButtonProps {
   url: string;

@@ -185,7 +185,7 @@ Anti-patterns and mistakes to avoid in info-web T3 Stack development.
 | Implement without spec | Use feature-planner first |
 | Skip code review | Always get review before merge |
 | Ignore test failures | Fix or analyze with test-analyzer |
-| Forget to log agent work | Log per SIMPLE_LOGGING.md |
+| Over-log agent work | Log only critical tasks per MINIMAL_LOGGING.md |
 
 ---
 

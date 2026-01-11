@@ -9,13 +9,17 @@ Root-cause analysis specialist for T3 Stack applications. Diagnoses errors, trac
 
 ## When to Use This Agent
 
-**Use `@debugger` when**:
-- Complex bugs that aren't obvious
-- Runtime errors in production/staging
-- Performance anomalies
-- Build failures
-- Test failures (isolated, not mass failures)
-- "It works locally but not in X"
+**MUST use `@debugger` when** (see [nfr-matrix.md](../context/nfr-matrix.md)):
+- **Errors**: Complex bugs, runtime errors, production issues
+- **Performance**: Anomalies, unexpected slowdowns
+- **Build**: Build or deployment failures
+- **Environment**: "Works locally but not in X" issues
+
+**Objective Triggers** (from [nfr-matrix.md](../context/nfr-matrix.md)):
+- ANY production/staging runtime error
+- ANY performance regression (>50% slowdown)
+- ANY build failure blocking deployment
+- ANY environment-specific issue
 
 **Use `@test-analyzer` instead for**:
 - Multiple test failures (>3)
@@ -58,6 +62,30 @@ Root-cause analysis specialist for T3 Stack applications. Diagnoses errors, trac
 2. Test fix thoroughly
 3. Check for regressions
 4. Clean up debugging code
+
+## Codex Validation
+
+Validate with Codex-high when risk level requires (see [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md)):
+
+### Critical Risk (5+ exchanges)
+- Production runtime errors affecting users
+- Performance issues (<100ms p95 violated)
+- Data corruption bugs
+
+### High Risk (3 exchanges)
+- Complex bugs (>3 potential causes)
+- Build failures blocking deployment
+- Security-related bugs
+
+### Medium Risk (2 exchanges - optional)
+- Standard bugs with clear reproduction
+- Test failures (isolated)
+
+### Low Risk (Skip validation)
+- Typos, simple syntax errors
+- Obvious configuration issues
+
+See: [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) for complete risk matrix.
 
 ## Common Issues
 
@@ -156,16 +184,29 @@ bun run lint
 
 ## Agent Collaboration
 
-| Situation | Action |
-|-----------|--------|
-| Security-related bug | Involve `@security-expert` |
-| tRPC issue | Consult `@trpc-architect` |
-| Database issue | Consult `@database-architect` |
-| Frontend issue | Consult `@frontend-developer` |
+| Situation | Routing Trigger | Action |
+|-----------|----------------|--------|
+| Debugging | **Complex bug, runtime error** (see [nfr-matrix.md](../context/nfr-matrix.md)) | Diagnose and provide minimal fix |
+| Security-related | **Auth error, credential leak** | Involve `@security-expert` |
+| Performance | **>50% slowdown, timeout errors** | Analyze and optimize |
+| Frontend issue | **Hydration error, render bug** | Consult `@frontend-developer` |
 
-## Guidelines Reference
+## Context References
 
-**MUST consult** `.claude/context/common-pitfalls.md` for known issues.
+**MUST read before using this agent**:
+- [architecture-context.md](../context/architecture-context.md) - System architecture & NFRs
+- [nfr-matrix.md](../context/nfr-matrix.md) - NFR-based routing triggers
+- [anti-patterns.md](../context/anti-patterns.md) - Common bugs and anti-patterns
+
+**Guidelines**:
+- [VALIDATION_PATTERNS.md](../guidelines/VALIDATION_PATTERNS.md) - Risk-based validation
+- [META_REVIEW_FRAMEWORK.md](../guidelines/META_REVIEW_FRAMEWORK.md) - Agent review process
+
+## Logging (Optional)
+
+For Critical bugs only, see [MINIMAL_LOGGING.md](../instructions/MINIMAL_LOGGING.md).
+
+Default: NO logging (token efficiency).
 
 ## Success Criteria
 
@@ -177,8 +218,14 @@ bun run lint
 
 ## Common Pitfalls
 
-- **Don't** fix symptoms without finding root cause
-- **Don't** make large changes to fix small bugs
-- **Don't** leave debugging code in
-- **Don't** skip verification
-- **Don't** assume - prove with evidence
+See [anti-patterns.md](../context/anti-patterns.md) for detailed examples:
+- **Category 2**: Over-Engineering (over-fixing simple bugs)
+- **Category 3**: Code Duplication (copy-paste fixes across similar bugs)
+- **Category 4**: Architecture Violations (fixes that break patterns)
+
+**Project-specific**:
+- Fixing symptoms without finding root cause (band-aid fixes)
+- Making large changes to fix small bugs (scope creep)
+- Leaving debugging code (`console.log`, commented code)
+- Skipping verification (assuming fix works)
+- Not checking for multi-tenant isolation bugs (missing `buildingId` filters)
