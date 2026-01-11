@@ -213,6 +213,7 @@ export function ImageNode({ node }: { node: JSONContent }) {
           width={attrs.width}
           height={attrs.height}
           className="rounded-lg"
+          unoptimized={attrs.src.includes("/uploads/")}
         />
         {attrs.title && (
           <figcaption className="mt-2 text-center text-sm text-muted-foreground">
@@ -316,6 +317,7 @@ export function ReferenceCardNode({ node }: { node: JSONContent }) {
           width={48}
           height={48}
           className="rounded"
+          unoptimized={attrs.image.includes("/uploads/")}
         />
       )}
       <div className="min-w-0 flex-1">
