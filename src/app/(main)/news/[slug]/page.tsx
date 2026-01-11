@@ -186,8 +186,9 @@ export default async function NewsDetailPage({ params }: PageProps) {
               src={news.coverImage}
               alt={news.title}
               fill
-              className="object-cover"
+              className="object-cover object-center"
               priority
+              unoptimized={news.coverImage.startsWith("/uploads/")}
             />
           </div>
         )}
