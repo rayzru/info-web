@@ -8,6 +8,9 @@ import { db } from "~/server/db";
 import { systemSettings, SETTING_KEYS, type MaintenanceSettings } from "~/server/db/schema";
 import { auth } from "~/server/auth";
 
+// Force dynamic rendering (layout uses auth and database queries)
+export const dynamic = "force-dynamic";
+
 // Paths that should be accessible during maintenance (for admin login flow)
 const MAINTENANCE_BYPASS_PATHS = [
   "/login",

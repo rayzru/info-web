@@ -35,6 +35,8 @@ export const env = createEnv({
     TINKOFF_CLIENT_SECRET: z.string().optional(),
     // Telegram Bot (for auth via bot)
     TELEGRAM_BOT_TOKEN: z.string().optional(),
+    // Telegram Admin Chat (for admin sync)
+    TELEGRAM_ADMIN_CHAT_ID: z.string().optional(),
     // Telegram News Channel (for news publishing)
     TELEGRAM_NEWS_CHANNEL_ID: z.string().optional(),
 
@@ -92,6 +94,7 @@ export const env = createEnv({
     TINKOFF_CLIENT_ID: process.env.TINKOFF_CLIENT_ID,
     TINKOFF_CLIENT_SECRET: process.env.TINKOFF_CLIENT_SECRET,
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+    TELEGRAM_ADMIN_CHAT_ID: process.env.TELEGRAM_ADMIN_CHAT_ID,
     TELEGRAM_NEWS_CHANNEL_ID: process.env.TELEGRAM_NEWS_CHANNEL_ID,
     // SMTP
     SMTP_HOST: process.env.SMTP_HOST,

@@ -2328,5 +2328,430 @@ export const directoryRouter = createTRPCRouter({
           synonyms: tag.synonyms ? JSON.parse(tag.synonyms) as string[] : [],
         };
       }),
+
+    // Get full tag tree for admin (with counts)
+    getTagTree: adminProcedure
+      .query(async ({ ctx }) => {
+        // Get all tags
+        const allTags = await ctx.db.query.directoryTags.findMany({
+          orderBy: [directoryTags.scope, directoryTags.order, directoryTags.name],
+        });
+
+        // Get entry counts for each tag
+        const entryCounts = await ctx.db
+          .select({
+            tagId: directoryEntryTags.tagId,
+            count: count(),
+          })
+          .from(directoryEntryTags)
+          .innerJoin(directoryEntries, eq(directoryEntryTags.entryId, directoryEntries.id))
+          .where(eq(directoryEntries.isActive, 1))
+          .groupBy(directoryEntryTags.tagId);
+
+        // Get contact counts for each tag
+        const contactCounts = await ctx.db
+          .select({
+            tagId: directoryContactTags.tagId,
+            count: count(),
+          })
+          .from(directoryContactTags)
+          .groupBy(directoryContactTags.tagId);
+
+        const entryCountMap = new Map(entryCounts.map((c) => [c.tagId, c.count]));
+        const contactCountMap = new Map(contactCounts.map((c) => [c.tagId, c.count]));
+
+        return allTags.map((tag) => ({
+          id: tag.id,
+          name: tag.name,
+          slug: tag.slug,
+          description: tag.description,
+          parentId: tag.parentId,
+          scope: tag.scope,
+          icon: tag.icon,
+          order: tag.order,
+          entryCount: entryCountMap.get(tag.id) ?? 0,
+          contactCount: contactCountMap.get(tag.id) ?? 0,
+        }));
+      }),
+
+    // List entries with extended filtering and stats
+    listWithStats: adminProcedure
+      .input(
+        z.object({
+          page: z.number().min(1).default(1),
+          limit: z.number().min(1).max(100).default(20),
+          type: directoryEntryTypeSchema.optional(),
+          search: z.string().optional(),
+          tagIds: z.array(z.string()).optional(),
+          scope: directoryScopeSchema.optional(),
+          hasProblems: z.enum(["noTags", "noContacts", "inactive"]).optional(),
+        })
+      )
+      .query(async ({ ctx, input }) => {
+        const { page, limit, type, search, tagIds, scope, hasProblems } = input;
+        const offset = (page - 1) * limit;
+
+        // Build base conditions
+        const conditions: ReturnType<typeof eq>[] = [];
+
+        if (type) {
+          conditions.push(eq(directoryEntries.type, type));
+        }
+
+        if (search) {
+          conditions.push(
+            or(
+              ilike(directoryEntries.title, `%${search}%`),
+              ilike(directoryEntries.description, `%${search}%`)
+            )!
+          );
+        }
+
+        if (hasProblems === "inactive") {
+          conditions.push(eq(directoryEntries.isActive, 0));
+        }
+
+        // Get entries with tag filtering
+        let entryIds: string[] | null = null;
+
+        if (tagIds && tagIds.length > 0) {
+          // Get entries that have any of the specified tags
+          const entriesWithTags = await ctx.db
+            .selectDistinct({ entryId: directoryEntryTags.entryId })
+            .from(directoryEntryTags)
+            .where(inArray(directoryEntryTags.tagId, tagIds));
+
+          entryIds = entriesWithTags.map((e) => e.entryId);
+          if (entryIds.length === 0) {
+            return { entries: [], total: 0, totalPages: 0, page };
+          }
+        }
+
+        if (scope) {
+          // Get tags with this scope
+          const scopeTags = await ctx.db.query.directoryTags.findMany({
+            where: eq(directoryTags.scope, scope),
+          });
+          const scopeTagIds = scopeTags.map((t) => t.id);
+
+          if (scopeTagIds.length > 0) {
+            const entriesWithScope = await ctx.db
+              .selectDistinct({ entryId: directoryEntryTags.entryId })
+              .from(directoryEntryTags)
+              .where(inArray(directoryEntryTags.tagId, scopeTagIds));
+
+            const scopeEntryIds = entriesWithScope.map((e) => e.entryId);
+            if (entryIds) {
+              entryIds = entryIds.filter((id) => scopeEntryIds.includes(id));
+            } else {
+              entryIds = scopeEntryIds;
+            }
+
+            if (entryIds.length === 0) {
+              return { entries: [], total: 0, totalPages: 0, page };
+            }
+          }
+        }
+
+        // Build final where clause
+        let whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+        if (entryIds) {
+          const entryCondition = inArray(directoryEntries.id, entryIds);
+          whereClause = whereClause ? and(whereClause, entryCondition) : entryCondition;
+        }
+
+        // Get entries
+        let entries = await ctx.db.query.directoryEntries.findMany({
+          where: whereClause,
+          orderBy: [desc(directoryEntries.updatedAt), directoryEntries.title],
+          limit: limit * 2, // Get more to filter by problems
+          offset: hasProblems ? 0 : offset,
+        });
+
+        // Get contacts and tags for each entry
+        const results = await Promise.all(
+          entries.map(async (entry) => {
+            const contacts = await ctx.db.query.directoryContacts.findMany({
+              where: eq(directoryContacts.entryId, entry.id),
+              orderBy: [directoryContacts.isPrimary, directoryContacts.order],
+            });
+
+            const entryTags = await ctx.db
+              .select({ tag: directoryTags })
+              .from(directoryEntryTags)
+              .innerJoin(directoryTags, eq(directoryEntryTags.tagId, directoryTags.id))
+              .where(eq(directoryEntryTags.entryId, entry.id));
+
+            // Get stats from directoryEntryStats
+            const [stats] = await ctx.db
+              .select()
+              .from(directoryEntryStats)
+              .where(eq(directoryEntryStats.entryId, entry.id));
+
+            return {
+              ...entry,
+              contacts,
+              tags: entryTags.map((et) => et.tag),
+              stats: stats
+                ? {
+                    viewCount: stats.viewCount,
+                    callCount: stats.callCount,
+                    linkCount: stats.linkCount,
+                    lastViewedAt: stats.lastViewedAt,
+                  }
+                : null,
+              problems: {
+                noTags: entryTags.length === 0,
+                noContacts: contacts.length === 0,
+                inactive: entry.isActive === 0,
+              },
+            };
+          })
+        );
+
+        // Filter by problems if needed
+        let filteredResults = results;
+        if (hasProblems === "noTags") {
+          filteredResults = results.filter((e) => e.problems.noTags);
+        } else if (hasProblems === "noContacts") {
+          filteredResults = results.filter((e) => e.problems.noContacts);
+        }
+
+        // Get total count
+        const [totalResult] = await ctx.db
+          .select({ count: count() })
+          .from(directoryEntries)
+          .where(whereClause);
+
+        let total = totalResult?.count ?? 0;
+
+        // Adjust for problem filtering
+        if (hasProblems) {
+          total = filteredResults.length;
+          filteredResults = filteredResults.slice(offset, offset + limit);
+        } else {
+          filteredResults = filteredResults.slice(0, limit);
+        }
+
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+          entries: filteredResults,
+          total,
+          totalPages,
+          page,
+        };
+      }),
+
+    // Bulk update tags
+    bulkUpdateTags: adminProcedure
+      .input(
+        z.object({
+          entryIds: z.array(z.string()),
+          addTagIds: z.array(z.string()).optional(),
+          removeTagIds: z.array(z.string()).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { entryIds, addTagIds, removeTagIds } = input;
+
+        // Remove tags
+        if (removeTagIds && removeTagIds.length > 0) {
+          await ctx.db
+            .delete(directoryEntryTags)
+            .where(
+              and(
+                inArray(directoryEntryTags.entryId, entryIds),
+                inArray(directoryEntryTags.tagId, removeTagIds)
+              )
+            );
+        }
+
+        // Add tags (ignore duplicates)
+        if (addTagIds && addTagIds.length > 0) {
+          for (const entryId of entryIds) {
+            for (const tagId of addTagIds) {
+              try {
+                await ctx.db
+                  .insert(directoryEntryTags)
+                  .values({ entryId, tagId })
+                  .onConflictDoNothing();
+              } catch {
+                // Ignore duplicate errors
+              }
+            }
+          }
+        }
+
+        return { success: true, affected: entryIds.length };
+      }),
+
+    // Bulk delete (soft delete)
+    bulkDelete: adminProcedure
+      .input(z.object({ entryIds: z.array(z.string()) }))
+      .mutation(async ({ ctx, input }) => {
+        await ctx.db
+          .update(directoryEntries)
+          .set({ isActive: 0, updatedAt: new Date() })
+          .where(inArray(directoryEntries.id, input.entryIds));
+
+        return { success: true, affected: input.entryIds.length };
+      }),
+
+    // Dashboard statistics
+    getDashboardStats: adminProcedure.query(async ({ ctx }) => {
+      // Total counts
+      const [allEntries] = await ctx.db
+        .select({ count: count() })
+        .from(directoryEntries);
+
+      const [activeEntries] = await ctx.db
+        .select({ count: count() })
+        .from(directoryEntries)
+        .where(eq(directoryEntries.isActive, 1));
+
+      const [totalTags] = await ctx.db
+        .select({ count: count() })
+        .from(directoryTags);
+
+      const [rootTags] = await ctx.db
+        .select({ count: count() })
+        .from(directoryTags)
+        .where(isNull(directoryTags.parentId));
+
+      const [totalContacts] = await ctx.db
+        .select({ count: count() })
+        .from(directoryContacts);
+
+      // Problem counts
+      const entriesWithoutTags = await ctx.db
+        .select({ id: directoryEntries.id })
+        .from(directoryEntries)
+        .leftJoin(directoryEntryTags, eq(directoryEntries.id, directoryEntryTags.entryId))
+        .where(and(
+          eq(directoryEntries.isActive, 1),
+          isNull(directoryEntryTags.tagId)
+        ));
+
+      const entriesWithoutContacts = await ctx.db
+        .select({ id: directoryEntries.id })
+        .from(directoryEntries)
+        .leftJoin(directoryContacts, eq(directoryEntries.id, directoryContacts.entryId))
+        .where(and(
+          eq(directoryEntries.isActive, 1),
+          isNull(directoryContacts.id)
+        ));
+
+      // Popular entries (by views)
+      const popularEntries = await ctx.db
+        .select({
+          entryId: directoryEntryStats.entryId,
+          viewCount: directoryEntryStats.viewCount,
+          callCount: directoryEntryStats.callCount,
+          entry: directoryEntries,
+        })
+        .from(directoryEntryStats)
+        .innerJoin(directoryEntries, eq(directoryEntryStats.entryId, directoryEntries.id))
+        .where(eq(directoryEntries.isActive, 1))
+        .orderBy(desc(directoryEntryStats.viewCount))
+        .limit(10);
+
+      // Popular tags (by clicks)
+      const popularTags = await ctx.db
+        .select({
+          tagId: directoryTagStats.tagId,
+          clickCount: directoryTagStats.clickCount,
+          tag: directoryTags,
+        })
+        .from(directoryTagStats)
+        .innerJoin(directoryTags, eq(directoryTagStats.tagId, directoryTags.id))
+        .orderBy(desc(directoryTagStats.clickCount))
+        .limit(10);
+
+      // Recent searches (from analytics)
+      const recentSearches = await ctx.db
+        .select({
+          query: directoryAnalytics.searchQuery,
+          resultsCount: directoryAnalytics.resultsCount,
+          createdAt: directoryAnalytics.createdAt,
+        })
+        .from(directoryAnalytics)
+        .where(eq(directoryAnalytics.eventType, "search"))
+        .orderBy(desc(directoryAnalytics.createdAt))
+        .limit(20);
+
+      // Group searches by query
+      const searchCounts = new Map<string, { count: number; noResults: number }>();
+      for (const search of recentSearches) {
+        if (!search.query) continue;
+        const existing = searchCounts.get(search.query) ?? { count: 0, noResults: 0 };
+        existing.count++;
+        if (search.resultsCount === 0) existing.noResults++;
+        searchCounts.set(search.query, existing);
+      }
+
+      const topSearches = Array.from(searchCounts.entries())
+        .map(([query, data]) => ({ query, ...data }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+
+      // Entries by type
+      const entriesByType = await ctx.db
+        .select({
+          type: directoryEntries.type,
+          count: count(),
+        })
+        .from(directoryEntries)
+        .where(eq(directoryEntries.isActive, 1))
+        .groupBy(directoryEntries.type);
+
+      // Recent entries
+      const recentEntries = await ctx.db.query.directoryEntries.findMany({
+        where: eq(directoryEntries.isActive, 1),
+        orderBy: [desc(directoryEntries.createdAt)],
+        limit: 5,
+      });
+
+      return {
+        totals: {
+          entries: allEntries?.count ?? 0,
+          activeEntries: activeEntries?.count ?? 0,
+          tags: totalTags?.count ?? 0,
+          rootTags: rootTags?.count ?? 0,
+          contacts: totalContacts?.count ?? 0,
+        },
+        problems: {
+          noTags: entriesWithoutTags.length,
+          noContacts: entriesWithoutContacts.length,
+        },
+        popularEntries: popularEntries.map((pe) => ({
+          id: pe.entry.id,
+          title: pe.entry.title,
+          slug: pe.entry.slug,
+          type: pe.entry.type,
+          viewCount: pe.viewCount,
+          callCount: pe.callCount,
+        })),
+        popularTags: popularTags.map((pt) => ({
+          id: pt.tag.id,
+          name: pt.tag.name,
+          slug: pt.tag.slug,
+          clickCount: pt.clickCount,
+        })),
+        topSearches,
+        entriesByType: entriesByType.map((e) => ({
+          type: e.type,
+          count: e.count,
+        })),
+        recentEntries: recentEntries.map((e) => ({
+          id: e.id,
+          title: e.title,
+          slug: e.slug,
+          type: e.type,
+          createdAt: e.createdAt,
+        })),
+      };
+    }),
   }),
 });

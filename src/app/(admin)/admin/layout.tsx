@@ -5,6 +5,9 @@ import { AdminNavMenu } from "~/components/admin/admin-nav-menu";
 import { auth } from "~/server/auth";
 import { getGroupedAdminNavItems, type UserRole } from "~/server/auth/rbac";
 
+// Force dynamic rendering for all admin pages (they require auth and use client hooks)
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Админ-панель | Сердце Ростова 2",
   description: "Панель администрирования",

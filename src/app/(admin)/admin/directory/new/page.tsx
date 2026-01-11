@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Loader2, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, Copy, Loader2, Plus, Trash2 } from "lucide-react";
 
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -19,6 +18,10 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  TagTreePicker,
+  type TagTreeNode,
+} from "~/components/admin/directory/tag-tree-picker";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 
@@ -47,7 +50,9 @@ type Contact = {
   type: string;
   value: string;
   label: string;
+  subtitle: string;
   isPrimary: boolean;
+  tagIds: string[];
 };
 
 type Schedule = {
@@ -67,13 +72,13 @@ export default function NewDirectoryEntryPage() {
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
   const [contacts, setContacts] = useState<Contact[]>([
-    { type: "phone", value: "", label: "", isPrimary: true },
+    { type: "phone", value: "", label: "", subtitle: "", isPrimary: true, tagIds: [] },
   ]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
-  // Queries
-  const { data: tagsData } = api.directory.getTags.useQuery({ parentId: null });
+  // Use getTagTree for dynamic tag loading
+  const { data: tagTree } = api.directory.admin.getTagTree.useQuery();
 
   // Mutations
   const createMutation = api.directory.admin.create.useMutation({
@@ -94,7 +99,17 @@ export default function NewDirectoryEntryPage() {
   const addContact = () => {
     setContacts([
       ...contacts,
-      { type: "phone", value: "", label: "", isPrimary: false },
+      { type: "phone", value: "", label: "", subtitle: "", isPrimary: false, tagIds: [] },
+    ]);
+  };
+
+  const duplicateContact = (index: number) => {
+    const contactToDuplicate = contacts[index];
+    if (!contactToDuplicate) return;
+    setContacts([
+      ...contacts.slice(0, index + 1),
+      { ...contactToDuplicate, isPrimary: false },
+      ...contacts.slice(index + 1),
     ]);
   };
 
@@ -107,7 +122,11 @@ export default function NewDirectoryEntryPage() {
     setContacts(newContacts);
   };
 
-  const updateContact = (index: number, field: keyof Contact, value: string | boolean) => {
+  const updateContact = (
+    index: number,
+    field: keyof Contact,
+    value: string | boolean | string[]
+  ) => {
     const newContacts = [...contacts];
     if (field === "isPrimary" && value === true) {
       // Only one primary
@@ -133,21 +152,16 @@ export default function NewDirectoryEntryPage() {
     }
   };
 
-  const updateSchedule = (dayOfWeek: number, field: keyof Schedule, value: string | number) => {
+  const updateSchedule = (
+    dayOfWeek: number,
+    field: keyof Schedule,
+    value: string | number
+  ) => {
     setSchedules(
       schedules.map((s) =>
         s.dayOfWeek === dayOfWeek ? { ...s, [field]: value } : s
       )
     );
-  };
-
-  // Tag handlers
-  const toggleTag = (tagId: string) => {
-    if (selectedTagIds.includes(tagId)) {
-      setSelectedTagIds(selectedTagIds.filter((id) => id !== tagId));
-    } else {
-      setSelectedTagIds([...selectedTagIds, tagId]);
-    }
   };
 
   // Submit
@@ -161,7 +175,7 @@ export default function NewDirectoryEntryPage() {
 
     // Validate type is a valid enum value
     const validTypes = ["contact", "organization", "location", "document"] as const;
-    if (!validTypes.includes(type as typeof validTypes[number])) {
+    if (!validTypes.includes(type as (typeof validTypes)[number])) {
       toast({ title: "Выберите тип записи", variant: "destructive" });
       return;
     }
@@ -172,8 +186,10 @@ export default function NewDirectoryEntryPage() {
         type: c.type as any,
         value: c.value.trim(),
         label: c.label.trim() || undefined,
+        subtitle: c.subtitle.trim() || undefined,
         isPrimary: c.isPrimary,
         order: i,
+        tagIds: c.tagIds.length > 0 ? c.tagIds : undefined,
       }));
 
     const validSchedules = schedules.map((s) => ({
@@ -184,7 +200,7 @@ export default function NewDirectoryEntryPage() {
     }));
 
     createMutation.mutate({
-      type: type as typeof validTypes[number],
+      type: type as (typeof validTypes)[number],
       title: title.trim(),
       description: description.trim() || undefined,
       content: content.trim() || undefined,
@@ -279,55 +295,107 @@ export default function NewDirectoryEntryPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {contacts.map((contact, index) => (
-                  <div key={index} className="flex gap-2 items-start">
-                    <Select
-                      value={contact.type}
-                      onValueChange={(v) => updateContact(index, "type", v)}
-                    >
-                      <SelectTrigger className="w-[140px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CONTACT_TYPES.map((t) => (
-                          <SelectItem key={t.value} value={t.value}>
-                            {t.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div key={index} className="space-y-3 border rounded-lg p-4">
+                    <div className="flex items-start gap-2">
+                      <Select
+                        value={contact.type}
+                        onValueChange={(v) => updateContact(index, "type", v)}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CONTACT_TYPES.map((t) => (
+                            <SelectItem key={t.value} value={t.value}>
+                              {t.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
-                    <Input
-                      value={contact.value}
-                      onChange={(e) => updateContact(index, "value", e.target.value)}
-                      placeholder="Значение"
-                      className="flex-1"
-                    />
-
-                    <Input
-                      value={contact.label}
-                      onChange={(e) => updateContact(index, "label", e.target.value)}
-                      placeholder="Подпись"
-                      className="w-[140px]"
-                    />
-
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        checked={contact.isPrimary}
-                        onCheckedChange={(v) => updateContact(index, "isPrimary", !!v)}
+                      <Input
+                        value={contact.value}
+                        onChange={(e) => updateContact(index, "value", e.target.value)}
+                        placeholder="Значение (телефон, email...)"
+                        className="flex-1"
                       />
-                      <span className="text-xs text-muted-foreground">Осн.</span>
                     </div>
 
-                    {contacts.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeContact(index)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">
+                          Подпись (Диспетчерская, Приёмная...)
+                        </Label>
+                        <Input
+                          value={contact.label}
+                          onChange={(e) => updateContact(index, "label", e.target.value)}
+                          placeholder="Подпись"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">
+                          ФИО / Должность
+                        </Label>
+                        <Input
+                          value={contact.subtitle}
+                          onChange={(e) => updateContact(index, "subtitle", e.target.value)}
+                          placeholder="Иванова М.П."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Contact-level tags */}
+                    {tagTree && (
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">
+                          Теги контакта (для точного поиска по строению/подъезду)
+                        </Label>
+                        <TagTreePicker
+                          tags={tagTree as TagTreeNode[]}
+                          selected={contact.tagIds}
+                          onChange={(tagIds) => updateContact(index, "tagIds", tagIds)}
+                          placeholder="Выбрать теги контакта..."
+                          showCounts
+                        />
+                      </div>
                     )}
+
+                    <div className="flex items-center justify-between pt-2 border-t">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id={`contact${index}`}
+                          checked={contact.isPrimary}
+                          onCheckedChange={(v) => updateContact(index, "isPrimary", !!v)}
+                        />
+                        <Label htmlFor={`contact${index}`} className="text-sm cursor-pointer">
+                          Основной контакт
+                        </Label>
+                      </div>
+
+                      <div className="flex gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => duplicateContact(index)}
+                          title="Дублировать"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        {contacts.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeContact(index)}
+                            title="Удалить"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </CardContent>
@@ -406,25 +474,20 @@ export default function NewDirectoryEntryPage() {
             {/* Tags */}
             <Card>
               <CardHeader>
-                <CardTitle>Категории</CardTitle>
+                <CardTitle>Категории записи</CardTitle>
               </CardHeader>
               <CardContent>
-                {tagsData && tagsData.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {tagsData.map((tag) => (
-                      <Badge
-                        key={tag.id}
-                        variant={selectedTagIds.includes(tag.id) ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => toggleTag(tag.id)}
-                      >
-                        {tag.name}
-                      </Badge>
-                    ))}
-                  </div>
+                {tagTree ? (
+                  <TagTreePicker
+                    tags={tagTree as TagTreeNode[]}
+                    selected={selectedTagIds}
+                    onChange={setSelectedTagIds}
+                    placeholder="Выберите категории..."
+                    showCounts
+                  />
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    Категорий пока нет
+                    Загрузка категорий...
                   </p>
                 )}
               </CardContent>

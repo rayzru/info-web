@@ -1,5 +1,7 @@
 import { type Metadata } from "next";
+import { Suspense } from "react";
 
+import { AnalyticsProvider } from "~/hooks/use-analytics";
 import { SessionProvider } from "~/components/session-provider";
 import { ThemeProvider } from "~/components/theme-provider";
 import { ThemeTransitionOverlay } from "~/components/theme-transition";
@@ -41,7 +43,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <TRPCReactProvider>{children}</TRPCReactProvider>
+            <TRPCReactProvider>
+              <Suspense fallback={null}>
+                <AnalyticsProvider>{children}</AnalyticsProvider>
+              </Suspense>
+            </TRPCReactProvider>
             <Toaster />
             <ThemeTransitionOverlay />
           </ThemeProvider>

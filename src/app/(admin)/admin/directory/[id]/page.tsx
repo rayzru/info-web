@@ -4,9 +4,8 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Loader2, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, Copy, Loader2, Plus, Trash2 } from "lucide-react";
 
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -20,7 +19,10 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { TagPicker, type TagOption } from "~/components/ui/tag-picker";
+import {
+  TagTreePicker,
+  type TagTreeNode,
+} from "~/components/admin/directory/tag-tree-picker";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 
@@ -81,57 +83,9 @@ export default function EditDirectoryEntryPage() {
   // Queries
   const { data: entryData, isLoading: entryLoading } =
     api.directory.admin.get.useQuery({ id: entryId }, { enabled: !!entryId });
-  const { data: tagsData } = api.directory.getTags.useQuery({ parentId: null });
-  const { data: allTagsData } = api.directory.getTags.useQuery({
-    includeAll: true,
-  });
 
-  // Transform tags for TagPicker with grouping
-  const contactTagOptions: TagOption[] = React.useMemo(() => {
-    if (!allTagsData) return [];
-
-    return allTagsData
-      .filter(
-        (tag) =>
-          tag.slug.startsWith("stroenie-") ||
-          tag.slug.startsWith("podezd-") ||
-          tag.slug === "konsierzh" ||
-          tag.slug === "chat" ||
-          tag.slug === "elektrik" ||
-          tag.slug === "santehnik" ||
-          tag.slug === "dispetcher" ||
-          tag.slug === "lift" ||
-          tag.slug === "domofon" ||
-          tag.slug === "vorota",
-      )
-      .map((tag) => {
-        let group = "Прочее";
-        if (tag.slug.startsWith("stroenie-")) group = "Строения";
-        else if (tag.slug.startsWith("podezd-")) group = "Подъезды";
-        else if (
-          [
-            "konsierzh",
-            "elektrik",
-            "santehnik",
-            "dispetcher",
-            "lift",
-            "domofon",
-            "vorota",
-          ].includes(tag.slug)
-        ) {
-          group = "Службы";
-        } else if (tag.slug === "chat") group = "Каналы";
-
-        return {
-          id: tag.id,
-          name: tag.name,
-          subtitle: tag.description ?? undefined,
-          slug: tag.slug,
-          group,
-          synonyms: tag.synonyms ?? [],
-        };
-      });
-  }, [allTagsData]);
+  // Use getTagTree for dynamic tag loading
+  const { data: tagTree } = api.directory.admin.getTagTree.useQuery();
 
   // Initialize form with entry data
   useEffect(() => {
@@ -214,6 +168,16 @@ export default function EditDirectoryEntryPage() {
     ]);
   };
 
+  const duplicateContact = (index: number) => {
+    const contactToDuplicate = contacts[index];
+    if (!contactToDuplicate) return;
+    setContacts([
+      ...contacts.slice(0, index + 1),
+      { ...contactToDuplicate, isPrimary: false },
+      ...contacts.slice(index + 1),
+    ]);
+  };
+
   const removeContact = (index: number) => {
     const newContacts = contacts.filter((_, i) => i !== index);
     // Ensure at least one primary
@@ -263,15 +227,6 @@ export default function EditDirectoryEntryPage() {
         s.dayOfWeek === dayOfWeek ? { ...s, [field]: value } : s,
       ),
     );
-  };
-
-  // Tag handlers
-  const toggleTag = (tagId: string) => {
-    if (selectedTagIds.includes(tagId)) {
-      setSelectedTagIds(selectedTagIds.filter((id) => id !== tagId));
-    } else {
-      setSelectedTagIds([...selectedTagIds, tagId]);
-    }
   };
 
   // Submit
@@ -450,14 +405,14 @@ export default function EditDirectoryEntryPage() {
                 {contacts.map((contact, index) => (
                   <div
                     key={index}
-                    className="space-y-2 border-b pb-4 last:border-b-0"
+                    className="space-y-3 border rounded-lg p-4"
                   >
                     <div className="flex items-start gap-2">
                       <Select
                         value={contact.type}
                         onValueChange={(v) => updateContact(index, "type", v)}
                       >
-                        <SelectTrigger className="w-[120px]">
+                        <SelectTrigger className="w-32">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -474,32 +429,59 @@ export default function EditDirectoryEntryPage() {
                         onChange={(e) =>
                           updateContact(index, "value", e.target.value)
                         }
-                        placeholder="Значение"
+                        placeholder="Значение (телефон, email...)"
                         className="flex-1"
                       />
                     </div>
-                    <div className="flex items-start gap-2">
-                      <Input
-                        value={contact.label}
-                        onChange={(e) =>
-                          updateContact(index, "label", e.target.value)
-                        }
-                        placeholder="Подпись"
-                        className="flex-1"
-                      />
 
-                      <Input
-                        value={contact.subtitle}
-                        onChange={(e) =>
-                          updateContact(index, "subtitle", e.target.value)
-                        }
-                        placeholder="Подзаголовок"
-                        className="flex-1"
-                      />
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">
+                          Подпись (Диспетчерская, Приёмная...)
+                        </Label>
+                        <Input
+                          value={contact.label}
+                          onChange={(e) =>
+                            updateContact(index, "label", e.target.value)
+                          }
+                          placeholder="Подпись"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">
+                          ФИО / Должность
+                        </Label>
+                        <Input
+                          value={contact.subtitle}
+                          onChange={(e) =>
+                            updateContact(index, "subtitle", e.target.value)
+                          }
+                          placeholder="Иванова М.П."
+                        />
+                      </div>
                     </div>
-                    <div className="flex justify-between">
+
+                    {/* Contact-level tags */}
+                    {tagTree && (
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">
+                          Теги контакта (для точного поиска по строению/подъезду)
+                        </Label>
+                        <TagTreePicker
+                          tags={tagTree as TagTreeNode[]}
+                          selected={contact.tagIds}
+                          onChange={(tagIds) =>
+                            updateContact(index, "tagIds", tagIds)
+                          }
+                          placeholder="Выбрать теги контакта..."
+                          showCounts
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-2 border-t">
                       <div className="flex items-center gap-2">
-                        
                         <Checkbox
                           id={`contact${index}`}
                           checked={contact.isPrimary}
@@ -507,38 +489,37 @@ export default function EditDirectoryEntryPage() {
                             updateContact(index, "isPrimary", !!v)
                           }
                         />
-                        <span className="text-muted-foreground text-xs">
-                          <Label htmlFor={`contact${index}`}>Основной контакт</Label>
-                          
-                        </span>
+                        <Label
+                          htmlFor={`contact${index}`}
+                          className="text-sm cursor-pointer"
+                        >
+                          Основной контакт
+                        </Label>
                       </div>
 
-                      {contacts.length > 1 && (
+                      <div className="flex gap-1">
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          onClick={() => removeContact(index)}
+                          onClick={() => duplicateContact(index)}
+                          title="Дублировать"
                         >
-                          <Trash2 className="text-destructive h-4 w-4" />
+                          <Copy className="h-4 w-4" />
                         </Button>
-                      )}
-                    </div>
-
-                    {/* Contact-level tags */}
-                    {contactTagOptions.length > 0 && (
-                      <div className="pl-1">
-                        <TagPicker
-                          options={contactTagOptions}
-                          selected={contact.tagIds}
-                          onChange={(tagIds) =>
-                            updateContact(index, "tagIds", tagIds)
-                          }
-                          placeholder="Добавить теги..."
-                          emptyText="Теги не найдены"
-                        />
+                        {contacts.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeContact(index)}
+                            title="Удалить"
+                          >
+                            <Trash2 className="text-destructive h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
                 ))}
               </CardContent>
@@ -631,29 +612,20 @@ export default function EditDirectoryEntryPage() {
             {/* Tags */}
             <Card>
               <CardHeader>
-                <CardTitle>Категории</CardTitle>
+                <CardTitle>Категории записи</CardTitle>
               </CardHeader>
               <CardContent>
-                {tagsData && tagsData.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {tagsData.map((tag) => (
-                      <Badge
-                        key={tag.id}
-                        variant={
-                          selectedTagIds.includes(tag.id)
-                            ? "default"
-                            : "outline"
-                        }
-                        className="cursor-pointer"
-                        onClick={() => toggleTag(tag.id)}
-                      >
-                        {tag.name}
-                      </Badge>
-                    ))}
-                  </div>
+                {tagTree ? (
+                  <TagTreePicker
+                    tags={tagTree as TagTreeNode[]}
+                    selected={selectedTagIds}
+                    onChange={setSelectedTagIds}
+                    placeholder="Выберите категории..."
+                    showCounts
+                  />
                 ) : (
                   <p className="text-muted-foreground text-sm">
-                    Категорий пока нет
+                    Загрузка категорий...
                   </p>
                 )}
               </CardContent>

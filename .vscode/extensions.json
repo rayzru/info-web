@@ -1,6 +1,6 @@
 {
   "recommendations": [
-    "esbenp.prettier-vscode",
+    "prettier.prettier-vscode",
     "dbaeumer.vscode-eslint",
     "astro-build.astro-vscode",
     "bradlc.vscode-tailwindcss",
@@ -8,4 +8,3 @@
     "yoavbls.pretty-ts-errors"
   ]
 }
-

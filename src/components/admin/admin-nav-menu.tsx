@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import {
+  BarChart3,
   BookOpen,
   Building2,
   Calendar,
@@ -18,16 +19,30 @@ import {
   MessageSquare,
   Newspaper,
   ScrollText,
-  Send,
   Settings,
   Users,
   UserX,
+  Wrench,
 } from "lucide-react";
+
+// Telegram icon SVG component
+function TelegramIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+    </svg>
+  );
+}
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -54,6 +69,7 @@ import {
 } from "~/components/ui/sheet";
 import { cn } from "~/lib/utils";
 import { type AdminNavGroup } from "~/server/auth/rbac";
+import { api } from "~/trpc/react";
 
 // Icon mapping for dynamic rendering
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -70,6 +86,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   ImageIcon,
   Calendar,
   MessageSquare,
+  BarChart3,
+  Wrench,
 };
 
 // Admin Telegram group URL
@@ -91,8 +109,20 @@ export function AdminNavMenu({ user, navGroups, telegramGroupUrl }: AdminNavMenu
   const tgUrl = telegramGroupUrl ?? ADMIN_TELEGRAM_GROUP;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Fetch navigation counts with 30 second cache
+  const { data: counts } = api.admin.navCounts.useQuery(undefined, {
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: false,
+  });
+
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
+
+  // Helper to get count for a nav item
+  const getCount = (countKey?: string) => {
+    if (!countKey || !counts) return undefined;
+    return counts[countKey];
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b bg-card">
@@ -121,6 +151,7 @@ export function AdminNavMenu({ user, navGroups, telegramGroupUrl }: AdminNavMenu
                       const Icon = iconMap[item.icon];
                       const active = isActive(item.href);
                       const testId = `admin-nav-${item.href.split("/").pop() ?? "item"}`;
+                      const itemCount = getCount(item.countKey);
 
                       return (
                         <li key={item.href}>
@@ -136,7 +167,15 @@ export function AdminNavMenu({ user, navGroups, telegramGroupUrl }: AdminNavMenu
                               {Icon && (
                                 <Icon className="h-4 w-4 shrink-0 opacity-60" />
                               )}
-                              {item.title}
+                              <span className="flex-1">{item.title}</span>
+                              {itemCount !== undefined && itemCount > 0 && (
+                                <Badge
+                                  variant="secondary"
+                                  className="ml-auto h-5 min-w-5 justify-center px-1.5 text-[10px]"
+                                >
+                                  {itemCount > 99 ? "99+" : itemCount}
+                                </Badge>
+                              )}
                             </Link>
                           </NavigationMenuLink>
                         </li>
@@ -157,8 +196,8 @@ export function AdminNavMenu({ user, navGroups, telegramGroupUrl }: AdminNavMenu
           className="hidden h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground sm:flex"
           data-testid="admin-nav-telegram"
         >
-          <Send className="h-4 w-4" />
-          <span className="hidden lg:inline">Чат админов</span>
+          <TelegramIcon className="h-4 w-4" />
+          <span className="hidden lg:inline">Админы</span>
           <ExternalLink className="h-3 w-3 opacity-50" />
         </a>
 
@@ -271,6 +310,7 @@ export function AdminNavMenu({ user, navGroups, telegramGroupUrl }: AdminNavMenu
                       {group.items.map((item) => {
                         const Icon = iconMap[item.icon];
                         const active = isActive(item.href);
+                        const itemCount = getCount(item.countKey);
 
                         return (
                           <Link
@@ -286,7 +326,15 @@ export function AdminNavMenu({ user, navGroups, telegramGroupUrl }: AdminNavMenu
                               )}
                             >
                               {Icon && <Icon className="h-5 w-5" />}
-                              {item.title}
+                              <span className="flex-1 text-left">{item.title}</span>
+                              {itemCount !== undefined && itemCount > 0 && (
+                                <Badge
+                                  variant="secondary"
+                                  className="h-5 min-w-5 justify-center px-1.5 text-[10px]"
+                                >
+                                  {itemCount > 99 ? "99+" : itemCount}
+                                </Badge>
+                              )}
                             </Button>
                           </Link>
                         );
@@ -305,8 +353,8 @@ export function AdminNavMenu({ user, navGroups, telegramGroupUrl }: AdminNavMenu
                     rel="noopener noreferrer"
                     className="flex h-11 items-center gap-3 rounded-md px-4 text-sm font-medium transition-colors hover:bg-accent"
                   >
-                    <Send className="h-5 w-5" />
-                    Чат админов
+                    <TelegramIcon className="h-5 w-5" />
+                    Админы
                     <ExternalLink className="ml-auto h-4 w-4 opacity-50" />
                   </a>
                   <Link

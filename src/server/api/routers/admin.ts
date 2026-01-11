@@ -8,10 +8,13 @@ import {
   apartments,
   buildings,
   deletionRequests,
+  directoryEntries,
   entrances,
   feedback,
   floors,
+  knowledgeBaseArticles,
   listings,
+  media,
   news,
   parkingFloors,
   parkings,
@@ -37,7 +40,16 @@ import {
   adminProcedure,
   adminProcedureWithFeature,
   createTRPCRouter,
+  superAdminProcedure,
 } from "../trpc";
+
+import {
+  isAdminChatConfigured,
+  getChatAdministrators,
+  checkChatMember,
+  getBotInfo,
+  getAdminChatId,
+} from "~/lib/telegram";
 
 // Zod schema for revocation templates
 const revocationTemplateSchema = z.enum([
@@ -656,7 +668,7 @@ export const adminRouter = createTRPCRouter({
 
     // Get active block for user
     getActiveBlock: adminProcedureWithFeature("users:view")
-      .input(z.object({ userId: z.string().uuid() }))
+      .input(z.object({ userId: z.string().min(1) }))
       .query(async ({ ctx, input }) => {
         const block = await ctx.db.query.userBlocks.findFirst({
           where: and(
@@ -848,6 +860,180 @@ export const adminRouter = createTRPCRouter({
           type: "user" as const,
           image: user.image ?? undefined,
         }));
+      }),
+
+    // Force delete user without approval process (SuperAdmin only)
+    // Completely removes user and all their content from the database
+    forceDelete: superAdminProcedure
+      .input(
+        z.object({
+          userId: z.string().uuid(),
+          reason: z.string().max(1000).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { userId, reason } = input;
+
+        // Prevent self-deletion
+        if (userId === ctx.session.user.id) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Нельзя удалить собственный аккаунт",
+          });
+        }
+
+        // Check if user exists
+        const user = await ctx.db.query.users.findFirst({
+          where: eq(users.id, userId),
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Пользователь не найден",
+          });
+        }
+
+        // Check if target user is Root (cannot be deleted)
+        const targetRoles = await ctx.db
+          .select({ role: userRoles.role })
+          .from(userRoles)
+          .where(eq(userRoles.userId, userId));
+
+        if (targetRoles.some((r) => r.role === "Root")) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Невозможно удалить Root пользователя",
+          });
+        }
+
+        // Use transaction to ensure atomicity
+        await ctx.db.transaction(async (tx) => {
+          // 1. Delete user-related content first (foreign keys)
+
+          // Delete notifications (where user is recipient or sender)
+          await tx.execute(
+            sql`DELETE FROM info_web_notification WHERE user_id = ${userId} OR from_user_id = ${userId}`
+          );
+
+          // Delete messages (where user is sender)
+          await tx.execute(
+            sql`DELETE FROM info_web_message WHERE sender_id = ${userId}`
+          );
+
+          // Delete message recipients (where user is recipient)
+          await tx.execute(
+            sql`DELETE FROM info_web_message_recipient WHERE recipient_id = ${userId}`
+          );
+
+          // Delete message threads (where user is creator)
+          await tx.execute(
+            sql`DELETE FROM info_web_message_thread WHERE created_by = ${userId}`
+          );
+
+          // Delete message quotas
+          await tx.execute(
+            sql`DELETE FROM info_web_message_quota WHERE user_id = ${userId}`
+          );
+
+          // Delete publications (cascade will handle attachments, votes, history)
+          await tx.execute(
+            sql`DELETE FROM info_web_publication WHERE author_id = ${userId}`
+          );
+
+          // Delete news (cascade will handle related tables)
+          await tx.execute(
+            sql`DELETE FROM info_web_news WHERE author_id = ${userId}`
+          );
+
+          // Delete listings (cascade will handle photos)
+          await tx.execute(
+            sql`DELETE FROM info_web_listing WHERE user_id = ${userId}`
+          );
+
+          // Delete feedback
+          await tx.execute(
+            sql`DELETE FROM info_web_feedback WHERE user_id = ${userId}`
+          );
+
+          // Delete claims
+          await tx.execute(
+            sql`DELETE FROM info_web_claim WHERE user_id = ${userId}`
+          );
+
+          // Delete media
+          await tx.execute(
+            sql`DELETE FROM info_web_media WHERE uploaded_by = ${userId}`
+          );
+
+          // Delete posts
+          await tx.execute(
+            sql`DELETE FROM info_web_post WHERE created_by = ${userId}`
+          );
+
+          // Delete deletion requests
+          await tx.execute(
+            sql`DELETE FROM info_web_deletion_request WHERE user_id = ${userId}`
+          );
+
+          // 2. Delete user property bindings
+          await tx.execute(
+            sql`DELETE FROM info_web_user_apartment WHERE user_id = ${userId}`
+          );
+
+          await tx.execute(
+            sql`DELETE FROM info_web_user_parking_spot WHERE user_id = ${userId}`
+          );
+
+          await tx.execute(
+            sql`DELETE FROM info_web_user_interest_building WHERE user_id = ${userId}`
+          );
+
+          // 3. Delete user auth data
+          await tx.execute(
+            sql`DELETE FROM info_web_user_block WHERE user_id = ${userId}`
+          );
+
+          await tx.execute(
+            sql`DELETE FROM info_web_telegram_auth_token WHERE telegram_id IN (
+              SELECT telegram_id FROM info_web_user_profile WHERE user_id = ${userId}
+            )`
+          );
+
+          await tx.execute(
+            sql`DELETE FROM info_web_email_verification_token WHERE user_id = ${userId}`
+          );
+
+          await tx.execute(
+            sql`DELETE FROM info_web_password_reset_token WHERE user_id = ${userId}`
+          );
+
+          await tx.execute(
+            sql`DELETE FROM info_web_user_profile WHERE user_id = ${userId}`
+          );
+
+          await tx.execute(
+            sql`DELETE FROM info_web_user_role WHERE user_id = ${userId}`
+          );
+
+          await tx.execute(
+            sql`DELETE FROM info_web_session WHERE user_id = ${userId}`
+          );
+
+          await tx.execute(
+            sql`DELETE FROM info_web_account WHERE user_id = ${userId}`
+          );
+
+          // 4. Finally delete the user
+          await tx.execute(sql`DELETE FROM info_web_user WHERE id = ${userId}`);
+        });
+
+        // Log the action (outside transaction to ensure it's recorded)
+        console.log(
+          `[ADMIN] User ${userId} force-deleted by ${ctx.session.user.id}. Reason: ${reason ?? "No reason provided"}`
+        );
+
+        return { success: true };
       }),
   }),
 
@@ -1238,6 +1424,153 @@ export const adminRouter = createTRPCRouter({
     return result;
   }),
 
+  // Navigation menu counts for badges
+  navCounts: adminProcedure.query(async ({ ctx }) => {
+    const userRolesData = ctx.userRoles;
+
+    const result: Record<string, number> = {};
+
+    // Run all count queries in parallel for better performance
+    const queries: Promise<void>[] = [];
+
+    // Users count
+    if (hasFeatureAccess(userRolesData, "users:view")) {
+      queries.push(
+        ctx.db
+          .select({ count: count() })
+          .from(users)
+          .where(eq(users.isDeleted, false))
+          .then(([r]) => {
+            result.users = r?.count ?? 0;
+          })
+      );
+    }
+
+    // Deletion requests (pending)
+    if (hasFeatureAccess(userRolesData, "users:delete")) {
+      queries.push(
+        ctx.db
+          .select({ count: count() })
+          .from(deletionRequests)
+          .where(eq(deletionRequests.status, "pending"))
+          .then(([r]) => {
+            result.deletionRequests = r?.count ?? 0;
+          })
+      );
+    }
+
+    // Feedback (new/pending)
+    if (hasFeatureAccess(userRolesData, "users:manage")) {
+      queries.push(
+        ctx.db
+          .select({ count: count() })
+          .from(feedback)
+          .where(eq(feedback.status, "new"))
+          .then(([r]) => {
+            result.feedback = r?.count ?? 0;
+          })
+      );
+    }
+
+    // Buildings count
+    if (hasFeatureAccess(userRolesData, "buildings:view")) {
+      queries.push(
+        ctx.db
+          .select({ count: count() })
+          .from(buildings)
+          .then(([r]) => {
+            result.buildings = r?.count ?? 0;
+          })
+      );
+    }
+
+    // Claims (pending)
+    if (hasFeatureAccess(userRolesData, "claims:view")) {
+      queries.push(
+        ctx.db
+          .select({ count: count() })
+          .from(propertyClaims)
+          .where(eq(propertyClaims.status, "pending"))
+          .then(([r]) => {
+            result.claims = r?.count ?? 0;
+          })
+      );
+    }
+
+    // Listings (pending moderation)
+    if (hasFeatureAccess(userRolesData, "listings:view")) {
+      queries.push(
+        ctx.db
+          .select({ count: count() })
+          .from(listings)
+          .where(eq(listings.status, "pending_moderation"))
+          .then(([r]) => {
+            result.listings = r?.count ?? 0;
+          })
+      );
+    }
+
+    // News (draft/pending)
+    if (hasFeatureAccess(userRolesData, "content:moderate")) {
+      queries.push(
+        ctx.db
+          .select({ count: count() })
+          .from(news)
+          .where(eq(news.status, "draft"))
+          .then(([r]) => {
+            result.news = r?.count ?? 0;
+          })
+      );
+
+      // Publications (pending)
+      queries.push(
+        ctx.db
+          .select({ count: count() })
+          .from(publications)
+          .where(eq(publications.status, "pending"))
+          .then(([r]) => {
+            result.publications = r?.count ?? 0;
+          })
+      );
+    }
+
+    // Directory entries
+    if (hasFeatureAccess(userRolesData, "directory:manage")) {
+      queries.push(
+        ctx.db
+          .select({ count: count() })
+          .from(directoryEntries)
+          .then(([r]) => {
+            result.directory = r?.count ?? 0;
+          })
+      );
+
+      // Knowledge base articles (howtos)
+      queries.push(
+        ctx.db
+          .select({ count: count() })
+          .from(knowledgeBaseArticles)
+          .then(([r]) => {
+            result.howtos = r?.count ?? 0;
+          })
+      );
+
+      // Media files
+      queries.push(
+        ctx.db
+          .select({ count: count() })
+          .from(media)
+          .then(([r]) => {
+            result.media = r?.count ?? 0;
+          })
+      );
+    }
+
+    await Promise.all(queries);
+
+    return result;
+  }),
+
   // Deletion requests management
   deletionRequests: createTRPCRouter({
     // Get aggregated counts by status
@@ -1573,6 +1906,313 @@ export const adminRouter = createTRPCRouter({
           .where(eq(deletionRequests.id, requestId));
 
         return { success: true };
+      }),
+  }),
+
+  // ==================== ADMIN OPERATIONS ====================
+  operations: createTRPCRouter({
+    // Check if Telegram admin chat sync is available
+    telegramSyncStatus: adminProcedureWithFeature("users:manage").query(
+      async () => {
+        return {
+          configured: isAdminChatConfigured(),
+          chatId: getAdminChatId(),
+        };
+      }
+    ),
+
+    // Get admin Telegram sync data
+    // Compares system admins with Telegram chat members
+    getTelegramSync: adminProcedureWithFeature("users:manage").query(
+      async ({ ctx }) => {
+        if (!isAdminChatConfigured()) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "Telegram admin chat не настроен",
+          });
+        }
+
+        // Get bot info to exclude it from the list
+        const botInfo = await getBotInfo();
+
+        // Get all chat members (administrators and members)
+        const chatAdmins = await getChatAdministrators();
+
+        if (!chatAdmins) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Не удалось получить список участников чата",
+          });
+        }
+
+        // Get all system admins (users with admin roles)
+        const systemAdmins = await ctx.db
+          .select({
+            userId: userRoles.userId,
+            role: userRoles.role,
+          })
+          .from(userRoles)
+          .where(
+            or(
+              eq(userRoles.role, "Root"),
+              eq(userRoles.role, "SuperAdmin"),
+              eq(userRoles.role, "Admin"),
+              eq(userRoles.role, "Editor"),
+              eq(userRoles.role, "Moderator"),
+              eq(userRoles.role, "BuildingChairman"),
+              eq(userRoles.role, "ComplexChairman")
+            )
+          );
+
+        // Get user profiles with Telegram IDs for system admins
+        const adminUserIds = [...new Set(systemAdmins.map((a) => a.userId))];
+        const adminProfiles =
+          adminUserIds.length > 0
+            ? await ctx.db.query.userProfiles.findMany({
+                where: or(
+                  ...adminUserIds.map((id) => eq(userProfiles.userId, id))
+                ),
+                columns: {
+                  userId: true,
+                  telegramId: true,
+                  telegramUsername: true,
+                },
+              })
+            : [];
+
+        // Get user details
+        const adminUsers =
+          adminUserIds.length > 0
+            ? await ctx.db.query.users.findMany({
+                where: or(...adminUserIds.map((id) => eq(users.id, id))),
+                columns: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  image: true,
+                },
+              })
+            : [];
+
+        // Map profiles by user ID
+        const profileByUserId = new Map(
+          adminProfiles.map((p) => [p.userId, p])
+        );
+        const userById = new Map(adminUsers.map((u) => [u.id, u]));
+
+        // Group roles by user
+        const rolesByUserId = systemAdmins.reduce(
+          (acc, { userId, role }) => {
+            if (!acc[userId]) acc[userId] = [];
+            acc[userId].push(role);
+            return acc;
+          },
+          {} as Record<string, string[]>
+        );
+
+        // Filter out bot and creator from chat members
+        const creatorId = chatAdmins.find((m) => m.status === "creator")?.user
+          .id;
+        const filteredChatMembers = chatAdmins.filter(
+          (m) =>
+            !m.user.is_bot &&
+            m.status !== "creator" &&
+            m.user.id !== botInfo?.id
+        );
+
+        // Build result lists
+        // 1. System admins NOT in Telegram chat (need to add)
+        const notInChat: Array<{
+          userId: string;
+          name: string | null;
+          email: string | null;
+          image: string | null;
+          roles: string[];
+          telegramId: string | null;
+          telegramUsername: string | null;
+        }> = [];
+
+        // 2. System admins IN Telegram chat (synced)
+        const inChat: Array<{
+          userId: string;
+          name: string | null;
+          email: string | null;
+          image: string | null;
+          roles: string[];
+          telegramId: string | null;
+          telegramUsername: string | null;
+          chatStatus: string;
+        }> = [];
+
+        // 3. Telegram members NOT system admins (should be removed)
+        const extraInChat: Array<{
+          telegramId: number;
+          firstName: string;
+          lastName: string | null;
+          username: string | null;
+          chatStatus: string;
+        }> = [];
+
+        // Check each system admin
+        for (const userId of adminUserIds) {
+          const profile = profileByUserId.get(userId);
+          const user = userById.get(userId);
+          const telegramId = profile?.telegramId
+            ? parseInt(profile.telegramId)
+            : null;
+
+          if (!telegramId) {
+            // No Telegram linked - needs to add
+            notInChat.push({
+              userId,
+              name: user?.name ?? null,
+              email: user?.email ?? null,
+              image: user?.image ?? null,
+              roles: rolesByUserId[userId] ?? [],
+              telegramId: null,
+              telegramUsername: null,
+            });
+            continue;
+          }
+
+          // Check if this Telegram ID is in the chat
+          const chatMember = chatAdmins.find((m) => m.user.id === telegramId);
+
+          if (
+            chatMember &&
+            chatMember.status !== "left" &&
+            chatMember.status !== "kicked"
+          ) {
+            inChat.push({
+              userId,
+              name: user?.name ?? null,
+              email: user?.email ?? null,
+              image: user?.image ?? null,
+              roles: rolesByUserId[userId] ?? [],
+              telegramId: profile?.telegramId ?? null,
+              telegramUsername: profile?.telegramUsername ?? null,
+              chatStatus: chatMember.status,
+            });
+          } else {
+            notInChat.push({
+              userId,
+              name: user?.name ?? null,
+              email: user?.email ?? null,
+              image: user?.image ?? null,
+              roles: rolesByUserId[userId] ?? [],
+              telegramId: profile?.telegramId ?? null,
+              telegramUsername: profile?.telegramUsername ?? null,
+            });
+          }
+        }
+
+        // Find Telegram members who are not system admins
+        const systemTelegramIds = new Set(
+          adminProfiles
+            .filter((p) => p.telegramId)
+            .map((p) => parseInt(p.telegramId!))
+        );
+
+        for (const member of filteredChatMembers) {
+          if (!systemTelegramIds.has(member.user.id)) {
+            extraInChat.push({
+              telegramId: member.user.id,
+              firstName: member.user.first_name,
+              lastName: member.user.last_name ?? null,
+              username: member.user.username ?? null,
+              chatStatus: member.status,
+            });
+          }
+        }
+
+        return {
+          notInChat,
+          inChat,
+          extraInChat,
+          botId: botInfo?.id ?? null,
+          creatorId: creatorId ?? null,
+          totalSystemAdmins: adminUserIds.length,
+          totalChatMembers: chatAdmins.length,
+        };
+      }
+    ),
+
+    // Quick search for users (for blocking widget)
+    quickSearch: adminProcedureWithFeature("users:manage")
+      .input(
+        z.object({
+          query: z.string().min(1).max(100),
+          limit: z.number().min(1).max(20).default(10),
+        })
+      )
+      .query(async ({ ctx, input }) => {
+        const { query, limit } = input;
+
+        // Search by name or email
+        const results = await ctx.db
+          .select({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            image: users.image,
+          })
+          .from(users)
+          .where(
+            and(
+              eq(users.isDeleted, false),
+              or(
+                ilike(users.name, `%${query}%`),
+                ilike(users.email, `%${query}%`)
+              )
+            )
+          )
+          .limit(limit);
+
+        // Get roles for found users
+        const userIds = results.map((u) => u.id);
+        const rolesResult =
+          userIds.length > 0
+            ? await ctx.db
+                .select({
+                  userId: userRoles.userId,
+                  role: userRoles.role,
+                })
+                .from(userRoles)
+                .where(or(...userIds.map((id) => eq(userRoles.userId, id))))
+            : [];
+
+        // Get active blocks
+        const blocksResult =
+          userIds.length > 0
+            ? await ctx.db
+                .select({
+                  userId: userBlocks.userId,
+                })
+                .from(userBlocks)
+                .where(
+                  and(
+                    or(...userIds.map((id) => eq(userBlocks.userId, id))),
+                    eq(userBlocks.isActive, true)
+                  )
+                )
+            : [];
+
+        const rolesByUser = rolesResult.reduce(
+          (acc, { userId, role }) => {
+            if (!acc[userId]) acc[userId] = [];
+            acc[userId].push(role);
+            return acc;
+          },
+          {} as Record<string, string[]>
+        );
+
+        const blockedUsers = new Set(blocksResult.map((b) => b.userId));
+
+        return results.map((user) => ({
+          ...user,
+          roles: rolesByUser[user.id] ?? [],
+          isBlocked: blockedUsers.has(user.id),
+        }));
       }),
   }),
 });

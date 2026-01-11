@@ -8,12 +8,20 @@ import ResponsiveWrapper from "./responsive-wrapper";
 
 const weCategories = [
   {
+    name: "Руководство",
+    slug: "guide",
+  },
+  {
     name: "Чаты",
     slug: "chats",
   },
   {
     name: "Правила",
     slug: "rules",
+  },
+  {
+    name: "Как помочь?",
+    slug: "contribute",
   },
 ];
 

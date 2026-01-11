@@ -9,12 +9,27 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    Segoe UI,
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    Fira Sans,
+    Droid Sans,
+    Helvetica Neue,
+    sans-serif;
 }
 
 a {
   text-decoration: none;
+}
+
+a.link {
+  text-decoration: underline;
+  color: var(--primary);
 }
 
 /* Reset link color for nav links, but not for buttons */
@@ -139,9 +154,15 @@ a:where(:not([data-slot="button"])) {
 
 @keyframes theme-circle-reveal {
   from {
-    clip-path: circle(0% at var(--theme-transition-x, calc(100% - 50px)) var(--theme-transition-y, calc(100% - 50px)));
+    clip-path: circle(
+      0% at var(--theme-transition-x, calc(100% - 50px))
+        var(--theme-transition-y, calc(100% - 50px))
+    );
   }
   to {
-    clip-path: circle(150% at var(--theme-transition-x, calc(100% - 50px)) var(--theme-transition-y, calc(100% - 50px)));
+    clip-path: circle(
+      150% at var(--theme-transition-x, calc(100% - 50px))
+        var(--theme-transition-y, calc(100% - 50px))
+    );
   }
 }

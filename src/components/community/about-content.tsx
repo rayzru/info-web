@@ -136,6 +136,12 @@ export function AboutContent() {
                 </span>
                 <span>Запущен умный чат-бот для поддержания порядка</span>
               </div>
+              <div className="flex gap-3">
+                <span className="w-12 shrink-0 font-medium text-foreground">
+                  2026
+                </span>
+                <span>Запуск единой информационной платформы с ИИ-ассистентом</span>
+              </div>
             </div>
           </section>
 

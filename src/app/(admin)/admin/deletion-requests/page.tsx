@@ -385,7 +385,7 @@ export default function AdminDeletionRequestsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const statusFilter = searchParams.get("status") ?? "pending";
+  const statusFilter = searchParams.get("status") ?? "all";
 
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
