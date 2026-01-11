@@ -2,9 +2,6 @@
 
 import { useState } from "react";
 import {
-  Building2,
-  ClipboardList,
-  FileText,
   HomeIcon,
   Loader2,
   ParkingCircleIcon,
@@ -32,6 +29,10 @@ import {
 import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
+import {
+  ClaimDocumentUploader,
+  type UploadedDocument,
+} from "~/components/claim-document-uploader";
 
 type ClaimType = "apartment" | "parking" | "commercial";
 
@@ -95,9 +96,41 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
   const [selectedParkingSpotId, setSelectedParkingSpotId] = useState<string>("");
   const [role, setRole] = useState<string>("");
   const [comment, setComment] = useState<string>("");
+  const [documents, setDocuments] = useState<UploadedDocument[]>([]);
+
+  const addDocument = api.claims.addDocument.useMutation();
 
   const createClaim = api.claims.create.useMutation({
-    onSuccess: () => {
+    onSuccess: async (claim) => {
+      // Add documents to the created claim
+      if (documents.length > 0 && claim?.id) {
+        try {
+          await Promise.all(
+            documents.map((doc) =>
+              addDocument.mutateAsync({
+                claimId: claim.id,
+                documentType: doc.documentType,
+                fileUrl: doc.fileUrl,
+                fileName: doc.fileName,
+                fileSize: doc.fileSize,
+                mimeType: doc.mimeType,
+                thumbnailUrl: doc.thumbnailUrl,
+              })
+            )
+          );
+        } catch {
+          // Documents failed but claim was created
+          toast({
+            title: "Заявка отправлена",
+            description: "Заявка создана, но некоторые документы не были прикреплены",
+            variant: "destructive",
+          });
+          router.push("/my");
+          router.refresh();
+          return;
+        }
+      }
+
       toast({
         title: "Заявка отправлена",
         description: "Ваша заявка будет рассмотрена администрацией",
@@ -169,6 +202,7 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
     setSelectedParkingSpotId("");
     setRole("");
     setComment("");
+    setDocuments([]);
   };
 
   return (
@@ -343,28 +377,13 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
               </div>
             )}
 
-            {/* Document Upload Placeholder */}
+            {/* Document Upload */}
             {role && (
-              <Card className="border-dashed">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <CardTitle className="text-sm">Документы</CardTitle>
-                      <CardDescription className="text-xs">
-                        Загрузка документов пока недоступна
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    В будущем здесь можно будет загрузить документы,
-                    подтверждающие ваши права (выписка ЕГРН, договор
-                    купли-продажи, договор аренды).
-                  </p>
-                </CardContent>
-              </Card>
+              <ClaimDocumentUploader
+                documents={documents}
+                onChange={setDocuments}
+                disabled={createClaim.isPending}
+              />
             )}
 
             {/* Submit Button */}
@@ -537,27 +556,13 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
               </div>
             )}
 
-            {/* Document Upload Placeholder */}
+            {/* Document Upload */}
             {role && (
-              <Card className="border-dashed">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <CardTitle className="text-sm">Документы</CardTitle>
-                      <CardDescription className="text-xs">
-                        Загрузка документов пока недоступна
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    В будущем здесь можно будет загрузить документы,
-                    подтверждающие ваши права.
-                  </p>
-                </CardContent>
-              </Card>
+              <ClaimDocumentUploader
+                documents={documents}
+                onChange={setDocuments}
+                disabled={createClaim.isPending}
+              />
             )}
 
             {/* Submit Button */}

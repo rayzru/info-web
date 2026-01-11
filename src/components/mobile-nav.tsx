@@ -345,8 +345,8 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
             </div>
           )}
 
-          {/* Login button for non-authenticated users */}
-          {!user && (
+          {/* Login button for non-authenticated users (hidden on auth pages) */}
+          {!user && !pathname.startsWith("/login") && !pathname.startsWith("/register") && !pathname.startsWith("/forgot-password") && !pathname.startsWith("/reset-password") && (
             <div className="shrink-0">
               <Separator />
               <div className="p-2">

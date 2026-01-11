@@ -74,12 +74,12 @@ function getPropertyLabel(claim: {
 }): string {
   if (claim.apartment) {
     const building = claim.apartment.floor?.entrance?.building?.number;
-    return `Кв. ${claim.apartment.number}, стр. ${building}`;
+    return `Квартира ${claim.apartment.number}, строение ${building}`;
   }
   if (claim.parkingSpot) {
     const building = claim.parkingSpot.floor?.parking?.building?.number;
     const floor = claim.parkingSpot.floor?.floorNumber;
-    return `М/м ${claim.parkingSpot.number}, эт. ${floor}, стр. ${building}`;
+    return `Машиноместо ${claim.parkingSpot.number}, этаж ${floor}, строение ${building}`;
   }
   return "Неизвестно";
 }
@@ -520,13 +520,13 @@ export function MyPropertiesWithTimeline() {
     ...(properties?.apartments?.map((a) => ({
       id: a.apartment!.id,
       type: "apartment" as const,
-      label: `Кв. ${a.apartment!.number}, стр. ${a.apartment!.floor?.entrance?.building?.number}`,
+      label: `Квартира ${a.apartment!.number}, строение ${a.apartment!.floor?.entrance?.building?.number}`,
       role: a.role,
     })) ?? []),
     ...(properties?.parkingSpots?.map((p) => ({
       id: p.parkingSpot!.id,
       type: "parking" as const,
-      label: `М/м ${p.parkingSpot!.number}, эт. ${p.parkingSpot!.floor?.floorNumber}, стр. ${p.parkingSpot!.floor?.parking?.building?.number}`,
+      label: `Машиноместо ${p.parkingSpot!.number}, этаж ${p.parkingSpot!.floor?.floorNumber}, строение ${p.parkingSpot!.floor?.parking?.building?.number}`,
       role: p.role,
     })) ?? []),
   ];

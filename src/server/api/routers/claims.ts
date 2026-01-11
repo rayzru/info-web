@@ -286,6 +286,120 @@ export const claimsRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  // Add document to a claim
+  addDocument: protectedProcedure
+    .input(
+      z.object({
+        claimId: z.string(),
+        documentType: z.enum(["egrn", "contract", "passport", "other"]),
+        fileUrl: z.string(),
+        fileName: z.string(),
+        fileSize: z.string(),
+        mimeType: z.string(),
+        thumbnailUrl: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Verify the claim belongs to the user
+      const claim = await ctx.db.query.propertyClaims.findFirst({
+        where: and(
+          eq(propertyClaims.id, input.claimId),
+          eq(propertyClaims.userId, userId)
+        ),
+        with: {
+          documents: true,
+        },
+      });
+
+      if (!claim) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Заявка не найдена",
+        });
+      }
+
+      // Check if claim is in a state that allows adding documents
+      if (!["pending", "review", "documents_requested"].includes(claim.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Нельзя добавить документы к заявке в текущем статусе",
+        });
+      }
+
+      // Check document limit
+      if (claim.documents.length >= 10) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Достигнут лимит документов (максимум 10)",
+        });
+      }
+
+      // Add document
+      const [document] = await ctx.db
+        .insert(claimDocuments)
+        .values({
+          claimId: input.claimId,
+          documentType: input.documentType,
+          fileUrl: input.fileUrl,
+          fileName: input.fileName,
+          fileSize: input.fileSize,
+          mimeType: input.mimeType,
+        })
+        .returning();
+
+      return document;
+    }),
+
+  // Remove document from a claim
+  removeDocument: protectedProcedure
+    .input(z.object({ documentId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Get document with claim
+      const document = await ctx.db.query.claimDocuments.findFirst({
+        where: eq(claimDocuments.id, input.documentId),
+        with: {
+          claim: true,
+        },
+      });
+
+      if (!document) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Документ не найден",
+        });
+      }
+
+      // Verify ownership
+      if (document.claim.userId !== userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Нет доступа к этому документу",
+        });
+      }
+
+      // Check if claim allows document removal
+      if (!["pending", "review", "documents_requested"].includes(document.claim.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Нельзя удалить документ из заявки в текущем статусе",
+        });
+      }
+
+      // Delete document record
+      await ctx.db
+        .delete(claimDocuments)
+        .where(eq(claimDocuments.id, input.documentId));
+
+      // Note: Physical file deletion should be handled separately
+      // The file URL is: document.fileUrl
+
+      return { success: true, deletedFileUrl: document.fileUrl };
+    }),
+
   // Revoke own property assignment (self-revoke)
   revokeMyProperty: protectedProcedure
     .input(
