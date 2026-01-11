@@ -171,6 +171,9 @@ jobs:
           # Upload .env file to server
           scp .env "$USER@$HOST:$TARGET/$REL/.env"
 
+          # Fix port to 3002 for production (nginx expects 3002)
+          ssh "$USER@$HOST" "sed -i 's/PORT: 3001/PORT: 3002/g' $TARGET/$REL/ecosystem.config.cjs"
+
           # Verify .env file was created and has content
           echo "Verifying .env file..."
           ssh "$USER@$HOST" "ls -la $TARGET/$REL/.env && echo 'File size:' && wc -c $TARGET/$REL/.env"
