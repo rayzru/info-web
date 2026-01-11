@@ -6,9 +6,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Download,
+  ExternalLink,
   FileText,
   History,
   Home,
+  Image as ImageIcon,
   Loader2,
   ParkingCircle,
   X,
@@ -63,6 +66,13 @@ const ROLE_LABELS: Record<string, string> = {
   ParkingResident: "Арендатор парковки",
   StoreOwner: "Владелец магазина",
   StoreRepresenative: "Представитель магазина",
+};
+
+const DOCUMENT_TYPE_LABELS: Record<string, string> = {
+  egrn: "Выписка ЕГРН",
+  contract: "Договор",
+  passport: "Паспорт",
+  other: "Другое",
 };
 
 const APPROVAL_TEMPLATES = [
@@ -146,6 +156,41 @@ function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProp
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Documents Section */}
+          {claim.documents && claim.documents.length > 0 && (
+            <div className="space-y-2">
+              <Label>Приложенные документы ({claim.documents.length})</Label>
+              <div className="flex flex-wrap gap-2">
+                {claim.documents.map((doc: any) => {
+                  const isPdf = doc.mimeType === "application/pdf";
+                  const isImage = doc.mimeType?.startsWith("image/");
+
+                  return (
+                    <a
+                      key={doc.id}
+                      href={doc.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-2 rounded-md border bg-muted/30 px-2 py-1.5 text-xs hover:bg-muted transition-colors"
+                    >
+                      {isImage ? (
+                        <ImageIcon className="h-3.5 w-3.5 text-blue-500" />
+                      ) : isPdf ? (
+                        <FileText className="h-3.5 w-3.5 text-red-500" />
+                      ) : (
+                        <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                      <span className="max-w-32 truncate">
+                        {doc.fileName}
+                      </span>
+                      <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Action Selection */}
           <div className="space-y-3">
             <Label>Решение</Label>
@@ -212,7 +257,11 @@ function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProp
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={reviewMutation.isPending}
+            disabled={
+              reviewMutation.isPending ||
+              !template ||
+              (template.endsWith("_custom") && !customText.trim())
+            }
             variant={action === "reject" ? "destructive" : "default"}
           >
             {reviewMutation.isPending && (
@@ -559,6 +608,43 @@ export default function AdminClaimsPage() {
                         <p className="mt-2 text-sm bg-muted p-2 rounded">
                           {claim.userComment}
                         </p>
+                      )}
+
+                      {/* Documents Section */}
+                      {claim.documents && claim.documents.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Документы ({claim.documents.length})
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {claim.documents.map((doc: any) => {
+                              const isPdf = doc.mimeType === "application/pdf";
+                              const isImage = doc.mimeType?.startsWith("image/");
+
+                              return (
+                                <a
+                                  key={doc.id}
+                                  href={doc.fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="group flex items-center gap-2 rounded-md border bg-muted/30 px-2 py-1.5 text-xs hover:bg-muted transition-colors"
+                                >
+                                  {isImage ? (
+                                    <ImageIcon className="h-3.5 w-3.5 text-blue-500" />
+                                  ) : isPdf ? (
+                                    <FileText className="h-3.5 w-3.5 text-red-500" />
+                                  ) : (
+                                    <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                                  )}
+                                  <span className="max-w-40 truncate">
+                                    {doc.fileName}
+                                  </span>
+                                  <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </a>
+                              );
+                            })}
+                          </div>
+                        </div>
                       )}
 
                       {claim.adminComment && (

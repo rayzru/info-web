@@ -11,7 +11,14 @@ import { NavLogo } from "./nav-logo";
 import { MobileNav } from "./mobile-nav";
 import { NavLinks } from "./nav-links";
 
-export async function Navigation() {
+// Pages where we don't show the login button (user is already on auth flow)
+const AUTH_PAGES = ["/login", "/register", "/forgot-password", "/reset-password"];
+
+interface NavigationProps {
+  pathname?: string;
+}
+
+export async function Navigation({ pathname = "" }: NavigationProps) {
   const session = await auth();
   const userRoles = (session?.user?.roles ?? []) as UserRole[];
   const hasAdminAccess = isAdmin(userRoles);
@@ -29,7 +36,7 @@ export async function Navigation() {
 
       {/* Right side: user actions - aligned right */}
       <div className="flex items-center justify-end gap-2">
-        {!session && (
+        {!session && !AUTH_PAGES.some((p) => pathname.startsWith(p)) && (
           <Link passHref href={"/login"} data-testid="nav-login">
             <Button>Войти</Button>
           </Link>

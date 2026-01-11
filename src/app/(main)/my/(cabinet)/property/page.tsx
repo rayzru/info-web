@@ -17,6 +17,10 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 import { api } from "~/trpc/react";
+import {
+  ClaimDocumentUploader,
+  type UploadedDocument,
+} from "~/components/claim-document-uploader";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -214,7 +218,7 @@ export default function PropertyPage() {
         propertyMap.set(key, {
           id: claim.apartment.id,
           type: "apartment",
-          label: `Кв. ${claim.apartment.number}, стр. ${claim.apartment.floor?.entrance?.building?.number}`,
+          label: `Квартира ${claim.apartment.number}, строение ${claim.apartment.floor?.entrance?.building?.number}`,
           role: claim.claimedRole,
           latestStatus: claim.status,
           isConfirmed: confirmedApartmentIds.has(claim.apartment.id),
@@ -234,7 +238,7 @@ export default function PropertyPage() {
         propertyMap.set(key, {
           id: claim.parkingSpot.id,
           type: "parking",
-          label: `М/м ${claim.parkingSpot.number}, эт. ${claim.parkingSpot.floor?.floorNumber}, стр. ${claim.parkingSpot.floor?.parking?.building?.number}`,
+          label: `Машиноместо ${claim.parkingSpot.number}, этаж ${claim.parkingSpot.floor?.floorNumber}, строение ${claim.parkingSpot.floor?.parking?.building?.number}`,
           role: claim.claimedRole,
           latestStatus: claim.status,
           isConfirmed: confirmedParkingIds.has(claim.parkingSpot.id),
@@ -813,9 +817,40 @@ function AddPropertyDialog({
   const [selectedParkingSpotId, setSelectedParkingSpotId] = useState("");
   const [role, setRole] = useState("");
   const [comment, setComment] = useState("");
+  const [documents, setDocuments] = useState<UploadedDocument[]>([]);
+
+  const addDocument = api.claims.addDocument.useMutation();
 
   const createClaim = api.claims.create.useMutation({
-    onSuccess: () => {
+    onSuccess: async (claim) => {
+      // Add documents to the created claim
+      if (documents.length > 0 && claim?.id) {
+        try {
+          await Promise.all(
+            documents.map((doc) =>
+              addDocument.mutateAsync({
+                claimId: claim.id,
+                documentType: doc.documentType,
+                fileUrl: doc.fileUrl,
+                fileName: doc.fileName,
+                fileSize: doc.fileSize,
+                mimeType: doc.mimeType,
+                thumbnailUrl: doc.thumbnailUrl,
+              })
+            )
+          );
+        } catch {
+          // Documents failed but claim was created
+          toast.success("Заявка отправлена", {
+            description: "Заявка создана, но некоторые документы не были прикреплены",
+          });
+          utils.claims.my.invalidate();
+          utils.claims.availableProperties.invalidate();
+          handleClose();
+          return;
+        }
+      }
+
       toast.success("Заявка отправлена", {
         description: "Ваша заявка будет рассмотрена администрацией",
       });
@@ -845,7 +880,11 @@ function AddPropertyDialog({
     setSelectedParkingSpotId("");
     setRole("");
     setComment("");
+    setDocuments([]);
   };
+
+  // Only show document upload for owner roles
+  const isOwnerRole = role === "ApartmentOwner" || role === "ParkingOwner";
 
   const handleSelectType = (type: ClaimType) => {
     setClaimType(type);
@@ -899,7 +938,7 @@ function AddPropertyDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {step === "type"
@@ -1050,6 +1089,15 @@ function AddPropertyDialog({
                 />
               </div>
             )}
+
+            {/* Document upload - only for owners */}
+            {isOwnerRole && (
+              <ClaimDocumentUploader
+                documents={documents}
+                onChange={setDocuments}
+                disabled={createClaim.isPending}
+              />
+            )}
           </div>
         )}
 
@@ -1168,6 +1216,15 @@ function AddPropertyDialog({
                   rows={2}
                 />
               </div>
+            )}
+
+            {/* Document upload - only for owners */}
+            {isOwnerRole && (
+              <ClaimDocumentUploader
+                documents={documents}
+                onChange={setDocuments}
+                disabled={createClaim.isPending}
+              />
             )}
           </div>
         )}

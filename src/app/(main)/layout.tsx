@@ -55,6 +55,10 @@ export default async function MainLayout({
 }) {
   await checkMaintenance();
 
+  // Get current pathname to pass to Navigation
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") ?? headersList.get("x-invoke-path") ?? "";
+
   return (
     <div className="flex min-h-screen flex-col">
       <div
@@ -62,7 +66,7 @@ export default async function MainLayout({
         className="container m-auto flex-1 grid max-w-7xl min-w-xs grid-cols-12 gap-4 px-[20px]"
       >
         <main className="col-span-full">
-          <Navigation />
+          <Navigation pathname={pathname} />
           {children}
         </main>
       </div>
