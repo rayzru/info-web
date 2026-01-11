@@ -1,0 +1,14 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /my/
+
+# Allow specific public API endpoints
+Allow: /api/events/*/calendar.ics
+
+# Sitemap
+Sitemap: https://sr2.ru/sitemap.xml

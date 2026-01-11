@@ -11,6 +11,10 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Админ-панель | Сердце Ростова 2",
   description: "Панель администрирования",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function AdminLayout({
