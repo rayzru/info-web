@@ -52,7 +52,7 @@ export async function LatestNews({ variant = "grid" }: LatestNewsProps) {
                       alt={item.title}
                       fill
                       className="object-cover"
-                      unoptimized={item.coverImage.startsWith("/uploads/")}
+                      unoptimized={item.coverImage.includes("/uploads/")}
                     />
                   </div>
                 )}

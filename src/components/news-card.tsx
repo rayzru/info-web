@@ -114,7 +114,7 @@ export function NewsCard({
               alt={title}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
-              unoptimized={coverImage.startsWith("/uploads/")}
+              unoptimized={coverImage.includes("/uploads/")}
             />
             {isPinned && (
               <div className="absolute top-2 right-2">
