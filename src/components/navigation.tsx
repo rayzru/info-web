@@ -18,14 +18,17 @@ export async function Navigation() {
   const rankConfig = getRankConfig(userRoles);
 
   return (
-    <div className="mt-4 flex items-center justify-between">
-      <NavLogo />
+    <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-4 xl:gap-6">
+      {/* Left side: Logo - aligned left */}
+      <div className="flex items-center justify-start">
+        <NavLogo />
+      </div>
 
-      {/* Desktop navigation - only show on larger screens */}
+      {/* Center: Desktop navigation - truly centered */}
       <NavLinks />
 
-      {/* Right side: user actions */}
-      <div className="flex items-center gap-2">
+      {/* Right side: user actions - aligned right */}
+      <div className="flex items-center justify-end gap-2">
         {!session && (
           <Link passHref href={"/login"} data-testid="nav-login">
             <Button>Войти</Button>

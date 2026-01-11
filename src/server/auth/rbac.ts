@@ -192,6 +192,7 @@ export interface AdminNavItem {
   icon: string; // Icon name for lucide-react
   feature: AdminFeature;
   group?: string; // Logical group for organization
+  countKey?: string; // Key for badge count (e.g., "users", "claims.pending")
 }
 
 export type AdminNavGroup = {
@@ -215,6 +216,14 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "Users",
     feature: "users:view",
     group: "users",
+    countKey: "users",
+  },
+  {
+    title: "Сервисные операции",
+    href: "/admin/users/operations",
+    icon: "Wrench",
+    feature: "users:manage",
+    group: "users",
   },
   {
     title: "Запросы на удаление",
@@ -222,6 +231,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "UserX",
     feature: "users:delete",
     group: "users",
+    countKey: "deletionRequests",
   },
   {
     title: "Обратная связь",
@@ -229,6 +239,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "MessageSquare",
     feature: "users:manage",
     group: "users",
+    countKey: "feedback",
   },
 
   // ========== Недвижимость ==========
@@ -238,6 +249,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "Building2",
     feature: "buildings:view",
     group: "property",
+    countKey: "buildings",
   },
   {
     title: "Заявки на собственность",
@@ -245,6 +257,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "ClipboardList",
     feature: "claims:view",
     group: "property",
+    countKey: "claims",
   },
   {
     title: "Объявления",
@@ -252,6 +265,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "Megaphone",
     feature: "listings:view",
     group: "property",
+    countKey: "listings",
   },
 
   // ========== Контент ==========
@@ -261,6 +275,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "Newspaper",
     feature: "content:moderate",
     group: "content",
+    countKey: "news",
   },
   {
     title: "Мероприятия",
@@ -268,6 +283,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "Calendar",
     feature: "content:moderate",
     group: "content",
+    countKey: "events",
   },
   {
     title: "Публикации",
@@ -275,6 +291,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "MessageSquare",
     feature: "content:moderate",
     group: "content",
+    countKey: "publications",
   },
   {
     title: "Справочная",
@@ -282,6 +299,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "BookOpen",
     feature: "directory:manage",
     group: "content",
+    countKey: "directory",
   },
   {
     title: "База знаний",
@@ -289,6 +307,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "FileText",
     feature: "directory:manage",
     group: "content",
+    countKey: "howtos",
   },
   {
     title: "Медиа",
@@ -296,6 +315,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: "ImageIcon",
     feature: "directory:manage",
     group: "content",
+    countKey: "media",
   },
 
   // ========== Система ==========
@@ -311,6 +331,13 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     href: "/admin/logs",
     icon: "ScrollText",
     feature: "system:logs",
+    group: "system",
+  },
+  {
+    title: "Аналитика",
+    href: "/admin/analytics",
+    icon: "BarChart3",
+    feature: "admin:access",
     group: "system",
   },
 ];

@@ -1,3 +1,4 @@
+export * from "./schemas/analytics";
 export * from "./schemas/audit-log";
 export * from "./schemas/buildings";
 export * from "./schemas/claims";

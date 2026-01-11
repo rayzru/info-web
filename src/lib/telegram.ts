@@ -21,6 +21,29 @@ interface TelegramMessage {
   text?: string;
 }
 
+interface TelegramUser {
+  id: number;
+  is_bot: boolean;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+}
+
+interface TelegramChatMember {
+  user: TelegramUser;
+  status: "creator" | "administrator" | "member" | "restricted" | "left" | "kicked";
+}
+
+interface TelegramChatAdministrator extends TelegramChatMember {
+  can_be_edited?: boolean;
+  is_anonymous?: boolean;
+  can_manage_chat?: boolean;
+  can_delete_messages?: boolean;
+  can_restrict_members?: boolean;
+  can_promote_members?: boolean;
+  custom_title?: string;
+}
+
 // ============================================================================
 // Telegram Service
 // ============================================================================
@@ -194,4 +217,150 @@ function escapeHtml(text: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+// ============================================================================
+// Admin Chat Functions
+// ============================================================================
+
+/**
+ * Check if admin chat is configured
+ */
+export function isAdminChatConfigured(): boolean {
+  return !!(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_ADMIN_CHAT_ID);
+}
+
+/**
+ * Get admin chat ID from environment
+ */
+export function getAdminChatId(): string | null {
+  return env.TELEGRAM_ADMIN_CHAT_ID ?? null;
+}
+
+/**
+ * Get chat administrators from Telegram
+ */
+export async function getChatAdministrators(
+  chatId?: string
+): Promise<TelegramChatAdministrator[] | null> {
+  if (!env.TELEGRAM_BOT_TOKEN) {
+    console.warn("[Telegram] Bot token not configured");
+    return null;
+  }
+
+  const targetChatId = chatId ?? env.TELEGRAM_ADMIN_CHAT_ID;
+  if (!targetChatId) {
+    console.warn("[Telegram] Admin chat ID not configured");
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `${TELEGRAM_API_BASE}${env.TELEGRAM_BOT_TOKEN}/getChatAdministrators`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: targetChatId,
+        }),
+      }
+    );
+
+    const data = (await response.json()) as TelegramResponse<TelegramChatAdministrator[]>;
+
+    if (!data.ok) {
+      console.error("[Telegram] API error:", data.description);
+      return null;
+    }
+
+    return data.result ?? null;
+  } catch (error) {
+    console.error("[Telegram] Get chat administrators error:", error);
+    return null;
+  }
+}
+
+/**
+ * Check if a user is in the admin chat
+ * Returns member status or null if check failed
+ */
+export async function checkChatMember(
+  userId: number,
+  chatId?: string
+): Promise<TelegramChatMember | null> {
+  if (!env.TELEGRAM_BOT_TOKEN) {
+    console.warn("[Telegram] Bot token not configured");
+    return null;
+  }
+
+  const targetChatId = chatId ?? env.TELEGRAM_ADMIN_CHAT_ID;
+  if (!targetChatId) {
+    console.warn("[Telegram] Admin chat ID not configured");
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `${TELEGRAM_API_BASE}${env.TELEGRAM_BOT_TOKEN}/getChatMember`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: targetChatId,
+          user_id: userId,
+        }),
+      }
+    );
+
+    const data = (await response.json()) as TelegramResponse<TelegramChatMember>;
+
+    if (!data.ok) {
+      // User not found in chat returns an error
+      if (data.error_code === 400) {
+        return { user: { id: userId, is_bot: false, first_name: "Unknown" }, status: "left" };
+      }
+      console.error("[Telegram] API error:", data.description);
+      return null;
+    }
+
+    return data.result ?? null;
+  } catch (error) {
+    console.error("[Telegram] Check chat member error:", error);
+    return null;
+  }
+}
+
+/**
+ * Get bot info (to identify the bot's user_id)
+ */
+export async function getBotInfo(): Promise<TelegramUser | null> {
+  if (!env.TELEGRAM_BOT_TOKEN) {
+    console.warn("[Telegram] Bot token not configured");
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `${TELEGRAM_API_BASE}${env.TELEGRAM_BOT_TOKEN}/getMe`,
+      {
+        method: "GET",
+      }
+    );
+
+    const data = (await response.json()) as TelegramResponse<TelegramUser>;
+
+    if (!data.ok) {
+      console.error("[Telegram] API error:", data.description);
+      return null;
+    }
+
+    return data.result ?? null;
+  } catch (error) {
+    console.error("[Telegram] Get bot info error:", error);
+    return null;
+  }
 }

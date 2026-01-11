@@ -440,7 +440,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
               </div>
 
               {/* Desktop layout: 3 columns */}
-              <div className="mx-auto mt-6 hidden max-w-xl grid-cols-3 gap-6 md:grid">
+              <div className="mt-6 hidden grid-cols-3 gap-6 md:grid">
                 {/* Services column */}
                 <div className="flex flex-col gap-2">
                   <span className="text-muted-foreground text-xs font-medium lowercase">
@@ -790,7 +790,7 @@ function SearchHint({ onHintClick }: { onHintClick: (hint: string) => void }) {
 
   // Outer container with min-height to prevent footer jumping during lazy load
   return (
-    <div className="mt-8 flex min-h-20 justify-center">
+    <div className="mt-8 flex min-h-20 flex-col items-center gap-3">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: isVisible ? 1 : 0 }}
@@ -838,6 +838,20 @@ function SearchHint({ onHintClick }: { onHintClick: (hint: string) => void }) {
           )}
         </AnimatePresence>
         <KeyboardShortcut shortcutKey="K" className="opacity-50" />
+      </motion.div>
+
+      {/* Missing info link */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isVisible ? 1 : 0 }}
+        transition={{ duration: 0.3, delay: 0.2, ease: "easeOut" }}
+      >
+        <Link
+          href="/feedback?type=suggestion&title=Не хватает информации в справочнике&focus=content"
+          className="link text-xs"
+        >
+          Не хватает информации?
+        </Link>
       </motion.div>
     </div>
   );

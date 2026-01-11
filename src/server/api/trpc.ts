@@ -198,3 +198,35 @@ export const adminProcedureWithFeature = (feature: AdminFeature) =>
       },
     });
   });
+
+/**
+ * SuperAdmin procedure
+ *
+ * Requires user to have SuperAdmin or Root role.
+ * Use this for critical operations that should only be available to top-level admins.
+ */
+export const superAdminProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (!ctx.session || !ctx.session.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    const userRoles = (ctx.session.user.roles ?? []) as UserRole[];
+    const isSuperAdmin =
+      userRoles.includes("SuperAdmin") || userRoles.includes("Root");
+
+    if (!isSuperAdmin) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "SuperAdmin access required",
+      });
+    }
+
+    return next({
+      ctx: {
+        session: { ...ctx.session, user: ctx.session.user },
+        userRoles,
+      },
+    });
+  });

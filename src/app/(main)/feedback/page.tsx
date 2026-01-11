@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -71,22 +72,46 @@ const feedbackFormSchema = z.object({
 type FeedbackFormValues = z.infer<typeof feedbackFormSchema>;
 
 export default function FeedbackPage() {
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const { toast } = useToast();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
+  // Read URL params for pre-filling
+  const typeParam = searchParams.get("type");
+  const titleParam = searchParams.get("title");
+  const focusParam = searchParams.get("focus");
+
+  // Validate type param
+  const validTypes = ["complaint", "suggestion", "request", "question", "other"] as const;
+  const defaultType = validTypes.includes(typeParam as typeof validTypes[number])
+    ? (typeParam as typeof validTypes[number])
+    : "suggestion";
 
   const form = useForm<FeedbackFormValues>({
     resolver: zodResolver(feedbackFormSchema),
     defaultValues: {
-      type: "suggestion",
-      title: "",
+      type: defaultType,
+      title: titleParam ?? "",
       content: "",
       contactName: session?.user?.name ?? "",
       contactEmail: session?.user?.email ?? "",
       contactPhone: "",
     },
   });
+
+  // Focus on content field if requested
+  useEffect(() => {
+    if (focusParam === "content" && contentRef.current) {
+      // Small delay to ensure form is rendered
+      const timer = setTimeout(() => {
+        contentRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [focusParam]);
 
   const contentLength = form.watch("content")?.length ?? 0;
 
@@ -253,6 +278,10 @@ export default function FeedbackPage() {
                     placeholder="Подробно опишите вашу жалобу, пожелание или заявку..."
                     rows={6}
                     {...field}
+                    ref={(el) => {
+                      field.ref(el);
+                      (contentRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
+                    }}
                   />
                 </FormControl>
                 <div className="flex justify-between text-xs text-muted-foreground">
