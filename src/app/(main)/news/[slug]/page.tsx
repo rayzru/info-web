@@ -1,25 +1,25 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import type { Metadata } from "next";
 import {
+  AlertTriangle,
   ArrowLeft,
   Calendar,
   Megaphone,
-  Wrench,
-  Users,
-  AlertTriangle,
   Sparkles,
   User,
+  Users,
+  Wrench,
 } from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
-import { api } from "~/trpc/server";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { RichRenderer } from "~/components/editor/renderer/rich-renderer";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import type { NewsType } from "~/server/db/schema";
+import { api } from "~/trpc/server";
 
 // ============================================================================
 // Constants
@@ -74,19 +74,41 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   try {
     const news = await api.news.bySlug({ slug });
+    const publishDate = news.publishAt ?? news.createdAt;
 
     return {
-      title: `${news.title} | Новости | SR2`,
-      description: news.excerpt ?? undefined,
+      title: news.title,
+      description: news.excerpt ?? `Новость: ${news.title}`,
+      authors: news.author?.name ? [{ name: news.author.name }] : undefined,
       openGraph: {
+        type: "article",
         title: news.title,
-        description: news.excerpt ?? undefined,
+        description: news.excerpt ?? `Новость: ${news.title}`,
+        images: news.coverImage ? [{
+          url: news.coverImage,
+          width: 1200,
+          height: 630,
+          alt: news.title,
+        }] : undefined,
+        publishedTime: publishDate.toISOString(),
+        modifiedTime: news.updatedAt?.toISOString(),
+        authors: news.author?.name ? [news.author.name] : undefined,
+        section: "Новости",
+        tags: [NEWS_TYPE_CONFIG[news.type].label],
+      },
+      twitter: {
+        card: news.coverImage ? "summary_large_image" : "summary",
+        title: news.title,
+        description: news.excerpt ?? `Новость: ${news.title}`,
         images: news.coverImage ? [news.coverImage] : undefined,
+      },
+      alternates: {
+        canonical: `/news/${slug}`,
       },
     };
   } catch {
     return {
-      title: "Новость не найдена | SR2",
+      title: "Новость не найдена",
     };
   }
 }
@@ -164,8 +186,9 @@ export default async function NewsDetailPage({ params }: PageProps) {
               src={news.coverImage}
               alt={news.title}
               fill
-              className="object-cover"
+              className="object-cover object-center"
               priority
+              unoptimized={news.coverImage.startsWith("/uploads/")}
             />
           </div>
         )}

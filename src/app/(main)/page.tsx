@@ -1,15 +1,31 @@
 import { Suspense } from "react";
 
-import { api } from "~/trpc/server";
+import type { Metadata } from "next";
+
 import { LatestNews } from "~/components/latest-news";
 import { LatestPublications } from "~/components/latest-publications";
 import { UpcomingEvents } from "~/components/upcoming-events";
+import { api } from "~/trpc/server";
 
 import { DirectoryContent } from "./info/directory-content";
 
-export const metadata = {
-  title: "Справочная | SR2",
-  description: "Контакты, организации и полезная информация о ЖК",
+export const metadata: Metadata = {
+  title: "Главная",
+  description: "Сердце Ростова 2 — информационный портал жилого комплекса. Новости, мероприятия, справочник организаций и полезная информация для жителей.",
+  openGraph: {
+    type: "website",
+    title: "Сердце Ростова 2",
+    description: "Информационный портал жилого комплекса. Новости, мероприятия, справочник организаций и полезная информация для жителей.",
+    siteName: "Сердце Ростова 2",
+  },
+  twitter: {
+    card: "summary",
+    title: "Сердце Ростова 2",
+    description: "Информационный портал жилого комплекса. Новости, мероприятия, справочник организаций и полезная информация для жителей.",
+  },
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default async function Home() {

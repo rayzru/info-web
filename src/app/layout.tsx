@@ -10,9 +10,114 @@ import { TRPCReactProvider } from "~/trpc/react";
 
 import "~/styles/globals.css";
 
+const siteUrl = "https://sr2.ru";
+const siteName = "Сердце Ростова 2";
+const siteDescription = "Информационный портал жилого комплекса Сердце Ростова 2. Новости, события, объявления и полезная информация для жителей.";
+
 export const metadata: Metadata = {
-  title: "Сердце Ростова 2",
-  description: "Сообщество жильцов",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: siteName,
+    template: `%s | ${siteName}`,
+  },
+  description: siteDescription,
+  keywords: ["Сердце Ростова 2", "ЖК", "Ростов-на-Дону", "жилой комплекс", "новости", "события"],
+  authors: [{ name: siteName }],
+  creator: siteName,
+  publisher: siteName,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "ru_RU",
+    url: siteUrl,
+    siteName: siteName,
+    title: siteName,
+    description: siteDescription,
+    images: [
+      {
+        url: "/sr2-full-logo.svg",
+        width: 1200,
+        height: 630,
+        alt: siteName,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteName,
+    description: siteDescription,
+    images: ["/sr2-full-logo.svg"],
+  },
+  alternates: {
+    canonical: siteUrl,
+    languages: {
+      "ru-RU": siteUrl,
+    },
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
+  other: {
+    "content-language": "ru",
+    "geo.region": "RU-ROS",
+    "geo.placename": "Ростов-на-Дону",
+    "geo.position": "47.222078;39.720358",
+    "ICBM": "47.222078, 39.720358",
+  },
+};
+
+// Schema.org JSON-LD structured data
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
+      name: siteName,
+      description: siteDescription,
+      inLanguage: "ru-RU",
+      publisher: {
+        "@id": `${siteUrl}/#organization`,
+      },
+    },
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: siteName,
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/sr2-full-logo.svg`,
+      },
+    },
+    {
+      "@type": "Place",
+      "@id": `${siteUrl}/#place`,
+      name: "ЖК Сердце Ростова 2",
+      description: "Жилой комплекс в Ростове-на-Дону",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Ростов-на-Дону",
+        addressRegion: "Ростовская область",
+        addressCountry: "RU",
+      },
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: 47.222078,
+        longitude: 39.720358,
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -21,18 +126,10 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <head>
-        <meta charSet="utf-8" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, shrink-to-fit=no"
-        />
-        <meta name="robots" content="noindex" />
         <meta name="theme-color" content="#ffffff" />
-        <link
-          rel="icon"
-          href="/icon?<generated>"
-          type="image/png"
-          sizes="32x32"
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
       <body>

@@ -1,7 +1,3 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import type { Metadata } from "next";
 import {
   ArrowLeft,
   Calendar,
@@ -13,13 +9,16 @@ import {
   User,
   Users,
 } from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
-import { api } from "~/trpc/server";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Card, CardContent } from "~/components/ui/card";
 import { RichRenderer } from "~/components/editor/renderer/rich-renderer";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { getGoogleCalendarUrl, getYandexCalendarUrl } from "~/lib/ics";
+import { api } from "~/trpc/server";
 
 // ============================================================================
 // Metadata
@@ -43,23 +43,56 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const event = await api.publications.byId({ id });
 
     if (event.type !== "event") {
-      return { title: "Не найдено | SR2" };
+      return { title: "Не найдено" };
     }
 
+    const startAt = event.eventStartAt ? new Date(event.eventStartAt) : null;
+    const description = event.eventLocation
+      ? `${event.eventLocation}${startAt ? ` • ${formatMetaDate(startAt)}` : ""}`
+      : (startAt ? formatMetaDate(startAt) : `Мероприятие: ${event.title}`);
+
     return {
-      title: `${event.title} | Мероприятия | SR2`,
-      description: event.eventLocation ?? undefined,
+      title: event.title,
+      description,
+      authors: event.author?.name && !event.isAnonymous ? [{ name: event.author.name }] : undefined,
       openGraph: {
+        type: "article",
         title: event.title,
-        description: event.eventLocation ?? undefined,
+        description,
+        images: event.coverImage ? [{
+          url: event.coverImage,
+          width: 1200,
+          height: 630,
+          alt: event.title,
+        }] : undefined,
+        publishedTime: event.createdAt.toISOString(),
+        section: "Мероприятия",
+      },
+      twitter: {
+        card: event.coverImage ? "summary_large_image" : "summary",
+        title: event.title,
+        description,
         images: event.coverImage ? [event.coverImage] : undefined,
+      },
+      alternates: {
+        canonical: `/events/${id}`,
       },
     };
   } catch {
     return {
-      title: "Мероприятие не найдено | SR2",
+      title: "Мероприятие не найдено",
     };
   }
+}
+
+function formatMetaDate(date: Date): string {
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 // ============================================================================
@@ -154,8 +187,9 @@ export default async function EventDetailPage({ params }: PageProps) {
                 src={event.coverImage}
                 alt={event.title}
                 fill
-                className="object-cover"
+                className="object-cover object-center"
                 priority
+                unoptimized={event.coverImage.startsWith("/uploads/")}
               />
             </div>
           )}
