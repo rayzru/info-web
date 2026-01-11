@@ -6,7 +6,12 @@
  */
 
 import { db } from "../src/server/db";
-import { users, userRoles, userProfiles, sessions } from "../src/server/db/schema";
+import {
+  users,
+  userRoles,
+  userProfiles,
+  sessions,
+} from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
 import * as bcrypt from "bcryptjs";
 
@@ -58,7 +63,13 @@ async function main() {
   console.log("✅ Created user:", TEST_ADMIN.email);
 
   // Assign all admin roles
-  const adminRoles = ["Root", "SuperAdmin", "Admin", "Moderator", "Editor"] as const;
+  const adminRoles = [
+    "Root",
+    "SuperAdmin",
+    "Admin",
+    "Moderator",
+    "Editor",
+  ] as const;
 
   for (const role of adminRoles) {
     await db.insert(userRoles).values({

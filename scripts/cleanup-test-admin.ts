@@ -4,7 +4,12 @@
  */
 
 import { db } from "../src/server/db";
-import { users, userRoles, userProfiles, sessions } from "../src/server/db/schema";
+import {
+  users,
+  userRoles,
+  userProfiles,
+  sessions,
+} from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
 
 const TEST_ADMIN_ID = "test-superadmin-inventory-2024";
