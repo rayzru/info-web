@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { AlertCircle, AlertTriangle, Loader2, MessageCircle, Trash2 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -91,6 +93,8 @@ function PrivacyCheckbox({
 
 export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin }: ProfileFormProps) {
   const { toast } = useToast();
+  const router = useRouter();
+  const { update: updateSession } = useSession();
   const utils = api.useUtils();
 
   const [displayName, setDisplayName] = useState(
@@ -218,9 +222,12 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
     });
   };
 
-  const handleAvatarChange = (url: string | null) => {
+  const handleAvatarChange = async (url: string | null) => {
     setCurrentAvatar(url);
     void utils.profile.get.invalidate();
+    // Force session refresh to update avatar in navigation
+    await updateSession();
+    router.refresh();
   };
 
   const userRoles = user?.roles ?? ["Guest" as UserRole];

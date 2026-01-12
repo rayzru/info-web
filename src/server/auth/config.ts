@@ -16,6 +16,7 @@ import {
   sessions,
   telegramAuthTokens,
   userBlocks,
+  userProfiles,
   userRoles,
   users,
   verificationTokens,
@@ -536,11 +537,17 @@ export const authConfig = {
         return session;
       }
 
-      // Fetch user roles from database
-      const roles = await db
-        .select({ role: userRoles.role })
-        .from(userRoles)
-        .where(eq(userRoles.userId, userId));
+      // Fetch user roles and profile avatar from database
+      const [roles, profile] = await Promise.all([
+        db
+          .select({ role: userRoles.role })
+          .from(userRoles)
+          .where(eq(userRoles.userId, userId)),
+        db.query.userProfiles.findFirst({
+          where: eq(userProfiles.userId, userId),
+          columns: { avatar: true },
+        }),
+      ]);
 
       const userRolesList = roles.map((r) => r.role);
 
@@ -551,6 +558,8 @@ export const authConfig = {
           id: userId,
           roles: userRolesList,
           isAdmin: isAdmin(userRolesList),
+          // Use profile avatar if set, otherwise fall back to OAuth avatar
+          image: profile?.avatar ?? session.user.image,
         },
       };
     },
