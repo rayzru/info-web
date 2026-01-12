@@ -243,25 +243,23 @@ export default function AdminPage() {
                     Нет данных
                   </div>
                 ) : (
-                  <div className="h-14">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={visitsData?.data ?? []}>
-                        <defs>
-                          <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <Area
-                          type="monotone"
-                          dataKey="sessions"
-                          stroke="hsl(var(--primary))"
-                          fill="url(#colorSessions)"
-                          strokeWidth={1.5}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
+                  <ResponsiveContainer width="100%" height={56} minHeight={56}>
+                    <AreaChart data={visitsData?.data ?? []}>
+                      <defs>
+                        <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <Area
+                        type="monotone"
+                        dataKey="sessions"
+                        stroke="hsl(var(--primary))"
+                        fill="url(#colorSessions)"
+                        strokeWidth={1.5}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 )}
               </div>
             </div>
