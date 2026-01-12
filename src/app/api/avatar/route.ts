@@ -15,7 +15,7 @@ import { userProfiles } from "~/server/db/schema";
 
 const AVATAR_SIZE = 400; // 400x400 pixels
 const AVATAR_QUALITY = 90;
-const AVATAR_DIR = path.join(process.cwd(), "public", "avatars");
+const AVATAR_DIR = path.join(process.cwd(), "public", "uploads", "avatars");
 const SUPPORTED_FORMATS = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     const filePath = path.join(AVATAR_DIR, filename);
     await fs.writeFile(filePath, processedImage);
 
-    const avatarUrl = `/avatars/${filename}`;
+    const avatarUrl = `/uploads/avatars/${filename}`;
 
     // Get old avatar to delete
     const existingProfile = await db.query.userProfiles.findFirst({
@@ -108,14 +108,23 @@ export async function POST(request: NextRequest) {
       .set({ avatar: avatarUrl })
       .where(eq(userProfiles.userId, session.user.id));
 
-    // Delete old avatar file if exists
-    if (existingProfile?.avatar && existingProfile.avatar.startsWith("/avatars/")) {
-      const oldFilename = existingProfile.avatar.replace("/avatars/", "");
-      const oldFilePath = path.join(AVATAR_DIR, oldFilename);
-      try {
-        await fs.unlink(oldFilePath);
-      } catch {
-        // Ignore errors when deleting old file
+    // Delete old avatar file if exists (handle both old /avatars/ and new /uploads/avatars/ paths)
+    if (existingProfile?.avatar) {
+      let oldFilePath: string | null = null;
+      if (existingProfile.avatar.startsWith("/uploads/avatars/")) {
+        const oldFilename = existingProfile.avatar.replace("/uploads/avatars/", "");
+        oldFilePath = path.join(AVATAR_DIR, oldFilename);
+      } else if (existingProfile.avatar.startsWith("/avatars/")) {
+        // Legacy path - try to delete from old location
+        const oldFilename = existingProfile.avatar.replace("/avatars/", "");
+        oldFilePath = path.join(process.cwd(), "public", "avatars", oldFilename);
+      }
+      if (oldFilePath) {
+        try {
+          await fs.unlink(oldFilePath);
+        } catch {
+          // Ignore errors when deleting old file
+        }
       }
     }
 
@@ -158,14 +167,23 @@ export async function DELETE() {
       columns: { avatar: true },
     });
 
-    if (profile?.avatar && profile.avatar.startsWith("/avatars/")) {
-      // Delete file
-      const filename = profile.avatar.replace("/avatars/", "");
-      const filePath = path.join(AVATAR_DIR, filename);
-      try {
-        await fs.unlink(filePath);
-      } catch {
-        // Ignore errors when deleting file
+    // Delete file (handle both old /avatars/ and new /uploads/avatars/ paths)
+    if (profile?.avatar) {
+      let filePath: string | null = null;
+      if (profile.avatar.startsWith("/uploads/avatars/")) {
+        const filename = profile.avatar.replace("/uploads/avatars/", "");
+        filePath = path.join(AVATAR_DIR, filename);
+      } else if (profile.avatar.startsWith("/avatars/")) {
+        // Legacy path
+        const filename = profile.avatar.replace("/avatars/", "");
+        filePath = path.join(process.cwd(), "public", "avatars", filename);
+      }
+      if (filePath) {
+        try {
+          await fs.unlink(filePath);
+        } catch {
+          // Ignore errors when deleting file
+        }
       }
     }
 
