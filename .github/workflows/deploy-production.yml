@@ -187,17 +187,17 @@ jobs:
           echo "=== Updating symlink and restarting app ($PM2_APP_NAME) ==="
           ssh "$USER@$HOST" "cd $TARGET && rm -rf current && ln -sfn $REL current && echo 'Symlink created:' && ls -la current && echo 'Target directory:' && ls -la && cd current && echo 'Current directory:' && pwd && echo 'All files in current:' && ls -la && echo 'Check .next directory:' && ls -la .next/ && echo 'Check BUILD_ID:' && cat .next/BUILD_ID && echo 'Check .env file:' && ls -la .env && echo '=== Restarting PM2 ($PM2_APP_NAME) ===' && (pm2 delete $PM2_APP_NAME 2>/dev/null || true) && PM2_APP_NAME=$PM2_APP_NAME pm2 start ecosystem.config.cjs && pm2 save && echo 'PM2 app restarted successfully'"
 
-          # Create shared directories and symlinks for persistent storage (avatars, uploads)
+          # Create shared directories and symlinks for persistent storage (uploads with avatars inside)
           echo "=== Setting up shared directories ==="
           ssh "$USER@$HOST" "
-            mkdir -p $TARGET/shared/avatars $TARGET/shared/uploads
-            rm -rf $TARGET/current/public/avatars $TARGET/current/public/uploads
-            ln -sfn $TARGET/shared/avatars $TARGET/current/public/avatars
+            mkdir -p $TARGET/shared/uploads/avatars
+            rm -rf $TARGET/current/public/uploads
             ln -sfn $TARGET/shared/uploads $TARGET/current/public/uploads
             chown -R rayz:fastsecure $TARGET/shared/
             chmod -R 755 $TARGET/shared/
             echo 'Shared directories configured:'
-            ls -la $TARGET/current/public/ | grep -E 'avatars|uploads'
+            ls -la $TARGET/current/public/ | grep uploads
+            ls -la $TARGET/shared/uploads/
           "
         env:
           USER: ${{ secrets.SSH_USER }}
