@@ -1,13 +1,15 @@
 "use client";
 
 import { type MouseEvent } from "react";
+
 import { Heart, Mail, MessageCircle, Monitor, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 
-import { Button } from "./ui/button";
 import { cn } from "~/lib/utils";
-import { useThemeStore, type Theme } from "~/stores/theme-store";
+import { type Theme, useThemeStore } from "~/stores/theme-store";
+
+import { Button } from "./ui/button";
 import { useThemeTransition } from "./theme-transition";
 
 export function SiteFooter() {
@@ -50,10 +52,10 @@ export function SiteFooter() {
           </div>
 
           {/* Links */}
-          <div className="flex gap-8 md:gap-12">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8 md:gap-12">
             <div className="flex flex-col gap-2 text-sm">
               <p className="text-foreground mb-1 text-xs font-medium">
-                Сообщество
+                О сервисе
               </p>
               <Link href="/community" className="link">
                 О проекте
@@ -61,11 +63,6 @@ export function SiteFooter() {
               <Link href="/community/rules" className="link">
                 Правила сообщества
               </Link>
-            </div>
-            <div className="flex flex-col gap-2 text-sm">
-              <p className="text-foreground mb-1 text-xs font-medium">
-                Правовая информация
-              </p>
               <Link href="/terms" className="link">
                 Пользовательское соглашение
               </Link>
@@ -99,10 +96,17 @@ export function SiteFooter() {
 
         {/* Bottom line */}
         <div className="border-border/50 mt-6 flex items-center justify-between border-t pt-4">
-          <p className="text-muted-foreground text-xs">
-            Открытое сообщество в рамках законодательства РФ
-          </p>
-
+          <span className="text-muted-foreground hover:text-foreground text-xs">
+            Открытое сообщество в рамках законодательства&nbsp;-&nbsp;
+            <a
+              href="https://www.consultant.ru/document/cons_doc_LAW_28399/2fd1c7c9b207640443093237e96f505e64cbc197/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link"
+            >
+              Ст. 30 Конституции РФ
+            </a>
+          </span>
           {/* Theme switcher */}
           <div className="bg-background flex items-center gap-0.5 rounded-md border p-0.5">
             {themeOptions.map((option) => {
