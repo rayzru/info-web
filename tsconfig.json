@@ -50,6 +50,7 @@
   "exclude": [
     "node_modules",
     "eslint.config.js",
-    "scripts/**/*"
+    "scripts/**/*",
+    "public/sw.js"
   ]
 }
