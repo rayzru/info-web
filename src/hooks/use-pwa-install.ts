@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback,useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
-import { type BeforeInstallPromptEvent,usePwaStore } from "~/stores/pwa-store";
+import { type BeforeInstallPromptEvent, usePwaStore } from "~/stores/pwa-store";
 
 declare global {
   interface Window {
@@ -12,11 +12,9 @@ declare global {
 
 // Early capture - runs when module loads (before React hydration)
 if (typeof window !== "undefined" && !window.__pwaInstallPrompt) {
-  console.log("[PWA] Setting up early beforeinstallprompt listener");
   window.addEventListener(
     "beforeinstallprompt",
     (e) => {
-      console.log("[PWA] Early capture: beforeinstallprompt event received");
       e.preventDefault();
       window.__pwaInstallPrompt = e as BeforeInstallPromptEvent;
     },
@@ -61,7 +59,7 @@ export function usePwaInstall() {
       window.removeEventListener("beforeinstallprompt", handler);
       window.removeEventListener("appinstalled", installedHandler);
     };
-  }, [deferredPrompt, setDeferredPrompt, setIsInstallable]);
+  }, [deferredPrompt, isDismissed, isInstallable, setDeferredPrompt, setIsInstallable]);
 
   const install = useCallback(async () => {
     if (!deferredPrompt) return false;
