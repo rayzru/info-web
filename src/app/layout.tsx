@@ -2,6 +2,7 @@ import { type Metadata } from "next";
 import { Suspense } from "react";
 
 import { AnalyticsProvider } from "~/hooks/use-analytics";
+import { PwaInstallPrompt } from "~/components/pwa-install-prompt";
 import { SessionProvider } from "~/components/session-provider";
 import { ThemeProvider } from "~/components/theme-provider";
 import { ThemeTransitionOverlay } from "~/components/theme-transition";
@@ -72,7 +73,15 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
+    apple: "/icons/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "СР2",
+  },
+  formatDetection: {
+    telephone: false,
   },
   other: {
     "content-language": "ru",
@@ -155,6 +164,7 @@ export default function RootLayout({
             </TRPCReactProvider>
             <Toaster />
             <ThemeTransitionOverlay />
+            <PwaInstallPrompt />
           </ThemeProvider>
         </SessionProvider>
       </body>
