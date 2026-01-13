@@ -227,7 +227,8 @@ jobs:
             exit 1
           fi
 
-          ssh "$USER@$HOST" bash -lc 'cd "'"$TARGET"'"/releases && ls -1t | tail -n +6 | xargs -r rm -rf'
+          echo "=== Pruning old releases ==="
+          ssh "$USER@$HOST" "cd $TARGET/releases && echo 'Current releases:' && ls -1t && echo 'Keeping 5 newest, deleting:' && ls -1t | tail -n +6 && ls -1t | tail -n +6 | xargs -r rm -rf && echo 'Remaining releases:' && ls -1t"
         env:
           USER: ${{ secrets.SSH_USER }}
           HOST: ${{ secrets.SSH_HOST }}
