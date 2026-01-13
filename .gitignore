@@ -57,3 +57,6 @@ yarn-error.log*
 
 # database exports
 /db-export/
+
+# PWA service worker (generated during build)
+/public/sw.js

@@ -326,7 +326,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
               onBlur={() => setIsSearchFocused(false)}
               className={cn(
                 "h-14 rounded-full pl-12 text-lg transition-shadow",
-                hasActiveQuery ? "pr-28" : "pr-24",
+                hasActiveQuery ? "pr-12 sm:pr-28" : "pr-4 sm:pr-24",
                 "border-2",
                 isSearchFocused
                   ? "border-primary shadow-primary/20 shadow-lg"

@@ -11,17 +11,20 @@ import { DirectoryContent } from "./info/directory-content";
 
 export const metadata: Metadata = {
   title: "Главная",
-  description: "Сердце Ростова 2 — информационный портал жилого комплекса. Новости, мероприятия, справочник организаций и полезная информация для жителей.",
+  description:
+    "Сердце Ростова 2 — информационный портал жилого комплекса. Новости, мероприятия, справочник организаций и полезная информация для жителей.",
   openGraph: {
     type: "website",
     title: "Сердце Ростова 2",
-    description: "Информационный портал жилого комплекса. Новости, мероприятия, справочник организаций и полезная информация для жителей.",
+    description:
+      "Информационный портал жилого комплекса. Новости, мероприятия, справочник организаций и полезная информация для жителей.",
     siteName: "Сердце Ростова 2",
   },
   twitter: {
     card: "summary",
     title: "Сердце Ростова 2",
-    description: "Информационный портал жилого комплекса. Новости, мероприятия, справочник организаций и полезная информация для жителей.",
+    description:
+      "Информационный портал жилого комплекса. Новости, мероприятия, справочник организаций и полезная информация для жителей.",
   },
   alternates: {
     canonical: "/",
@@ -46,7 +49,9 @@ export default async function Home() {
   const hasAnyWidget = hasNews || hasEvents || hasPublications;
 
   // Count non-empty sections for grid
-  const widgetCount = [hasNews, hasEvents, hasPublications].filter(Boolean).length;
+  const widgetCount = [hasNews, hasEvents, hasPublications].filter(
+    Boolean,
+  ).length;
 
   return (
     <div className="container py-8">
@@ -56,13 +61,15 @@ export default async function Home() {
 
       {/* News, Events, Publications - side by side on desktop */}
       {hasAnyWidget && (
-        <div className={`grid gap-6 py-8 ${
-          widgetCount === 3
-            ? "lg:grid-cols-3"
-            : widgetCount === 2
-              ? "lg:grid-cols-2"
-              : ""
-        }`}>
+        <div
+          className={`grid gap-6 py-8 ${
+            widgetCount === 3
+              ? "lg:grid-cols-3"
+              : widgetCount === 2
+                ? "lg:grid-cols-2"
+                : ""
+          }`}
+        >
           {hasNews && (
             <Suspense fallback={<WidgetColumnSkeleton title="Новости" />}>
               <LatestNews variant="column" />
@@ -88,12 +95,15 @@ export default async function Home() {
 
 function DirectoryContentSkeleton() {
   return (
-    <div className="flex flex-col min-h-[40vh] items-center justify-center">
+    <div className="flex min-h-[40vh] flex-col items-center justify-center">
       <div className="w-full max-w-xl space-y-4">
-        <div className="h-14 bg-muted animate-pulse rounded-lg" />
+        <div className="bg-muted h-14 animate-pulse rounded-lg" />
         <div className="flex justify-center gap-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-10 w-24 bg-muted animate-pulse rounded-full" />
+            <div
+              key={i}
+              className="bg-muted h-10 w-24 animate-pulse rounded-full"
+            />
           ))}
         </div>
       </div>
@@ -104,19 +114,19 @@ function DirectoryContentSkeleton() {
 function WidgetColumnSkeleton({ title }: { title: string }) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="h-5 w-5 bg-muted animate-pulse rounded" />
-          <div className="h-6 w-24 bg-muted animate-pulse rounded" />
+          <div className="bg-muted h-5 w-5 animate-pulse rounded" />
+          <div className="bg-muted h-6 w-24 animate-pulse rounded" />
         </div>
-        <div className="h-6 w-16 bg-muted animate-pulse rounded" />
+        <div className="bg-muted h-6 w-16 animate-pulse rounded" />
       </div>
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-lg border overflow-hidden">
-            <div className="p-3 space-y-2">
-              <div className="h-4 w-full bg-muted animate-pulse rounded" />
-              <div className="h-3 w-2/3 bg-muted animate-pulse rounded" />
+          <div key={i} className="overflow-hidden rounded-lg border">
+            <div className="space-y-2 p-3">
+              <div className="bg-muted h-4 w-full animate-pulse rounded" />
+              <div className="bg-muted h-3 w-2/3 animate-pulse rounded" />
             </div>
           </div>
         ))}
