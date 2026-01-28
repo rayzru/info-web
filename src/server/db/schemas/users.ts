@@ -56,7 +56,7 @@ export const users = createTable("user", {
   emailVerified: timestamp("email_verified", {
     mode: "date",
     withTimezone: true,
-  }).default(sql`CURRENT_TIMESTAMP`),
+  }),
   image: varchar("image", { length: 255 }),
   // Password for email/password auth (bcrypt hash)
   passwordHash: varchar("password_hash", { length: 255 }),

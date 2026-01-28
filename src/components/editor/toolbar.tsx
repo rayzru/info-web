@@ -15,13 +15,25 @@ import {
   Link,
   List,
   ListOrdered,
+  Minus,
+  Plus,
   Quote,
   Redo,
   Strikethrough,
+  Table,
+  Trash2,
   Underline,
   Undo,
+  Video,
   Youtube,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
@@ -39,6 +51,7 @@ interface ToolbarProps {
   mode: EditorMode;
   onImageUpload?: () => void;
   onYoutubeEmbed?: () => void;
+  onVideoEmbed?: () => void;
   onLinkAdd?: () => void;
 }
 
@@ -86,6 +99,7 @@ export function Toolbar({
   mode,
   onImageUpload,
   onYoutubeEmbed,
+  onVideoEmbed,
   onLinkAdd,
 }: ToolbarProps) {
   if (!editor) return null;
@@ -308,6 +322,107 @@ export function Toolbar({
           >
             <Youtube className="h-4 w-4" />
           </ToolbarButton>
+        )}
+
+        {/* Video Embed (RuTube, VK, Dzen) - full mode */}
+        {can("videoEmbed") && (
+          <ToolbarButton
+            onClick={() => {
+              if (onVideoEmbed) {
+                onVideoEmbed();
+              } else {
+                const url = window.prompt("URL видео (RuTube, VK, Дзен):");
+                if (url) {
+                  editor.chain().focus().setVideoEmbed({ src: url }).run();
+                }
+              }
+            }}
+            tooltip="Видео (RuTube, VK, Дзен)"
+          >
+            <Video className="h-4 w-4" />
+          </ToolbarButton>
+        )}
+
+        {/* Tables (full mode) */}
+        {can("table") && (
+          <>
+            <Separator orientation="vertical" className="mx-1 h-6" />
+            <DropdownMenu>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className={cn(
+                        "h-8 w-8 p-0",
+                        editor.isActive("table") && "bg-muted text-foreground"
+                      )}
+                    >
+                      <Table className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  Таблица
+                </TooltipContent>
+              </Tooltip>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuItem
+                  onClick={() =>
+                    editor
+                      .chain()
+                      .focus()
+                      .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                      .run()
+                  }
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Вставить таблицу 3×3
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().addColumnAfter().run()}
+                  disabled={!editor.can().addColumnAfter()}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Добавить столбец справа
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().addRowAfter().run()}
+                  disabled={!editor.can().addRowAfter()}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Добавить строку снизу
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().deleteColumn().run()}
+                  disabled={!editor.can().deleteColumn()}
+                >
+                  <Minus className="mr-2 h-4 w-4" />
+                  Удалить столбец
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().deleteRow().run()}
+                  disabled={!editor.can().deleteRow()}
+                >
+                  <Minus className="mr-2 h-4 w-4" />
+                  Удалить строку
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().deleteTable().run()}
+                  disabled={!editor.can().deleteTable()}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Удалить таблицу
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
         )}
       </div>
     </TooltipProvider>
