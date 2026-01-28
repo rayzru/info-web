@@ -64,10 +64,31 @@ const directoryEventTypeSchema = z.enum([
 
 // ============== HELPER FUNCTIONS ==============
 
+/**
+ * Transliteration map for Cyrillic to Latin characters
+ */
+const TRANSLITERATION_MAP: Record<string, string> = {
+  а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "yo",
+  ж: "zh", з: "z", и: "i", й: "y", к: "k", л: "l", м: "m",
+  н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u",
+  ф: "f", х: "h", ц: "ts", ч: "ch", ш: "sh", щ: "sch",
+  ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
+};
+
+/**
+ * Convert text to URL-friendly slug with transliteration
+ * - Transliterates Cyrillic to Latin
+ * - Converts to lowercase
+ * - Replaces spaces with hyphens
+ * - Removes special characters
+ */
 function slugify(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[^\w\sа-яё-]/gi, "")
+    .split("")
+    .map((char) => TRANSLITERATION_MAP[char] ?? char)
+    .join("")
+    .replace(/[^\w\s-]/g, "")
     .replace(/[\s_]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .substring(0, 100);
@@ -2255,7 +2276,9 @@ export const directoryRouter = createTRPCRouter({
       const { synonyms, ...tagData } = input;
       const slug = slugify(input.name);
 
-      const tagId = crypto.randomUUID();
+      // Generate tag ID in format: tag-{slug}
+      const tagId = `tag-${slug}`;
+
       await ctx.db.insert(directoryTags).values({
         id: tagId,
         slug,
@@ -2281,12 +2304,16 @@ export const directoryRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, synonyms, ...updateData } = input;
+      const { id, synonyms, name, ...updateData } = input;
+
+      // If name is updated, regenerate slug
+      const slug = name ? slugify(name) : undefined;
 
       await ctx.db
         .update(directoryTags)
         .set({
           ...updateData,
+          ...(name && { name, slug }),
           synonyms: synonyms ? JSON.stringify(synonyms) : undefined,
         })
         .where(eq(directoryTags.id, id));

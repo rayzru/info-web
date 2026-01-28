@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
-import { and, count, desc, eq, ilike, or } from "drizzle-orm";
+import { and, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { media, mediaTypeEnum } from "~/server/db/schema";
+import { media, mediaTags, mediaToTags, mediaTypeEnum } from "~/server/db/schema";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -37,6 +37,17 @@ const updateMediaSchema = z.object({
   description: z.string().optional(),
 });
 
+const createTagSchema = z.object({
+  name: z.string().min(1).max(50),
+  color: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+});
+
+const updateTagSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(50).optional(),
+  color: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+});
+
 // ============================================================================
 // Router
 // ============================================================================
@@ -56,11 +67,12 @@ export const mediaRouter = createTRPCRouter({
         limit: z.number().min(1).max(100).default(24),
         type: mediaTypeSchema.optional(),
         search: z.string().optional(),
+        tagIds: z.array(z.string().uuid()).optional(),
         onlyMine: z.boolean().default(false),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { page, limit, type, search, onlyMine } = input;
+      const { page, limit, type, search, tagIds, onlyMine } = input;
       const offset = (page - 1) * limit;
 
       const conditions = [];
@@ -75,15 +87,50 @@ export const mediaRouter = createTRPCRouter({
         conditions.push(eq(media.uploadedBy, ctx.session.user.id));
       }
 
-      // Search by filename or alt text
+      // Search by filename, alt text, or tags
       if (search) {
+        // First, find tags matching search
+        const matchingTags = await ctx.db.query.mediaTags.findMany({
+          where: ilike(mediaTags.name, `%${search}%`),
+          columns: { id: true },
+        });
+
+        const tagMatchingMediaIds = matchingTags.length > 0
+          ? await ctx.db.select({ mediaId: mediaToTags.mediaId })
+              .from(mediaToTags)
+              .where(inArray(mediaToTags.tagId, matchingTags.map(t => t.id)))
+          : [];
+
         conditions.push(
           or(
             ilike(media.originalFilename, `%${search}%`),
             ilike(media.alt, `%${search}%`),
-            ilike(media.title, `%${search}%`)
+            ilike(media.title, `%${search}%`),
+            tagMatchingMediaIds.length > 0
+              ? inArray(media.id, tagMatchingMediaIds.map(t => t.mediaId))
+              : undefined
           )
         );
+      }
+
+      // Filter by specific tags
+      if (tagIds && tagIds.length > 0) {
+        const mediaIdsWithTags = await ctx.db
+          .select({ mediaId: mediaToTags.mediaId })
+          .from(mediaToTags)
+          .where(inArray(mediaToTags.tagId, tagIds));
+
+        if (mediaIdsWithTags.length > 0) {
+          conditions.push(inArray(media.id, mediaIdsWithTags.map(m => m.mediaId)));
+        } else {
+          // No media with these tags, return empty
+          return {
+            items: [],
+            total: 0,
+            page,
+            totalPages: 0,
+          };
+        }
       }
 
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -100,6 +147,11 @@ export const mediaRouter = createTRPCRouter({
                 id: true,
                 name: true,
                 image: true,
+              },
+            },
+            tags: {
+              with: {
+                tag: true,
               },
             },
           },
@@ -238,6 +290,163 @@ export const mediaRouter = createTRPCRouter({
       }
 
       await ctx.db.delete(media).where(eq(media.id, input.id));
+
+      return { success: true };
+    }),
+
+  // ========================================
+  // Tag Management
+  // ========================================
+
+  /**
+   * List all tags
+   */
+  listTags: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.query.mediaTags.findMany({
+      orderBy: [desc(mediaTags.name)],
+    });
+  }),
+
+  /**
+   * Create new tag
+   */
+  createTag: protectedProcedure
+    .input(createTagSchema)
+    .mutation(async ({ ctx, input }) => {
+      // Generate slug from name
+      const slug = input.name
+        .toLowerCase()
+        .replace(/[^a-z0-9а-яё]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      const [created] = await ctx.db
+        .insert(mediaTags)
+        .values({
+          name: input.name,
+          slug,
+          color: input.color,
+        })
+        .returning();
+
+      return created;
+    }),
+
+  /**
+   * Update tag
+   */
+  updateTag: protectedProcedure
+    .input(updateTagSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+
+      // Check if tag exists
+      const existing = await ctx.db.query.mediaTags.findFirst({
+        where: eq(mediaTags.id, id),
+      });
+
+      if (!existing) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Тег не найден",
+        });
+      }
+
+      // Update slug if name changed
+      const updates: any = { ...data };
+      if (data.name) {
+        updates.slug = data.name
+          .toLowerCase()
+          .replace(/[^a-z0-9а-яё]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+      }
+
+      const [updated] = await ctx.db
+        .update(mediaTags)
+        .set(updates)
+        .where(eq(mediaTags.id, id))
+        .returning();
+
+      return updated;
+    }),
+
+  /**
+   * Delete tag
+   */
+  deleteTag: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.db.query.mediaTags.findFirst({
+        where: eq(mediaTags.id, input.id),
+      });
+
+      if (!existing) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Тег не найден",
+        });
+      }
+
+      await ctx.db.delete(mediaTags).where(eq(mediaTags.id, input.id));
+
+      return { success: true };
+    }),
+
+  /**
+   * Add tags to media
+   */
+  addTagsToMedia: protectedProcedure
+    .input(
+      z.object({
+        mediaId: z.string().uuid(),
+        tagIds: z.array(z.string().uuid()).min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check media exists
+      const mediaItem = await ctx.db.query.media.findFirst({
+        where: eq(media.id, input.mediaId),
+      });
+
+      if (!mediaItem) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Медиафайл не найден",
+        });
+      }
+
+      // Insert tag associations
+      const values = input.tagIds.map((tagId) => ({
+        mediaId: input.mediaId,
+        tagId,
+      }));
+
+      await ctx.db
+        .insert(mediaToTags)
+        .values(values)
+        .onConflictDoNothing();
+
+      return { success: true };
+    }),
+
+  /**
+   * Remove tags from media
+   */
+  removeTagsFromMedia: protectedProcedure
+    .input(
+      z.object({
+        mediaId: z.string().uuid(),
+        tagIds: z.array(z.string().uuid()).min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .delete(mediaToTags)
+        .where(
+          and(
+            eq(mediaToTags.mediaId, input.mediaId),
+            inArray(mediaToTags.tagId, input.tagIds)
+          )
+        );
 
       return { success: true };
     }),

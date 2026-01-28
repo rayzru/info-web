@@ -8,6 +8,7 @@ import {
   Image as ImageIcon,
   Loader2,
   Search,
+  Tag,
   X,
 } from "lucide-react";
 
@@ -20,6 +21,7 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import type { Media } from "~/server/db/schema";
@@ -51,6 +53,12 @@ export function MediaLibrary({
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selected, setSelected] = useState<string[]>(selectedIds);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+
+  // Fetch tags
+  const { data: tagsData } = api.media.listTags.useQuery(undefined, {
+    enabled: open,
+  });
 
   // Debounce search
   const handleSearchChange = useCallback((value: string) => {
@@ -69,10 +77,20 @@ export function MediaLibrary({
       page,
       limit: 24,
       search: debouncedSearch || undefined,
+      tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
       type: "image",
     },
     { enabled: open }
   );
+
+  const toggleTag = (tagId: string) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId)
+        : [...prev, tagId]
+    );
+    setPage(1);
+  };
 
   const handleSelect = (media: Media) => {
     if (multiple) {
@@ -117,7 +135,7 @@ export function MediaLibrary({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Поиск по имени файла..."
+            placeholder="Поиск по имени файла и тегам..."
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9"
@@ -136,6 +154,40 @@ export function MediaLibrary({
             </Button>
           )}
         </div>
+
+        {/* Tags filter */}
+        {tagsData && tagsData.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <Tag className="h-4 w-4 text-muted-foreground" />
+            {tagsData.map((tag) => (
+              <Badge
+                key={tag.id}
+                variant={selectedTagIds.includes(tag.id) ? "default" : "outline"}
+                className="cursor-pointer"
+                style={
+                  selectedTagIds.includes(tag.id) && tag.color
+                    ? { backgroundColor: tag.color, borderColor: tag.color }
+                    : tag.color
+                    ? { borderColor: tag.color, color: tag.color }
+                    : undefined
+                }
+                onClick={() => toggleTag(tag.id)}
+              >
+                {tag.name}
+              </Badge>
+            ))}
+            {selectedTagIds.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedTagIds([])}
+                className="h-6 text-xs"
+              >
+                Сбросить
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Grid */}
         <ScrollArea className="flex-1">
@@ -157,6 +209,7 @@ export function MediaLibrary({
             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 p-1">
               {data.items.map((item) => {
                 const isSelected = selected.includes(item.id);
+                const itemTags = item.tags?.map((t) => t.tag) ?? [];
                 return (
                   <button
                     key={item.id}
@@ -177,6 +230,34 @@ export function MediaLibrary({
                       loading="lazy"
                       className="w-full h-full object-cover"
                     />
+
+                    {/* Tags (always visible if present) */}
+                    {itemTags.length > 0 && (
+                      <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                        {itemTags.slice(0, 2).map((tag) => (
+                          <Badge
+                            key={tag.id}
+                            variant="secondary"
+                            className="text-[10px] px-1 py-0 h-4"
+                            style={
+                              tag.color
+                                ? { backgroundColor: tag.color, color: "#fff" }
+                                : undefined
+                            }
+                          >
+                            {tag.name}
+                          </Badge>
+                        ))}
+                        {itemTags.length > 2 && (
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] px-1 py-0 h-4"
+                          >
+                            +{itemTags.length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
 
                     {/* Overlay on hover */}
                     <div

@@ -1,22 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { ThumbsUp, ThumbsDown, Check } from "lucide-react";
+import Link from "next/link";
+import { ThumbsUp, ThumbsDown, Check, MessageSquarePlus } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
 
 interface ArticleFeedbackProps {
   articleId: string;
+  articleTitle: string;
+  articleSlug: string;
   helpfulCount: number;
   notHelpfulCount: number;
 }
 
 export function ArticleFeedback({
   articleId,
+  articleTitle,
+  articleSlug,
   helpfulCount,
   notHelpfulCount,
 }: ArticleFeedbackProps) {
+  const feedbackUrl = `/feedback?type=suggestion&title=${encodeURIComponent(`Предложение по статье: ${articleTitle}`)}&context=${encodeURIComponent(`/howtos/${articleSlug}`)}&focus=content`;
   const [voted, setVoted] = useState<"helpful" | "not_helpful" | null>(null);
   const [counts, setCounts] = useState({
     helpful: helpfulCount,
@@ -84,6 +90,16 @@ export function ArticleFeedback({
           Спасибо за отзыв!
         </p>
       )}
+
+      {/* Кнопка предложения изменений */}
+      <div className="mt-4 pt-4 border-t border-border/50">
+        <Button variant="ghost" size="sm" asChild className="gap-2 text-muted-foreground hover:text-foreground">
+          <Link href={feedbackUrl}>
+            <MessageSquarePlus className="h-4 w-4" />
+            Предложить изменения
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }
