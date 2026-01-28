@@ -23,6 +23,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 
 import { api } from "~/trpc/react";
+import { EmergencyPhoneButton } from "~/components/emergency-phone-button";
 import { Input } from "~/components/ui/input";
 import { KeyboardShortcut } from "~/components/keyboard-shortcut";
 import { cn } from "~/lib/utils";
@@ -349,6 +350,13 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
               <KeyboardShortcut shortcutKey="K" />
             </div>
           </div>
+
+          {/* Emergency Phone Button - only show when not searching */}
+          {!hasActiveQuery && (
+            <div className="mt-4 flex justify-center">
+              <EmergencyPhoneButton />
+            </div>
+          )}
 
           {/* Quick Access Tags - only show when not searching */}
           {!hasActiveQuery && (
