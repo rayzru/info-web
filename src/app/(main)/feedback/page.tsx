@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -83,6 +84,7 @@ export default function FeedbackPage() {
   const typeParam = searchParams.get("type");
   const titleParam = searchParams.get("title");
   const focusParam = searchParams.get("focus");
+  const contextParam = searchParams.get("context");
 
   // Validate type param
   const validTypes = ["complaint", "suggestion", "request", "question", "other"] as const;
@@ -129,10 +131,15 @@ export default function FeedbackPage() {
   });
 
   const onSubmit = (values: FeedbackFormValues) => {
+    // Add context reference to content if provided
+    const contentWithContext = contextParam
+      ? `[Контекст: ${contextParam}]\n\n${values.content}`
+      : values.content;
+
     submitMutation.mutate({
       type: values.type,
       title: values.title || undefined,
-      content: values.content,
+      content: contentWithContext,
       contactName: values.contactName || undefined,
       contactEmail: values.contactEmail || undefined,
       contactPhone: values.contactPhone || undefined,
@@ -208,6 +215,19 @@ export default function FeedbackPage() {
           только для обратной связи и не передаётся третьим лицам.
         </AlertDescription>
       </Alert>
+
+      {/* Context info (e.g., article reference) */}
+      {contextParam && (
+        <Alert variant="default" className="bg-muted/50">
+          <FileText className="h-4 w-4" />
+          <AlertDescription className="flex items-center gap-2">
+            <span>Контекст:</span>
+            <Link href={contextParam} className="font-medium text-primary hover:underline">
+              {contextParam}
+            </Link>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

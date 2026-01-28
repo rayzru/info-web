@@ -75,6 +75,8 @@ export default async function HowtoArticlePage({ params }: Props) {
       {/* Feedback */}
       <ArticleFeedback
         articleId={article.id}
+        articleTitle={article.title}
+        articleSlug={slug}
         helpfulCount={article.helpfulCount}
         notHelpfulCount={article.notHelpfulCount}
       />

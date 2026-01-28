@@ -3,6 +3,7 @@ import {
   index,
   integer,
   pgEnum,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -73,13 +74,77 @@ export const media = createTable(
 );
 
 // ============================================================================
+// Media Tags Table
+// ============================================================================
+
+export const mediaTags = createTable(
+  "media_tag",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name", { length: 50 }).notNull().unique(),
+    slug: varchar("slug", { length: 50 }).notNull().unique(),
+    color: varchar("color", { length: 7 }), // hex color like #FF5733
+
+    // Timestamps
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    index("media_tag_slug_idx").on(table.slug),
+  ]
+);
+
+// ============================================================================
+// Media to Tags Junction Table (Many-to-Many)
+// ============================================================================
+
+export const mediaToTags = createTable(
+  "media_to_tag",
+  {
+    mediaId: uuid("media_id")
+      .notNull()
+      .references(() => media.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => mediaTags.id, { onDelete: "cascade" }),
+
+    // When tag was added
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.mediaId, table.tagId] }),
+    index("media_to_tag_media_idx").on(table.mediaId),
+    index("media_to_tag_tag_idx").on(table.tagId),
+  ]
+);
+
+// ============================================================================
 // Relations
 // ============================================================================
 
-export const mediaRelations = relations(media, ({ one }) => ({
+export const mediaRelations = relations(media, ({ one, many }) => ({
   uploader: one(users, {
     fields: [media.uploadedBy],
     references: [users.id],
+  }),
+  tags: many(mediaToTags),
+}));
+
+export const mediaTagsRelations = relations(mediaTags, ({ many }) => ({
+  media: many(mediaToTags),
+}));
+
+export const mediaToTagsRelations = relations(mediaToTags, ({ one }) => ({
+  media: one(media, {
+    fields: [mediaToTags.mediaId],
+    references: [media.id],
+  }),
+  tag: one(mediaTags, {
+    fields: [mediaToTags.tagId],
+    references: [mediaTags.id],
   }),
 }));
 
@@ -90,3 +155,9 @@ export const mediaRelations = relations(media, ({ one }) => ({
 export type Media = typeof media.$inferSelect;
 export type NewMedia = typeof media.$inferInsert;
 export type MediaType = (typeof mediaTypeEnum.enumValues)[number];
+
+export type MediaTag = typeof mediaTags.$inferSelect;
+export type NewMediaTag = typeof mediaTags.$inferInsert;
+
+export type MediaToTag = typeof mediaToTags.$inferSelect;
+export type NewMediaToTag = typeof mediaToTags.$inferInsert;
