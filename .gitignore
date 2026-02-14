@@ -62,3 +62,7 @@ yarn-error.log*
 /public/sw.js
 
 .playwright-mcp
+# Release analysis files (temporary, not committed)
+RELEASE_CHANGES_*.md
+RELEASE_SUMMARY_*.md
+RELEASE_SUMMARY.md
