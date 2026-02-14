@@ -108,7 +108,7 @@ export const claimHistory = createTable(
   (table) => [index("claim_history_claim_idx").on(table.claimId)]
 );
 
-// Таблица документов к заявке (макет для будущего функционала)
+// Таблица документов к заявке
 export const claimDocuments = createTable(
   "claim_document",
   {
@@ -119,22 +119,32 @@ export const claimDocuments = createTable(
     claimId: varchar("claim_id", { length: 255 })
       .notNull()
       .references(() => propertyClaims.id, { onDelete: "cascade" }),
-    // Тип документа (свидетельство о собственности, выписка ЕГРН, договор аренды)
+    // Тип документа (egrn, contract, passport, other)
     documentType: varchar("document_type", { length: 100 }).notNull(),
-    // URL файла (будет заполняться когда определимся с хранилищем)
+    // URL файла в S3
     fileUrl: varchar("file_url", { length: 500 }),
+    // URL thumbnail для изображений
+    thumbnailUrl: varchar("thumbnail_url", { length: 500 }),
     // Оригинальное имя файла
     fileName: varchar("file_name", { length: 255 }),
     // Размер файла в байтах
     fileSize: varchar("file_size", { length: 20 }),
     // MIME тип
     mimeType: varchar("mime_type", { length: 100 }),
+    // Дата запланированного удаления (заполняется при одобрении/отклонении заявки)
+    scheduledForDeletion: timestamp("scheduled_for_deletion", {
+      mode: "date",
+      withTimezone: true,
+    }),
     // Временные метки
     uploadedAt: timestamp("uploaded_at", { mode: "date", withTimezone: true })
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [index("claim_document_claim_idx").on(table.claimId)]
+  (table) => [
+    index("claim_document_claim_idx").on(table.claimId),
+    index("claim_document_scheduled_deletion_idx").on(table.scheduledForDeletion),
+  ]
 );
 
 // Связи

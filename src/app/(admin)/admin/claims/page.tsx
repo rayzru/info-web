@@ -7,23 +7,24 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Download,
-  ExternalLink,
+  Eye,
   FileText,
   History,
   Home,
-  Image as ImageIcon,
   Loader2,
+  MoreHorizontal,
   ParkingCircle,
+  Search,
   X,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
+import { DocumentViewerDialog } from "~/components/admin/document-viewer-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import {
@@ -41,10 +50,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
+import { useMobile } from "~/hooks/use-mobile";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
+
+// ============================================================================
+// Constants
+// ============================================================================
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "Ожидает",
@@ -54,6 +67,14 @@ const STATUS_LABELS: Record<string, string> = {
   documents_requested: "Запрошены документы",
 };
 
+const STATUS_VARIANTS: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+  pending: "secondary",
+  review: "outline",
+  approved: "default",
+  rejected: "destructive",
+  documents_requested: "outline",
+};
+
 const ROLE_LABELS: Record<string, string> = {
   ApartmentOwner: "Собственник квартиры",
   ApartmentResident: "Житель квартиры",
@@ -61,13 +82,6 @@ const ROLE_LABELS: Record<string, string> = {
   ParkingResident: "Арендатор парковки",
   StoreOwner: "Владелец магазина",
   StoreRepresenative: "Представитель магазина",
-};
-
-const DOCUMENT_TYPE_LABELS: Record<string, string> = {
-  egrn: "Выписка ЕГРН",
-  contract: "Договор",
-  passport: "Паспорт",
-  other: "Другое",
 };
 
 const APPROVAL_TEMPLATES = [
@@ -82,14 +96,19 @@ const REJECTION_TEMPLATES = [
   { value: "rejected_custom", label: "Свой текст" },
 ];
 
+// ============================================================================
+// Review Dialog Component
+// ============================================================================
+
 type ReviewDialogProps = {
   claim: any;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  onViewDocument: (doc: any) => void;
 };
 
-function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProps) {
+function ReviewDialog({ claim, open, onOpenChange, onSuccess, onViewDocument }: ReviewDialogProps) {
   const { toast } = useToast();
   const [action, setAction] = useState<"approve" | "reject">("approve");
   const [template, setTemplate] = useState<string>("");
@@ -154,30 +173,16 @@ function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProp
             <div className="space-y-2">
               <Label>Приложенные документы ({claim.documents.length})</Label>
               <div className="flex flex-wrap gap-2">
-                {claim.documents.map((doc: any) => {
-                  const isPdf = doc.mimeType === "application/pdf";
-                  const isImage = doc.mimeType?.startsWith("image/");
-
-                  return (
-                    <a
-                      key={doc.id}
-                      href={doc.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-muted/30 hover:bg-muted group flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs transition-colors"
-                    >
-                      {isImage ? (
-                        <ImageIcon className="h-3.5 w-3.5 text-blue-500" />
-                      ) : isPdf ? (
-                        <FileText className="h-3.5 w-3.5 text-red-500" />
-                      ) : (
-                        <Download className="text-muted-foreground h-3.5 w-3.5" />
-                      )}
-                      <span className="max-w-32 truncate">{doc.fileName}</span>
-                      <ExternalLink className="text-muted-foreground h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </a>
-                  );
-                })}
+                {claim.documents.map((doc: any) => (
+                  <button
+                    key={doc.id}
+                    onClick={() => onViewDocument(doc)}
+                    className="bg-muted/30 hover:bg-muted group flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs transition-colors"
+                  >
+                    <FileText className="h-3.5 w-3.5 text-red-500" />
+                    <span className="max-w-32 truncate">{doc.fileName}</span>
+                  </button>
+                ))}
               </div>
             </div>
           )}
@@ -264,122 +269,39 @@ function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProp
   );
 }
 
-type HistoryDialogProps = {
-  claimId: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-};
-
-function HistoryDialog({ claimId, open, onOpenChange }: HistoryDialogProps) {
-  const { data: history, isLoading } = api.claims.admin.getHistory.useQuery(
-    { claimId },
-    { enabled: open }
-  );
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>История заявки</DialogTitle>
-        </DialogHeader>
-
-        <div className="py-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
-          ) : history && history.length > 0 ? (
-            <div className="relative space-y-6 pl-6">
-              {/* Timeline line */}
-              <div className="bg-border absolute bottom-2 left-[9px] top-2 w-px" />
-
-              {history.map((entry, idx) => (
-                <div key={entry.id} className="relative">
-                  {/* Timeline dot */}
-                  <div
-                    className={`absolute -left-6 top-1 h-4 w-4 rounded-full border-2 ${
-                      entry.toStatus === "approved"
-                        ? "border-green-500 bg-green-500"
-                        : entry.toStatus === "rejected"
-                          ? "border-red-500 bg-red-500"
-                          : "bg-background border-primary"
-                    }`}
-                  />
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={
-                          entry.toStatus === "approved"
-                            ? "default"
-                            : entry.toStatus === "rejected"
-                              ? "destructive"
-                              : "secondary"
-                        }
-                      >
-                        {STATUS_LABELS[entry.toStatus]}
-                      </Badge>
-                      <span className="text-muted-foreground text-xs">
-                        {new Date(entry.createdAt).toLocaleString("ru-RU")}
-                      </span>
-                    </div>
-
-                    {entry.resolutionText && (
-                      <p className="text-muted-foreground text-sm">{entry.resolutionText}</p>
-                    )}
-
-                    {entry.changedByUser && (
-                      <p className="text-muted-foreground text-xs">
-                        {entry.changedByUser.name ?? entry.changedByUser.email}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground py-8 text-center">История пуста</p>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
+// ============================================================================
+// Page Component
+// ============================================================================
 
 export default function AdminClaimsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const isMobile = useMobile();
 
-  // Get filter from URL params
-  const statusFilter = searchParams.get("status") ?? "all";
+  // URL params
   const pageParam = searchParams.get("page");
   const page = pageParam ? parseInt(pageParam, 10) : 1;
+  const statusFilter = searchParams.get("status") ?? "all";
+  const typeFilter = searchParams.get("type") ?? "all";
+  const searchQuery = searchParams.get("q") ?? "";
 
-  const [selectedClaim, setSelectedClaim] = useState<any>(null);
+  // Local state
+  const [localSearch, setLocalSearch] = useState(searchQuery);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
-  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
-  const [historyClaimId, setHistoryClaimId] = useState<string>("");
+  const [selectedClaim, setSelectedClaim] = useState<any>(null);
+  const [viewerDocument, setViewerDocument] = useState<any>(null);
+  const [viewerDialogOpen, setViewerDialogOpen] = useState(false);
 
-  const { data: stats } = api.claims.admin.stats.useQuery();
+  // Queries
   const { data, isLoading, refetch } = api.claims.admin.list.useQuery({
     page,
     limit: 20,
     status: statusFilter !== "all" ? (statusFilter as any) : undefined,
+    type: typeFilter !== "all" ? (typeFilter as any) : undefined,
   });
 
-  // Update URL with new filter
-  const setFilter = (status: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (status === "all") {
-      params.delete("status");
-    } else {
-      params.set("status", status);
-    }
-    params.delete("page"); // Reset to page 1 on filter change
-    router.push(`/admin/claims?${params.toString()}`);
-  };
-
-  // Update URL with new page
+  // URL helpers
   const setPage = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
     if (newPage === 1) {
@@ -390,19 +312,54 @@ export default function AdminClaimsPage() {
     router.push(`/admin/claims?${params.toString()}`);
   };
 
-  // Calculate total for "All" card
-  const totalClaims = stats
-    ? stats.pending + stats.underReview + stats.approved + stats.rejected
-    : 0;
+  const setStatusFilter = (status: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (status === "all") {
+      params.delete("status");
+    } else {
+      params.set("status", status);
+    }
+    params.delete("page");
+    router.push(`/admin/claims?${params.toString()}`);
+  };
+
+  const setTypeFilter = (type: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (type === "all") {
+      params.delete("type");
+    } else {
+      params.set("type", type);
+    }
+    params.delete("page");
+    router.push(`/admin/claims?${params.toString()}`);
+  };
+
+  const handleSearch = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (localSearch) {
+      params.set("q", localSearch);
+    } else {
+      params.delete("q");
+    }
+    params.delete("page");
+    router.push(`/admin/claims?${params.toString()}`);
+  };
+
+  const clearSearch = () => {
+    setLocalSearch("");
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("q");
+    router.push(`/admin/claims?${params.toString()}`);
+  };
 
   const openReviewDialog = (claim: any) => {
     setSelectedClaim(claim);
     setReviewDialogOpen(true);
   };
 
-  const openHistoryDialog = (claimId: string) => {
-    setHistoryClaimId(claimId);
-    setHistoryDialogOpen(true);
+  const openDocumentViewer = (doc: any) => {
+    setViewerDocument(doc);
+    setViewerDialogOpen(true);
   };
 
   const getPropertyInfo = (claim: any) => {
@@ -436,70 +393,19 @@ export default function AdminClaimsPage() {
         description="Рассмотрение заявок пользователей"
       />
 
-      {/* Stats */}
-      {stats && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "all" ? "ring-primary ring-2 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("all")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{totalClaims}</div>
-              <p className="text-muted-foreground text-sm">Все заявки</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "pending" ? "ring-2 ring-yellow-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("pending")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-              <p className="text-muted-foreground text-sm">Ожидают</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "review" ? "ring-2 ring-blue-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("review")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-blue-600">{stats.underReview}</div>
-              <p className="text-muted-foreground text-sm">На рассмотрении</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "approved" ? "ring-2 ring-green-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("approved")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
-              <p className="text-muted-foreground text-sm">Одобрено</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "rejected" ? "ring-2 ring-red-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("rejected")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
-              <p className="text-muted-foreground text-sm">Отклонено</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       {/* Filters */}
-      <div className="flex items-center gap-4">
-        <Select value={statusFilter} onValueChange={setFilter}>
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="relative max-w-md flex-1">
+          <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+          <Input
+            placeholder="Поиск по имени пользователя..."
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="pl-10"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Все статусы" />
           </SelectTrigger>
@@ -511,6 +417,21 @@ export default function AdminClaimsPage() {
             <SelectItem value="rejected">Отклонены</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Все типы" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все типы</SelectItem>
+            <SelectItem value="apartment">Квартиры</SelectItem>
+            <SelectItem value="parking">Парковки</SelectItem>
+          </SelectContent>
+        </Select>
+        {searchQuery && (
+          <Button variant="ghost" size="sm" onClick={clearSearch}>
+            Сбросить поиск
+          </Button>
+        )}
       </div>
 
       {/* Claims List */}
@@ -519,154 +440,246 @@ export default function AdminClaimsPage() {
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : data?.claims && data.claims.length > 0 ? (
-        <div className="space-y-4">
-          {data.claims.map((claim) => {
-            const propertyInfo = getPropertyInfo(claim);
-            const PropertyIcon = propertyInfo.icon;
+        isMobile ? (
+          /* Mobile: Card View */
+          <div className="space-y-3">
+            {data.claims.map((claim) => {
+              const propertyInfo = getPropertyInfo(claim);
+              const PropertyIcon = propertyInfo.icon;
 
-            return (
-              <Card key={claim.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    {/* User Avatar */}
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={claim.user?.image ?? undefined} />
-                      <AvatarFallback>
-                        {claim.user?.name?.slice(0, 2).toUpperCase() ?? "??"}
-                      </AvatarFallback>
-                    </Avatar>
+              return (
+                <Card key={claim.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-2 flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={claim.user?.image ?? undefined} />
+                            <AvatarFallback>
+                              {claim.user?.name?.slice(0, 2).toUpperCase() ?? "??"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">
+                            {claim.user?.name ?? claim.user?.email}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge
+                            variant={STATUS_VARIANTS[claim.status] ?? "outline"}
+                            className="text-xs"
+                          >
+                            {STATUS_LABELS[claim.status]}
+                          </Badge>
+                          {claim.documents && claim.documents.length > 0 && (
+                            <Badge variant="outline" className="gap-1 text-xs">
+                              <FileText className="h-3 w-3" />
+                              {claim.documents.length}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
+                          <PropertyIcon className="h-3.5 w-3.5" />
+                          <span>{propertyInfo.title}</span>
+                          <span>·</span>
+                          <span>{new Date(claim.createdAt).toLocaleDateString("ru-RU")}</span>
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openReviewDialog(claim)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Рассмотреть
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
 
-                    {/* Claim Info */}
+            {/* Mobile Pagination */}
+            {data.totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 py-4">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm">
+                  {page} из {data.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  disabled={page === data.totalPages}
+                  onClick={() => setPage(page + 1)}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Desktop: Table View */
+          <>
+            <div className="rounded-lg border">
+              {/* Table Header */}
+              <div className="bg-muted/50 text-muted-foreground flex items-center gap-4 border-b px-4 py-3 text-sm font-medium">
+                <div className="w-24">Дата</div>
+                <div className="min-w-0 flex-1">Заголовок</div>
+                <div className="hidden w-32 sm:block">Тип</div>
+                <div className="hidden w-40 md:block">Автор</div>
+                <div className="w-28">Статус</div>
+                <div className="w-10"></div>
+              </div>
+
+              {/* Table Body */}
+              {data.claims.map((claim) => {
+                const propertyInfo = getPropertyInfo(claim);
+                const PropertyIcon = propertyInfo.icon;
+
+                return (
+                  <div
+                    key={claim.id}
+                    className="hover:bg-muted/30 flex items-center gap-4 border-b px-4 py-3 transition-colors last:border-b-0"
+                  >
+                    {/* Date Column */}
+                    <div className="w-24 shrink-0">
+                      <div className="text-sm font-medium">
+                        {new Date(claim.createdAt).toLocaleDateString("ru-RU", {
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        {new Date(claim.createdAt).toLocaleDateString("ru-RU", {
+                          year: "numeric",
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Title Column */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium">{claim.user?.name ?? claim.user?.email}</span>
-                        <Badge
-                          variant={
-                            claim.status === "approved"
-                              ? "default"
-                              : claim.status === "rejected"
-                                ? "destructive"
-                                : claim.status === "pending"
-                                  ? "secondary"
-                                  : "outline"
-                          }
-                        >
-                          {STATUS_LABELS[claim.status]}
-                        </Badge>
-                      </div>
-
-                      <div className="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
-                        <PropertyIcon className="h-4 w-4" />
-                        <span>{propertyInfo.title}</span>
-                        <span>·</span>
-                        <span>{propertyInfo.subtitle}</span>
-                      </div>
-
-                      <div className="text-muted-foreground mt-1 flex items-center gap-4 text-xs">
-                        <span>{ROLE_LABELS[claim.claimedRole]}</span>
-                        <span>·</span>
-                        <span>{new Date(claim.createdAt).toLocaleDateString("ru-RU")}</span>
-                      </div>
-
-                      {claim.userComment && (
-                        <p className="bg-muted mt-2 rounded p-2 text-sm">{claim.userComment}</p>
-                      )}
-
-                      {/* Documents Section */}
-                      {claim.documents && claim.documents.length > 0 && (
-                        <div className="mt-3 space-y-2">
-                          <p className="text-muted-foreground text-xs font-medium">
-                            Документы ({claim.documents.length})
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {claim.documents.map((doc: any) => {
-                              const isPdf = doc.mimeType === "application/pdf";
-                              const isImage = doc.mimeType?.startsWith("image/");
-
-                              return (
-                                <a
-                                  key={doc.id}
-                                  href={doc.fileUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="bg-muted/30 hover:bg-muted group flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs transition-colors"
-                                >
-                                  {isImage ? (
-                                    <ImageIcon className="h-3.5 w-3.5 text-blue-500" />
-                                  ) : isPdf ? (
-                                    <FileText className="h-3.5 w-3.5 text-red-500" />
-                                  ) : (
-                                    <Download className="text-muted-foreground h-3.5 w-3.5" />
-                                  )}
-                                  <span className="max-w-40 truncate">{doc.fileName}</span>
-                                  <ExternalLink className="text-muted-foreground h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
-                                </a>
-                              );
-                            })}
+                      <div className="flex items-center gap-2">
+                        <PropertyIcon className="text-muted-foreground h-4 w-4 shrink-0" />
+                        <div className="min-w-0">
+                          <div className="truncate font-medium">{propertyInfo.title}</div>
+                          <div className="text-muted-foreground truncate text-xs">
+                            {ROLE_LABELS[claim.claimedRole]}
                           </div>
                         </div>
-                      )}
+                      </div>
+                    </div>
 
-                      {claim.adminComment && (
-                        <p className="text-muted-foreground mt-2 text-sm italic">
-                          Решение: {claim.adminComment}
-                        </p>
+                    {/* Type Column */}
+                    <div className="hidden w-32 sm:block">
+                      <Badge variant="outline" className="text-xs">
+                        {claim.claimType === "apartment" ? "Квартира" : "Парковка"}
+                      </Badge>
+                      {claim.documents && claim.documents.length > 0 && (
+                        <div className="mt-1 flex items-center gap-1">
+                          <FileText className="h-3 w-3" />
+                          <span className="text-muted-foreground text-xs">
+                            {claim.documents.length}
+                          </span>
+                        </div>
                       )}
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openHistoryDialog(claim.id)}
-                      >
-                        <History className="h-4 w-4" />
-                      </Button>
+                    {/* Author Column */}
+                    <div className="hidden w-40 md:block">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={claim.user?.image ?? undefined} />
+                          <AvatarFallback className="text-xs">
+                            {claim.user?.name?.slice(0, 2).toUpperCase() ?? "??"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-muted-foreground block truncate text-sm">
+                          {claim.user?.name ?? claim.user?.email}
+                        </span>
+                      </div>
+                    </div>
 
-                      {(claim.status === "pending" || claim.status === "review") && (
-                        <Button variant="outline" size="sm" onClick={() => openReviewDialog(claim)}>
-                          Рассмотреть
-                        </Button>
-                      )}
+                    {/* Status Column */}
+                    <div className="w-28 shrink-0">
+                      <Badge
+                        variant={STATUS_VARIANTS[claim.status] ?? "outline"}
+                        className="text-xs"
+                      >
+                        {STATUS_LABELS[claim.status]}
+                      </Badge>
+                    </div>
+
+                    {/* Actions Column */}
+                    <div className="w-10 shrink-0">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openReviewDialog(claim)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Рассмотреть
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-
-          {/* Pagination */}
-          {data.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
-              <Button
-                variant="outline"
-                size="icon"
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm">
-                {page} из {data.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="icon"
-                disabled={page === data.totalPages}
-                onClick={() => setPage(page + 1)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+                );
+              })}
             </div>
-          )}
-        </div>
+
+            {/* Desktop Pagination */}
+            {data.totalPages > 1 && (
+              <div className="flex items-center justify-between">
+                <p className="text-muted-foreground text-sm">
+                  Показано {(page - 1) * 20 + 1}–{Math.min(page * 20, data.total)} из {data.total}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page === 1}
+                    onClick={() => setPage(page - 1)}
+                  >
+                    <ChevronLeft className="mr-2 h-4 w-4" />
+                    Назад
+                  </Button>
+                  <span className="text-sm">
+                    Страница {page} из {data.totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page === data.totalPages}
+                    onClick={() => setPage(page + 1)}
+                  >
+                    Вперед
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )
       ) : (
-        <Card>
-          <CardContent className="text-muted-foreground py-12 text-center">
-            Заявок не найдено
-          </CardContent>
-        </Card>
+        <div className="text-muted-foreground py-12 text-center text-sm">
+          {searchQuery || statusFilter !== "all" || typeFilter !== "all"
+            ? "Заявки не найдены"
+            : "Пока нет заявок"}
+        </div>
       )}
 
       {/* Review Dialog */}
@@ -675,15 +688,19 @@ export default function AdminClaimsPage() {
           claim={selectedClaim}
           open={reviewDialogOpen}
           onOpenChange={setReviewDialogOpen}
-          onSuccess={() => refetch()}
+          onSuccess={() => {
+            refetch();
+            setSelectedClaim(null);
+          }}
+          onViewDocument={openDocumentViewer}
         />
       )}
 
-      {/* History Dialog */}
-      <HistoryDialog
-        claimId={historyClaimId}
-        open={historyDialogOpen}
-        onOpenChange={setHistoryDialogOpen}
+      {/* Document Viewer Dialog */}
+      <DocumentViewerDialog
+        document={viewerDocument}
+        open={viewerDialogOpen}
+        onOpenChange={setViewerDialogOpen}
       />
     </div>
   );

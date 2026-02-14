@@ -169,6 +169,19 @@ export const claimsRouter = createTRPCRouter({
         parkingSpotId: z.string().optional(),
         organizationId: z.string().optional(),
         userComment: z.string().max(1000).optional(),
+        documents: z
+          .array(
+            z.object({
+              id: z.string(),
+              documentType: z.enum(["egrn", "contract", "passport", "other"]),
+              fileUrl: z.string(),
+              fileName: z.string(),
+              fileSize: z.string(),
+              mimeType: z.string(),
+              thumbnailUrl: z.string().optional(),
+            })
+          )
+          .optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -242,6 +255,21 @@ export const claimsRouter = createTRPCRouter({
           status: "pending",
         })
         .returning();
+
+      // Add documents if provided
+      if (input.documents && input.documents.length > 0 && claim) {
+        await ctx.db.insert(claimDocuments).values(
+          input.documents.map((doc) => ({
+            claimId: claim.id,
+            documentType: doc.documentType,
+            fileUrl: doc.fileUrl,
+            fileName: doc.fileName,
+            fileSize: doc.fileSize,
+            mimeType: doc.mimeType,
+            thumbnailUrl: doc.thumbnailUrl,
+          }))
+        );
+      }
 
       // Send Telegram notification
       const claimTypeName = {
@@ -1085,6 +1113,17 @@ export const claimsRouter = createTRPCRouter({
           resolutionText,
           changedBy: ctx.session.user.id,
         });
+
+        // Mark documents for deletion after approved/rejected
+        if (input.status === "approved" || input.status === "rejected") {
+          const scheduledDate = new Date();
+          scheduledDate.setDate(scheduledDate.getDate() + 60); // 60 days from now
+
+          await ctx.db
+            .update(claimDocuments)
+            .set({ scheduledForDeletion: scheduledDate })
+            .where(eq(claimDocuments.claimId, input.claimId));
+        }
 
         // If approved, create user-property relationship and assign role
         if (input.status === "approved") {
