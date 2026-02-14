@@ -1,7 +1,2 @@
 export { emailConfig, getTransporter } from "./config";
-export {
-  sendEmail,
-  verifyEmailConnection,
-  type EmailTemplateId,
-  type EmailPayload,
-} from "./send";
+export { type EmailPayload, type EmailTemplateId, sendEmail, verifyEmailConnection } from "./send";

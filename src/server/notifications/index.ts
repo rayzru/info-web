@@ -25,25 +25,24 @@
  * ```
  */
 
-export { notify, notifyAsync, getProviderDisplayName } from "./service";
-
+export { getProviderDisplayName, notify, notifyAsync } from "./service";
 export type {
-  NotificationEvent,
-  EventType,
-  EventPayload,
-  // Auth events
-  UserRegisteredEvent,
-  EmailVerificationRequestedEvent,
-  PasswordChangedEvent,
-  PasswordResetRequestedEvent,
-  PasswordResetCompletedEvent,
   // Account events
   AccountLinkedEvent,
   AccountUnlinkedEvent,
-  // Claim events
-  ClaimSubmittedEvent,
   ClaimApprovedEvent,
   ClaimRejectedEvent,
+  // Claim events
+  ClaimSubmittedEvent,
+  EmailVerificationRequestedEvent,
+  EventPayload,
+  EventType,
+  NotificationEvent,
+  PasswordChangedEvent,
+  PasswordResetCompletedEvent,
+  PasswordResetRequestedEvent,
   // Security events
   SecurityAlertEvent,
+  // Auth events
+  UserRegisteredEvent,
 } from "./types";

@@ -1,20 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, AlertTriangle, Save, Wrench } from "lucide-react";
+
+import { AlertTriangle, Loader2, Save, Wrench } from "lucide-react";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Switch } from "~/components/ui/switch";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "~/components/ui/alert";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 
@@ -58,9 +55,7 @@ export default function AdminSettingsPage() {
     onSuccess: (data) => {
       setMaintenanceEnabled(data.enabled);
       toast({
-        title: data.enabled
-          ? "Режим техобслуживания включен"
-          : "Режим техобслуживания выключен",
+        title: data.enabled ? "Режим техобслуживания включен" : "Режим техобслуживания выключен",
       });
     },
     onError: (error) => {
@@ -90,10 +85,7 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title="Настройки"
-        description="Системные настройки сайта"
-      />
+      <AdminPageHeader title="Настройки" description="Системные настройки сайта" />
 
       {/* Maintenance Mode Card */}
       <Card>
@@ -123,8 +115,8 @@ export default function AdminSettingsPage() {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Режим техобслуживания активен</AlertTitle>
               <AlertDescription>
-                Все пользователи будут перенаправляться на страницу техобслуживания.
-                Администраторы могут продолжать работу.
+                Все пользователи будут перенаправляться на страницу техобслуживания. Администраторы
+                могут продолжать работу.
               </AlertDescription>
             </Alert>
           )}
@@ -138,7 +130,7 @@ export default function AdminSettingsPage() {
               placeholder="Мы проводим плановые технические работы для улучшения функционала сервиса..."
               rows={3}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Это сообщение будет показано пользователям на странице техобслуживания
             </p>
           </div>
@@ -151,19 +143,14 @@ export default function AdminSettingsPage() {
               value={expectedEndTime}
               onChange={(e) => setExpectedEndTime(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Опционально. Покажет пользователям когда ожидается восстановление работы
             </p>
           </div>
 
           <div className="flex justify-end pt-4">
-            <Button
-              onClick={handleSave}
-              disabled={updateMutation.isPending}
-            >
-              {updateMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+            <Button onClick={handleSave} disabled={updateMutation.isPending}>
+              {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="mr-2 h-4 w-4" />
               Сохранить настройки
             </Button>

@@ -23,8 +23,7 @@ export interface OdnoklassnikiProfile {
   };
 }
 
-export interface OdnoklassnikiConfig
-  extends OAuthUserConfig<OdnoklassnikiProfile> {
+export interface OdnoklassnikiConfig extends OAuthUserConfig<OdnoklassnikiProfile> {
   publicKey: string;
 }
 
@@ -49,31 +48,40 @@ export default function Odnoklassniki(
     },
     token: {
       url: "https://api.ok.ru/oauth/token.do",
-      async request({ params, provider }: { params: Record<string, unknown>; provider: { clientId?: string; clientSecret?: string } }) {
-        const response = await fetch(
-          "https://api.ok.ru/oauth/token.do",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-              code: params.code as string,
-              client_id: provider.clientId as string,
-              client_secret: provider.clientSecret as string,
-              redirect_uri: params.redirect_uri as string,
-              grant_type: "authorization_code",
-            }),
-          }
-        );
+      async request({
+        params,
+        provider,
+      }: {
+        params: Record<string, unknown>;
+        provider: { clientId?: string; clientSecret?: string };
+      }) {
+        const response = await fetch("https://api.ok.ru/oauth/token.do", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            code: params.code as string,
+            client_id: provider.clientId!,
+            client_secret: provider.clientSecret!,
+            redirect_uri: params.redirect_uri as string,
+            grant_type: "authorization_code",
+          }),
+        });
         const tokens = await response.json();
         return { tokens };
       },
     },
     userinfo: {
       url: "https://api.ok.ru/fb.do",
-      async request({ tokens, provider }: { tokens: { access_token?: string }; provider: { clientSecret?: string } }) {
-        const accessToken = tokens.access_token as string;
+      async request({
+        tokens,
+        provider,
+      }: {
+        tokens: { access_token?: string };
+        provider: { clientSecret?: string };
+      }) {
+        const accessToken = tokens.access_token!;
 
         // OK API requires signature
         // sig = md5(sorted params + md5(access_token + application_secret_key))

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
 import { Command } from "lucide-react";
+
 import { cn } from "~/lib/utils";
 
 type KeyboardShortcutProps = {
@@ -27,9 +29,7 @@ export function KeyboardShortcut({
     const platform = navigator.platform?.toLowerCase() ?? "";
     const userAgent = navigator.userAgent?.toLowerCase() ?? "";
     const isMacOS =
-      platform.includes("mac") ||
-      userAgent.includes("macintosh") ||
-      userAgent.includes("mac os");
+      platform.includes("mac") || userAgent.includes("macintosh") || userAgent.includes("mac os");
     setIsMac(isMacOS);
   }, []);
 
@@ -41,21 +41,15 @@ export function KeyboardShortcut({
   return (
     <div
       className={cn(
-        "flex items-center gap-1 text-xs text-muted-foreground",
+        "text-muted-foreground flex items-center gap-1 text-xs",
         !showOnMobile && "hidden sm:flex",
         className
       )}
     >
-      <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono flex items-center">
-        {isMac ? (
-          <Command className="h-3 w-3" />
-        ) : (
-          <span className="text-xs">^</span>
-        )}
+      <kbd className="bg-muted flex items-center rounded px-1.5 py-0.5 font-mono text-[10px]">
+        {isMac ? <Command className="h-3 w-3" /> : <span className="text-xs">^</span>}
       </kbd>
-      <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">
-        {shortcutKey}
-      </kbd>
+      <kbd className="bg-muted rounded px-1.5 py-0.5 font-mono text-[10px]">{shortcutKey}</kbd>
     </div>
   );
 }
@@ -77,9 +71,7 @@ export function KeyboardShortcutInline({
     const platform = navigator.platform?.toLowerCase() ?? "";
     const userAgent = navigator.userAgent?.toLowerCase() ?? "";
     const isMacOS =
-      platform.includes("mac") ||
-      userAgent.includes("macintosh") ||
-      userAgent.includes("mac os");
+      platform.includes("mac") || userAgent.includes("macintosh") || userAgent.includes("mac os");
     setIsMac(isMacOS);
   }, []);
 
@@ -90,7 +82,7 @@ export function KeyboardShortcutInline({
   return (
     <kbd
       className={cn(
-        "bg-muted pointer-events-none h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none flex",
+        "bg-muted pointer-events-none flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100",
         className
       )}
     >

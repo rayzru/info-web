@@ -3,16 +3,12 @@ export * from "./types";
 
 // Extensions
 export {
+  FEATURES_BY_MODE,
   getExtensions,
   isFeatureAvailable,
-  FEATURES_BY_MODE,
   KeyboardShortcuts,
 } from "./extensions";
 
 // Custom extensions
-export { VideoEmbed, parseVideoUrl } from "./extensions/video-embed";
-export {
-  PhoneNumber,
-  normalizePhoneNumber,
-  formatPhoneNumber,
-} from "./extensions/phone-number";
+export { formatPhoneNumber, normalizePhoneNumber, PhoneNumber } from "./extensions/phone-number";
+export { parseVideoUrl, VideoEmbed } from "./extensions/video-embed";

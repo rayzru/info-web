@@ -24,7 +24,7 @@ export function SiteFooter() {
         setTheme(newTheme);
         setNextTheme(newTheme);
       },
-      { x: e.clientX, y: e.clientY },
+      { x: e.clientX, y: e.clientY }
     );
   };
 
@@ -44,19 +44,16 @@ export function SiteFooter() {
               <span>Соседями для соседей</span>
             </div>
             <p className="text-muted-foreground text-xs leading-relaxed">
-              Информационный сервис создан и поддерживается инициативными
-              жильцами ЖК «Сердце Ростова 2». Мы объединяем соседей, собираем
-              полезную информацию и создаём инструменты для комфортной жизни в
-              нашем доме.
+              Информационный сервис создан и поддерживается инициативными жильцами ЖК «Сердце
+              Ростова 2». Мы объединяем соседей, собираем полезную информацию и создаём инструменты
+              для комфортной жизни в нашем доме.
             </p>
           </div>
 
           {/* Links */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8 md:gap-12">
             <div className="flex flex-col gap-2 text-sm">
-              <p className="text-foreground mb-1 text-xs font-medium">
-                О сервисе
-              </p>
+              <p className="text-foreground mb-1 text-xs font-medium">О сервисе</p>
               <Link href="/community" className="link">
                 О проекте
               </Link>
@@ -71,9 +68,7 @@ export function SiteFooter() {
               </Link>
             </div>
             <div className="flex flex-col gap-2 text-sm">
-              <p className="text-foreground mb-1 text-xs font-medium">
-                Связаться
-              </p>
+              <p className="text-foreground mb-1 text-xs font-medium">Связаться</p>
               <Link
                 href="https://t.me/serdcerostova2"
                 target="_blank"

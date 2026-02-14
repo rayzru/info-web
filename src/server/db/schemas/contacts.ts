@@ -1,11 +1,5 @@
 import { relations } from "drizzle-orm";
-import {
-  integer,
-  primaryKey,
-  text,
-  timestamp,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { integer, primaryKey, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 import { createTable } from "./create-table";
 
@@ -25,10 +19,9 @@ export const contactGroups = createTable("contact_groups", {
 // Группы свойств внутри ContactGroup
 export const propertyGroups = createTable("property_groups", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  contactGroupId: varchar("contact_group_id", { length: 36 }).references(
-    () => contactGroups.id,
-    { onDelete: "cascade" }
-  ),
+  contactGroupId: varchar("contact_group_id", { length: 36 }).references(() => contactGroups.id, {
+    onDelete: "cascade",
+  }),
   name: text("name").notNull(),
   order: integer("order").default(0),
 });
@@ -36,10 +29,9 @@ export const propertyGroups = createTable("property_groups", {
 // Свойства внутри группы
 export const properties = createTable("properties", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  groupId: varchar("group_id", { length: 36 }).references(
-    () => propertyGroups.id,
-    { onDelete: "cascade" }
-  ),
+  groupId: varchar("group_id", { length: 36 }).references(() => propertyGroups.id, {
+    onDelete: "cascade",
+  }),
   key: text("key").notNull(),
   value: text("value").notNull(),
   type: text("type").notNull(), // STRING, PHONE, LINK и т. д.

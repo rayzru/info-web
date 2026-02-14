@@ -29,11 +29,7 @@ export default async function AddFlatPage() {
           <BreadcrumbItem>Привязка квартиры</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <AddPropertyForm
-        buildings={buildingsWithMaxApartment}
-        usedApartments={[]}
-        user={user}
-      />
+      <AddPropertyForm buildings={buildingsWithMaxApartment} usedApartments={[]} user={user} />
     </ResponsiveWrapper>
   );
 }

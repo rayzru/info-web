@@ -1,12 +1,12 @@
-import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, Newspaper } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
-import { Button } from "~/components/ui/button";
 import { NewsCardGrid } from "~/components/news-card";
 import { Badge } from "~/components/ui/badge";
-import { api } from "~/trpc/server";
+import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
+import { api } from "~/trpc/server";
 
 interface LatestNewsProps {
   variant?: "grid" | "column";
@@ -23,12 +23,12 @@ export async function LatestNews({ variant = "grid" }: LatestNewsProps) {
     return (
       <section>
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Newspaper className="h-5 w-5 text-muted-foreground" />
+            <Newspaper className="text-muted-foreground h-5 w-5" />
             <h2 className="text-lg font-semibold">Новости</h2>
           </div>
-          <Button variant="ghost" size="sm" className="h-auto py-1 px-2 text-xs" asChild>
+          <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs" asChild>
             <Link href="/news" className="gap-1">
               Все
               <ArrowRight className="h-3 w-3" />
@@ -42,11 +42,11 @@ export async function LatestNews({ variant = "grid" }: LatestNewsProps) {
             <Link
               key={item.id}
               href={`/news/${item.slug}`}
-              className="group block rounded-lg border bg-card hover:shadow-sm transition-shadow overflow-hidden"
+              className="bg-card group block overflow-hidden rounded-lg border transition-shadow hover:shadow-sm"
             >
               <div className="flex gap-3 p-3">
                 {item.coverImage && (
-                  <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
+                  <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
                     <Image
                       src={item.coverImage}
                       alt={item.title}
@@ -56,11 +56,11 @@ export async function LatestNews({ variant = "grid" }: LatestNewsProps) {
                     />
                   </div>
                 )}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                <div className="min-w-0 flex-1">
+                  <h3 className="group-hover:text-primary line-clamp-2 text-sm font-medium transition-colors">
                     {item.title}
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-muted-foreground mt-1 text-xs">
                     {formatRelativeDate(new Date(item.createdAt))}
                   </p>
                 </div>
@@ -75,9 +75,9 @@ export async function LatestNews({ variant = "grid" }: LatestNewsProps) {
   return (
     <section className="py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Newspaper className="h-5 w-5 text-muted-foreground" />
+          <Newspaper className="text-muted-foreground h-5 w-5" />
           <h2 className="text-xl font-semibold">Новости</h2>
         </div>
         <Button variant="ghost" size="sm" asChild>

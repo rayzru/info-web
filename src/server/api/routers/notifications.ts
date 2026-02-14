@@ -4,9 +4,9 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
-  notifications,
-  notificationTypeEnum,
   notificationCategoryEnum,
+  notifications,
+  type notificationTypeEnum,
   users,
 } from "~/server/db/schema";
 
@@ -19,7 +19,7 @@ export const notificationsRouter = createTRPCRouter({
         cursor: z.string().optional(), // для пагинации
         unreadOnly: z.boolean().default(false),
         category: z.enum(notificationCategoryEnum.enumValues).optional(),
-      }),
+      })
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
@@ -68,9 +68,7 @@ export const notificationsRouter = createTRPCRouter({
     const result = await ctx.db
       .select({ count: sql<number>`count(*)` })
       .from(notifications)
-      .where(
-        and(eq(notifications.userId, userId), eq(notifications.isRead, false)),
-      );
+      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
 
     return result[0]?.count ?? 0;
   }),
@@ -82,10 +80,7 @@ export const notificationsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       const notification = await ctx.db.query.notifications.findFirst({
-        where: and(
-          eq(notifications.id, input.id),
-          eq(notifications.userId, userId),
-        ),
+        where: and(eq(notifications.id, input.id), eq(notifications.userId, userId)),
       });
 
       if (!notification) {
@@ -116,9 +111,7 @@ export const notificationsRouter = createTRPCRouter({
         isRead: true,
         readAt: new Date(),
       })
-      .where(
-        and(eq(notifications.userId, userId), eq(notifications.isRead, false)),
-      );
+      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
 
     return { success: true };
   }),
@@ -130,10 +123,7 @@ export const notificationsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       const notification = await ctx.db.query.notifications.findFirst({
-        where: and(
-          eq(notifications.id, input.id),
-          eq(notifications.userId, userId),
-        ),
+        where: and(eq(notifications.id, input.id), eq(notifications.userId, userId)),
       });
 
       if (!notification) {
@@ -154,9 +144,7 @@ export const notificationsRouter = createTRPCRouter({
 
     await ctx.db
       .delete(notifications)
-      .where(
-        and(eq(notifications.userId, userId), eq(notifications.isRead, true)),
-      );
+      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, true)));
 
     return { success: true };
   }),
@@ -175,7 +163,7 @@ export async function createNotification(
     entityType?: string;
     entityId?: string;
     actionUrl?: string;
-  },
+  }
 ) {
   const [notification] = await db
     .insert(notifications)

@@ -1,11 +1,5 @@
 import { sql } from "drizzle-orm";
-import {
-  boolean,
-  jsonb,
-  text,
-  timestamp,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { boolean, jsonb, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 import { createTable } from "./create-table";
 

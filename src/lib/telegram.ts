@@ -74,22 +74,19 @@ export async function sendTelegramMessage(
   }
 
   try {
-    const response = await fetch(
-      `${TELEGRAM_API_BASE}${env.TELEGRAM_BOT_TOKEN}/sendMessage`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chat_id: env.TELEGRAM_NEWS_CHANNEL_ID,
-          text,
-          parse_mode: options?.parseMode ?? "HTML",
-          disable_web_page_preview: options?.disableWebPagePreview ?? false,
-          disable_notification: options?.disableNotification ?? false,
-        }),
-      }
-    );
+    const response = await fetch(`${TELEGRAM_API_BASE}${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        chat_id: env.TELEGRAM_NEWS_CHANNEL_ID,
+        text,
+        parse_mode: options?.parseMode ?? "HTML",
+        disable_web_page_preview: options?.disableWebPagePreview ?? false,
+        disable_notification: options?.disableNotification ?? false,
+      }),
+    });
 
     const data = (await response.json()) as TelegramResponse<TelegramMessage>;
 
@@ -122,22 +119,19 @@ export async function sendTelegramPhoto(
   }
 
   try {
-    const response = await fetch(
-      `${TELEGRAM_API_BASE}${env.TELEGRAM_BOT_TOKEN}/sendPhoto`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chat_id: env.TELEGRAM_NEWS_CHANNEL_ID,
-          photo: photoUrl,
-          caption,
-          parse_mode: options?.parseMode ?? "HTML",
-          disable_notification: options?.disableNotification ?? false,
-        }),
-      }
-    );
+    const response = await fetch(`${TELEGRAM_API_BASE}${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        chat_id: env.TELEGRAM_NEWS_CHANNEL_ID,
+        photo: photoUrl,
+        caption,
+        parse_mode: options?.parseMode ?? "HTML",
+        disable_notification: options?.disableNotification ?? false,
+      }),
+    });
 
     const data = (await response.json()) as TelegramResponse<TelegramMessage>;
 
@@ -175,9 +169,7 @@ export async function publishNewsToTelegram(options: {
 
   // Telegram message limit is 4096 characters
   const truncatedMessage =
-    fullMessage.length > 4000
-      ? fullMessage.slice(0, 3997) + "..."
-      : fullMessage;
+    fullMessage.length > 4000 ? fullMessage.slice(0, 3997) + "..." : fullMessage;
 
   // If there's a cover image, send as photo with caption
   // Note: Photo caption is limited to 1024 characters
@@ -213,10 +205,7 @@ export async function publishNewsToTelegram(options: {
  * Escape HTML entities for Telegram
  */
 function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 // ============================================================================
@@ -302,19 +291,16 @@ export async function checkChatMember(
   }
 
   try {
-    const response = await fetch(
-      `${TELEGRAM_API_BASE}${env.TELEGRAM_BOT_TOKEN}/getChatMember`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chat_id: targetChatId,
-          user_id: userId,
-        }),
-      }
-    );
+    const response = await fetch(`${TELEGRAM_API_BASE}${env.TELEGRAM_BOT_TOKEN}/getChatMember`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        chat_id: targetChatId,
+        user_id: userId,
+      }),
+    });
 
     const data = (await response.json()) as TelegramResponse<TelegramChatMember>;
 
@@ -344,12 +330,9 @@ export async function getBotInfo(): Promise<TelegramUser | null> {
   }
 
   try {
-    const response = await fetch(
-      `${TELEGRAM_API_BASE}${env.TELEGRAM_BOT_TOKEN}/getMe`,
-      {
-        method: "GET",
-      }
-    );
+    const response = await fetch(`${TELEGRAM_API_BASE}${env.TELEGRAM_BOT_TOKEN}/getMe`, {
+      method: "GET",
+    });
 
     const data = (await response.json()) as TelegramResponse<TelegramUser>;
 

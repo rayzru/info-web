@@ -7,10 +7,7 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    AUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
+    AUTH_SECRET: process.env.NODE_ENV === "production" ? z.string() : z.string().optional(),
     // OAuth Providers
     YANDEX_CLIENT_ID: z.string(),
     YANDEX_CLIENT_SECRET: z.string(),
@@ -39,6 +36,8 @@ export const env = createEnv({
     TELEGRAM_ADMIN_CHAT_ID: z.string().optional(),
     // Telegram News Channel (for news publishing)
     TELEGRAM_NEWS_CHANNEL_ID: z.string().optional(),
+    // Telegram Notifications Channel (for admin notifications)
+    TELEGRAM_NOTIFICATIONS_CHANNEL_ID: z.string().optional(),
 
     // SMTP Configuration for email sending
     // Default: localhost:25 without auth (for local postfix)
@@ -57,9 +56,15 @@ export const env = createEnv({
 
     DATABASE_URL: z.string().url(),
     DATABASE_NAME: z.string(),
-    NODE_ENV: z
-      .enum(["development", "test", "production"])
-      .default("development"),
+    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+
+    // S3 Storage Configuration
+    S3_URL: z.string().url(),
+    S3_ACCESS_KEY: z.string(),
+    S3_SECRET_KEY: z.string(),
+    S3_BUCKET: z.string(),
+    S3_REGION: z.string(),
+    S3_PUBLIC_URL: z.string().url().optional(),
   },
 
   /**
@@ -96,6 +101,7 @@ export const env = createEnv({
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
     TELEGRAM_ADMIN_CHAT_ID: process.env.TELEGRAM_ADMIN_CHAT_ID,
     TELEGRAM_NEWS_CHANNEL_ID: process.env.TELEGRAM_NEWS_CHANNEL_ID,
+    TELEGRAM_NOTIFICATIONS_CHANNEL_ID: process.env.TELEGRAM_NOTIFICATIONS_CHANNEL_ID,
     // SMTP
     SMTP_HOST: process.env.SMTP_HOST,
     SMTP_PORT: process.env.SMTP_PORT,
@@ -109,6 +115,13 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     DATABASE_NAME: process.env.DATABASE_NAME,
     NODE_ENV: process.env.NODE_ENV,
+    // S3 Storage
+    S3_URL: process.env.S3_URL,
+    S3_ACCESS_KEY: process.env.S3_ACCESS_KEY,
+    S3_SECRET_KEY: process.env.S3_SECRET_KEY,
+    S3_BUCKET: process.env.S3_BUCKET,
+    S3_REGION: process.env.S3_REGION,
+    S3_PUBLIC_URL: process.env.S3_PUBLIC_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

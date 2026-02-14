@@ -1,8 +1,8 @@
 "use client";
 
+import { ChevronRight, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, LayoutDashboard } from "lucide-react";
 
 import { cn } from "~/lib/utils";
 
@@ -58,22 +58,15 @@ export function AdminPageHeader({
   return (
     <div className={cn("space-y-1", className)}>
       {/* Хлебные крошки */}
-      <nav className="flex items-center text-sm text-muted-foreground">
+      <nav className="text-muted-foreground flex items-center text-sm">
         {breadcrumbs.map((crumb, index) => (
           <span key={crumb.href} className="flex items-center">
-            {index > 0 && (
-              <ChevronRight className="mx-1.5 h-3.5 w-3.5 shrink-0" />
-            )}
+            {index > 0 && <ChevronRight className="mx-1.5 h-3.5 w-3.5 shrink-0" />}
             {crumb.isLast ? (
-              <span className="font-medium text-foreground">{crumb.label}</span>
+              <span className="text-foreground font-medium">{crumb.label}</span>
             ) : (
-              <Link
-                href={crumb.href}
-                className="hover:text-foreground transition-colors"
-              >
-                {crumb.isFirst && (
-                  <LayoutDashboard className="mr-1 inline h-3.5 w-3.5" />
-                )}
+              <Link href={crumb.href} className="hover:text-foreground transition-colors">
+                {crumb.isFirst && <LayoutDashboard className="mr-1 inline h-3.5 w-3.5" />}
                 {crumb.label}
               </Link>
             )}
@@ -85,9 +78,7 @@ export function AdminPageHeader({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-          {description && (
-            <p className="text-sm text-muted-foreground">{description}</p>
-          )}
+          {description && <p className="text-muted-foreground text-sm">{description}</p>}
         </div>
         {children && <div className="flex items-center gap-2">{children}</div>}
       </div>

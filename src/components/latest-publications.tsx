@@ -1,23 +1,23 @@
-import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowRight,
-  MessageSquare,
-  Megaphone,
   HelpCircle,
+  Megaphone,
+  MessageSquare,
+  MessagesSquare,
   Search,
   ThumbsUp,
-  MessagesSquare,
   User,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { api } from "~/trpc/server";
 import { cn } from "~/lib/utils";
 import type { PublicationType } from "~/server/db/schema";
+import { api } from "~/trpc/server";
 
 // ============================================================================
 // Constants
@@ -79,12 +79,12 @@ export async function LatestPublications({ variant = "grid" }: LatestPublication
     return (
       <section>
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-muted-foreground" />
+            <MessageSquare className="text-muted-foreground h-5 w-5" />
             <h2 className="text-lg font-semibold">Публикации</h2>
           </div>
-          <Button variant="ghost" size="sm" className="h-auto py-1 px-2 text-xs" asChild>
+          <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs" asChild>
             <Link href="/publications" className="gap-1">
               Все
               <ArrowRight className="h-3 w-3" />
@@ -97,31 +97,31 @@ export async function LatestPublications({ variant = "grid" }: LatestPublication
           {publications.map((pub) => {
             const typeConfig =
               PUBLICATION_TYPE_CONFIG[pub.type] ?? PUBLICATION_TYPE_CONFIG.discussion!;
-            const Icon = typeConfig!.icon;
+            const Icon = typeConfig.icon;
 
             return (
               <Link
                 key={pub.id}
                 href={`/publications/${pub.id}`}
-                className="group block rounded-lg border bg-card hover:shadow-sm transition-shadow overflow-hidden"
+                className="bg-card group block overflow-hidden rounded-lg border transition-shadow hover:shadow-sm"
               >
                 <div className="p-3">
                   {/* Type Badge */}
                   <Badge
                     variant="secondary"
-                    className={cn("gap-1 mb-2 text-[10px] px-1.5 py-0", typeConfig.color)}
+                    className={cn("mb-2 gap-1 px-1.5 py-0 text-[10px]", typeConfig.color)}
                   >
                     <Icon className="h-2.5 w-2.5" />
                     {typeConfig.label}
                   </Badge>
 
                   {/* Title */}
-                  <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                  <h3 className="group-hover:text-primary line-clamp-2 text-sm font-medium transition-colors">
                     {pub.title}
                   </h3>
 
                   {/* Author & Date */}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                  <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
                     {pub.author && !pub.isAnonymous ? (
                       <>
                         <Avatar className="h-4 w-4">
@@ -130,9 +130,7 @@ export async function LatestPublications({ variant = "grid" }: LatestPublication
                             <User className="h-2 w-2" />
                           </AvatarFallback>
                         </Avatar>
-                        <span className="truncate max-w-[80px]">
-                          {pub.author.name}
-                        </span>
+                        <span className="max-w-[80px] truncate">{pub.author.name}</span>
                         <span>•</span>
                       </>
                     ) : null}
@@ -152,9 +150,9 @@ export async function LatestPublications({ variant = "grid" }: LatestPublication
   return (
     <section className="py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-muted-foreground" />
+          <MessageSquare className="text-muted-foreground h-5 w-5" />
           <h2 className="text-xl font-semibold">Публикации</h2>
         </div>
         <Button variant="ghost" size="sm" asChild>
@@ -170,13 +168,10 @@ export async function LatestPublications({ variant = "grid" }: LatestPublication
         {publications.map((pub) => {
           const typeConfig =
             PUBLICATION_TYPE_CONFIG[pub.type] ?? PUBLICATION_TYPE_CONFIG.discussion!;
-          const Icon = typeConfig!.icon;
+          const Icon = typeConfig.icon;
 
           return (
-            <Card
-              key={pub.id}
-              className="group overflow-hidden hover:shadow-md transition-shadow"
-            >
+            <Card key={pub.id} className="group overflow-hidden transition-shadow hover:shadow-md">
               {/* Cover Image */}
               {pub.coverImage ? (
                 <div className="relative aspect-video overflow-hidden">
@@ -189,30 +184,27 @@ export async function LatestPublications({ variant = "grid" }: LatestPublication
                   />
                 </div>
               ) : (
-                <div className="aspect-video bg-muted flex items-center justify-center">
-                  <Icon className="h-8 w-8 text-muted-foreground/50" />
+                <div className="bg-muted flex aspect-video items-center justify-center">
+                  <Icon className="text-muted-foreground/50 h-8 w-8" />
                 </div>
               )}
 
               <CardContent className="p-4">
                 {/* Type Badge */}
-                <Badge
-                  variant="secondary"
-                  className={cn("gap-1 mb-2", typeConfig.color)}
-                >
+                <Badge variant="secondary" className={cn("mb-2 gap-1", typeConfig.color)}>
                   <Icon className="h-3 w-3" />
                   {typeConfig.label}
                 </Badge>
 
                 {/* Title */}
-                <h3 className="font-medium line-clamp-2 group-hover:text-primary transition-colors">
+                <h3 className="group-hover:text-primary line-clamp-2 font-medium transition-colors">
                   <Link href={`/publications/${pub.id}`}>{pub.title}</Link>
                 </h3>
               </CardContent>
 
               <CardFooter className="px-4 pb-4 pt-0">
                 {/* Author & Date */}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="text-muted-foreground flex items-center gap-2 text-xs">
                   {pub.author && !pub.isAnonymous ? (
                     <>
                       <Avatar className="h-5 w-5">
@@ -221,9 +213,7 @@ export async function LatestPublications({ variant = "grid" }: LatestPublication
                           <User className="h-3 w-3" />
                         </AvatarFallback>
                       </Avatar>
-                      <span className="truncate max-w-[100px]">
-                        {pub.author.name}
-                      </span>
+                      <span className="max-w-[100px] truncate">{pub.author.name}</span>
                       <span>•</span>
                     </>
                   ) : null}

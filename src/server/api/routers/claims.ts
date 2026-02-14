@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, desc, count, sql } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { type UserRole } from "~/server/auth/rbac";
@@ -20,12 +20,9 @@ import {
   userParkingSpots,
   userRoles,
 } from "~/server/db/schema";
+import { sendTelegramNotificationAsync } from "~/server/notifications/telegram";
 
-import {
-  adminProcedureWithFeature,
-  createTRPCRouter,
-  protectedProcedure,
-} from "../trpc";
+import { adminProcedureWithFeature, createTRPCRouter, protectedProcedure } from "../trpc";
 
 // Zod schemas
 const claimTypeSchema = z.enum(["apartment", "parking", "commercial"]);
@@ -144,10 +141,7 @@ export const claimsRouter = createTRPCRouter({
 
       // Verify the claim belongs to the user
       const claim = await ctx.db.query.propertyClaims.findFirst({
-        where: and(
-          eq(propertyClaims.id, input.claimId),
-          eq(propertyClaims.userId, userId)
-        ),
+        where: and(eq(propertyClaims.id, input.claimId), eq(propertyClaims.userId, userId)),
       });
 
       if (!claim) {
@@ -249,6 +243,26 @@ export const claimsRouter = createTRPCRouter({
         })
         .returning();
 
+      // Send Telegram notification
+      const claimTypeName = {
+        apartment: "квартиру",
+        parking: "парковку",
+        commercial: "коммерческую недвижимость",
+      }[input.claimType];
+
+      sendTelegramNotificationAsync({
+        event: "claim_created",
+        title: "Новая заявка на собственность",
+        description: `Пользователь подал заявку на ${claimTypeName}`,
+        metadata: {
+          Тип: claimTypeName,
+          Роль: input.claimedRole,
+          Статус: "Ожидает рассмотрения",
+        },
+        userId: ctx.session.user.id,
+        userName: ctx.session.user.name ?? ctx.session.user.email ?? undefined,
+      });
+
       return claim;
     }),
 
@@ -259,10 +273,7 @@ export const claimsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       const claim = await ctx.db.query.propertyClaims.findFirst({
-        where: and(
-          eq(propertyClaims.id, input.claimId),
-          eq(propertyClaims.userId, userId)
-        ),
+        where: and(eq(propertyClaims.id, input.claimId), eq(propertyClaims.userId, userId)),
       });
 
       if (!claim) {
@@ -279,9 +290,7 @@ export const claimsRouter = createTRPCRouter({
         });
       }
 
-      await ctx.db
-        .delete(propertyClaims)
-        .where(eq(propertyClaims.id, input.claimId));
+      await ctx.db.delete(propertyClaims).where(eq(propertyClaims.id, input.claimId));
 
       return { success: true };
     }),
@@ -304,10 +313,7 @@ export const claimsRouter = createTRPCRouter({
 
       // Verify the claim belongs to the user
       const claim = await ctx.db.query.propertyClaims.findFirst({
-        where: and(
-          eq(propertyClaims.id, input.claimId),
-          eq(propertyClaims.userId, userId)
-        ),
+        where: and(eq(propertyClaims.id, input.claimId), eq(propertyClaims.userId, userId)),
         with: {
           documents: true,
         },
@@ -390,9 +396,7 @@ export const claimsRouter = createTRPCRouter({
       }
 
       // Delete document record
-      await ctx.db
-        .delete(claimDocuments)
-        .where(eq(claimDocuments.id, input.documentId));
+      await ctx.db.delete(claimDocuments).where(eq(claimDocuments.id, input.documentId));
 
       // Note: Physical file deletion should be handled separately
       // The file URL is: document.fileUrl
@@ -440,10 +444,7 @@ export const claimsRouter = createTRPCRouter({
             revocationReason: "Отозвано пользователем",
           })
           .where(
-            and(
-              eq(userApartments.userId, userId),
-              eq(userApartments.apartmentId, input.propertyId)
-            )
+            and(eq(userApartments.userId, userId), eq(userApartments.apartmentId, input.propertyId))
           );
 
         // Check if user has other properties with the same role
@@ -457,24 +458,20 @@ export const claimsRouter = createTRPCRouter({
 
         // If no other apartments with same role, check parking spots
         if (!otherApartments) {
-          const parkingRole =
-            roleToCheck === "ApartmentOwner" ? "ParkingOwner" : "ParkingResident";
-          const otherParkingWithSimilarRole =
-            await ctx.db.query.userParkingSpots.findFirst({
-              where: and(
-                eq(userParkingSpots.userId, userId),
-                eq(userParkingSpots.role, parkingRole),
-                sql`${userParkingSpots.revokedAt} IS NULL`
-              ),
-            });
+          const parkingRole = roleToCheck === "ApartmentOwner" ? "ParkingOwner" : "ParkingResident";
+          const otherParkingWithSimilarRole = await ctx.db.query.userParkingSpots.findFirst({
+            where: and(
+              eq(userParkingSpots.userId, userId),
+              eq(userParkingSpots.role, parkingRole),
+              sql`${userParkingSpots.revokedAt} IS NULL`
+            ),
+          });
 
           // If no other properties with this role type, remove the role
           if (!otherParkingWithSimilarRole) {
             await ctx.db
               .delete(userRoles)
-              .where(
-                and(eq(userRoles.userId, userId), eq(userRoles.role, roleToCheck))
-              );
+              .where(and(eq(userRoles.userId, userId), eq(userRoles.role, roleToCheck)));
           }
         }
       } else {
@@ -525,22 +522,19 @@ export const claimsRouter = createTRPCRouter({
         if (!otherParkingSpots) {
           const apartmentRole =
             roleToCheck === "ParkingOwner" ? "ApartmentOwner" : "ApartmentResident";
-          const otherApartmentsWithSimilarRole =
-            await ctx.db.query.userApartments.findFirst({
-              where: and(
-                eq(userApartments.userId, userId),
-                eq(userApartments.role, apartmentRole),
-                sql`${userApartments.revokedAt} IS NULL`
-              ),
-            });
+          const otherApartmentsWithSimilarRole = await ctx.db.query.userApartments.findFirst({
+            where: and(
+              eq(userApartments.userId, userId),
+              eq(userApartments.role, apartmentRole),
+              sql`${userApartments.revokedAt} IS NULL`
+            ),
+          });
 
           // If no other properties with this role type, remove the role
           if (!otherApartmentsWithSimilarRole) {
             await ctx.db
               .delete(userRoles)
-              .where(
-                and(eq(userRoles.userId, userId), eq(userRoles.role, roleToCheck))
-              );
+              .where(and(eq(userRoles.userId, userId), eq(userRoles.role, roleToCheck)));
           }
         }
       }
@@ -677,9 +671,23 @@ export const claimsRouter = createTRPCRouter({
         where: and(
           eq(propertyClaims.status, "pending"),
           sql`(
-            (${propertyClaims.claimedRole} = 'ApartmentResident' AND ${propertyClaims.apartmentId} IN (${apartmentIds.length > 0 ? sql.join(apartmentIds.map(id => sql`${id}`), sql`, `) : sql`NULL`}))
+            (${propertyClaims.claimedRole} = 'ApartmentResident' AND ${propertyClaims.apartmentId} IN (${
+              apartmentIds.length > 0
+                ? sql.join(
+                    apartmentIds.map((id) => sql`${id}`),
+                    sql`, `
+                  )
+                : sql`NULL`
+            }))
             OR
-            (${propertyClaims.claimedRole} = 'ParkingResident' AND ${propertyClaims.parkingSpotId} IN (${parkingSpotIds.length > 0 ? sql.join(parkingSpotIds.map(id => sql`${id}`), sql`, `) : sql`NULL`}))
+            (${propertyClaims.claimedRole} = 'ParkingResident' AND ${propertyClaims.parkingSpotId} IN (${
+              parkingSpotIds.length > 0
+                ? sql.join(
+                    parkingSpotIds.map((id) => sql`${id}`),
+                    sql`, `
+                  )
+                : sql`NULL`
+            }))
           )`
         ),
         with: {
@@ -769,9 +777,10 @@ export const claimsRouter = createTRPCRouter({
         }
 
         const previousStatus = claim.status;
-        const resolutionText = input.status === "approved"
-          ? "Подтверждено собственником"
-          : input.comment ?? "Отклонено собственником";
+        const resolutionText =
+          input.status === "approved"
+            ? "Подтверждено собственником"
+            : (input.comment ?? "Отклонено собственником");
 
         // Update claim
         await ctx.db
@@ -804,7 +813,7 @@ export const claimsRouter = createTRPCRouter({
               userId: claim.userId,
               apartmentId: claim.apartmentId,
               status: "approved",
-              role: claim.claimedRole as UserRole,
+              role: claim.claimedRole,
             });
 
             // Get building ID from apartment
@@ -824,7 +833,7 @@ export const claimsRouter = createTRPCRouter({
               userId: claim.userId,
               parkingSpotId: claim.parkingSpotId,
               status: "approved",
-              role: claim.claimedRole as UserRole,
+              role: claim.claimedRole,
             });
 
             // Get building ID from parking spot
@@ -848,10 +857,7 @@ export const claimsRouter = createTRPCRouter({
 
           // Assign role
           const existingRole = await ctx.db.query.userRoles.findFirst({
-            where: and(
-              eq(userRoles.userId, claim.userId),
-              eq(userRoles.role, claim.claimedRole)
-            ),
+            where: and(eq(userRoles.userId, claim.userId), eq(userRoles.role, claim.claimedRole)),
           });
 
           if (!existingRole) {
@@ -978,8 +984,7 @@ export const claimsRouter = createTRPCRouter({
           conditions.push(eq(propertyClaims.claimType, type));
         }
 
-        const whereClause =
-          conditions.length > 0 ? and(...conditions) : undefined;
+        const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
         const claims = await ctx.db.query.propertyClaims.findMany({
           where: whereClause,
@@ -1053,10 +1058,9 @@ export const claimsRouter = createTRPCRouter({
         }
 
         // Определяем текст решения
-        const resolutionText =
-          input.resolutionTemplate.endsWith("_custom")
-            ? input.customText ?? ""
-            : RESOLUTION_TEMPLATES[input.resolutionTemplate] ?? "";
+        const resolutionText = input.resolutionTemplate.endsWith("_custom")
+          ? (input.customText ?? "")
+          : (RESOLUTION_TEMPLATES[input.resolutionTemplate] ?? "");
 
         const previousStatus = claim.status;
 
@@ -1091,7 +1095,7 @@ export const claimsRouter = createTRPCRouter({
               userId: claim.userId,
               apartmentId: claim.apartmentId,
               status: "approved",
-              role: claim.claimedRole as UserRole,
+              role: claim.claimedRole,
             });
 
             // Get building ID from apartment
@@ -1111,7 +1115,7 @@ export const claimsRouter = createTRPCRouter({
               userId: claim.userId,
               parkingSpotId: claim.parkingSpotId,
               status: "approved",
-              role: claim.claimedRole as UserRole,
+              role: claim.claimedRole,
             });
 
             // Get building ID from parking spot
@@ -1135,10 +1139,7 @@ export const claimsRouter = createTRPCRouter({
 
           // Assign the claimed role to the user
           const existingRole = await ctx.db.query.userRoles.findFirst({
-            where: and(
-              eq(userRoles.userId, claim.userId),
-              eq(userRoles.role, claim.claimedRole)
-            ),
+            where: and(eq(userRoles.userId, claim.userId), eq(userRoles.role, claim.claimedRole)),
           });
 
           if (!existingRole) {
@@ -1148,6 +1149,25 @@ export const claimsRouter = createTRPCRouter({
             });
           }
         }
+
+        // Send Telegram notification about review
+        const claimTypeName = {
+          apartment: "квартиру",
+          parking: "парковку",
+          commercial: "коммерческую недвижимость",
+        }[claim.claimType];
+
+        sendTelegramNotificationAsync({
+          event: input.status === "approved" ? "claim_approved" : "claim_rejected",
+          title: `Заявка ${input.status === "approved" ? "одобрена" : "отклонена"}`,
+          description: `Заявка на ${claimTypeName} была ${input.status === "approved" ? "одобрена" : "отклонена"} администратором`,
+          metadata: {
+            Тип: claimTypeName,
+            Роль: claim.claimedRole,
+            Причина: resolutionText,
+          },
+          userName: ctx.session.user.name ?? ctx.session.user.email ?? undefined,
+        });
 
         return { success: true };
       }),

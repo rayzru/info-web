@@ -1,18 +1,14 @@
 "use client";
 
 import { useState } from "react";
+
 import { FolderOpen, Upload, X } from "lucide-react";
 
-import { Button } from "~/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "~/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { ImageUploader } from "~/components/media";
 import { MediaLibrary } from "~/components/media/media-library";
+import { Button } from "~/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import type { Media } from "~/server/db/schema";
 
 interface EditorImageDialogProps {
@@ -21,11 +17,7 @@ interface EditorImageDialogProps {
   onImageSelect: (url: string, alt?: string) => void;
 }
 
-export function EditorImageDialog({
-  open,
-  onOpenChange,
-  onImageSelect,
-}: EditorImageDialogProps) {
+export function EditorImageDialog({ open, onOpenChange, onImageSelect }: EditorImageDialogProps) {
   const [activeTab, setActiveTab] = useState<"upload" | "library">("upload");
   const [libraryOpen, setLibraryOpen] = useState(false);
 
@@ -50,10 +42,7 @@ export function EditorImageDialog({
             <DialogTitle>Вставить изображение</DialogTitle>
           </DialogHeader>
 
-          <Tabs
-            value={activeTab}
-            onValueChange={(v) => setActiveTab(v as "upload" | "library")}
-          >
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "upload" | "library")}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="upload" className="flex items-center gap-2">
                 <Upload className="h-4 w-4" />
@@ -77,13 +66,11 @@ export function EditorImageDialog({
 
             <TabsContent value="library" className="mt-4">
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <FolderOpen className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-sm text-muted-foreground mb-4">
+                <FolderOpen className="text-muted-foreground mb-4 h-12 w-12" />
+                <p className="text-muted-foreground mb-4 text-sm">
                   Выберите изображение из медиабиблиотеки
                 </p>
-                <Button onClick={() => setLibraryOpen(true)}>
-                  Открыть библиотеку
-                </Button>
+                <Button onClick={() => setLibraryOpen(true)}>Открыть библиотеку</Button>
               </div>
             </TabsContent>
           </Tabs>

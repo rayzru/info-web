@@ -1,14 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { eq, and } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
+import { generateICS } from "~/lib/ics";
 import { db } from "~/server/db";
 import { publications } from "~/server/db/schema";
-import { generateICS } from "~/lib/ics";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   // Fetch the event
@@ -25,20 +22,15 @@ export async function GET(
     },
   });
 
-  if (!event || !event.eventStartAt) {
-    return NextResponse.json(
-      { error: "Event not found" },
-      { status: 404 }
-    );
+  if (!event?.eventStartAt) {
+    return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
 
   // Extract text from content if it's JSON
   let description = "";
   if (event.content) {
     try {
-      const content = typeof event.content === "string"
-        ? JSON.parse(event.content)
-        : event.content;
+      const content = typeof event.content === "string" ? JSON.parse(event.content) : event.content;
       description = extractTextFromContent(content);
     } catch {
       description = String(event.content);

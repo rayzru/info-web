@@ -27,6 +27,8 @@ import {
   Video,
   Youtube,
 } from "lucide-react";
+
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,17 +36,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-
-import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
-import { cn } from "~/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { type EditorMode, isFeatureAvailable } from "~/lib/editor";
+import { cn } from "~/lib/utils";
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -63,13 +58,7 @@ interface ToolbarButtonProps {
   children: React.ReactNode;
 }
 
-function ToolbarButton({
-  onClick,
-  isActive,
-  disabled,
-  tooltip,
-  children,
-}: ToolbarButtonProps) {
+function ToolbarButton({ onClick, isActive, disabled, tooltip, children }: ToolbarButtonProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -79,10 +68,7 @@ function ToolbarButton({
           size="sm"
           onClick={onClick}
           disabled={disabled}
-          className={cn(
-            "h-8 w-8 p-0",
-            isActive && "bg-muted text-foreground"
-          )}
+          className={cn("h-8 w-8 p-0", isActive && "bg-muted text-foreground")}
         >
           {children}
         </Button>
@@ -108,7 +94,7 @@ export function Toolbar({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex flex-wrap items-center gap-0.5 border-b bg-muted/30 px-2 py-1">
+      <div className="bg-muted/30 flex flex-wrap items-center gap-0.5 border-b px-2 py-1">
         {/* History */}
         <ToolbarButton
           onClick={() => editor.chain().focus().undo().run()}
@@ -201,18 +187,14 @@ export function Toolbar({
           <>
             <Separator orientation="vertical" className="mx-1 h-6" />
             <ToolbarButton
-              onClick={() =>
-                editor.chain().focus().toggleHeading({ level: 2 }).run()
-              }
+              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
               isActive={editor.isActive("heading", { level: 2 })}
               tooltip="Заголовок 2"
             >
               <Heading2 className="h-4 w-4" />
             </ToolbarButton>
             <ToolbarButton
-              onClick={() =>
-                editor.chain().focus().toggleHeading({ level: 3 }).run()
-              }
+              onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
               isActive={editor.isActive("heading", { level: 3 })}
               tooltip="Заголовок 3"
             >
@@ -265,9 +247,7 @@ export function Toolbar({
               <AlignLeft className="h-4 w-4" />
             </ToolbarButton>
             <ToolbarButton
-              onClick={() =>
-                editor.chain().focus().setTextAlign("center").run()
-              }
+              onClick={() => editor.chain().focus().setTextAlign("center").run()}
               isActive={editor.isActive({ textAlign: "center" })}
               tooltip="По центру"
             >

@@ -11,6 +11,11 @@ import {
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
+// ============================================================================
+// User Interest Buildings (область интересов - строения)
+// ============================================================================
+// Forward declaration for buildings reference
+import { buildings } from "./buildings";
 import { createTable } from "./create-table";
 
 // Определяем enum ролей
@@ -32,11 +37,7 @@ export const userRoleEnum = pgEnum("user_role_enum", [
   "StoreRepresenative",
 ]);
 
-export const userGenderEnum = pgEnum("user_gender_enum", [
-  "Male",
-  "Female",
-  "Unspecified",
-]);
+export const userGenderEnum = pgEnum("user_gender_enum", ["Male", "Female", "Unspecified"]);
 
 export const mapProviderEnum = pgEnum("map_provider_enum", [
   "yandex",
@@ -84,7 +85,7 @@ export const userRoles = createTable(
       .references(() => users.id, { onDelete: "cascade" }),
     role: userRoleEnum("role").notNull(),
   },
-  (table) => [primaryKey({ columns: [table.userId, table.role] })],
+  (table) => [primaryKey({ columns: [table.userId, table.role] })]
 );
 
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
@@ -102,9 +103,7 @@ export const accounts = createTable(
     userId: varchar("user_id", { length: 255 })
       .notNull()
       .references(() => users.id),
-    type: varchar("type", { length: 255 })
-      .$type<AdapterAccount["type"]>()
-      .notNull(),
+    type: varchar("type", { length: 255 }).$type<AdapterAccount["type"]>().notNull(),
     provider: varchar("provider", { length: 255 }).notNull(),
     providerAccountId: varchar("provider_account_id", {
       length: 255,
@@ -120,7 +119,7 @@ export const accounts = createTable(
   (account) => [
     primaryKey({ columns: [account.provider, account.providerAccountId] }),
     index("account_user_id_idx").on(account.userId),
-  ],
+  ]
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -130,9 +129,7 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const sessions = createTable(
   "session",
   {
-    sessionToken: varchar("session_token", { length: 255 })
-      .notNull()
-      .primaryKey(),
+    sessionToken: varchar("session_token", { length: 255 }).notNull().primaryKey(),
     userId: varchar("user_id", { length: 255 })
       .notNull()
       .references(() => users.id),
@@ -141,7 +138,7 @@ export const sessions = createTable(
       withTimezone: true,
     }).notNull(),
   },
-  (session) => [index("session_user_id_idx").on(session.userId)],
+  (session) => [index("session_user_id_idx").on(session.userId)]
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -158,7 +155,7 @@ export const verificationTokens = createTable(
       withTimezone: true,
     }).notNull(),
   },
-  (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })],
+  (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })]
 );
 
 // Токены для сброса пароля
@@ -188,18 +185,15 @@ export const passwordResetTokens = createTable(
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [index("password_reset_token_idx").on(table.token)],
+  (table) => [index("password_reset_token_idx").on(table.token)]
 );
 
-export const passwordResetTokensRelations = relations(
-  passwordResetTokens,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [passwordResetTokens.userId],
-      references: [users.id],
-    }),
+export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [passwordResetTokens.userId],
+    references: [users.id],
   }),
-);
+}));
 
 // Токены для подтверждения email при регистрации
 export const emailVerificationTokens = createTable(
@@ -228,18 +222,15 @@ export const emailVerificationTokens = createTable(
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [index("email_verification_token_idx").on(table.token)],
+  (table) => [index("email_verification_token_idx").on(table.token)]
 );
 
-export const emailVerificationTokensRelations = relations(
-  emailVerificationTokens,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [emailVerificationTokens.userId],
-      references: [users.id],
-    }),
+export const emailVerificationTokensRelations = relations(emailVerificationTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [emailVerificationTokens.userId],
+    references: [users.id],
   }),
-);
+}));
 
 export const userProfiles = createTable("user_profile", {
   id: varchar("id", { length: 255 })
@@ -325,11 +316,11 @@ export const telegramAuthTokens = createTable(
 
 // Enum для категорий блокировки
 export const blockCategoryEnum = pgEnum("block_category_enum", [
-  "rules_violation",    // Нарушение правил сообщества
-  "fraud",              // Мошенничество
-  "spam",               // Спам
-  "abuse",              // Оскорбления/травля
-  "other",              // Другая причина
+  "rules_violation", // Нарушение правил сообщества
+  "fraud", // Мошенничество
+  "spam", // Спам
+  "abuse", // Оскорбления/травля
+  "other", // Другая причина
 ]);
 
 // Пункты правил для нарушений
@@ -382,8 +373,7 @@ export const userBlocks = createTable(
       withTimezone: true,
     }),
     // Кто снял блокировку
-    unblockedBy: varchar("unblocked_by", { length: 255 })
-      .references(() => users.id),
+    unblockedBy: varchar("unblocked_by", { length: 255 }).references(() => users.id),
     // Причина снятия блокировки
     unblockReason: text("unblock_reason"),
   },
@@ -406,13 +396,6 @@ export const userBlocksRelations = relations(userBlocks, ({ one }) => ({
     relationName: "unblockedByUser",
   }),
 }));
-
-// ============================================================================
-// User Interest Buildings (область интересов - строения)
-// ============================================================================
-
-// Forward declaration for buildings reference
-import { buildings } from "./buildings";
 
 export const userInterestBuildings = createTable(
   "user_interest_building",
@@ -439,16 +422,13 @@ export const userInterestBuildings = createTable(
   ]
 );
 
-export const userInterestBuildingsRelations = relations(
-  userInterestBuildings,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [userInterestBuildings.userId],
-      references: [users.id],
-    }),
-    building: one(buildings, {
-      fields: [userInterestBuildings.buildingId],
-      references: [buildings.id],
-    }),
-  })
-);
+export const userInterestBuildingsRelations = relations(userInterestBuildings, ({ one }) => ({
+  user: one(users, {
+    fields: [userInterestBuildings.userId],
+    references: [users.id],
+  }),
+  building: one(buildings, {
+    fields: [userInterestBuildings.buildingId],
+    references: [buildings.id],
+  }),
+}));

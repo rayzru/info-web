@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ChevronLeft, Copy, Loader2, Plus, Trash2 } from "lucide-react";
 
+import { ChevronLeft, Copy, Loader2, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { type TagTreeNode, TagTreePicker } from "~/components/admin/directory/tag-tree-picker";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -18,10 +20,6 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  TagTreePicker,
-  type TagTreeNode,
-} from "~/components/admin/directory/tag-tree-picker";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 
@@ -145,23 +143,12 @@ export default function NewDirectoryEntryPage() {
     if (existing) {
       setSchedules(schedules.filter((s) => s.dayOfWeek !== dayOfWeek));
     } else {
-      setSchedules([
-        ...schedules,
-        { dayOfWeek, openTime: "09:00", closeTime: "18:00", note: "" },
-      ]);
+      setSchedules([...schedules, { dayOfWeek, openTime: "09:00", closeTime: "18:00", note: "" }]);
     }
   };
 
-  const updateSchedule = (
-    dayOfWeek: number,
-    field: keyof Schedule,
-    value: string | number
-  ) => {
-    setSchedules(
-      schedules.map((s) =>
-        s.dayOfWeek === dayOfWeek ? { ...s, [field]: value } : s
-      )
-    );
+  const updateSchedule = (dayOfWeek: number, field: keyof Schedule, value: string | number) => {
+    setSchedules(schedules.map((s) => (s.dayOfWeek === dayOfWeek ? { ...s, [field]: value } : s)));
   };
 
   // Submit
@@ -220,9 +207,7 @@ export default function NewDirectoryEntryPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-semibold">Новая запись</h1>
-          <p className="text-muted-foreground mt-1">
-            Добавление записи в справочник
-          </p>
+          <p className="text-muted-foreground mt-1">Добавление записи в справочник</p>
         </div>
       </div>
 
@@ -295,7 +280,7 @@ export default function NewDirectoryEntryPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {contacts.map((contact, index) => (
-                  <div key={index} className="space-y-3 border rounded-lg p-4">
+                  <div key={index} className="space-y-3 rounded-lg border p-4">
                     <div className="flex items-start gap-2">
                       <Select
                         value={contact.type}
@@ -323,7 +308,7 @@ export default function NewDirectoryEntryPage() {
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">
+                        <Label className="text-muted-foreground text-xs">
                           Подпись (Диспетчерская, Приёмная...)
                         </Label>
                         <Input
@@ -334,9 +319,7 @@ export default function NewDirectoryEntryPage() {
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">
-                          ФИО / Должность
-                        </Label>
+                        <Label className="text-muted-foreground text-xs">ФИО / Должность</Label>
                         <Input
                           value={contact.subtitle}
                           onChange={(e) => updateContact(index, "subtitle", e.target.value)}
@@ -348,7 +331,7 @@ export default function NewDirectoryEntryPage() {
                     {/* Contact-level tags */}
                     {tagTree && (
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">
+                        <Label className="text-muted-foreground text-xs">
                           Теги контакта (для точного поиска по строению/подъезду)
                         </Label>
                         <TagTreePicker
@@ -361,14 +344,14 @@ export default function NewDirectoryEntryPage() {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center justify-between border-t pt-2">
                       <div className="flex items-center gap-2">
                         <Checkbox
                           id={`contact${index}`}
                           checked={contact.isPrimary}
                           onCheckedChange={(v) => updateContact(index, "isPrimary", !!v)}
                         />
-                        <Label htmlFor={`contact${index}`} className="text-sm cursor-pointer">
+                        <Label htmlFor={`contact${index}`} className="cursor-pointer text-sm">
                           Основной контакт
                         </Label>
                       </div>
@@ -391,7 +374,7 @@ export default function NewDirectoryEntryPage() {
                             onClick={() => removeContact(index)}
                             title="Удалить"
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2 className="text-destructive h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -425,14 +408,11 @@ export default function NewDirectoryEntryPage() {
                 </div>
 
                 {schedules.length > 0 && (
-                  <div className="space-y-3 mt-4">
+                  <div className="mt-4 space-y-3">
                     {schedules
                       .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
                       .map((schedule) => (
-                        <div
-                          key={schedule.dayOfWeek}
-                          className="flex items-center gap-4"
-                        >
+                        <div key={schedule.dayOfWeek} className="flex items-center gap-4">
                           <span className="w-28 text-sm font-medium">
                             {DAY_NAMES[schedule.dayOfWeek]}
                           </span>
@@ -486,9 +466,7 @@ export default function NewDirectoryEntryPage() {
                     showCounts
                   />
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Загрузка категорий...
-                  </p>
+                  <p className="text-muted-foreground text-sm">Загрузка категорий...</p>
                 )}
               </CardContent>
             </Card>
@@ -496,14 +474,8 @@ export default function NewDirectoryEntryPage() {
             {/* Actions */}
             <Card>
               <CardContent className="pt-6">
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={createMutation.isPending}
-                >
-                  {createMutation.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                <Button type="submit" className="w-full" disabled={createMutation.isPending}>
+                  {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Создать запись
                 </Button>
               </CardContent>

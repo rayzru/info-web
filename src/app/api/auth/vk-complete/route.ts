@@ -1,10 +1,10 @@
 import crypto from "crypto";
 import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { db } from "~/server/db";
-import { accounts, users, userRoles } from "~/server/db/schema";
+import { accounts, userRoles, users } from "~/server/db/schema";
 
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL!;
 const AUTH_SECRET = process.env.AUTH_SECRET!;
@@ -83,12 +83,7 @@ export async function GET(request: NextRequest) {
           access_token: accessToken,
           refresh_token: refreshToken,
         })
-        .where(
-          and(
-            eq(accounts.provider, "vk"),
-            eq(accounts.providerAccountId, vkUser.id)
-          )
-        );
+        .where(and(eq(accounts.provider, "vk"), eq(accounts.providerAccountId, vkUser.id)));
     } else {
       // Create new user
       console.log("[VK Complete] Creating new user for VK ID:", vkUser.id);
@@ -143,9 +138,9 @@ export async function GET(request: NextRequest) {
     const sessionToken = generateSessionToken(userId);
 
     // Store credentials in a cookie for the client-side signIn
-    const credsCookie = Buffer.from(
-      JSON.stringify({ userId, token: sessionToken })
-    ).toString("base64");
+    const credsCookie = Buffer.from(JSON.stringify({ userId, token: sessionToken })).toString(
+      "base64"
+    );
 
     // Redirect to a client page that will complete the signIn
     const response = NextResponse.redirect(
@@ -165,7 +160,6 @@ export async function GET(request: NextRequest) {
     });
 
     return response;
-
   } catch (err) {
     console.error("[VK Complete] Error:", err);
     return NextResponse.redirect(new URL("/login?error=CompleteError", baseUrl));

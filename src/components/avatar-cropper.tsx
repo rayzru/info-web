@@ -1,15 +1,12 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import ReactCrop, {
-  centerCrop,
-  makeAspectCrop,
-  type Crop,
-  type PixelCrop,
-} from "react-image-crop";
-import "react-image-crop/dist/ReactCrop.css";
-import { Camera, Loader2, Trash2, Upload, X, ZoomIn, ZoomOut } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
 
+import { Camera, Loader2, Trash2, Upload, X, ZoomIn, ZoomOut } from "lucide-react";
+import ReactCrop, { centerCrop, type Crop, makeAspectCrop, type PixelCrop } from "react-image-crop";
+
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,10 +15,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Slider } from "~/components/ui/slider";
 import { cn } from "~/lib/utils";
+
+import "react-image-crop/dist/ReactCrop.css";
 
 // ============================================================================
 // Types
@@ -48,11 +45,7 @@ interface AvatarCropperProps {
 // Helpers
 // ============================================================================
 
-function centerAspectCrop(
-  mediaWidth: number,
-  mediaHeight: number,
-  aspect: number
-): Crop {
+function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number): Crop {
   return centerCrop(
     makeAspectCrop(
       {
@@ -256,21 +249,16 @@ export function AvatarCropper({
         <Avatar
           className={cn(
             sizeClasses[size],
-            "rounded-xl ring-[3px] ring-offset-2 ring-offset-background",
+            "ring-offset-background rounded-xl ring-[3px] ring-offset-2",
             ringColor
           )}
         >
           <AvatarImage
             src={currentAvatar ?? undefined}
             alt=""
-            className="object-cover rounded-xl"
+            className="rounded-xl object-cover"
           />
-          <AvatarFallback
-            className={cn(
-              "text-3xl rounded-xl text-white",
-              badgeColor
-            )}
-          >
+          <AvatarFallback className={cn("rounded-xl text-3xl text-white", badgeColor)}>
             {fallback}
           </AvatarFallback>
         </Avatar>
@@ -303,7 +291,7 @@ export function AvatarCropper({
           {imageSrc && (
             <div className="space-y-4">
               {/* Crop area */}
-              <div className="relative overflow-hidden rounded-lg bg-muted flex items-center justify-center min-h-[300px] max-h-100">
+              <div className="bg-muted max-h-100 relative flex min-h-[300px] items-center justify-center overflow-hidden rounded-lg">
                 <ReactCrop
                   crop={crop}
                   onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -329,7 +317,7 @@ export function AvatarCropper({
 
               {/* Zoom slider */}
               <div className="flex items-center gap-3">
-                <ZoomOut className="h-4 w-4 text-muted-foreground" />
+                <ZoomOut className="text-muted-foreground h-4 w-4" />
                 <Slider
                   value={[scale]}
                   onValueChange={(values) => setScale(values[0] ?? 1)}
@@ -338,12 +326,12 @@ export function AvatarCropper({
                   step={0.1}
                   className="flex-1"
                 />
-                <ZoomIn className="h-4 w-4 text-muted-foreground" />
+                <ZoomIn className="text-muted-foreground h-4 w-4" />
               </div>
             </div>
           )}
 
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
             {currentAvatar && (
               <Button
                 type="button"
@@ -364,11 +352,7 @@ export function AvatarCropper({
               <X className="mr-2 h-4 w-4" />
               Отмена
             </Button>
-            <Button
-              type="button"
-              onClick={handleUpload}
-              disabled={!completedCrop || isUploading}
-            >
+            <Button type="button" onClick={handleUpload} disabled={!completedCrop || isUploading}>
               {isUploading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (

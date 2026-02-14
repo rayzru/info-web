@@ -1,31 +1,28 @@
 "use client";
 
 import { useState } from "react";
+
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import {
-  ScrollText,
-  Search,
-  Filter,
-  RefreshCw,
-  User,
-  Clock,
   ChevronLeft,
   ChevronRight,
-  MessageSquare,
+  Clock,
   FileText,
+  Filter,
   Globe,
+  MessageSquare,
+  RefreshCw,
+  ScrollText,
+  Search,
+  User,
 } from "lucide-react";
 
+import { AdminPageHeader } from "~/components/admin/admin-page-header";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -33,11 +30,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Badge } from "~/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { api } from "~/trpc/react";
-import { AdminPageHeader } from "~/components/admin/admin-page-header";
 
 export default function AdminLogsPage() {
   const [page, setPage] = useState(1);
@@ -47,21 +42,50 @@ export default function AdminLogsPage() {
   const [publicationPage, setPublicationPage] = useState(1);
 
   // Fetch audit logs
-  const { data: auditData, isLoading: auditLoading, refetch: refetchAudit } = api.audit.list.useQuery({
+  const {
+    data: auditData,
+    isLoading: auditLoading,
+    refetch: refetchAudit,
+  } = api.audit.list.useQuery({
     page,
     limit: 30,
-    entityType: entityType as "user" | "building" | "apartment" | "parking" | "user_role" | "user_block" | "deletion_request" | "property_claim" | "listing" | "news" | "publication" | "feedback" | "directory_category" | "directory_item" | "directory_tag" | "settings" | undefined,
+    entityType: entityType as
+      | "user"
+      | "building"
+      | "apartment"
+      | "parking"
+      | "user_role"
+      | "user_block"
+      | "deletion_request"
+      | "property_claim"
+      | "listing"
+      | "news"
+      | "publication"
+      | "feedback"
+      | "directory_category"
+      | "directory_item"
+      | "directory_tag"
+      | "settings"
+      | undefined,
     search: search || undefined,
   });
 
   // Fetch feedback history
-  const { data: feedbackData, isLoading: feedbackLoading, refetch: refetchFeedback } = api.audit.feedbackHistory.useQuery({
+  const {
+    data: feedbackData,
+    isLoading: feedbackLoading,
+    refetch: refetchFeedback,
+  } = api.audit.feedbackHistory.useQuery({
     page: feedbackPage,
     limit: 30,
   });
 
   // Fetch publication history
-  const { data: publicationData, isLoading: publicationLoading, refetch: refetchPublication } = api.audit.publicationHistory.useQuery({
+  const {
+    data: publicationData,
+    isLoading: publicationLoading,
+    refetch: refetchPublication,
+  } = api.audit.publicationHistory.useQuery({
     page: publicationPage,
     limit: 30,
   });
@@ -96,10 +120,10 @@ export default function AdminLogsPage() {
       />
 
       {/* Controls */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <div className="flex-1 min-w-[200px]">
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="min-w-[200px] flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Поиск по описанию..."
               value={search}
@@ -120,7 +144,7 @@ export default function AdminLogsPage() {
           }}
         >
           <SelectTrigger className="w-[200px]">
-            <Filter className="h-4 w-4 mr-2" />
+            <Filter className="mr-2 h-4 w-4" />
             <SelectValue placeholder="Тип сущности" />
           </SelectTrigger>
           <SelectContent>
@@ -176,7 +200,7 @@ export default function AdminLogsPage() {
           ) : auditData?.items.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <ScrollText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <ScrollText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
                 <p className="text-muted-foreground">Логи пока отсутствуют</p>
               </CardContent>
             </Card>
@@ -185,21 +209,17 @@ export default function AdminLogsPage() {
               <Card>
                 <CardContent className="divide-y p-0">
                   {auditData?.items.map((log) => (
-                    <div key={log.id} className="p-4 hover:bg-muted/50">
+                    <div key={log.id} className="hover:bg-muted/50 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex flex-wrap items-center gap-2">
                             <Badge className={getEntityTypeBadgeColor(log.entityType)}>
                               {log.entityTypeLabel}
                             </Badge>
-                            <span className="font-medium text-sm">
-                              {log.actionLabel}
-                            </span>
+                            <span className="text-sm font-medium">{log.actionLabel}</span>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {log.description}
-                          </p>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <p className="text-muted-foreground text-sm">{log.description}</p>
+                          <div className="text-muted-foreground flex items-center gap-4 text-xs">
                             {log.actor && (
                               <span className="flex items-center gap-1">
                                 <User className="h-3 w-3" />
@@ -208,12 +228,12 @@ export default function AdminLogsPage() {
                             )}
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {format(new Date(log.createdAt), "dd MMM yyyy, HH:mm", { locale: ru })}
+                              {format(new Date(log.createdAt), "dd MMM yyyy, HH:mm", {
+                                locale: ru,
+                              })}
                             </span>
                             {log.ipAddress && (
-                              <span className="font-mono text-[10px]">
-                                {log.ipAddress}
-                              </span>
+                              <span className="font-mono text-[10px]">{log.ipAddress}</span>
                             )}
                           </div>
                         </div>
@@ -226,7 +246,7 @@ export default function AdminLogsPage() {
               {/* Pagination */}
               {auditData && auditData.totalPages > 1 && (
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Страница {page} из {auditData.totalPages} (всего {auditData.total})
                   </p>
                   <div className="flex gap-2">
@@ -274,7 +294,7 @@ export default function AdminLogsPage() {
           ) : feedbackData?.items.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <MessageSquare className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
                 <p className="text-muted-foreground">История обращений пока пуста</p>
               </CardContent>
             </Card>
@@ -283,26 +303,20 @@ export default function AdminLogsPage() {
               <Card>
                 <CardContent className="divide-y p-0">
                   {feedbackData?.items.map((log) => (
-                    <div key={log.id} className="p-4 hover:bg-muted/50">
+                    <div key={log.id} className="hover:bg-muted/50 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge className="bg-purple-100 text-purple-700">
-                              Обращение
-                            </Badge>
-                            <span className="font-medium text-sm">
-                              {log.actionLabel}
-                            </span>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge className="bg-purple-100 text-purple-700">Обращение</Badge>
+                            <span className="text-sm font-medium">{log.actionLabel}</span>
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-muted-foreground text-sm">
                             {log.description}
                             {log.feedback?.title && (
-                              <span className="ml-1 text-foreground">
-                                — {log.feedback.title}
-                              </span>
+                              <span className="text-foreground ml-1">— {log.feedback.title}</span>
                             )}
                           </p>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <div className="text-muted-foreground flex items-center gap-4 text-xs">
                             {log.changedBy && (
                               <span className="flex items-center gap-1">
                                 <User className="h-3 w-3" />
@@ -311,7 +325,9 @@ export default function AdminLogsPage() {
                             )}
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {format(new Date(log.createdAt), "dd MMM yyyy, HH:mm", { locale: ru })}
+                              {format(new Date(log.createdAt), "dd MMM yyyy, HH:mm", {
+                                locale: ru,
+                              })}
                             </span>
                           </div>
                         </div>
@@ -324,7 +340,7 @@ export default function AdminLogsPage() {
               {/* Pagination */}
               {feedbackData && feedbackData.totalPages > 1 && (
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Страница {feedbackPage} из {feedbackData.totalPages}
                   </p>
                   <div className="flex gap-2">
@@ -372,7 +388,7 @@ export default function AdminLogsPage() {
           ) : publicationData?.items.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <FileText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
                 <p className="text-muted-foreground">История публикаций пока пуста</p>
               </CardContent>
             </Card>
@@ -381,31 +397,27 @@ export default function AdminLogsPage() {
               <Card>
                 <CardContent className="divide-y p-0">
                   {publicationData?.items.map((log) => (
-                    <div key={log.id} className="p-4 hover:bg-muted/50">
+                    <div key={log.id} className="hover:bg-muted/50 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge className="bg-green-100 text-green-700">
-                              Публикация
-                            </Badge>
-                            <span className="font-medium text-sm">
-                              {log.actionLabel}
-                            </span>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge className="bg-green-100 text-green-700">Публикация</Badge>
+                            <span className="text-sm font-medium">{log.actionLabel}</span>
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-muted-foreground text-sm">
                             {log.description}
                             {log.publication?.title && (
-                              <span className="ml-1 text-foreground">
+                              <span className="text-foreground ml-1">
                                 — {log.publication.title}
                               </span>
                             )}
                           </p>
                           {log.moderationComment && (
-                            <p className="text-sm italic text-muted-foreground bg-muted/50 p-2 rounded">
+                            <p className="text-muted-foreground bg-muted/50 rounded p-2 text-sm italic">
                               &quot;{log.moderationComment}&quot;
                             </p>
                           )}
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <div className="text-muted-foreground flex items-center gap-4 text-xs">
                             {log.changedBy && (
                               <span className="flex items-center gap-1">
                                 <User className="h-3 w-3" />
@@ -414,7 +426,9 @@ export default function AdminLogsPage() {
                             )}
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {format(new Date(log.createdAt), "dd MMM yyyy, HH:mm", { locale: ru })}
+                              {format(new Date(log.createdAt), "dd MMM yyyy, HH:mm", {
+                                locale: ru,
+                              })}
                             </span>
                           </div>
                         </div>
@@ -427,7 +441,7 @@ export default function AdminLogsPage() {
               {/* Pagination */}
               {publicationData && publicationData.totalPages > 1 && (
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Страница {publicationPage} из {publicationData.totalPages}
                   </p>
                   <div className="flex gap-2">

@@ -25,8 +25,8 @@ export interface VKIDProfile {
 export default function VKIDProvider(
   config: OAuthUserConfig<VKIDProfile>
 ): OAuthConfig<VKIDProfile> {
-  const clientId = config.clientId as string;
-  const clientSecret = config.clientSecret as string;
+  const clientId = config.clientId!;
+  const clientSecret = config.clientSecret!;
 
   return {
     id: "vk",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { AlertTriangle, Trash2 } from "lucide-react";
 
 import {
@@ -63,9 +64,7 @@ export function DeleteUserDialog({ userId, userName, asMenuItem = false }: Delet
           <div className="space-y-3">
             <p>
               Вы собираетесь создать заявку на удаление пользователя{" "}
-              <span className="font-medium text-foreground">
-                {userName ?? "Без имени"}
-              </span>
+              <span className="text-foreground font-medium">{userName ?? "Без имени"}</span>
             </p>
 
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/50">
@@ -74,29 +73,26 @@ export function DeleteUserDialog({ userId, userName, asMenuItem = false }: Delet
               </p>
               <ul className="mt-2 space-y-1 text-sm text-amber-700 dark:text-amber-300">
                 <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1 w-1 rounded-full bg-amber-500 shrink-0" />
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-500" />
                   <span>
                     Удаление является <strong>мягким</strong> (soft delete) — данные пользователя
                     будут помечены как удалённые, но сохранятся в базе данных
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1 w-1 rounded-full bg-amber-500 shrink-0" />
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-500" />
                   <span>
-                    Пользователь потеряет доступ к аккаунту немедленно после
-                    подтверждения заявки
+                    Пользователь потеряет доступ к аккаунту немедленно после подтверждения заявки
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1 w-1 rounded-full bg-amber-500 shrink-0" />
-                  <span>
-                    При необходимости данные можно восстановить в течение 30 дней
-                  </span>
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-500" />
+                  <span>При необходимости данные можно восстановить в течение 30 дней</span>
                 </li>
               </ul>
             </div>
 
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               После создания заявка будет ожидать подтверждения от другого администратора.
             </p>
           </div>

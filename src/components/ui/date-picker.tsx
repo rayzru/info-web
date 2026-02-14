@@ -1,18 +1,15 @@
 "use client";
 
 import * as React from "react";
+
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 
-import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
+import { cn } from "~/lib/utils";
 
 interface DatePickerProps {
   value?: Date;
@@ -71,7 +68,7 @@ export function DatePicker({
           }}
           locale={ru}
         />
-        <div className="border-t p-3 flex gap-2">
+        <div className="flex gap-2 border-t p-3">
           <Button
             type="button"
             variant="outline"
@@ -118,9 +115,7 @@ export function DateTimePicker({
   toDate,
 }: DateTimePickerProps) {
   const [open, setOpen] = React.useState(false);
-  const [time, setTime] = React.useState<string>(
-    value ? format(value, "HH:mm") : ""
-  );
+  const [time, setTime] = React.useState<string>(value ? format(value, "HH:mm") : "");
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) {
@@ -180,9 +175,7 @@ export function DateTimePicker({
           disabled={disabled}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {value
-            ? format(value, "d MMMM yyyy, HH:mm", { locale: ru })
-            : placeholder}
+          {value ? format(value, "d MMMM yyyy, HH:mm", { locale: ru }) : placeholder}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -197,14 +190,14 @@ export function DateTimePicker({
           }}
           locale={ru}
         />
-        <div className="border-t p-3 space-y-3">
+        <div className="space-y-3 border-t p-3">
           <div>
             <label className="text-sm font-medium">Время</label>
             <input
               type="time"
               value={time}
               onChange={handleTimeChange}
-              className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring mt-1 block w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             />
           </div>
           <div className="flex gap-2">

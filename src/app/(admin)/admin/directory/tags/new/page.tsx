@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+
 import { ChevronLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -79,9 +80,7 @@ export default function NewTagPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-semibold">Новая категория</h1>
-          <p className="text-muted-foreground mt-1">
-            Добавление категории для справочника
-          </p>
+          <p className="text-muted-foreground mt-1">Добавление категории для справочника</p>
         </div>
       </div>
 
@@ -128,9 +127,7 @@ export default function NewTagPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Позволяет создать иерархию категорий
-              </p>
+              <p className="text-muted-foreground text-xs">Позволяет создать иерархию категорий</p>
             </div>
 
             <div className="space-y-2">
@@ -140,7 +137,7 @@ export default function NewTagPage() {
                 onChange={(e) => setSynonyms(e.target.value)}
                 placeholder="экстренка, скорая, 112"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Перечислите через запятую альтернативные названия для поиска
               </p>
             </div>
@@ -149,9 +146,7 @@ export default function NewTagPage() {
 
         <div className="flex gap-4">
           <Button type="submit" disabled={createMutation.isPending}>
-            {createMutation.isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Создать категорию
           </Button>
           <Link href="/admin/directory?tab=tags">

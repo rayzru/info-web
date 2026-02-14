@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import {
   Check,
   ChevronLeft,
@@ -18,10 +19,7 @@ import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -129,11 +127,12 @@ function ModerationDialog({ listing, open, onOpenChange, onSuccess }: Moderation
       return;
     }
 
-    const rejectionReason = action === "reject"
-      ? template === "custom"
-        ? customText
-        : REJECTION_TEXT[template]
-      : undefined;
+    const rejectionReason =
+      action === "reject"
+        ? template === "custom"
+          ? customText
+          : REJECTION_TEXT[template]
+        : undefined;
 
     moderateMutation.mutate({
       listingId: listing.id,
@@ -147,27 +146,22 @@ function ModerationDialog({ listing, open, onOpenChange, onSuccess }: Moderation
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Модерация объявления</DialogTitle>
-          <DialogDescription>
-            {listing.title}
-          </DialogDescription>
+          <DialogDescription>{listing.title}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Listing Details */}
-          <div className="bg-muted p-4 rounded-lg space-y-2">
+          <div className="bg-muted space-y-2 rounded-lg p-4">
             <div className="flex items-center gap-2">
               <Badge variant={listing.listingType === "rent" ? "default" : "secondary"}>
                 {LISTING_TYPE_LABELS[listing.listingType]}
               </Badge>
               <span className="font-bold">
-                {listing.price.toLocaleString("ru-RU")} ₽
-                {listing.listingType === "rent" && "/мес"}
+                {listing.price.toLocaleString("ru-RU")} ₽{listing.listingType === "rent" && "/мес"}
               </span>
             </div>
             {listing.description && (
-              <p className="text-sm text-muted-foreground line-clamp-3">
-                {listing.description}
-              </p>
+              <p className="text-muted-foreground line-clamp-3 text-sm">{listing.description}</p>
             )}
           </div>
 
@@ -210,7 +204,7 @@ function ModerationDialog({ listing, open, onOpenChange, onSuccess }: Moderation
                 {REJECTION_TEMPLATES.map((t) => (
                   <div key={t.value} className="flex items-center space-x-2">
                     <RadioGroupItem value={t.value} id={t.value} />
-                    <Label htmlFor={t.value} className="font-normal cursor-pointer">
+                    <Label htmlFor={t.value} className="cursor-pointer font-normal">
                       {t.label}
                     </Label>
                   </div>
@@ -242,9 +236,7 @@ function ModerationDialog({ listing, open, onOpenChange, onSuccess }: Moderation
             disabled={moderateMutation.isPending}
             variant={action === "reject" ? "destructive" : "default"}
           >
-            {moderateMutation.isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {moderateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {action === "approve" ? "Одобрить" : "Отклонить"}
           </Button>
         </DialogFooter>
@@ -311,8 +303,9 @@ export default function AdminListingsPage() {
       return {
         icon: Home,
         title: `Квартира ${listing.apartment.number}`,
-        subtitle: listing.apartment.floor?.entrance?.building?.title
-          ?? `Строение ${listing.apartment.floor?.entrance?.building?.number}`,
+        subtitle:
+          listing.apartment.floor?.entrance?.building?.title ??
+          `Строение ${listing.apartment.floor?.entrance?.building?.number}`,
       };
     }
     if (listing.propertyType === "parking" && listing.parkingSpot) {
@@ -338,65 +331,49 @@ export default function AdminListingsPage() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Card
             className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "pending_moderation"
-                ? "ring-2 ring-yellow-500 ring-offset-2"
-                : ""
+              statusFilter === "pending_moderation" ? "ring-2 ring-yellow-500 ring-offset-2" : ""
             }`}
             onClick={() => setFilter("status", "pending_moderation")}
           >
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-yellow-600">
-                {stats.pendingModeration}
-              </div>
-              <p className="text-sm text-muted-foreground">На модерации</p>
+              <div className="text-2xl font-bold text-yellow-600">{stats.pendingModeration}</div>
+              <p className="text-muted-foreground text-sm">На модерации</p>
             </CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "approved"
-                ? "ring-2 ring-green-500 ring-offset-2"
-                : ""
+              statusFilter === "approved" ? "ring-2 ring-green-500 ring-offset-2" : ""
             }`}
             onClick={() => setFilter("status", "approved")}
           >
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-600">
-                {stats.approved}
-              </div>
-              <p className="text-sm text-muted-foreground">Активные</p>
+              <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
+              <p className="text-muted-foreground text-sm">Активные</p>
             </CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "rejected"
-                ? "ring-2 ring-red-500 ring-offset-2"
-                : ""
+              statusFilter === "rejected" ? "ring-2 ring-red-500 ring-offset-2" : ""
             }`}
             onClick={() => setFilter("status", "rejected")}
           >
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-red-600">
-                {stats.rejected}
-              </div>
-              <p className="text-sm text-muted-foreground">Отклонено</p>
+              <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
+              <p className="text-muted-foreground text-sm">Отклонено</p>
             </CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "all"
-                ? "ring-2 ring-primary ring-offset-2"
-                : ""
+              statusFilter === "all" ? "ring-primary ring-2 ring-offset-2" : ""
             }`}
             onClick={() => setFilter("status", "all")}
           >
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold">
-                {stats.total}
-              </div>
-              <p className="text-sm text-muted-foreground">Всего</p>
+              <div className="text-2xl font-bold">{stats.total}</div>
+              <p className="text-muted-foreground text-sm">Всего</p>
             </CardContent>
           </Card>
         </div>
@@ -452,11 +429,9 @@ export default function AdminListingsPage() {
                     </Avatar>
 
                     {/* Listing Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium truncate max-w-[300px]">
-                          {listing.title}
-                        </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="max-w-[300px] truncate font-medium">{listing.title}</span>
                         <Badge variant={STATUS_COLORS[listing.status] as any}>
                           {STATUS_LABELS[listing.status]}
                         </Badge>
@@ -465,24 +440,22 @@ export default function AdminListingsPage() {
                         </Badge>
                       </div>
 
-                      <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                      <div className="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
                         <PropertyIcon className="h-4 w-4" />
                         <span>{propertyInfo.title}</span>
                         <span>·</span>
                         <span>{propertyInfo.subtitle}</span>
                       </div>
 
-                      <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">
+                      <div className="text-muted-foreground mt-1 flex items-center gap-4 text-xs">
+                        <span className="text-foreground font-medium">
                           {listing.price.toLocaleString("ru-RU")} ₽
                           {listing.listingType === "rent" && "/мес"}
                         </span>
                         <span>·</span>
                         <span>{listing.user?.name ?? listing.user?.email}</span>
                         <span>·</span>
-                        <span>
-                          {new Date(listing.createdAt).toLocaleDateString("ru-RU")}
-                        </span>
+                        <span>{new Date(listing.createdAt).toLocaleDateString("ru-RU")}</span>
                         {listing.photos && listing.photos.length > 0 && (
                           <>
                             <span>·</span>
@@ -495,13 +468,13 @@ export default function AdminListingsPage() {
                       </div>
 
                       {listing.description && (
-                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-muted-foreground mt-2 line-clamp-2 text-sm">
                           {listing.description}
                         </p>
                       )}
 
                       {listing.rejectionReason && (
-                        <p className="mt-2 text-sm text-red-600 italic">
+                        <p className="mt-2 text-sm italic text-red-600">
                           Причина отклонения: {listing.rejectionReason}
                         </p>
                       )}
@@ -553,7 +526,7 @@ export default function AdminListingsPage() {
         </div>
       ) : (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
+          <CardContent className="text-muted-foreground py-12 text-center">
             {statusFilter === "pending_moderation"
               ? "Нет объявлений на модерации"
               : "Объявлений не найдено"}

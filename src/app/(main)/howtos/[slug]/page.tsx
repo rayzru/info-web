@@ -1,17 +1,13 @@
+import { Building, Calendar, Eye, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
-import {
-  FileText,
-  Building,
-  Eye,
-  Calendar,
-} from "lucide-react";
 
-import { api } from "~/trpc/server";
-import { Badge } from "~/components/ui/badge";
-import { Separator } from "~/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { RichRenderer } from "~/components/editor/renderer/rich-renderer";
 import { PageHeader } from "~/components/page-header";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
+import { Separator } from "~/components/ui/separator";
+import { api } from "~/trpc/server";
+
 import { ArticleFeedback } from "./article-feedback";
 
 type Props = {
@@ -36,10 +32,7 @@ export default async function HowtoArticlePage({ params }: Props) {
 
   return (
     <div className="py-6">
-      <PageHeader
-        title={article.title}
-        description={article.excerpt ?? undefined}
-      />
+      <PageHeader title={article.title} description={article.excerpt ?? undefined} />
 
       {/* Tags */}
       {article.tags.length > 0 && (
@@ -54,7 +47,7 @@ export default async function HowtoArticlePage({ params }: Props) {
 
       {/* Building info */}
       {article.building && (
-        <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="text-muted-foreground mb-6 flex items-center gap-2 text-sm">
           <Building className="h-4 w-4" />
           <span>
             Для жителей строения {article.building.number}
@@ -67,7 +60,7 @@ export default async function HowtoArticlePage({ params }: Props) {
 
       {/* Content */}
       {article.content && (
-        <article className="prose prose-lg max-w-none dark:prose-invert">
+        <article className="prose prose-lg dark:prose-invert max-w-none">
           <RichRenderer content={JSON.parse(article.content)} className="prose-lg" />
         </article>
       )}

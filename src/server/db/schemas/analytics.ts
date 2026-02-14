@@ -1,12 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  index,
-  jsonb,
-  pgEnum,
-  timestamp,
-  uuid,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { index, jsonb, pgEnum, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 import { createTable } from "./create-table";
 import { users } from "./users";
@@ -40,7 +33,9 @@ export const analyticsSessions = createTable(
       .default(sql`gen_random_uuid()`),
 
     // User info (nullable for anonymous users)
-    userId: varchar("user_id", { length: 255 }).references(() => users.id, { onDelete: "set null" }),
+    userId: varchar("user_id", { length: 255 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
 
     // Session timing
     startedAt: timestamp("started_at", { withTimezone: true })
@@ -51,9 +46,7 @@ export const analyticsSessions = createTable(
       .default(sql`CURRENT_TIMESTAMP`),
 
     // Device info
-    deviceType: analyticsDeviceTypeEnum("device_type")
-      .notNull()
-      .default("unknown"),
+    deviceType: analyticsDeviceTypeEnum("device_type").notNull().default("unknown"),
     browser: varchar("browser", { length: 100 }),
     os: varchar("os", { length: 100 }),
     screenResolution: varchar("screen_resolution", { length: 20 }),
@@ -97,7 +90,9 @@ export const analyticsEvents = createTable(
     sessionId: uuid("session_id")
       .notNull()
       .references(() => analyticsSessions.id, { onDelete: "cascade" }),
-    userId: varchar("user_id", { length: 255 }).references(() => users.id, { onDelete: "set null" }),
+    userId: varchar("user_id", { length: 255 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
 
     // Event classification
     eventType: analyticsEventTypeEnum("event_type").notNull(),
@@ -130,10 +125,7 @@ export const analyticsEvents = createTable(
     index("analytics_event_page_path_idx").on(table.pagePath),
     index("analytics_event_created_at_idx").on(table.createdAt),
     // Composite index for common queries
-    index("analytics_event_type_created_at_idx").on(
-      table.eventType,
-      table.createdAt
-    ),
+    index("analytics_event_type_created_at_idx").on(table.eventType, table.createdAt),
   ]
 );
 
@@ -169,27 +161,21 @@ export const analyticsConversions = createTable(
 );
 
 // Relations
-export const analyticsSessionsRelations = relations(
-  analyticsSessions,
-  ({ one, many }) => ({
-    user: one(users, {
-      fields: [analyticsSessions.userId],
-      references: [users.id],
-    }),
-    events: many(analyticsEvents),
-  })
-);
+export const analyticsSessionsRelations = relations(analyticsSessions, ({ one, many }) => ({
+  user: one(users, {
+    fields: [analyticsSessions.userId],
+    references: [users.id],
+  }),
+  events: many(analyticsEvents),
+}));
 
-export const analyticsEventsRelations = relations(
-  analyticsEvents,
-  ({ one }) => ({
-    session: one(analyticsSessions, {
-      fields: [analyticsEvents.sessionId],
-      references: [analyticsSessions.id],
-    }),
-    user: one(users, {
-      fields: [analyticsEvents.userId],
-      references: [users.id],
-    }),
-  })
-);
+export const analyticsEventsRelations = relations(analyticsEvents, ({ one }) => ({
+  session: one(analyticsSessions, {
+    fields: [analyticsEvents.sessionId],
+    references: [analyticsSessions.id],
+  }),
+  user: one(users, {
+    fields: [analyticsEvents.userId],
+    references: [users.id],
+  }),
+}));

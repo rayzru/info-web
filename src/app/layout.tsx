@@ -1,12 +1,13 @@
-import { type Metadata } from "next";
 import { Suspense } from "react";
 
-import { AnalyticsProvider } from "~/hooks/use-analytics";
+import { type Metadata } from "next";
+
 import { PwaInstallPrompt } from "~/components/pwa-install-prompt";
 import { SessionProvider } from "~/components/session-provider";
 import { ThemeProvider } from "~/components/theme-provider";
 import { ThemeTransitionOverlay } from "~/components/theme-transition";
 import { Toaster } from "~/components/ui/sonner";
+import { AnalyticsProvider } from "~/hooks/use-analytics";
 import { TRPCReactProvider } from "~/trpc/react";
 
 import "~/styles/globals.css";
@@ -23,14 +24,7 @@ export const metadata: Metadata = {
     template: `%s | ${siteName}`,
   },
   description: siteDescription,
-  keywords: [
-    "Сердце Ростова 2",
-    "ЖК",
-    "Ростов-на-Дону",
-    "жилой комплекс",
-    "новости",
-    "события",
-  ],
+  keywords: ["Сердце Ростова 2", "ЖК", "Ростов-на-Дону", "жилой комплекс", "новости", "события"],
   authors: [{ name: siteName }],
   creator: siteName,
   publisher: siteName,
@@ -137,9 +131,7 @@ const jsonLd = {
   ],
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ru">
       <head>

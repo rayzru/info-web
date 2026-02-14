@@ -79,10 +79,7 @@ export default function Weather(props: WeatherData) {
         <Wind className="text-neutral-400" />
         <div className="flex flex-row items-center gap-2 text-nowrap">
           Ветер
-          <DirectionArrow
-            degrees={props.current.windDirection10m}
-            className="h-[12px] w-[12px]"
-          />
+          <DirectionArrow degrees={props.current.windDirection10m} className="h-[12px] w-[12px]" />
           <span>{Math.round(props.current.windSpeed10m)}&nbsp;м/с</span>
         </div>
       </div>
