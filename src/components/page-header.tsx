@@ -11,15 +11,9 @@ interface PageHeaderProps {
   children?: React.ReactNode;
 }
 
-export function PageHeader({
-  title,
-  description,
-  backHref,
-  icon,
-  children,
-}: PageHeaderProps) {
+export function PageHeader({ title, description, backHref, icon, children }: PageHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mt-10 mb-6">
+    <div className="mb-6 mt-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       {/* Left: Back + Icon + Title */}
       <div className="flex items-center gap-3">
         {backHref && (
@@ -32,9 +26,7 @@ export function PageHeader({
         {icon}
         <div>
           <h1 className="text-2xl font-bold">{title}</h1>
-          {description && (
-            <p className="text-sm text-muted-foreground">{description}</p>
-          )}
+          {description && <p className="text-muted-foreground text-sm">{description}</p>}
         </div>
       </div>
 

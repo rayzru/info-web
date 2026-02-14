@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { Ban } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -27,8 +28,8 @@ import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
 import {
   BLOCK_CATEGORIES,
-  RULES_VIOLATIONS,
   type BlockCategory,
+  RULES_VIOLATIONS,
   type RuleViolation,
 } from "~/lib/block-reasons";
 import { api } from "~/trpc/react";
@@ -106,8 +107,8 @@ export function BlockUserDialog({
       <DialogHeader>
         <DialogTitle>Блокировка пользователя</DialogTitle>
         <DialogDescription>
-          Заблокировать {userName ?? "пользователя"}? После блокировки
-          пользователь не сможет войти в систему.
+          Заблокировать {userName ?? "пользователя"}? После блокировки пользователь не сможет войти
+          в систему.
         </DialogDescription>
       </DialogHeader>
 
@@ -136,7 +137,7 @@ export function BlockUserDialog({
             </SelectContent>
           </Select>
           {category && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {BLOCK_CATEGORIES[category]?.description}
             </p>
           )}
@@ -152,9 +153,7 @@ export function BlockUserDialog({
                   <Checkbox
                     id={`rule-${key}`}
                     checked={selectedRules.includes(key as RuleViolation)}
-                    onCheckedChange={() =>
-                      handleRuleToggle(key as RuleViolation)
-                    }
+                    onCheckedChange={() => handleRuleToggle(key as RuleViolation)}
                   />
                   <div className="grid gap-0.5 leading-none">
                     <label
@@ -163,17 +162,13 @@ export function BlockUserDialog({
                     >
                       {value.label}: {value.title}
                     </label>
-                    <p className="text-xs text-muted-foreground">
-                      {value.description}
-                    </p>
+                    <p className="text-muted-foreground text-xs">{value.description}</p>
                   </div>
                 </div>
               ))}
             </div>
             {selectedRules.length === 0 && (
-              <p className="text-xs text-destructive">
-                Выберите хотя бы один пункт правил
-              </p>
+              <p className="text-destructive text-xs">Выберите хотя бы один пункт правил</p>
             )}
           </div>
         )}
@@ -196,9 +191,7 @@ export function BlockUserDialog({
             rows={3}
           />
           {category === "other" && !reason.trim() && (
-            <p className="text-xs text-destructive">
-              Укажите причину блокировки
-            </p>
+            <p className="text-destructive text-xs">Укажите причину блокировки</p>
           )}
         </div>
       </div>

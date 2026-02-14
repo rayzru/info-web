@@ -7,10 +7,7 @@ export default async function ProfilePage() {
 
   return (
     <div>
-      <PageHeader
-        title="Профиль"
-        description={`Настройки профиля и приватности`}
-      />
+      <PageHeader title="Профиль" description={`Настройки профиля и приватности`} />
 
       <ProfileForm
         user={user}

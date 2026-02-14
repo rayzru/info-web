@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+
 import {
   Archive,
   BookOpen,
@@ -17,6 +16,8 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Badge } from "~/components/ui/badge";
@@ -71,14 +72,17 @@ export default function AdminHowtosPage() {
   const searchQuery = searchParams.get("q") ?? "";
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [articleToDelete, setArticleToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [articleToDelete, setArticleToDelete] = useState<{ id: string; title: string } | null>(
+    null
+  );
   const [localSearch, setLocalSearch] = useState(searchQuery);
 
   // Queries
   const { data, isLoading, refetch } = api.knowledge.admin.list.useQuery({
     page,
     limit: 20,
-    status: statusFilter !== "all" ? (statusFilter as "draft" | "published" | "archived") : undefined,
+    status:
+      statusFilter !== "all" ? (statusFilter as "draft" | "published" | "archived") : undefined,
     search: searchQuery || undefined,
   });
 
@@ -151,10 +155,7 @@ export default function AdminHowtosPage() {
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title="База знаний"
-        description="Инструкции и полезные статьи для жителей"
-      >
+      <AdminPageHeader title="База знаний" description="Инструкции и полезные статьи для жителей">
         <Link href="/admin/howtos/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
@@ -165,10 +166,10 @@ export default function AdminHowtosPage() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Card
             className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "all" ? "ring-2 ring-primary ring-offset-2" : ""
+              statusFilter === "all" ? "ring-primary ring-2 ring-offset-2" : ""
             }`}
             onClick={() => setFilter("status", "all")}
           >
@@ -176,7 +177,7 @@ export default function AdminHowtosPage() {
               <div className="text-2xl font-bold">
                 {stats.draft + stats.published + stats.archived}
               </div>
-              <p className="text-sm text-muted-foreground">Всего статей</p>
+              <p className="text-muted-foreground text-sm">Всего статей</p>
             </CardContent>
           </Card>
           <Card
@@ -187,7 +188,7 @@ export default function AdminHowtosPage() {
           >
             <CardContent className="pt-4">
               <div className="text-2xl font-bold text-yellow-600">{stats.draft}</div>
-              <p className="text-sm text-muted-foreground">Черновики</p>
+              <p className="text-muted-foreground text-sm">Черновики</p>
             </CardContent>
           </Card>
           <Card
@@ -198,13 +199,13 @@ export default function AdminHowtosPage() {
           >
             <CardContent className="pt-4">
               <div className="text-2xl font-bold text-green-600">{stats.published}</div>
-              <p className="text-sm text-muted-foreground">Опубликовано</p>
+              <p className="text-muted-foreground text-sm">Опубликовано</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4">
               <div className="text-2xl font-bold">{stats.totalViews}</div>
-              <p className="text-sm text-muted-foreground">Просмотров</p>
+              <p className="text-muted-foreground text-sm">Просмотров</p>
             </CardContent>
           </Card>
         </div>
@@ -212,8 +213,8 @@ export default function AdminHowtosPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
-        <form onSubmit={handleSearch} className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <form onSubmit={handleSearch} className="relative max-w-md flex-1">
+          <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Поиск по заголовку..."
             value={localSearch}
@@ -224,7 +225,7 @@ export default function AdminHowtosPage() {
             type="submit"
             size="sm"
             variant="ghost"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-7"
+            className="absolute right-1 top-1/2 h-7 -translate-y-1/2"
           >
             Найти
           </Button>
@@ -246,12 +247,12 @@ export default function AdminHowtosPage() {
       {/* Articles list */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
         </div>
       ) : !data?.articles.length ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-            <BookOpen className="h-12 w-12 mb-4 opacity-50" />
+          <CardContent className="text-muted-foreground flex flex-col items-center justify-center py-12">
+            <BookOpen className="mb-4 h-12 w-12 opacity-50" />
             <p>Статьи не найдены</p>
             <Link href="/admin/howtos/new" className="mt-4">
               <Button variant="outline">
@@ -264,18 +265,18 @@ export default function AdminHowtosPage() {
       ) : (
         <div className="space-y-3">
           {data.articles.map((article) => (
-            <Card key={article.id} className="hover:shadow-md transition-shadow">
+            <Card key={article.id} className="transition-shadow hover:shadow-md">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                      <FileText className="h-5 w-5 text-primary" />
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                    <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+                      <FileText className="text-primary h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="mb-1 flex items-center gap-2">
                         <Link
                           href={`/admin/howtos/${article.id}`}
-                          className="font-medium hover:underline truncate"
+                          className="truncate font-medium hover:underline"
                         >
                           {article.title}
                         </Link>
@@ -284,11 +285,11 @@ export default function AdminHowtosPage() {
                         </Badge>
                       </div>
                       {article.excerpt && (
-                        <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
+                        <p className="text-muted-foreground mb-2 line-clamp-1 text-sm">
                           {article.excerpt}
                         </p>
                       )}
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
                         <span className="flex items-center gap-1">
                           <Eye className="h-3 w-3" />
                           {article.viewCount}
@@ -354,8 +355,7 @@ export default function AdminHowtosPage() {
                         <DropdownMenuItem
                           onClick={() => handleStatusChange(article.id, "archived")}
                         >
-                          <Archive className="mr-2 h-4 w-4" />
-                          В архив
+                          <Archive className="mr-2 h-4 w-4" />В архив
                         </DropdownMenuItem>
                       )}
                       {article.status === "archived" && (
@@ -386,7 +386,7 @@ export default function AdminHowtosPage() {
       {/* Pagination */}
       {data && data.totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Страница {page} из {data.totalPages} (всего {data.total})
           </span>
           <div className="flex items-center gap-1">

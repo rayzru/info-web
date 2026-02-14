@@ -14,11 +14,8 @@ export default async function AdsPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Мои объявления"
-        description="Аренда и продажа недвижимости"
-      />
-      
+      <PageHeader title="Мои объявления" description="Аренда и продажа недвижимости" />
+
       <ListingsView
         listings={listings}
         myProperties={myProperties}

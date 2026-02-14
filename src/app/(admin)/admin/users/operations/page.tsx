@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+
 import {
   AlertCircle,
   AlertTriangle,
@@ -19,17 +19,12 @@ import {
   UserX,
   XCircle,
 } from "lucide-react";
+import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -50,8 +45,8 @@ import {
 import { Separator } from "~/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
-import { cn } from "~/lib/utils";
 import { BLOCK_CATEGORIES, RULES_VIOLATIONS } from "~/lib/block-reasons";
+import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 // Telegram icon SVG
@@ -64,17 +59,7 @@ function TelegramIcon({ className }: { className?: string }) {
 }
 
 type BlockCategory = "rules_violation" | "fraud" | "spam" | "abuse" | "other";
-type RuleViolation =
-  | "3.1"
-  | "3.2"
-  | "3.3"
-  | "3.4"
-  | "3.5"
-  | "4.1"
-  | "4.2"
-  | "4.3"
-  | "5.1"
-  | "5.2";
+type RuleViolation = "3.1" | "3.2" | "3.3" | "3.4" | "3.5" | "4.1" | "4.2" | "4.3" | "5.1" | "5.2";
 
 // Quick Block Widget
 function QuickBlockWidget() {
@@ -94,11 +79,10 @@ function QuickBlockWidget() {
 
   const utils = api.useUtils();
 
-  const { data: searchResults, isLoading: isSearching } =
-    api.admin.operations.quickSearch.useQuery(
-      { query: searchQuery, limit: 10 },
-      { enabled: searchQuery.length >= 2 }
-    );
+  const { data: searchResults, isLoading: isSearching } = api.admin.operations.quickSearch.useQuery(
+    { query: searchQuery, limit: 10 },
+    { enabled: searchQuery.length >= 2 }
+  );
 
   const blockMutation = api.admin.users.block.useMutation({
     onSuccess: () => {
@@ -136,14 +120,12 @@ function QuickBlockWidget() {
           <Ban className="h-5 w-5" />
           Быстрая блокировка
         </CardTitle>
-        <CardDescription>
-          Поиск пользователя и быстрая блокировка с выбором причины
-        </CardDescription>
+        <CardDescription>Поиск пользователя и быстрая блокировка с выбором причины</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Search input */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Поиск по имени или email..."
             value={searchQuery}
@@ -155,7 +137,7 @@ function QuickBlockWidget() {
         {/* Search results */}
         {isSearching && (
           <div className="flex items-center justify-center py-4">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
           </div>
         )}
 
@@ -171,31 +153,23 @@ function QuickBlockWidget() {
                 disabled={user.isBlocked}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-md p-2 text-left transition-colors",
-                  user.isBlocked
-                    ? "cursor-not-allowed opacity-50"
-                    : "hover:bg-accent"
+                  user.isBlocked ? "cursor-not-allowed opacity-50" : "hover:bg-accent"
                 )}
               >
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user.image ?? undefined} />
-                  <AvatarFallback>
-                    {user.name?.slice(0, 2).toUpperCase() ?? "?"}
-                  </AvatarFallback>
+                  <AvatarFallback>{user.name?.slice(0, 2).toUpperCase() ?? "?"}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 overflow-hidden">
                   <div className="flex items-center gap-2">
-                    <span className="truncate font-medium">
-                      {user.name ?? "Без имени"}
-                    </span>
+                    <span className="truncate font-medium">{user.name ?? "Без имени"}</span>
                     {user.isBlocked && (
                       <Badge variant="destructive" className="text-xs">
                         Заблокирован
                       </Badge>
                     )}
                   </div>
-                  <div className="truncate text-xs text-muted-foreground">
-                    {user.email}
-                  </div>
+                  <div className="text-muted-foreground truncate text-xs">{user.email}</div>
                 </div>
                 {user.roles.length > 0 && (
                   <div className="flex flex-wrap gap-1">
@@ -217,7 +191,7 @@ function QuickBlockWidget() {
         )}
 
         {searchQuery.length >= 2 && searchResults?.length === 0 && !isSearching && (
-          <div className="py-4 text-center text-sm text-muted-foreground">
+          <div className="text-muted-foreground py-4 text-center text-sm">
             Пользователи не найдены
           </div>
         )}
@@ -227,19 +201,19 @@ function QuickBlockWidget() {
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Ban className="h-5 w-5 text-destructive" />
+                <Ban className="text-destructive h-5 w-5" />
                 Блокировка пользователя
               </DialogTitle>
               <DialogDescription>
-                {selectedUser?.name ?? "Пользователь"} будет заблокирован и не
-                сможет войти в систему.
+                {selectedUser?.name ?? "Пользователь"} будет заблокирован и не сможет войти в
+                систему.
               </DialogDescription>
             </DialogHeader>
 
             {selectedUser && (
               <div className="space-y-4">
                 {/* Selected user info */}
-                <div className="flex items-center gap-3 rounded-md bg-muted p-3">
+                <div className="bg-muted flex items-center gap-3 rounded-md p-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={selectedUser.image ?? undefined} />
                     <AvatarFallback>
@@ -247,12 +221,8 @@ function QuickBlockWidget() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="font-medium">
-                      {selectedUser.name ?? "Без имени"}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {selectedUser.email}
-                    </div>
+                    <div className="font-medium">{selectedUser.name ?? "Без имени"}</div>
+                    <div className="text-muted-foreground text-sm">{selectedUser.email}</div>
                   </div>
                 </div>
 
@@ -316,9 +286,7 @@ function QuickBlockWidget() {
                 <div className="space-y-2">
                   <Label>
                     Дополнительный комментарий
-                    {blockCategory === "other" && (
-                      <span className="text-destructive"> *</span>
-                    )}
+                    {blockCategory === "other" && <span className="text-destructive"> *</span>}
                   </Label>
                   <Textarea
                     value={blockReason}
@@ -384,16 +352,14 @@ function TelegramSyncWidget() {
             <TelegramIcon className="h-5 w-5" />
             Синхронизация с Telegram
           </CardTitle>
-          <CardDescription>
-            Проверка присутствия админов в чате Telegram
-          </CardDescription>
+          <CardDescription>Проверка присутствия админов в чате Telegram</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center gap-4 py-8 text-center">
-            <AlertCircle className="h-12 w-12 text-muted-foreground" />
+            <AlertCircle className="text-muted-foreground h-12 w-12" />
             <div>
               <p className="font-medium">Telegram не настроен</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Добавьте TELEGRAM_ADMIN_CHAT_ID в .env для синхронизации
               </p>
             </div>
@@ -412,9 +378,7 @@ function TelegramSyncWidget() {
               <TelegramIcon className="h-5 w-5" />
               Синхронизация с Telegram
             </CardTitle>
-            <CardDescription>
-              Сравнение админов системы с участниками чата
-            </CardDescription>
+            <CardDescription>Сравнение админов системы с участниками чата</CardDescription>
           </div>
           <Button
             variant="outline"
@@ -433,7 +397,7 @@ function TelegramSyncWidget() {
       <CardContent>
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
           </div>
         ) : syncData ? (
           <Tabs defaultValue="not-in-chat" className="w-full">
@@ -470,13 +434,11 @@ function TelegramSyncWidget() {
               {syncData.notInChat.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 py-8 text-center">
                   <CheckCircle2 className="h-12 w-12 text-green-500" />
-                  <p className="text-sm text-muted-foreground">
-                    Все админы присутствуют в чате
-                  </p>
+                  <p className="text-muted-foreground text-sm">Все админы присутствуют в чате</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Эти администраторы должны присоединиться к чату:
                   </p>
                   <div className="max-h-[300px] space-y-2 overflow-y-auto">
@@ -507,11 +469,7 @@ function TelegramSyncWidget() {
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {user.roles.map((role) => (
-                              <Badge
-                                key={role}
-                                variant="secondary"
-                                className="text-xs"
-                              >
+                              <Badge key={role} variant="secondary" className="text-xs">
                                 {role}
                               </Badge>
                             ))}
@@ -540,9 +498,7 @@ function TelegramSyncWidget() {
               {syncData.inChat.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 py-8 text-center">
                   <AlertTriangle className="h-12 w-12 text-amber-500" />
-                  <p className="text-sm text-muted-foreground">
-                    Никто из админов не в чате
-                  </p>
+                  <p className="text-muted-foreground text-sm">Никто из админов не в чате</p>
                 </div>
               ) : (
                 <div className="max-h-[300px] space-y-2 overflow-y-auto">
@@ -569,18 +525,14 @@ function TelegramSyncWidget() {
                         </div>
                         <div className="flex flex-wrap gap-1">
                           {user.roles.map((role) => (
-                            <Badge
-                              key={role}
-                              variant="secondary"
-                              className="text-xs"
-                            >
+                            <Badge key={role} variant="secondary" className="text-xs">
                               {role}
                             </Badge>
                           ))}
                         </div>
                       </div>
                       {user.telegramUsername && (
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           @{user.telegramUsername}
                         </span>
                       )}
@@ -595,13 +547,11 @@ function TelegramSyncWidget() {
               {syncData.extraInChat.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 py-8 text-center">
                   <CheckCircle2 className="h-12 w-12 text-green-500" />
-                  <p className="text-sm text-muted-foreground">
-                    В чате нет лишних участников
-                  </p>
+                  <p className="text-muted-foreground text-sm">В чате нет лишних участников</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Эти участники чата не являются администраторами системы:
                   </p>
                   <div className="max-h-[300px] space-y-2 overflow-y-auto">
@@ -618,15 +568,11 @@ function TelegramSyncWidget() {
                             {member.firstName} {member.lastName ?? ""}
                           </div>
                           {member.username && (
-                            <div className="text-sm text-muted-foreground">
-                              @{member.username}
-                            </div>
+                            <div className="text-muted-foreground text-sm">@{member.username}</div>
                           )}
                         </div>
                         <Badge variant="outline">
-                          {member.chatStatus === "administrator"
-                            ? "Админ чата"
-                            : "Участник"}
+                          {member.chatStatus === "administrator" ? "Админ чата" : "Участник"}
                         </Badge>
                       </div>
                     ))}
@@ -647,9 +593,7 @@ export default function UserOperationsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Сервисные операции</h1>
-        <p className="text-muted-foreground">
-          Быстрые операции с пользователями и синхронизация
-        </p>
+        <p className="text-muted-foreground">Быстрые операции с пользователями и синхронизация</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

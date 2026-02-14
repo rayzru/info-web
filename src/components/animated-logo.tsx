@@ -1,7 +1,8 @@
 "use client";
 
-import { cn } from "~/lib/utils";
 import { useState } from "react";
+
+import { cn } from "~/lib/utils";
 
 interface AnimatedLogoProps extends React.HTMLAttributes<HTMLDivElement> {
   duration?: number;
@@ -9,11 +10,7 @@ interface AnimatedLogoProps extends React.HTMLAttributes<HTMLDivElement> {
 
 // Animation: hover from СР2 (compact) to full "СЕРДЦЕ РОСТОВА 2"
 
-export function AnimatedLogo({
-  className,
-  duration = 400,
-  ...props
-}: AnimatedLogoProps) {
+export function AnimatedLogo({ className, duration = 400, ...props }: AnimatedLogoProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   // Paths in sr2-full-logo2.svg (indices 0-13, 14 paths total)
@@ -52,7 +49,7 @@ export function AnimatedLogo({
 
   // Extract X coordinates from paths (starting position of each letter)
   const pathXCoords = paths.map((path) => {
-    const match = path.match(/M([\d.]+)/);
+    const match = /M([\d.]+)/.exec(path);
     return match?.[1] ? parseFloat(match[1]) : 0;
   });
 
@@ -62,17 +59,17 @@ export function AnimatedLogo({
   // Letter stages - which letters appear at each stage
   const letterStages = [
     [13, 7, 0], // Stage 0: СР2 (already visible)
-    [12, 6],    // Stage 1: add Е, О -> СЕ РО 2
-    [11, 5],    // Stage 2: add Р, С -> СЕР РОС 2
-    [10, 4],    // Stage 3: add Д, Т -> СЕРД РОСТ 2
-    [9, 3],     // Stage 4: add Ц, О -> СЕРДЦ РОСТО 2
-    [8, 2],     // Stage 5: add Е, В -> СЕРДЦЕ РОСТОВ 2
-    [1],        // Stage 6: add А -> СЕРДЦЕ РОСТОВА 2
+    [12, 6], // Stage 1: add Е, О -> СЕ РО 2
+    [11, 5], // Stage 2: add Р, С -> СЕР РОС 2
+    [10, 4], // Stage 3: add Д, Т -> СЕРД РОСТ 2
+    [9, 3], // Stage 4: add Ц, О -> СЕРДЦ РОСТО 2
+    [8, 2], // Stage 5: add Е, В -> СЕРДЦЕ РОСТОВ 2
+    [1], // Stage 6: add А -> СЕРДЦЕ РОСТОВА 2
   ];
 
   // Get stage index for a letter
   const getStageIndex = (letterIndex: number): number => {
-    return letterStages.findIndex(stage => stage.includes(letterIndex));
+    return letterStages.findIndex((stage) => stage.includes(letterIndex));
   };
 
   // Compact positions for СР2 (close together)
@@ -126,11 +123,7 @@ export function AnimatedLogo({
         className="h-full w-full"
       >
         {paths.map((pathData, index) => (
-          <path
-            key={index}
-            d={pathData}
-            style={getLetterStyle(index)}
-          />
+          <path key={index} d={pathData} style={getLetterStyle(index)} />
         ))}
       </svg>
     </div>

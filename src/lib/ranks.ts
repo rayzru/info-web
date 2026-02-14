@@ -44,22 +44,22 @@ export const RANK_PRIORITY = {
 
 // Группы рангов для визуального отображения
 export type RankTier =
-  | "admin"      // Администрация - красный/золотой
+  | "admin" // Администрация - красный/золотой
   | "management" // УК - синий
-  | "owner"      // Собственники - зелёный
-  | "resident"   // Арендаторы - фиолетовый
-  | "editor"     // Редакторы - оранжевый
-  | "guest";     // Гости - серый
+  | "owner" // Собственники - зелёный
+  | "resident" // Арендаторы - фиолетовый
+  | "editor" // Редакторы - оранжевый
+  | "guest"; // Гости - серый
 
 export interface RankConfig {
   tier: RankTier;
   label: string;
   shortLabel: string;
   description: string;
-  ringColor: string;      // Цвет обводки аватара (Tailwind)
-  badgeColor: string;     // Цвет бейджа (Tailwind bg)
-  textColor: string;      // Цвет текста статуса
-  icon?: string;          // Опциональная иконка
+  ringColor: string; // Цвет обводки аватара (Tailwind)
+  badgeColor: string; // Цвет бейджа (Tailwind bg)
+  textColor: string; // Цвет текста статуса
+  icon?: string; // Опциональная иконка
 }
 
 export const RANK_CONFIG: Record<UserRole, RankConfig> = {
@@ -212,7 +212,10 @@ export const RANK_CONFIG: Record<UserRole, RankConfig> = {
 };
 
 // Конфигурация tier'ов для общего отображения
-export const TIER_CONFIG: Record<RankTier, { label: string; ringColor: string; badgeColor: string; textColor: string }> = {
+export const TIER_CONFIG: Record<
+  RankTier,
+  { label: string; ringColor: string; badgeColor: string; textColor: string }
+> = {
   admin: {
     label: "Администрация",
     ringColor: "ring-red-500",

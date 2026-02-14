@@ -1,17 +1,10 @@
 import { cn } from "~/lib/utils";
 
 const animateClasses = `text-red-600 dark:text-red-400`;
-export function Logo({
-  className,
-  ...props
-}: Readonly<React.HTMLAttributes<HTMLPictureElement>>) {
+export function Logo({ className, ...props }: Readonly<React.HTMLAttributes<HTMLPictureElement>>) {
   return (
     <picture
-      className={cn(
-        "w-[33px] items-center justify-center md:w-[110px]",
-        animateClasses,
-        className,
-      )}
+      className={cn("w-[33px] items-center justify-center md:w-[110px]", animateClasses, className)}
       {...props}
     >
       <svg

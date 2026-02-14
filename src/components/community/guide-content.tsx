@@ -1,20 +1,21 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import {
+  AlertCircle,
+  ArrowRight,
   BookOpen,
-  UserPlus,
+  Car,
+  CheckCircle2,
+  ClipboardList,
   FileCheck,
   Home,
-  Car,
-  ClipboardList,
-  ShieldCheck,
-  ArrowRight,
-  CheckCircle2,
-  AlertCircle,
   Info,
+  ShieldCheck,
+  UserPlus,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
@@ -64,10 +65,8 @@ export function GuideContent() {
         {/* Main content */}
         <article className="min-w-0 max-w-prose flex-1">
           <header className="mb-8">
-            <h1 className="text-2xl font-bold tracking-tight">
-              Как пользоваться сервисом
-            </h1>
-            <p className="mt-1 text-muted-foreground">
+            <h1 className="text-2xl font-bold tracking-tight">Как пользоваться сервисом</h1>
+            <p className="text-muted-foreground mt-1">
               Пошаговое руководство для жителей ЖК «Сердце Ростова 2»
             </p>
           </header>
@@ -75,51 +74,50 @@ export function GuideContent() {
           {/* Overview */}
           <section id="overview" className="mb-10 scroll-mt-6">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-              <BookOpen className="h-5 w-5 shrink-0 text-primary" />
+              <BookOpen className="text-primary h-5 w-5 shrink-0" />
               Обзор сервиса
             </h2>
-            <div className="space-y-4 leading-relaxed text-muted-foreground">
+            <div className="text-muted-foreground space-y-4 leading-relaxed">
               <p>
-                Наш сервис — это информационная платформа для жителей ЖК,
-                которая объединяет несколько ключевых функций:
+                Наш сервис — это информационная платформа для жителей ЖК, которая объединяет
+                несколько ключевых функций:
               </p>
-              <ul className="space-y-2 list-none">
+              <ul className="list-none space-y-2">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
                   <span>
-                    <span className="font-medium text-foreground">Справочник</span> —
-                    контакты служб, организаций и полезная информация о ЖК
+                    <span className="text-foreground font-medium">Справочник</span> — контакты
+                    служб, организаций и полезная информация о ЖК
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
                   <span>
-                    <span className="font-medium text-foreground">Объявления</span> —
-                    аренда и продажа квартир, машиномест в паркинге
+                    <span className="text-foreground font-medium">Объявления</span> — аренда и
+                    продажа квартир, машиномест в паркинге
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
                   <span>
-                    <span className="font-medium text-foreground">Новости</span> —
-                    важные события, объявления и обновления комплекса
+                    <span className="text-foreground font-medium">Новости</span> — важные события,
+                    объявления и обновления комплекса
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
                   <span>
-                    <span className="font-medium text-foreground">Обратная связь</span> —
-                    жалобы, пожелания и заявки
+                    <span className="text-foreground font-medium">Обратная связь</span> — жалобы,
+                    пожелания и заявки
                   </span>
                 </li>
               </ul>
 
-              <div className="rounded-lg border bg-blue-50 dark:bg-blue-950/30 p-4 flex gap-3">
-                <Info className="h-5 w-5 shrink-0 text-blue-600 mt-0.5" />
+              <div className="flex gap-3 rounded-lg border bg-blue-50 p-4 dark:bg-blue-950/30">
+                <Info className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                  Для просмотра справочника и новостей регистрация не требуется.
-                  Для подачи объявлений необходима регистрация и подтверждение
-                  права собственности.
+                  Для просмотра справочника и новостей регистрация не требуется. Для подачи
+                  объявлений необходима регистрация и подтверждение права собственности.
                 </p>
               </div>
             </div>
@@ -128,33 +126,29 @@ export function GuideContent() {
           {/* Registration */}
           <section id="registration" className="mb-10 scroll-mt-6">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-              <UserPlus className="h-5 w-5 shrink-0 text-primary" />
+              <UserPlus className="text-primary h-5 w-5 shrink-0" />
               Регистрация в сервисе
             </h2>
-            <div className="space-y-4 leading-relaxed text-muted-foreground">
+            <div className="text-muted-foreground space-y-4 leading-relaxed">
               <p>
-                Регистрация открыта для всех жителей комплекса. Вы можете
-                зарегистрироваться двумя способами:
+                Регистрация открыта для всех жителей комплекса. Вы можете зарегистрироваться двумя
+                способами:
               </p>
 
               <div className="space-y-3">
                 <div className="rounded-lg border p-4">
-                  <p className="font-medium text-foreground mb-2">
-                    Быстрая регистрация
-                  </p>
+                  <p className="text-foreground mb-2 font-medium">Быстрая регистрация</p>
                   <p className="text-sm">
-                    Войдите одним нажатием через Яндекс ID, VK ID или Google.
-                    Нажмите «Войти» и выберите удобный вариант.
+                    Войдите одним нажатием через Яндекс ID, VK ID или Google. Нажмите «Войти» и
+                    выберите удобный вариант.
                   </p>
                 </div>
 
                 <div className="rounded-lg border p-4">
-                  <p className="font-medium text-foreground mb-2">
-                    Email и пароль
-                  </p>
+                  <p className="text-foreground mb-2 font-medium">Email и пароль</p>
                   <p className="text-sm">
-                    Классическая регистрация с подтверждением email. Потребуется
-                    ввести код из письма.
+                    Классическая регистрация с подтверждением email. Потребуется ввести код из
+                    письма.
                   </p>
                 </div>
               </div>
@@ -173,40 +167,36 @@ export function GuideContent() {
           {/* Verification */}
           <section id="verification" className="mb-10 scroll-mt-6">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-              <FileCheck className="h-5 w-5 shrink-0 text-primary" />
+              <FileCheck className="text-primary h-5 w-5 shrink-0" />
               Подтверждение собственности
             </h2>
-            <div className="space-y-4 leading-relaxed text-muted-foreground">
+            <div className="text-muted-foreground space-y-4 leading-relaxed">
               <p>
-                Для подачи объявлений о продаже или аренде недвижимости
-                необходимо подтвердить право собственности. Это защищает
-                жителей от мошенников и обеспечивает достоверность информации.
+                Для подачи объявлений о продаже или аренде недвижимости необходимо подтвердить право
+                собственности. Это защищает жителей от мошенников и обеспечивает достоверность
+                информации.
               </p>
 
-              <div className="rounded-lg border bg-amber-50 dark:bg-amber-950/30 p-4 flex gap-3">
-                <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 mt-0.5" />
+              <div className="flex gap-3 rounded-lg border bg-amber-50 p-4 dark:bg-amber-950/30">
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
                 <p className="text-sm text-amber-800 dark:text-amber-200">
-                  Без подтверждения собственности вы не сможете создавать
-                  объявления о продаже или аренде.
+                  Без подтверждения собственности вы не сможете создавать объявления о продаже или
+                  аренде.
                 </p>
               </div>
 
-              <h3 className="font-medium text-foreground pt-2">
-                Как подтвердить собственность:
-              </h3>
+              <h3 className="text-foreground pt-2 font-medium">Как подтвердить собственность:</h3>
 
               <div className="space-y-4">
                 {/* Path 1 */}
-                <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                <div className="border-primary/20 bg-primary/5 rounded-lg border-2 p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
                       1
                     </span>
-                    <p className="font-medium text-foreground">
-                      Через заявку с документами
-                    </p>
+                    <p className="text-foreground font-medium">Через заявку с документами</p>
                   </div>
-                  <ol className="space-y-2 text-sm list-decimal list-inside">
+                  <ol className="list-inside list-decimal space-y-2 text-sm">
                     <li>Перейдите в раздел «Моя недвижимость»</li>
                     <li>Нажмите «Добавить объект»</li>
                     <li>Выберите тип (квартира или машиноместо)</li>
@@ -219,25 +209,25 @@ export function GuideContent() {
                     </li>
                     <li>Отправьте заявку на проверку</li>
                   </ol>
-                  <p className="mt-3 text-xs text-muted-foreground">
+                  <p className="text-muted-foreground mt-3 text-xs">
                     Срок рассмотрения: обычно в течение 24 часов
                   </p>
                 </div>
 
                 {/* Path 2 */}
                 <div className="rounded-lg border p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-bold">
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="bg-muted flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
                       2
                     </span>
-                    <p className="font-medium text-foreground">
+                    <p className="text-foreground font-medium">
                       Личное подтверждение администратором
                     </p>
                   </div>
                   <p className="text-sm">
-                    Если вы знакомы с администраторами сообщества лично, они
-                    могут подтвердить вашу собственность без загрузки документов.
-                    Для этого свяжитесь с администратором в чате.
+                    Если вы знакомы с администраторами сообщества лично, они могут подтвердить вашу
+                    собственность без загрузки документов. Для этого свяжитесь с администратором в
+                    чате.
                   </p>
                 </div>
               </div>
@@ -256,39 +246,33 @@ export function GuideContent() {
           {/* Apartments */}
           <section id="apartments" className="mb-10 scroll-mt-6">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-              <Home className="h-5 w-5 shrink-0 text-primary" />
+              <Home className="text-primary h-5 w-5 shrink-0" />
               Объявления о квартирах
             </h2>
-            <div className="space-y-4 leading-relaxed text-muted-foreground">
+            <div className="text-muted-foreground space-y-4 leading-relaxed">
               <p>
-                После подтверждения собственности вы можете размещать объявления
-                о продаже или сдаче в аренду вашей квартиры.
+                После подтверждения собственности вы можете размещать объявления о продаже или сдаче
+                в аренду вашей квартиры.
               </p>
 
-              <h3 className="font-medium text-foreground">Типы объявлений:</h3>
+              <h3 className="text-foreground font-medium">Типы объявлений:</h3>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border p-3">
-                  <p className="font-medium text-foreground text-sm">
-                    Продажа квартиры
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-foreground text-sm font-medium">Продажа квартиры</p>
+                  <p className="text-muted-foreground mt-1 text-xs">
                     Для собственников, желающих продать недвижимость
                   </p>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <p className="font-medium text-foreground text-sm">
-                    Аренда квартиры
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-foreground text-sm font-medium">Аренда квартиры</p>
+                  <p className="text-muted-foreground mt-1 text-xs">
                     Долгосрочная или краткосрочная аренда
                   </p>
                 </div>
               </div>
 
-              <h3 className="font-medium text-foreground pt-2">
-                Процесс подачи объявления:
-              </h3>
-              <ol className="space-y-2 text-sm list-decimal list-inside">
+              <h3 className="text-foreground pt-2 font-medium">Процесс подачи объявления:</h3>
+              <ol className="list-inside list-decimal space-y-2 text-sm">
                 <li>Убедитесь, что квартира добавлена и подтверждена</li>
                 <li>Перейдите в «Мои объявления» → «Создать объявление»</li>
                 <li>Выберите квартиру из списка вашей недвижимости</li>
@@ -312,39 +296,33 @@ export function GuideContent() {
           {/* Parking */}
           <section id="parking" className="mb-10 scroll-mt-6">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-              <Car className="h-5 w-5 shrink-0 text-primary" />
+              <Car className="text-primary h-5 w-5 shrink-0" />
               Объявления о паркинге
             </h2>
-            <div className="space-y-4 leading-relaxed text-muted-foreground">
+            <div className="text-muted-foreground space-y-4 leading-relaxed">
               <p>
-                Машиноместа в подземном паркинге также можно продать или сдать
-                в аренду через наш сервис. Процесс аналогичен квартирам.
+                Машиноместа в подземном паркинге также можно продать или сдать в аренду через наш
+                сервис. Процесс аналогичен квартирам.
               </p>
 
-              <h3 className="font-medium text-foreground">Типы объявлений:</h3>
+              <h3 className="text-foreground font-medium">Типы объявлений:</h3>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border p-3">
-                  <p className="font-medium text-foreground text-sm">
-                    Продажа машиноместа
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-foreground text-sm font-medium">Продажа машиноместа</p>
+                  <p className="text-muted-foreground mt-1 text-xs">
                     Продажа права собственности на место в паркинге
                   </p>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <p className="font-medium text-foreground text-sm">
-                    Аренда машиноместа
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-foreground text-sm font-medium">Аренда машиноместа</p>
+                  <p className="text-muted-foreground mt-1 text-xs">
                     Помесячная аренда места в паркинге
                   </p>
                 </div>
               </div>
 
-              <h3 className="font-medium text-foreground pt-2">
-                Особенности паркинга:
-              </h3>
-              <ul className="space-y-2 text-sm list-disc list-inside">
+              <h3 className="text-foreground pt-2 font-medium">Особенности паркинга:</h3>
+              <ul className="list-inside list-disc space-y-2 text-sm">
                 <li>Укажите уровень паркинга и номер места</li>
                 <li>Отметьте, есть ли рядом колонна или препятствия</li>
                 <li>Добавьте фото места для наглядности</li>
@@ -365,47 +343,43 @@ export function GuideContent() {
           {/* Moderation */}
           <section id="moderation" className="scroll-mt-6">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-              <ClipboardList className="h-5 w-5 shrink-0 text-primary" />
+              <ClipboardList className="text-primary h-5 w-5 shrink-0" />
               Модерация и сроки
             </h2>
-            <div className="space-y-4 leading-relaxed text-muted-foreground">
+            <div className="text-muted-foreground space-y-4 leading-relaxed">
               <p>
-                Все заявки и объявления проходят модерацию для обеспечения
-                качества и безопасности информации.
+                Все заявки и объявления проходят модерацию для обеспечения качества и безопасности
+                информации.
               </p>
 
               <div className="space-y-3">
                 <div className="flex items-start gap-3 rounded-lg border p-3">
-                  <ShieldCheck className="h-5 w-5 shrink-0 text-green-500 mt-0.5" />
+                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-green-500" />
                   <div>
-                    <p className="font-medium text-foreground text-sm">
+                    <p className="text-foreground text-sm font-medium">
                       Заявки на подтверждение собственности
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Обычно рассматриваются в течение 24 часов
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 rounded-lg border p-3">
-                  <ShieldCheck className="h-5 w-5 shrink-0 text-green-500 mt-0.5" />
+                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-green-500" />
                   <div>
-                    <p className="font-medium text-foreground text-sm">
-                      Объявления о недвижимости
-                    </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-foreground text-sm font-medium">Объявления о недвижимости</p>
+                    <p className="text-muted-foreground text-xs">
                       Проверяются и публикуются в течение нескольких часов
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 rounded-lg border p-3">
-                  <ShieldCheck className="h-5 w-5 shrink-0 text-green-500 mt-0.5" />
+                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-green-500" />
                   <div>
-                    <p className="font-medium text-foreground text-sm">
-                      Обращения и жалобы
-                    </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-foreground text-sm font-medium">Обращения и жалобы</p>
+                    <p className="text-muted-foreground text-xs">
                       Рассматриваются в порядке поступления
                     </p>
                   </div>
@@ -413,11 +387,11 @@ export function GuideContent() {
               </div>
 
               <p className="text-sm">
-                Статус всех ваших заявок можно отслеживать в личном кабинете.
-                При отклонении заявки вы получите уведомление с указанием причины.
+                Статус всех ваших заявок можно отслеживать в личном кабинете. При отклонении заявки
+                вы получите уведомление с указанием причины.
               </p>
 
-              <div className="pt-2 flex gap-3 flex-wrap">
+              <div className="flex flex-wrap gap-3 pt-2">
                 <Button variant="outline" asChild>
                   <Link href="/my">
                     Личный кабинет
@@ -438,7 +412,7 @@ export function GuideContent() {
         {/* Right navigation */}
         <aside className="hidden w-48 shrink-0 md:block">
           <nav className="sticky top-6">
-            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wide">
               На странице
             </p>
             <ul className="space-y-1">
@@ -449,7 +423,7 @@ export function GuideContent() {
                     className={cn(
                       "w-full rounded-md px-3 py-1.5 text-left text-sm transition-colors",
                       activeSection === id
-                        ? "bg-primary/10 font-medium text-primary"
+                        ? "bg-primary/10 text-primary font-medium"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >

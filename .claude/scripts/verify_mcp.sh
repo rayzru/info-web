@@ -54,7 +54,7 @@ GEMINI_API_KEY_FILE="$HOME/.gemini_mcp_api_key"
 # Track what mode we're in
 MODE="unknown"
 MCPS_INSTALLED=0
-MCPS_TOTAL=15
+MCPS_TOTAL=14
 NEEDS_UPDATE=false
 FIRST_TIME_SETUP=false
 SKIP_HEALTH_CHECKS=false
@@ -129,7 +129,7 @@ print_updating() {
 #############################################################################
 
 # Codex model configuration - update this when new models are released
-CODEX_TARGET_MODEL="gpt-5.2-codex"
+CODEX_TARGET_MODEL="gpt-5.3-codex"
 
 # NVM configuration
 # Using master branch ensures we always get the latest stable version
@@ -848,11 +848,28 @@ install_prerequisites() {
 # MCP Installation Functions
 #############################################################################
 
+# Global cache for claude mcp list output (performance optimization)
+MCP_LIST_CACHE=""
+
+# Get MCP list (cached or fresh)
+get_mcp_list() {
+    if [ -z "$MCP_LIST_CACHE" ]; then
+        MCP_LIST_CACHE=$(claude mcp list 2>/dev/null || echo "")
+    fi
+    echo "$MCP_LIST_CACHE"
+}
+
+# Clear MCP list cache (call after installing/removing MCPs)
+clear_mcp_cache() {
+    MCP_LIST_CACHE=""
+}
+
 check_mcp_installed() {
     local mcp_name=$1
+    local mcp_list=$(get_mcp_list)
 
-    # Check if MCP is listed in claude mcp list
-    if claude mcp list 2>/dev/null | grep -q "$mcp_name"; then
+    # Check if MCP is listed in cached list
+    if echo "$mcp_list" | grep -q "$mcp_name"; then
         return 0
     else
         return 1
@@ -862,7 +879,10 @@ check_mcp_installed() {
 # Get current model configured for a Codex MCP
 get_codex_mcp_model() {
     local mcp_name=$1
-    claude mcp list 2>/dev/null | grep "^$mcp_name:" | grep -oE 'model=[^ ]+' | head -1 | cut -d'=' -f2
+    local mcp_list=$(get_mcp_list)
+
+    # Extract model value and strip quotes
+    echo "$mcp_list" | grep "^$mcp_name:" | grep -oE 'model=[^ ]+' | head -1 | cut -d'=' -f2 | tr -d '"'
 }
 
 # Check if Codex MCP needs model update
@@ -890,13 +910,14 @@ install_playwright_mcp() {
     fi
 
     print_installing "Playwright MCP"
-    if claude mcp add playwright npx @playwright/mcp@latest 2>&1 | tee -a "$LOG_FILE"; then
+    if claude mcp add playwright -- npx -y @playwright/mcp@latest 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Playwright MCP installed successfully"
 
         # Install browsers
         print_info "Installing Playwright browsers..."
         npx playwright install chromium
 
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install Playwright MCP"
@@ -915,6 +936,7 @@ install_context7_mcp() {
     print_installing "Context7 MCP"
     if claude mcp add --transport http context7 https://mcp.context7.com/mcp 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Context7 MCP installed successfully"
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install Context7 MCP"
@@ -944,6 +966,7 @@ install_figma_mcp() {
         print_installing "Figma MCP"
         if claude mcp add --transport http figma http://127.0.0.1:3845/mcp 2>&1 | tee -a "$LOG_FILE"; then
             print_success "Figma MCP installed successfully"
+            clear_mcp_cache
             return 0
         else
             print_error "Failed to install Figma MCP"
@@ -994,6 +1017,7 @@ install_gitlab_mcp() {
         --env GITLAB_READ_ONLY_MODE=false \
         -- npx -y @zereight/mcp-gitlab@latest 2>&1 | tee -a "$LOG_FILE"; then
         print_success "GitLab MCP installed successfully"
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install GitLab MCP"
@@ -1017,20 +1041,22 @@ install_codex_high_mcp() {
             claude mcp remove codex-high -s local 2>/dev/null
             claude mcp remove codex-high -s project 2>/dev/null
             claude mcp remove codex-high -s user 2>/dev/null
+            clear_mcp_cache
             print_success "Old Codex High MCP removed"
         fi
     fi
 
     print_installing "Codex High MCP with $CODEX_TARGET_MODEL"
     if claude mcp add codex-high -- codex mcp-server \
-        --model "$CODEX_TARGET_MODEL" \
-        --sandbox workspace-write \
+        -c "model=\"$CODEX_TARGET_MODEL\"" \
+        -c "sandbox=\"workspace-write\"" \
         --enable web_search_request \
         -c model_reasoning_effort=high \
         -c model_reasoning_summaries=detailed \
         -c sandbox_workspace_write.network_access=true \
         -c shell_environment_policy.inherit=all 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Codex High MCP ($CODEX_TARGET_MODEL) installed successfully"
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install Codex High MCP"
@@ -1054,20 +1080,22 @@ install_codex_medium_mcp() {
             claude mcp remove codex-medium -s local 2>/dev/null
             claude mcp remove codex-medium -s project 2>/dev/null
             claude mcp remove codex-medium -s user 2>/dev/null
+            clear_mcp_cache
             print_success "Old Codex Medium MCP removed"
         fi
     fi
 
     print_installing "Codex Medium MCP with $CODEX_TARGET_MODEL"
     if claude mcp add codex-medium -- codex mcp-server \
-        --model "$CODEX_TARGET_MODEL" \
-        --sandbox workspace-write \
+        -c "model=\"$CODEX_TARGET_MODEL\"" \
+        -c "sandbox=\"workspace-write\"" \
         --enable web_search_request \
         -c model_reasoning_effort=medium \
         -c model_reasoning_summaries=detailed \
         -c sandbox_workspace_write.network_access=true \
         -c shell_environment_policy.inherit=all 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Codex Medium MCP ($CODEX_TARGET_MODEL) installed successfully"
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install Codex Medium MCP"
@@ -1121,6 +1149,7 @@ install_gemini_mcp() {
         --env GEMINI_API_KEY="$gemini_api_key" \
         -- npx -y gemini-mcp-tool@latest 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Gemini CLI MCP installed successfully"
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install Gemini CLI MCP"
@@ -1148,6 +1177,7 @@ install_storybook_mcp() {
         if claude mcp add --transport http storybook-mcp http://localhost:6006/mcp --scope project 2>&1 | tee -a "$LOG_FILE"; then
             print_success "Storybook MCP installed successfully"
             print_info "MCP server will be available when Storybook is running"
+            clear_mcp_cache
             return 0
         else
             print_error "Failed to install Storybook MCP"
@@ -1172,6 +1202,7 @@ install_mermaid_validator_mcp() {
     if claude mcp add mermaid-validator -- npx -y @rtuin/mcp-mermaid-validator@latest 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Mermaid Validator MCP installed successfully"
         print_info "Use to validate all Mermaid diagrams in documentation and plans"
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install Mermaid Validator MCP"
@@ -1205,6 +1236,7 @@ install_mermaid_generator_mcp() {
     if claude mcp add mermaid-generator -- mcp-mermaid 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Mermaid Generator MCP installed successfully"
         print_info "Use to generate Mermaid diagrams from natural language descriptions"
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install Mermaid Generator MCP"
@@ -1221,9 +1253,10 @@ install_chrome_devtools_mcp() {
     fi
 
     print_installing "Chrome DevTools MCP"
-    if claude mcp add chrome-devtools npx -y chrome-devtools-mcp@latest 2>&1 | tee -a "$LOG_FILE"; then
+    if claude mcp add chrome-devtools -- npx -y chrome-devtools-mcp@latest 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Chrome DevTools MCP installed successfully"
         print_info "Provides performance analysis, debugging, and browser automation"
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install Chrome DevTools MCP"
@@ -1244,9 +1277,10 @@ install_nextjs_devtools_mcp() {
     print_info "Auto-discovers Next.js instances at http://localhost:PORT/_next/mcp"
 
     print_installing "Next.js DevTools MCP"
-    if claude mcp add next-devtools npx -y next-devtools-mcp@latest 2>&1 | tee -a "$LOG_FILE"; then
+    if claude mcp add next-devtools -- npx -y next-devtools-mcp@latest 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Next.js DevTools MCP installed successfully"
         print_info "Start your Next.js dev server to enable real-time integration"
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install Next.js DevTools MCP"
@@ -1271,33 +1305,10 @@ install_linear_mcp() {
     if claude mcp add --transport http linear https://mcp.linear.app/mcp 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Linear MCP installed successfully"
         print_info "Run '/mcp' in Claude to complete OAuth authentication"
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install Linear MCP"
-        return 1
-    fi
-}
-
-install_asana_mcp() {
-    print_section "Asana MCP"
-
-    if check_mcp_installed "asana"; then
-        print_success "Asana MCP is already installed"
-        return 0
-    fi
-
-    print_info "Asana MCP connects to Asana project management"
-    print_info "Tools: Manage tasks, projects, and team collaboration"
-    print_info "Authentication: OAuth (will prompt on first use)"
-    print_info "Docs: https://developers.asana.com/docs/using-asanas-mcp-server"
-
-    print_installing "Asana MCP"
-    if claude mcp add --transport sse asana https://mcp.asana.com/sse 2>&1 | tee -a "$LOG_FILE"; then
-        print_success "Asana MCP installed successfully"
-        print_info "Run '/mcp' in Claude to complete OAuth authentication"
-        return 0
-    else
-        print_error "Failed to install Asana MCP"
         return 1
     fi
 }
@@ -1319,6 +1330,7 @@ install_notion_mcp() {
     if claude mcp add --transport http notion https://mcp.notion.com/mcp 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Notion MCP installed successfully"
         print_info "Run '/mcp' in Claude to complete OAuth authentication"
+        clear_mcp_cache
         return 0
     else
         print_error "Failed to install Notion MCP"
@@ -1337,12 +1349,18 @@ perform_health_checks() {
 
     print_section "Checking MCP Status"
 
-    # List all MCPs
+    # Force fresh cache for health check display
+    clear_mcp_cache
+
+    # List all MCPs (this populates the cache)
     print_info "Configured MCPs:"
-    claude mcp list 2>/dev/null || {
+    get_mcp_list > /dev/null || {
         print_error "No MCPs configured or claude command failed"
         all_healthy=false
     }
+
+    # Display the cached list
+    echo "$(get_mcp_list)"
 
     # Test each MCP if possible
     print_section "Testing MCP Connections"
@@ -1459,15 +1477,6 @@ perform_health_checks() {
         print_warning "Linear MCP: Not installed"
     fi
 
-    # Test Asana
-    if check_mcp_installed "asana"; then
-        print_info "Asana MCP: Ready for project management integration"
-        print_info "  Tools: Manage tasks, projects, and team collaboration"
-        print_info "  Authentication via OAuth (run /mcp to authenticate)"
-    else
-        print_warning "Asana MCP: Not installed"
-    fi
-
     # Test Notion
     if check_mcp_installed "notion"; then
         print_info "Notion MCP: Ready for workspace integration"
@@ -1522,10 +1531,14 @@ generate_summary() {
     local newly_installed=0
     local mcp_status=()
 
+    # Populate cache once before checking all MCPs (performance optimization)
+    clear_mcp_cache
+    get_mcp_list > /dev/null
+
     echo -e "${BOLD}MCP Configuration Status:${NC}"
     echo "────────────────────────────────────────"
 
-    for mcp in "playwright" "context7" "gitlab" "figma" "codex-high" "codex-medium" "gemini-cli" "mermaid-validator" "mermaid-generator" "chrome-devtools" "next-devtools" "linear" "asana" "notion"; do
+    for mcp in "playwright" "context7" "gitlab" "figma" "codex-high" "codex-medium" "gemini-cli" "mermaid-validator" "mermaid-generator" "chrome-devtools" "next-devtools" "linear" "notion"; do
         if check_mcp_installed "$mcp"; then
             echo -e "  ${GREEN}✓${NC} $mcp ${GREEN}(ready)${NC}"
             ((installed_count++))
@@ -1591,9 +1604,13 @@ detect_system_state() {
         return
     fi
 
-    # Count installed MCPs
+    # Populate cache once before checking all MCPs (performance optimization)
+    clear_mcp_cache
+    get_mcp_list > /dev/null
+
+    # Count installed MCPs (now uses cached list - instant!)
     local installed_mcps=()
-    for mcp in "playwright" "context7" "gitlab" "figma" "codex-high" "codex-medium" "gemini-cli" "mermaid-validator" "mermaid-generator" "chrome-devtools" "next-devtools" "linear" "asana" "notion"; do
+    for mcp in "playwright" "context7" "gitlab" "figma" "codex-high" "codex-medium" "gemini-cli" "mermaid-validator" "mermaid-generator" "chrome-devtools" "next-devtools" "linear" "notion"; do
         if check_mcp_installed "$mcp"; then
             installed_mcps+=("$mcp")
         fi
@@ -1728,13 +1745,6 @@ smart_install_mcps() {
         print_success "Linear MCP already configured"
     fi
 
-    # Asana
-    if should_install_mcp "asana"; then
-        install_asana_mcp && any_installed=true || any_failed=true
-    else
-        print_success "Asana MCP already configured"
-    fi
-
     # Notion
     if should_install_mcp "notion"; then
         install_notion_mcp && any_installed=true || any_failed=true
@@ -1827,12 +1837,12 @@ main() {
         "first_time")
             echo "📦 First-time setup detected"
             echo "  → Install prerequisites (Node.js, npm, Claude Code CLI)"
-            echo "  → Install all 15 MCP servers"
+            echo "  → Install all 14 MCP servers"
             echo "  → Configure and verify everything"
             ;;
         "install")
             echo "🆕 Fresh MCP installation needed"
-            echo "  → Install all 15 MCP servers"
+            echo "  → Install all 14 MCP servers"
             echo "  → Configure each server"
             echo "  → Run health checks"
             ;;

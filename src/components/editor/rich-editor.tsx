@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 
+import { EditorContent, type JSONContent, useEditor } from "@tiptap/react";
+
+import { type EditorMode, getExtensions, type RichEditorProps } from "~/lib/editor";
 import { cn } from "~/lib/utils";
-import { getExtensions, type EditorMode, type RichEditorProps } from "~/lib/editor";
-import { Toolbar } from "./toolbar";
+
 import { EditorImageDialog } from "./editor-image-dialog";
+import { Toolbar } from "./toolbar";
 
 import "./editor.css";
 
@@ -25,10 +27,7 @@ export function RichEditor({
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
 
   // Memoize extensions to prevent recreating on every render
-  const extensions = useMemo(
-    () => getExtensions(mode, placeholder),
-    [mode, placeholder]
-  );
+  const extensions = useMemo(() => getExtensions(mode, placeholder), [mode, placeholder]);
 
   const editor = useEditor({
     extensions,
@@ -43,11 +42,7 @@ export function RichEditor({
     },
     editorProps: {
       attributes: {
-        class: cn(
-          "prose prose-sm dark:prose-invert max-w-none",
-          "focus:outline-none",
-          "px-4 py-3"
-        ),
+        class: cn("prose prose-sm dark:prose-invert max-w-none", "focus:outline-none", "px-4 py-3"),
         style: `min-height: ${minHeight}; ${maxHeight ? `max-height: ${maxHeight}; overflow-y: auto;` : ""}`,
       },
     },
@@ -75,28 +70,22 @@ export function RichEditor({
 
   const handleImageSelect = (url: string, alt?: string) => {
     if (editor) {
-      editor.chain().focus().setImage({ src: url, alt: alt ?? "" }).run();
+      editor
+        .chain()
+        .focus()
+        .setImage({ src: url, alt: alt ?? "" })
+        .run();
     }
   };
 
   return (
-    <div
-      className={cn(
-        "rounded-lg border bg-background",
-        !editable && "opacity-60",
-        className
-      )}
-    >
+    <div className={cn("bg-background rounded-lg border", !editable && "opacity-60", className)}>
       {editable && (
-        <Toolbar
-          editor={editor}
-          mode={mode}
-          onImageUpload={() => setImageDialogOpen(true)}
-        />
+        <Toolbar editor={editor} mode={mode} onImageUpload={() => setImageDialogOpen(true)} />
       )}
       <EditorContent
         editor={editor}
-        className="[&_.tiptap]:outline-none [&_.ProseMirror_*::selection]:bg-blue-500/50 [&_.ProseMirror_::selection]:bg-blue-500/50"
+        className="[&_.ProseMirror_*::selection]:bg-blue-500/50 [&_.ProseMirror_::selection]:bg-blue-500/50 [&_.tiptap]:outline-none"
       />
 
       <EditorImageDialog

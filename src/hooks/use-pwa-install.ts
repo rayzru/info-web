@@ -18,7 +18,7 @@ if (typeof window !== "undefined" && !window.__pwaInstallPrompt) {
       e.preventDefault();
       window.__pwaInstallPrompt = e as BeforeInstallPromptEvent;
     },
-    { once: true },
+    { once: true }
   );
 }
 

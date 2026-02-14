@@ -57,10 +57,9 @@ export const directoryEntries = createTable(
     subtitle: varchar("subtitle", { length: 255 }),
     description: text("description"),
     content: text("content"), // Rich text / markdown
-    buildingId: varchar("building_id", { length: 255 }).references(
-      () => buildings.id,
-      { onDelete: "set null" }
-    ),
+    buildingId: varchar("building_id", { length: 255 }).references(() => buildings.id, {
+      onDelete: "set null",
+    }),
     // Для организаций - этаж
     floorNumber: smallint("floor_number"),
     // Иконка (Lucide icon name)
@@ -222,15 +221,13 @@ export const directoryAnalytics = createTable(
     tagId: varchar("tag_id", { length: 255 }).references(() => directoryTags.id, {
       onDelete: "set null",
     }),
-    entryId: varchar("entry_id", { length: 255 }).references(
-      () => directoryEntries.id,
-      { onDelete: "set null" }
-    ),
+    entryId: varchar("entry_id", { length: 255 }).references(() => directoryEntries.id, {
+      onDelete: "set null",
+    }),
     // Контакт, по которому кликнули (для entry_call, entry_link)
-    contactId: varchar("contact_id", { length: 255 }).references(
-      () => directoryContacts.id,
-      { onDelete: "set null" }
-    ),
+    contactId: varchar("contact_id", { length: 255 }).references(() => directoryContacts.id, {
+      onDelete: "set null",
+    }),
     // Пользователь (если авторизован)
     userId: varchar("user_id", { length: 255 }),
     // Количество результатов поиска (для search)
@@ -324,17 +321,15 @@ export const knowledgeBaseArticles = createTable(
     // Статус публикации
     status: knowledgeBaseStatusEnum("status").notNull().default("draft"),
     // Привязка к корпусу (опционально)
-    buildingId: varchar("building_id", { length: 255 }).references(
-      () => buildings.id,
-      { onDelete: "set null" }
-    ),
+    buildingId: varchar("building_id", { length: 255 }).references(() => buildings.id, {
+      onDelete: "set null",
+    }),
     // Иконка (Lucide icon name)
     icon: varchar("icon", { length: 50 }),
     // Автор
-    authorId: varchar("author_id", { length: 255 }).references(
-      () => users.id,
-      { onDelete: "set null" }
-    ),
+    authorId: varchar("author_id", { length: 255 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
     // Порядок сортировки
     order: integer("order").default(0),
     // Счётчик просмотров
@@ -375,149 +370,116 @@ export const knowledgeBaseArticleTags = createTable(
 
 // ============== RELATIONS ==============
 
-export const directoryEntriesRelations = relations(
-  directoryEntries,
-  ({ one, many }) => ({
-    building: one(buildings, {
-      fields: [directoryEntries.buildingId],
-      references: [buildings.id],
-    }),
-    contacts: many(directoryContacts),
-    schedules: many(directorySchedules),
-    entryTags: many(directoryEntryTags),
-  })
-);
+export const directoryEntriesRelations = relations(directoryEntries, ({ one, many }) => ({
+  building: one(buildings, {
+    fields: [directoryEntries.buildingId],
+    references: [buildings.id],
+  }),
+  contacts: many(directoryContacts),
+  schedules: many(directorySchedules),
+  entryTags: many(directoryEntryTags),
+}));
 
-export const directoryContactsRelations = relations(
-  directoryContacts,
-  ({ one, many }) => ({
-    entry: one(directoryEntries, {
-      fields: [directoryContacts.entryId],
-      references: [directoryEntries.id],
-    }),
-    contactTags: many(directoryContactTags),
-  })
-);
+export const directoryContactsRelations = relations(directoryContacts, ({ one, many }) => ({
+  entry: one(directoryEntries, {
+    fields: [directoryContacts.entryId],
+    references: [directoryEntries.id],
+  }),
+  contactTags: many(directoryContactTags),
+}));
 
-export const directorySchedulesRelations = relations(
-  directorySchedules,
-  ({ one }) => ({
-    entry: one(directoryEntries, {
-      fields: [directorySchedules.entryId],
-      references: [directoryEntries.id],
-    }),
-  })
-);
+export const directorySchedulesRelations = relations(directorySchedules, ({ one }) => ({
+  entry: one(directoryEntries, {
+    fields: [directorySchedules.entryId],
+    references: [directoryEntries.id],
+  }),
+}));
 
-export const directoryTagsRelations = relations(
-  directoryTags,
-  ({ one, many }) => ({
-    parent: one(directoryTags, {
-      fields: [directoryTags.parentId],
-      references: [directoryTags.id],
-      relationName: "tagHierarchy",
-    }),
-    children: many(directoryTags, {
-      relationName: "tagHierarchy",
-    }),
-    entryTags: many(directoryEntryTags),
-    contactTags: many(directoryContactTags),
-  })
-);
+export const directoryTagsRelations = relations(directoryTags, ({ one, many }) => ({
+  parent: one(directoryTags, {
+    fields: [directoryTags.parentId],
+    references: [directoryTags.id],
+    relationName: "tagHierarchy",
+  }),
+  children: many(directoryTags, {
+    relationName: "tagHierarchy",
+  }),
+  entryTags: many(directoryEntryTags),
+  contactTags: many(directoryContactTags),
+}));
 
-export const directoryEntryTagsRelations = relations(
-  directoryEntryTags,
-  ({ one }) => ({
-    entry: one(directoryEntries, {
-      fields: [directoryEntryTags.entryId],
-      references: [directoryEntries.id],
-    }),
-    tag: one(directoryTags, {
-      fields: [directoryEntryTags.tagId],
-      references: [directoryTags.id],
-    }),
-  })
-);
+export const directoryEntryTagsRelations = relations(directoryEntryTags, ({ one }) => ({
+  entry: one(directoryEntries, {
+    fields: [directoryEntryTags.entryId],
+    references: [directoryEntries.id],
+  }),
+  tag: one(directoryTags, {
+    fields: [directoryEntryTags.tagId],
+    references: [directoryTags.id],
+  }),
+}));
 
-export const directoryContactTagsRelations = relations(
-  directoryContactTags,
-  ({ one }) => ({
-    contact: one(directoryContacts, {
-      fields: [directoryContactTags.contactId],
-      references: [directoryContacts.id],
-    }),
-    tag: one(directoryTags, {
-      fields: [directoryContactTags.tagId],
-      references: [directoryTags.id],
-    }),
-  })
-);
+export const directoryContactTagsRelations = relations(directoryContactTags, ({ one }) => ({
+  contact: one(directoryContacts, {
+    fields: [directoryContactTags.contactId],
+    references: [directoryContacts.id],
+  }),
+  tag: one(directoryTags, {
+    fields: [directoryContactTags.tagId],
+    references: [directoryTags.id],
+  }),
+}));
 
 // Analytics relations
-export const directoryAnalyticsRelations = relations(
-  directoryAnalytics,
-  ({ one }) => ({
-    tag: one(directoryTags, {
-      fields: [directoryAnalytics.tagId],
-      references: [directoryTags.id],
-    }),
-    entry: one(directoryEntries, {
-      fields: [directoryAnalytics.entryId],
-      references: [directoryEntries.id],
-    }),
-    contact: one(directoryContacts, {
-      fields: [directoryAnalytics.contactId],
-      references: [directoryContacts.id],
-    }),
-  })
-);
+export const directoryAnalyticsRelations = relations(directoryAnalytics, ({ one }) => ({
+  tag: one(directoryTags, {
+    fields: [directoryAnalytics.tagId],
+    references: [directoryTags.id],
+  }),
+  entry: one(directoryEntries, {
+    fields: [directoryAnalytics.entryId],
+    references: [directoryEntries.id],
+  }),
+  contact: one(directoryContacts, {
+    fields: [directoryAnalytics.contactId],
+    references: [directoryContacts.id],
+  }),
+}));
 
-export const directoryTagStatsRelations = relations(
-  directoryTagStats,
-  ({ one }) => ({
-    tag: one(directoryTags, {
-      fields: [directoryTagStats.tagId],
-      references: [directoryTags.id],
-    }),
-  })
-);
+export const directoryTagStatsRelations = relations(directoryTagStats, ({ one }) => ({
+  tag: one(directoryTags, {
+    fields: [directoryTagStats.tagId],
+    references: [directoryTags.id],
+  }),
+}));
 
-export const directoryEntryStatsRelations = relations(
-  directoryEntryStats,
-  ({ one }) => ({
-    entry: one(directoryEntries, {
-      fields: [directoryEntryStats.entryId],
-      references: [directoryEntries.id],
-    }),
-  })
-);
+export const directoryEntryStatsRelations = relations(directoryEntryStats, ({ one }) => ({
+  entry: one(directoryEntries, {
+    fields: [directoryEntryStats.entryId],
+    references: [directoryEntries.id],
+  }),
+}));
 
 // Knowledge Base relations
-export const knowledgeBaseArticlesRelations = relations(
-  knowledgeBaseArticles,
-  ({ one, many }) => ({
-    building: one(buildings, {
-      fields: [knowledgeBaseArticles.buildingId],
-      references: [buildings.id],
-    }),
-    author: one(users, {
-      fields: [knowledgeBaseArticles.authorId],
-      references: [users.id],
-    }),
-    articleTags: many(knowledgeBaseArticleTags),
-  })
-);
+export const knowledgeBaseArticlesRelations = relations(knowledgeBaseArticles, ({ one, many }) => ({
+  building: one(buildings, {
+    fields: [knowledgeBaseArticles.buildingId],
+    references: [buildings.id],
+  }),
+  author: one(users, {
+    fields: [knowledgeBaseArticles.authorId],
+    references: [users.id],
+  }),
+  articleTags: many(knowledgeBaseArticleTags),
+}));
 
-export const knowledgeBaseArticleTagsRelations = relations(
-  knowledgeBaseArticleTags,
-  ({ one }) => ({
-    article: one(knowledgeBaseArticles, {
-      fields: [knowledgeBaseArticleTags.articleId],
-      references: [knowledgeBaseArticles.id],
-    }),
-    tag: one(directoryTags, {
-      fields: [knowledgeBaseArticleTags.tagId],
-      references: [directoryTags.id],
-    }),
-  })
-);
+export const knowledgeBaseArticleTagsRelations = relations(knowledgeBaseArticleTags, ({ one }) => ({
+  article: one(knowledgeBaseArticles, {
+    fields: [knowledgeBaseArticleTags.articleId],
+    references: [knowledgeBaseArticles.id],
+  }),
+  tag: one(directoryTags, {
+    fields: [knowledgeBaseArticleTags.tagId],
+    references: [directoryTags.id],
+  }),
+}));

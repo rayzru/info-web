@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+
+import { AlertCircle, AlertTriangle, Loader2, MessageCircle, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { AlertCircle, AlertTriangle, Loader2, MessageCircle, Trash2 } from "lucide-react";
 
-import { Button } from "~/components/ui/button";
 import { AvatarCropper } from "~/components/avatar-cropper";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -18,12 +20,11 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { useToast } from "~/hooks/use-toast";
-import { api } from "~/trpc/react";
 import { getRankConfig, RANK_CONFIG } from "~/lib/ranks";
 import { cn } from "~/lib/utils";
 import type { UserRole } from "~/server/auth/rbac";
+import { api } from "~/trpc/react";
 
 interface ProfileFormProps {
   user: {
@@ -79,27 +80,26 @@ function PrivacyCheckbox({
 }) {
   return (
     <div className="flex items-center space-x-2">
-      <Checkbox
-        id={id}
-        checked={checked}
-        onCheckedChange={(c) => onCheckedChange(c === true)}
-      />
-      <Label htmlFor={id} className="text-xs font-normal text-muted-foreground">
+      <Checkbox id={id} checked={checked} onCheckedChange={(c) => onCheckedChange(c === true)} />
+      <Label htmlFor={id} className="text-muted-foreground text-xs font-normal">
         {label}
       </Label>
     </div>
   );
 }
 
-export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin }: ProfileFormProps) {
+export function ProfileForm({
+  user,
+  profile,
+  effectiveTagline,
+  taglineSetByAdmin,
+}: ProfileFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const { update: updateSession } = useSession();
   const utils = api.useUtils();
 
-  const [displayName, setDisplayName] = useState(
-    profile?.displayName ?? user?.name ?? ""
-  );
+  const [displayName, setDisplayName] = useState(profile?.displayName ?? user?.name ?? "");
   const [tagline, setTagline] = useState(profile?.tagline ?? "");
   const [firstName] = useState(profile?.firstName ?? "");
   const [lastName] = useState(profile?.lastName ?? "");
@@ -107,27 +107,17 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [gender, setGender] = useState<string>(profile?.gender ?? "");
   const [dateOfBirth, setDateOfBirth] = useState(
-    profile?.dateOfBirth
-      ? new Date(profile.dateOfBirth).toISOString().split("T")[0]
-      : ""
+    profile?.dateOfBirth ? new Date(profile.dateOfBirth).toISOString().split("T")[0] : ""
   );
   const [hidePhone, setHidePhone] = useState(profile?.hidePhone ?? false);
   const [hideName, setHideName] = useState(profile?.hideName ?? false);
   const [hideGender, setHideGender] = useState(profile?.hideGender ?? false);
-  const [hideBirthday, setHideBirthday] = useState(
-    profile?.hideBirthday ?? false
-  );
+  const [hideBirthday, setHideBirthday] = useState(profile?.hideBirthday ?? false);
 
-  const [telegramUsername, setTelegramUsername] = useState(
-    profile?.telegramUsername ?? ""
-  );
+  const [telegramUsername, setTelegramUsername] = useState(profile?.telegramUsername ?? "");
   const [maxUsername, setMaxUsername] = useState(profile?.maxUsername ?? "");
-  const [whatsappPhone, setWhatsappPhone] = useState(
-    profile?.whatsappPhone ?? ""
-  );
-  const [hideMessengers, setHideMessengers] = useState(
-    profile?.hideMessengers ?? false
-  );
+  const [whatsappPhone, setWhatsappPhone] = useState(profile?.whatsappPhone ?? "");
+  const [hideMessengers, setHideMessengers] = useState(profile?.hideMessengers ?? false);
 
   const updateProfile = api.profile.update.useMutation({
     onSuccess: () => {
@@ -218,7 +208,7 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
       whatsappPhone: whatsappPhone || null,
       hideMessengers,
       // Include tagline only if not set by admin
-      tagline: taglineSetByAdmin ? undefined : (tagline || null),
+      tagline: taglineSetByAdmin ? undefined : tagline || null,
     });
   };
 
@@ -248,24 +238,20 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
           />
           <div className="text-center sm:text-left">
             <h2 className="text-xl font-semibold">{displayName || "Имя не указано"}</h2>
-            <p className={cn("text-sm font-medium", rankConfig.textColor)}>
-              {rankConfig.label}
-            </p>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
+            <p className={cn("text-sm font-medium", rankConfig.textColor)}>{rankConfig.label}</p>
+            <p className="text-muted-foreground text-sm">{user?.email}</p>
           </div>
         </div>
       </section>
 
       {/* Основная информация */}
       <section>
-        <h2 className="text-lg font-medium pb-3 border-b mb-8">
-          Основная информация
-        </h2>
+        <h2 className="mb-8 border-b pb-3 text-lg font-medium">Основная информация</h2>
 
         <div className="space-y-8">
           {/* Отображаемое имя */}
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="space-y-3 order-1">
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-12">
+            <div className="order-1 space-y-3">
               <Label htmlFor="displayName">Отображаемое имя</Label>
               <Input
                 id="displayName"
@@ -280,15 +266,15 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
                 label="Скрывать от других пользователей"
               />
             </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
-              Это имя видят другие жители в комментариях, объявлениях и сообщениях.
-              Можете использовать никнейм или настоящее имя.
+            <p className="text-muted-foreground order-2 text-sm lg:pt-6">
+              Это имя видят другие жители в комментариях, объявлениях и сообщениях. Можете
+              использовать никнейм или настоящее имя.
             </p>
           </div>
 
           {/* Подпись профиля */}
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="space-y-3 order-1">
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-12">
+            <div className="order-1 space-y-3">
               <Label htmlFor="tagline">Подпись профиля</Label>
               {taglineSetByAdmin ? (
                 <>
@@ -298,7 +284,7 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
                     disabled
                     className="bg-muted/50"
                   />
-                  <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                  <p className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
                     <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                     <span>Подпись установлена администратором</span>
                   </p>
@@ -313,20 +299,20 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
                 />
               )}
               {!taglineSetByAdmin && !tagline && effectiveTagline && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Если оставить пустым, будет использоваться: «{effectiveTagline}»
                 </p>
               )}
             </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
-              Подпись отображается рядом с вашим именем в публикациях, комментариях
-              и объявлениях. Можете указать профессию или роль в сообществе.
+            <p className="text-muted-foreground order-2 text-sm lg:pt-6">
+              Подпись отображается рядом с вашим именем в публикациях, комментариях и объявлениях.
+              Можете указать профессию или роль в сообществе.
             </p>
           </div>
 
           {/* ФИО */}
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="space-y-3 order-1">
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-12">
+            <div className="order-1 space-y-3">
               <Label className="text-muted-foreground">ФИО (редактирование недоступно)</Label>
               <div className="grid gap-2 sm:grid-cols-3">
                 <Input value={lastName} placeholder="Фамилия" disabled className="bg-muted/50" />
@@ -334,15 +320,15 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
                 <Input value={middleName} placeholder="Отчество" disabled className="bg-muted/50" />
               </div>
             </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
-              ФИО используется для формирования шаблонов договоров аренды, заявок,
-              претензий и обращений. Редактирование будет доступно после верификации.
+            <p className="text-muted-foreground order-2 text-sm lg:pt-6">
+              ФИО используется для формирования шаблонов договоров аренды, заявок, претензий и
+              обращений. Редактирование будет доступно после верификации.
             </p>
           </div>
 
           {/* Пол */}
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="space-y-3 order-1">
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-12">
+            <div className="order-1 space-y-3">
               <Label htmlFor="gender">Пол</Label>
               <Select value={gender} onValueChange={setGender}>
                 <SelectTrigger className="w-full sm:w-48">
@@ -361,15 +347,15 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
                 label="Скрывать от других пользователей"
               />
             </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
-              Пол помогает формировать статистику сообщества и персонализировать
-              обращения в уведомлениях.
+            <p className="text-muted-foreground order-2 text-sm lg:pt-6">
+              Пол помогает формировать статистику сообщества и персонализировать обращения в
+              уведомлениях.
             </p>
           </div>
 
           {/* Дата рождения */}
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="space-y-3 order-1">
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-12">
+            <div className="order-1 space-y-3">
               <Label htmlFor="dateOfBirth">Дата рождения</Label>
               <Input
                 id="dateOfBirth"
@@ -385,9 +371,9 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
                 label="Скрывать год рождения (день и месяц останутся видимыми)"
               />
             </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
-              Дата рождения используется для поздравлений от соседей и расчёта
-              возрастной статистики жителей комплекса.
+            <p className="text-muted-foreground order-2 text-sm lg:pt-6">
+              Дата рождения используется для поздравлений от соседей и расчёта возрастной статистики
+              жителей комплекса.
             </p>
           </div>
         </div>
@@ -395,12 +381,12 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
 
       {/* Контакты */}
       <section>
-        <h2 className="text-lg font-medium pb-3 border-b mb-8">Контакты</h2>
+        <h2 className="mb-8 border-b pb-3 text-lg font-medium">Контакты</h2>
 
         <div className="space-y-8">
           {/* Телефон */}
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="space-y-3 order-1">
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-12">
+            <div className="order-1 space-y-3">
               <Label htmlFor="phone">Телефон</Label>
               <Input
                 id="phone"
@@ -416,15 +402,15 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
                 label="Скрывать от других пользователей"
               />
             </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
-              Телефон нужен для связи с вами по вопросам объявлений, заявок на
-              собственность и экстренных ситуаций в доме.
+            <p className="text-muted-foreground order-2 text-sm lg:pt-6">
+              Телефон нужен для связи с вами по вопросам объявлений, заявок на собственность и
+              экстренных ситуаций в доме.
             </p>
           </div>
 
           {/* Email */}
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="space-y-3 order-1">
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-12">
+            <div className="order-1 space-y-3">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -434,9 +420,9 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
                 className="bg-muted/50"
               />
             </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
-              Email используется для входа в систему и важных уведомлений.
-              Получен от провайдера авторизации и не может быть изменён.
+            <p className="text-muted-foreground order-2 text-sm lg:pt-6">
+              Email используется для входа в систему и важных уведомлений. Получен от провайдера
+              авторизации и не может быть изменён.
             </p>
           </div>
         </div>
@@ -444,15 +430,15 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
 
       {/* Мессенджеры */}
       <section>
-        <h2 className="text-lg font-medium pb-3 border-b mb-8 flex items-center gap-2">
+        <h2 className="mb-8 flex items-center gap-2 border-b pb-3 text-lg font-medium">
           <MessageCircle className="h-5 w-5" />
           Мессенджеры
         </h2>
 
         <div className="space-y-8">
           {/* Telegram */}
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="space-y-3 order-1">
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-12">
+            <div className="order-1 space-y-3">
               <Label htmlFor="telegramUsername">Telegram</Label>
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">@</span>
@@ -465,21 +451,21 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
                 />
               </div>
               {profile?.telegramVerified && (
-                <p className="text-xs text-green-600 flex items-center gap-1">
-                  <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+                <p className="flex items-center gap-1 text-xs text-green-600">
+                  <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
                   Подтверждён через бота
                 </p>
               )}
             </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
-              Telegram — основной способ связи в нашем сообществе. Через бота
-              можно подтвердить аккаунт для получения уведомлений.
+            <p className="text-muted-foreground order-2 text-sm lg:pt-6">
+              Telegram — основной способ связи в нашем сообществе. Через бота можно подтвердить
+              аккаунт для получения уведомлений.
             </p>
           </div>
 
           {/* Max */}
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="space-y-3 order-1">
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-12">
+            <div className="order-1 space-y-3">
               <Label htmlFor="maxUsername">Max (VK Мессенджер)</Label>
               <Input
                 id="maxUsername"
@@ -488,15 +474,15 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
                 placeholder="Имя пользователя или ссылка"
               />
             </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
-              Max (VK Мессенджер) — популярная альтернатива для тех, кто предпочитает
-              российские сервисы.
+            <p className="text-muted-foreground order-2 text-sm lg:pt-6">
+              Max (VK Мессенджер) — популярная альтернатива для тех, кто предпочитает российские
+              сервисы.
             </p>
           </div>
 
           {/* WhatsApp */}
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="space-y-3 order-1">
+          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-12">
+            <div className="order-1 space-y-3">
               <Label htmlFor="whatsappPhone">WhatsApp</Label>
               <Input
                 id="whatsappPhone"
@@ -510,9 +496,9 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
                 <span>Возможны блокировки на территории РФ</span>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-6">
-              WhatsApp широко используется, но может быть недоступен на территории РФ
-              из-за блокировок.
+            <p className="text-muted-foreground order-2 text-sm lg:pt-6">
+              WhatsApp широко используется, но может быть недоступен на территории РФ из-за
+              блокировок.
             </p>
           </div>
 
@@ -531,15 +517,13 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
       {/* Кнопка сохранения */}
       <div className="flex justify-end pt-4">
         <Button type="submit" disabled={updateProfile.isPending} size="lg">
-          {updateProfile.isPending && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          )}
+          {updateProfile.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Сохранить изменения
         </Button>
       </div>
 
       {/* Удаление аккаунта */}
-      <Card className="mt-10 border-destructive/30">
+      <Card className="border-destructive/30 mt-10">
         <CardHeader>
           <CardTitle className="text-destructive flex items-center gap-2">
             <Trash2 className="h-5 w-5" />
@@ -547,111 +531,97 @@ export function ProfileForm({ user, profile, effectiveTagline, taglineSetByAdmin
           </CardTitle>
         </CardHeader>
         <CardContent>
-        {deletionRequest ? (
-          <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-              <div className="flex-1 space-y-3">
-                <div>
-                  <p className="font-medium text-destructive">
-                    Заявка на удаление отправлена
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Ваша заявка на удаление аккаунта находится на рассмотрении.
-                    Администрация обработает её в течение 30 дней.
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Дата подачи:{" "}
-                    {new Date(deletionRequest.createdAt).toLocaleDateString(
-                      "ru-RU",
-                      {
+          {deletionRequest ? (
+            <div className="bg-destructive/10 border-destructive/20 rounded-lg border p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="text-destructive mt-0.5 h-5 w-5 shrink-0" />
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <p className="text-destructive font-medium">Заявка на удаление отправлена</p>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                      Ваша заявка на удаление аккаунта находится на рассмотрении. Администрация
+                      обработает её в течение 30 дней.
+                    </p>
+                    <p className="text-muted-foreground mt-2 text-xs">
+                      Дата подачи:{" "}
+                      {new Date(deletionRequest.createdAt).toLocaleDateString("ru-RU", {
                         day: "numeric",
                         month: "long",
                         year: "numeric",
-                      }
-                    )}
-                  </p>
+                      })}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => cancelDeletion.mutate()}
+                    disabled={cancelDeletion.isPending}
+                  >
+                    {cancelDeletion.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Отменить заявку
+                  </Button>
                 </div>
+              </div>
+            </div>
+          ) : showDeletionForm ? (
+            <div className="space-y-4">
+              <p className="text-muted-foreground text-sm">
+                После подтверждения заявки все ваши персональные данные будут безвозвратно удалены
+                из сервиса в течение 30 дней.
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="deletionReason">Причина удаления (необязательно)</Label>
+                <Textarea
+                  id="deletionReason"
+                  value={deletionReason}
+                  onChange={(e) => setDeletionReason(e.target.value)}
+                  placeholder="Расскажите, почему вы хотите удалить аккаунт..."
+                  className="resize-none"
+                  rows={3}
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => requestDeletion.mutate({ reason: deletionReason || undefined })}
+                  disabled={requestDeletion.isPending}
+                >
+                  {requestDeletion.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Подтвердить удаление
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  onClick={() => cancelDeletion.mutate()}
-                  disabled={cancelDeletion.isPending}
+                  onClick={() => {
+                    setShowDeletionForm(false);
+                    setDeletionReason("");
+                  }}
                 >
-                  {cancelDeletion.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Отменить заявку
+                  Отмена
                 </Button>
               </div>
             </div>
-          </div>
-        ) : showDeletionForm ? (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              После подтверждения заявки все ваши персональные данные будут
-              безвозвратно удалены из сервиса в течение 30 дней.
-            </p>
-            <div className="space-y-2">
-              <Label htmlFor="deletionReason">
-                Причина удаления (необязательно)
-              </Label>
-              <Textarea
-                id="deletionReason"
-                value={deletionReason}
-                onChange={(e) => setDeletionReason(e.target.value)}
-                placeholder="Расскажите, почему вы хотите удалить аккаунт..."
-                className="resize-none"
-                rows={3}
-              />
+          ) : (
+            <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-12">
+              <div className="order-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => setShowDeletionForm(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Запросить удаление аккаунта
+                </Button>
+              </div>
+              <p className="text-muted-foreground order-2 text-sm lg:pt-2">
+                Вы можете удалить свой аккаунт и все связанные с ним персональные данные. Это
+                действие необратимо. Заявка будет рассмотрена администрацией в течение 30 дней.
+              </p>
             </div>
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() =>
-                  requestDeletion.mutate({ reason: deletionReason || undefined })
-                }
-                disabled={requestDeletion.isPending}
-              >
-                {requestDeletion.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Подтвердить удаление
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setShowDeletionForm(false);
-                  setDeletionReason("");
-                }}
-              >
-                Отмена
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="grid gap-2 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:items-start">
-            <div className="order-1">
-              <Button
-                type="button"
-                variant="outline"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={() => setShowDeletionForm(true)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Запросить удаление аккаунта
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground order-2 lg:pt-2">
-              Вы можете удалить свой аккаунт и все связанные с ним персональные
-              данные. Это действие необратимо. Заявка будет рассмотрена
-              администрацией в течение 30 дней.
-            </p>
-          </div>
-        )}
+          )}
         </CardContent>
       </Card>
     </form>

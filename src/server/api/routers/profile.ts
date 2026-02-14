@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
+import type { UserRole } from "~/server/auth/rbac";
 import {
   buildings,
   deletionRequests,
@@ -9,7 +10,6 @@ import {
   userRoles,
   users,
 } from "~/server/db/schema";
-import type { UserRole } from "~/server/auth/rbac";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -67,11 +67,10 @@ export const profileRouter = createTRPCRouter({
       where: eq(userRoles.userId, userId),
     });
 
-    const userRolesList = roles.map((r) => r.role as UserRole);
+    const userRolesList = roles.map((r) => r.role);
 
     // Compute effective tagline
-    const effectiveTagline =
-      profile?.tagline ?? generateTaglineFromRoles(userRolesList);
+    const effectiveTagline = profile?.tagline ?? generateTaglineFromRoles(userRolesList);
 
     return {
       user: {
@@ -138,8 +137,7 @@ export const profileRouter = createTRPCRouter({
 
       if (existingProfile) {
         // Only update tagline if not set by admin
-        const taglineUpdate =
-          existingProfile.taglineSetByAdmin ? {} : { tagline: input.tagline };
+        const taglineUpdate = existingProfile.taglineSetByAdmin ? {} : { tagline: input.tagline };
 
         // Update existing profile
         await ctx.db
@@ -217,10 +215,7 @@ export const profileRouter = createTRPCRouter({
     const userId = ctx.session.user.id;
 
     const request = await ctx.db.query.deletionRequests.findFirst({
-      where: and(
-        eq(deletionRequests.userId, userId),
-        eq(deletionRequests.status, "pending")
-      ),
+      where: and(eq(deletionRequests.userId, userId), eq(deletionRequests.status, "pending")),
     });
 
     return request ?? null;
@@ -238,10 +233,7 @@ export const profileRouter = createTRPCRouter({
 
       // Check if there's already a pending request
       const existingRequest = await ctx.db.query.deletionRequests.findFirst({
-        where: and(
-          eq(deletionRequests.userId, userId),
-          eq(deletionRequests.status, "pending")
-        ),
+        where: and(eq(deletionRequests.userId, userId), eq(deletionRequests.status, "pending")),
       });
 
       if (existingRequest) {
@@ -271,10 +263,7 @@ export const profileRouter = createTRPCRouter({
 
     // Find pending request
     const request = await ctx.db.query.deletionRequests.findFirst({
-      where: and(
-        eq(deletionRequests.userId, userId),
-        eq(deletionRequests.status, "pending")
-      ),
+      where: and(eq(deletionRequests.userId, userId), eq(deletionRequests.status, "pending")),
     });
 
     if (!request) {
@@ -285,9 +274,7 @@ export const profileRouter = createTRPCRouter({
     }
 
     // Delete the request (or mark as cancelled)
-    await ctx.db
-      .delete(deletionRequests)
-      .where(eq(deletionRequests.id, request.id));
+    await ctx.db.delete(deletionRequests).where(eq(deletionRequests.id, request.id));
 
     return {
       success: true,

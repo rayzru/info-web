@@ -1,15 +1,14 @@
+import type { JSONContent } from "@tiptap/react";
 import { TRPCError } from "@trpc/server";
 import { and, count, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import type { JSONContent } from "@tiptap/react";
 
-import { news, newsTags, newsStatusEnum, newsTypeEnum } from "~/server/db/schema";
 import { extractPlainText } from "~/lib/editor";
-import {
-  adminProcedureWithFeature,
-  createTRPCRouter,
-  publicProcedure,
-} from "../trpc";
+import { deleteImage } from "~/lib/upload/image-processor";
+import { news, newsStatusEnum, newsTags, newsTypeEnum } from "~/server/db/schema";
+import { sendTelegramNotificationAsync } from "~/server/notifications/telegram";
+
+import { adminProcedureWithFeature, createTRPCRouter, publicProcedure } from "../trpc";
 
 // ============================================================================
 // Validation Schemas
@@ -299,41 +298,39 @@ export const newsRouter = createTRPCRouter({
   /**
    * Get single news by slug
    */
-  bySlug: publicProcedure
-    .input(z.object({ slug: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const now = new Date();
+  bySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ ctx, input }) => {
+    const now = new Date();
 
-      const item = await ctx.db.query.news.findFirst({
-        where: and(
-          eq(news.slug, input.slug),
-          eq(news.status, "published"),
-          or(lte(news.publishAt, now), sql`${news.publishAt} IS NULL`)
-        ),
-        with: {
-          author: {
-            columns: {
-              id: true,
-              name: true,
-              image: true,
-            },
+    const item = await ctx.db.query.news.findFirst({
+      where: and(
+        eq(news.slug, input.slug),
+        eq(news.status, "published"),
+        or(lte(news.publishAt, now), sql`${news.publishAt} IS NULL`)
+      ),
+      with: {
+        author: {
+          columns: {
+            id: true,
+            name: true,
+            image: true,
           },
         },
+      },
+    });
+
+    if (!item) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Новость не найдена",
       });
+    }
 
-      if (!item) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Новость не найдена",
-        });
-      }
-
-      // Hide author for anonymous posts
-      return {
-        ...item,
-        author: item.isAnonymous ? null : item.author,
-      };
-    }),
+    // Hide author for anonymous posts
+    return {
+      ...item,
+      author: item.isAnonymous ? null : item.author,
+    };
+  }),
 
   // ========================================
   // Admin Procedures
@@ -368,10 +365,7 @@ export const newsRouter = createTRPCRouter({
 
       if (search) {
         conditions.push(
-          or(
-            sql`${news.title} ILIKE ${`%${search}%`}`,
-            sql`${news.excerpt} ILIKE ${`%${search}%`}`
-          )
+          or(sql`${news.title} ILIKE ${`%${search}%`}`, sql`${news.excerpt} ILIKE ${`%${search}%`}`)
         );
       }
 
@@ -489,6 +483,31 @@ export const newsRouter = createTRPCRouter({
         );
       }
 
+      // Send Telegram notification
+      const typeName: Record<string, string> = {
+        announcement: "объявление",
+        event: "мероприятие",
+        maintenance: "техническое обслуживание",
+        update: "обновление",
+        community: "новость сообщества",
+        article: "статья",
+        guide: "руководство",
+        urgent: "срочное сообщение",
+      };
+      const typeLabel = typeName[input.type] ?? "новость";
+
+      sendTelegramNotificationAsync({
+        event: input.status === "published" ? "news_published" : "news_created",
+        title: input.status === "published" ? `Опубликована ${typeLabel}` : `Создана ${typeLabel}`,
+        description: input.title,
+        metadata: {
+          Тип: typeLabel,
+          Статус: input.status === "draft" ? "Черновик" : "Опубликовано",
+          ...(input.isPinned ? { Закреплено: "Да" } : {}),
+        },
+        userName: ctx.session.user.name ?? ctx.session.user.email ?? undefined,
+      });
+
       return created;
     }),
 
@@ -528,11 +547,47 @@ export const newsRouter = createTRPCRouter({
 
       const { tagIds, ...newsData } = data;
 
-      const [updated] = await ctx.db
-        .update(news)
-        .set(newsData)
-        .where(eq(news.id, id))
-        .returning();
+      // If coverImage is being changed, delete old image from S3
+      if (newsData.coverImage !== undefined && existing.coverImage) {
+        // Check if the new image is different from the old one
+        if (newsData.coverImage !== existing.coverImage) {
+          try {
+            await deleteImage(existing.coverImage);
+            console.log(`[News] Deleted old cover image: ${existing.coverImage}`);
+          } catch (error) {
+            console.error("[News] Failed to delete old cover image:", error);
+            // Continue with update even if deletion fails
+          }
+        }
+      }
+
+      const [updated] = await ctx.db.update(news).set(newsData).where(eq(news.id, id)).returning();
+
+      // Send Telegram notification if status changed to published
+      if (newsData.status === "published" && existing.status !== "published") {
+        const typeName: Record<string, string> = {
+          announcement: "объявление",
+          event: "мероприятие",
+          maintenance: "техническое обслуживание",
+          update: "обновление",
+          community: "новость сообщества",
+          article: "статья",
+          guide: "руководство",
+          urgent: "срочное сообщение",
+        };
+        const typeLabel = typeName[updated?.type ?? existing.type] ?? "новость";
+
+        sendTelegramNotificationAsync({
+          event: "news_published",
+          title: `Опубликована ${typeLabel}`,
+          description: updated?.title ?? existing.title,
+          metadata: {
+            Тип: typeLabel,
+            Статус: "Опубликовано",
+          },
+          userName: ctx.session.user.name ?? ctx.session.user.email ?? undefined,
+        });
+      }
 
       // Update tags if provided
       if (tagIds !== undefined) {
@@ -570,6 +625,17 @@ export const newsRouter = createTRPCRouter({
         });
       }
 
+      // Delete cover image from S3 if exists
+      if (existing.coverImage) {
+        try {
+          await deleteImage(existing.coverImage);
+          console.log(`[News] Deleted cover image from S3: ${existing.coverImage}`);
+        } catch (error) {
+          console.error("[News] Failed to delete cover image from S3:", error);
+          // Continue with news deletion even if S3 deletion fails
+        }
+      }
+
       await ctx.db.delete(news).where(eq(news.id, input.id));
 
       return { success: true };
@@ -604,22 +670,12 @@ export const newsRouter = createTRPCRouter({
    * Admin: Get stats for dashboard
    */
   stats: adminProcedureWithFeature("directory:manage").query(async ({ ctx }) => {
-    const [draftCount, scheduledCount, publishedCount, totalCount] =
-      await Promise.all([
-        ctx.db
-          .select({ count: count() })
-          .from(news)
-          .where(eq(news.status, "draft")),
-        ctx.db
-          .select({ count: count() })
-          .from(news)
-          .where(eq(news.status, "scheduled")),
-        ctx.db
-          .select({ count: count() })
-          .from(news)
-          .where(eq(news.status, "published")),
-        ctx.db.select({ count: count() }).from(news),
-      ]);
+    const [draftCount, scheduledCount, publishedCount, totalCount] = await Promise.all([
+      ctx.db.select({ count: count() }).from(news).where(eq(news.status, "draft")),
+      ctx.db.select({ count: count() }).from(news).where(eq(news.status, "scheduled")),
+      ctx.db.select({ count: count() }).from(news).where(eq(news.status, "published")),
+      ctx.db.select({ count: count() }).from(news),
+    ]);
 
     return {
       draft: draftCount[0]?.count ?? 0,
@@ -646,7 +702,7 @@ export const newsRouter = createTRPCRouter({
         });
       }
 
-      const telegramText = contentToTelegramText(item.content as JSONContent);
+      const telegramText = contentToTelegramText(item.content);
       const sourceLink = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://example.com"}/news/${item.slug}`;
 
       const fullMessage = `<b>${item.title}</b>\n\n${telegramText}\n\n<a href="${sourceLink}">Читать на сайте →</a>`;
@@ -665,9 +721,7 @@ export const newsRouter = createTRPCRouter({
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       // Dynamic import to avoid loading telegram module on client
-      const { publishNewsToTelegram, isTelegramConfigured } = await import(
-        "~/lib/telegram"
-      );
+      const { publishNewsToTelegram, isTelegramConfigured } = await import("~/lib/telegram");
 
       if (!isTelegramConfigured()) {
         throw new TRPCError({
@@ -687,7 +741,7 @@ export const newsRouter = createTRPCRouter({
         });
       }
 
-      const telegramText = contentToTelegramText(item.content as JSONContent);
+      const telegramText = contentToTelegramText(item.content);
       const sourceUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://example.com"}/news/${item.slug}`;
 
       const result = await publishNewsToTelegram({

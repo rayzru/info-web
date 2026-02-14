@@ -86,10 +86,7 @@ export function generateSlug(text: string): string {
  * Generate slug with date prefix for news articles
  * Format: YYYY-MM-DD-slug-text
  */
-export function generateNewsSlug(
-  title: string,
-  date: Date = new Date()
-): string {
+export function generateNewsSlug(title: string, date: Date = new Date()): string {
   const dateStr = date.toISOString().slice(0, 10); // YYYY-MM-DD
   const titleSlug = generateSlug(title).slice(0, 100);
 

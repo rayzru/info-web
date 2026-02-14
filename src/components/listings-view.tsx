@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import {
   Archive,
   ClipboardList,
@@ -130,19 +131,13 @@ interface ListingsViewProps {
   hasVerifiedProperties: boolean;
 }
 
-export function ListingsView({
-  listings,
-  myProperties,
-  hasVerifiedProperties,
-}: ListingsViewProps) {
+export function ListingsView({ listings, myProperties, hasVerifiedProperties }: ListingsViewProps) {
   const router = useRouter();
   const { toast } = useToast();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [listingType, setListingType] = useState<"rent" | "sale">("rent");
-  const [propertyType, setPropertyType] = useState<"apartment" | "parking">(
-    "apartment"
-  );
+  const [propertyType, setPropertyType] = useState<"apartment" | "parking">("apartment");
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -226,7 +221,7 @@ export function ListingsView({
     // Generate title for parking spots
     let listingTitle = title;
     if (propertyType === "parking") {
-      const spot = myProperties.parkingSpots.find(s => s.id === selectedPropertyId);
+      const spot = myProperties.parkingSpots.find((s) => s.id === selectedPropertyId);
       if (spot) {
         listingTitle = `${listingType === "rent" ? "Аренда" : "Продажа"} P${spot.floor.parking.building.number}/-${spot.floor.floorNumber}/${spot.number}`;
       }
@@ -245,45 +240,31 @@ export function ListingsView({
   };
 
   const activeListings = listings.filter((l) => l.status === "approved");
-  const pendingListings = listings.filter(
-    (l) => l.status === "pending_moderation"
-  );
-  const draftListings = listings.filter(
-    (l) => l.status === "draft" || l.status === "rejected"
-  );
+  const pendingListings = listings.filter((l) => l.status === "pending_moderation");
+  const draftListings = listings.filter((l) => l.status === "draft" || l.status === "rejected");
   const archivedListings = listings.filter((l) => l.status === "archived");
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
         return (
-          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-            Активно
-          </span>
+          <span className="rounded bg-green-100 px-2 py-1 text-xs text-green-700">Активно</span>
         );
       case "pending_moderation":
         return (
-          <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
+          <span className="rounded bg-yellow-100 px-2 py-1 text-xs text-yellow-700">
             На модерации
           </span>
         );
       case "draft":
         return (
-          <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-            Черновик
-          </span>
+          <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-700">Черновик</span>
         );
       case "rejected":
-        return (
-          <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
-            Отклонено
-          </span>
-        );
+        return <span className="rounded bg-red-100 px-2 py-1 text-xs text-red-700">Отклонено</span>;
       case "archived":
         return (
-          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">
-            В архиве
-          </span>
+          <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-500">В архиве</span>
         );
       default:
         return null;
@@ -302,9 +283,9 @@ export function ListingsView({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {listing.propertyType === "apartment" ? (
-              <HomeIcon className="h-5 w-5 text-muted-foreground opacity-60" />
+              <HomeIcon className="text-muted-foreground h-5 w-5 opacity-60" />
             ) : (
-              <ParkingCircleIcon className="h-5 w-5 text-muted-foreground opacity-60" />
+              <ParkingCircleIcon className="text-muted-foreground h-5 w-5 opacity-60" />
             )}
             <div>
               <CardTitle className="text-base">{listing.title}</CardTitle>
@@ -331,8 +312,7 @@ export function ListingsView({
             {listing.listingType === "rent" ? "Аренда" : "Продажа"}
           </span>
           <span className="font-bold">
-            {listing.price.toLocaleString("ru-RU")} ₽
-            {listing.listingType === "rent" && "/мес"}
+            {listing.price.toLocaleString("ru-RU")} ₽{listing.listingType === "rent" && "/мес"}
           </span>
           {listing.photos.length > 0 && (
             <span className="text-muted-foreground flex items-center gap-1">
@@ -341,9 +321,7 @@ export function ListingsView({
             </span>
           )}
           {listing.status === "approved" && (
-            <span className="text-muted-foreground">
-              {listing.viewCount} просмотров
-            </span>
+            <span className="text-muted-foreground">{listing.viewCount} просмотров</span>
           )}
         </div>
       </CardContent>
@@ -354,9 +332,7 @@ export function ListingsView({
               <>
                 <Button
                   size="sm"
-                  onClick={() =>
-                    submitForModeration.mutate({ listingId: listing.id })
-                  }
+                  onClick={() => submitForModeration.mutate({ listingId: listing.id })}
                   disabled={submitForModeration.isPending}
                 >
                   {submitForModeration.isPending ? (
@@ -384,8 +360,7 @@ export function ListingsView({
                 onClick={() => archiveListing.mutate({ listingId: listing.id })}
                 disabled={archiveListing.isPending}
               >
-                <Archive className="mr-2 h-3 w-3" />
-                В архив
+                <Archive className="mr-2 h-3 w-3" />В архив
               </Button>
             )}
           </div>
@@ -400,13 +375,13 @@ export function ListingsView({
       {!hasVerifiedProperties && (
         <Card className="border-yellow-200 bg-yellow-50">
           <CardHeader className="text-center">
-            <div className="mx-auto rounded-lg bg-yellow-500/20 p-4 w-fit mb-2">
+            <div className="mx-auto mb-2 w-fit rounded-lg bg-yellow-500/20 p-4">
               <ClipboardList className="h-8 w-8 text-yellow-600" />
             </div>
             <CardTitle>Нет подтвержденных объектов</CardTitle>
             <CardDescription>
-              Чтобы размещать объявления, сначала подтвердите права на
-              квартиру или парковочное место
+              Чтобы размещать объявления, сначала подтвердите права на квартиру или парковочное
+              место
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
@@ -479,10 +454,7 @@ export function ListingsView({
               {/* Property Selection */}
               <div className="space-y-2">
                 <Label>Выберите объект</Label>
-                <Select
-                  value={selectedPropertyId}
-                  onValueChange={setSelectedPropertyId}
-                >
+                <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите объект" />
                   </SelectTrigger>
@@ -522,18 +494,18 @@ export function ListingsView({
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder={propertyType === "parking"
-                    ? "Укажите особенности места: размеры, удобство подъезда, наличие розетки и т.д."
-                    : "Опишите особенности объекта..."}
+                  placeholder={
+                    propertyType === "parking"
+                      ? "Укажите особенности места: размеры, удобство подъезда, наличие розетки и т.д."
+                      : "Опишите особенности объекта..."
+                  }
                   rows={3}
                 />
               </div>
 
               {/* Price */}
               <div className="space-y-2">
-                <Label>
-                  Цена {listingType === "rent" && "(в месяц)"}
-                </Label>
+                <Label>Цена {listingType === "rent" && "(в месяц)"}</Label>
                 <Input
                   type="number"
                   value={price}
@@ -541,7 +513,7 @@ export function ListingsView({
                   placeholder="0"
                 />
                 {propertyType === "parking" && listingType === "rent" && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Цена включает коммунальные расходы на содержание парковки
                   </p>
                 )}
@@ -551,12 +523,10 @@ export function ListingsView({
               <Card className="border-dashed">
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-3">
-                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                    <ImageIcon className="text-muted-foreground h-5 w-5" />
                     <div>
                       <p className="text-sm font-medium">Фотографии</p>
-                      <p className="text-xs text-muted-foreground">
-                        Загрузка фото пока недоступна
-                      </p>
+                      <p className="text-muted-foreground text-xs">Загрузка фото пока недоступна</p>
                     </div>
                   </div>
                 </CardContent>
@@ -564,22 +534,22 @@ export function ListingsView({
 
               {/* Contract Template for Parking Rental */}
               {propertyType === "parking" && listingType === "rent" && (
-                <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
                   <CardContent className="pt-4">
                     <div className="flex items-start gap-3">
-                      <FileText className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                      <FileText className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
                       <div className="flex-1">
                         <p className="text-sm font-medium">Шаблон договора аренды</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Рекомендуем использовать типовой договор с условиями передачи ключа, залога и правилами пользования парковкой
+                        <p className="text-muted-foreground mt-1 text-xs">
+                          Рекомендуем использовать типовой договор с условиями передачи ключа,
+                          залога и правилами пользования парковкой
                         </p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="mt-2"
-                          asChild
-                        >
-                          <a href="/templates/parking-rental-contract.html" target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="sm" className="mt-2" asChild>
+                          <a
+                            href="/templates/parking-rental-contract.html"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             <Download className="mr-2 h-3 w-3" />
                             Скачать шаблон договора
                           </a>
@@ -610,9 +580,7 @@ export function ListingsView({
                   !price
                 }
               >
-                {createListing.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {createListing.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Создать черновик
               </Button>
             </DialogFooter>
@@ -626,25 +594,25 @@ export function ListingsView({
           <TabsList>
             <TabsTrigger value="active" className="font-normal">
               Активные
-              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-xs">
+              <span className="bg-muted ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs">
                 {activeListings.length}
               </span>
             </TabsTrigger>
             <TabsTrigger value="pending" className="font-normal">
               На модерации
-              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-xs">
+              <span className="bg-muted ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs">
                 {pendingListings.length}
               </span>
             </TabsTrigger>
             <TabsTrigger value="drafts" className="font-normal">
               Черновики
-              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-xs">
+              <span className="bg-muted ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs">
                 {draftListings.length}
               </span>
             </TabsTrigger>
             <TabsTrigger value="archived" className="font-normal">
               Архив
-              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-xs">
+              <span className="bg-muted ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs">
                 {archivedListings.length}
               </span>
             </TabsTrigger>
@@ -653,21 +621,19 @@ export function ListingsView({
           <TabsContent value="active" className="space-y-4">
             {activeListings.length === 0 ? (
               <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
+                <CardContent className="text-muted-foreground py-8 text-center">
                   Нет активных объявлений
                 </CardContent>
               </Card>
             ) : (
-              activeListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))
+              activeListings.map((listing) => <ListingCard key={listing.id} listing={listing} />)
             )}
           </TabsContent>
 
           <TabsContent value="pending" className="space-y-4">
             {pendingListings.length === 0 ? (
               <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
+                <CardContent className="text-muted-foreground py-8 text-center">
                   Нет объявлений на модерации
                 </CardContent>
               </Card>
@@ -681,28 +647,24 @@ export function ListingsView({
           <TabsContent value="drafts" className="space-y-4">
             {draftListings.length === 0 ? (
               <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
+                <CardContent className="text-muted-foreground py-8 text-center">
                   Нет черновиков
                 </CardContent>
               </Card>
             ) : (
-              draftListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))
+              draftListings.map((listing) => <ListingCard key={listing.id} listing={listing} />)
             )}
           </TabsContent>
 
           <TabsContent value="archived" className="space-y-4">
             {archivedListings.length === 0 ? (
               <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
+                <CardContent className="text-muted-foreground py-8 text-center">
                   Архив пуст
                 </CardContent>
               </Card>
             ) : (
-              archivedListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))
+              archivedListings.map((listing) => <ListingCard key={listing.id} listing={listing} />)
             )}
           </TabsContent>
         </Tabs>
@@ -712,13 +674,11 @@ export function ListingsView({
       {listings.length === 0 && hasVerifiedProperties && (
         <Card>
           <CardHeader className="text-center">
-            <div className="mx-auto rounded-lg bg-muted p-4 w-fit mb-2">
-              <Megaphone className="h-8 w-8 text-muted-foreground" />
+            <div className="bg-muted mx-auto mb-2 w-fit rounded-lg p-4">
+              <Megaphone className="text-muted-foreground h-8 w-8" />
             </div>
             <CardTitle>У вас пока нет объявлений</CardTitle>
-            <CardDescription>
-              Создайте первое объявление о сдаче или продаже
-            </CardDescription>
+            <CardDescription>Создайте первое объявление о сдаче или продаже</CardDescription>
           </CardHeader>
         </Card>
       )}

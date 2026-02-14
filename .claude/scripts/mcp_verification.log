@@ -1,0 +1,142 @@
+MCP Smart Setup Started: Sat Feb 14 15:24:53 MSK 2026
+[INFO] NVM is installed
+[INFO] Current Node.js version: 24.11.1
+[INFO] Latest Node.js Current version: 25.6.1
+[WARNING] Node.js has a newer version available (25.6.1)
+[INFO] Updating Node.js to latest Current version using NVM...
+[WARNING] Node.js update skipped
+[INFO] Current npm version: 11.10.0
+[INFO] Latest npm version: 11.10.0
+[SUCCESS] npm is up to date
+[INFO] Current Bun version: 1.3.9
+[INFO] Checking for Bun updates...
+[SUCCESS] Bun is up to date
+[INFO] Current Claude Code CLI version: 2.1.39
+[INFO] Latest Claude Code CLI version: 2.1.42
+[WARNING] Claude Code CLI has a newer version available
+[UPDATING] Claude Code CLI
+
+changed 3 packages in 8s
+
+2 packages are looking for funding
+  run `npm fund` for details
+[SUCCESS] Claude Code CLI updated to 2.1.42
+[INFO] Current Codex version: 0.99.0
+[INFO] Latest Codex version: 0.101.0
+[WARNING] Codex has a newer version available
+[UPDATING] Codex
+
+changed 2 packages in 8s
+[SUCCESS] Codex updated to 0.101.0
+[INFO] Current Gemini CLI version: 0.28.2
+[INFO] Latest Gemini CLI version: 0.28.2
+[SUCCESS] Gemini CLI is up to date
+[INFO] Current CodeRabbit CLI version: 0.3.5
+[INFO] CodeRabbit CLI auto-updates in the background
+[INFO] Checking CodeRabbit authentication...
+[SUCCESS] CodeRabbit is authenticated (  👤 Name: Andrew Rumm   📧 Email: arumm@intrigma.com   🔧 Username: andrew-rumm   🏢 Name: intrigma   Username: andrew-rumm   Platform+Username: gitlab/andrew-rumm   Org+Username: intrigma/andrew-rumm )
+[SUCCESS] All core tools are properly configured
+[INFO] Found 9/15 MCPs - will install missing ones
+[INFO] Installed: playwright context7 codex-high codex-medium mermaid-validator mermaid-generator linear asana notion
+[SUCCESS] git is installed: git version 2.50.1 (Apple Git-155)
+[INFO] Current Node.js: v24.11.1
+[INFO] Latest available: v25.6.1 (update available)
+[SUCCESS] npm is installed: 11.10.0
+[SUCCESS] npx is installed: 11.10.0
+[SUCCESS] claude is installed: 2.1.42 (Claude Code)
+[SUCCESS] codex is installed: codex-cli 0.101.0
+[SUCCESS] gemini is installed: 0.28.2
+[SUCCESS] All prerequisites are installed
+[SUCCESS] Playwright MCP already configured
+[SUCCESS] Context7 MCP already configured
+[WARNING] Figma MCP requires Figma desktop app with MCP server enabled
+[INFO] Steps to enable:
+[INFO] 1. Open Figma desktop app
+[INFO] 2. Go to Figma menu → Preferences
+[INFO] 3. Enable 'Enable local MCP server'
+[INFO] 4. Server runs at http://127.0.0.1:3845/mcp
+[WARNING] Skipping Figma MCP installation
+[WARNING] GitLab MCP requires a Personal Access Token
+[INFO] To generate a token:
+[INFO] 1. Go to GitLab → Settings → Access Tokens
+[INFO] 2. Create token with scopes: api, read_repository, write_repository
+[WARNING] Skipping GitLab MCP installation
+[WARNING] Codex High MCP has outdated model: gpt-5.2-codex (target: gpt-5.3-codex)
+[INFO] Removing old configuration from all scopes...
+[SUCCESS] Old Codex High MCP removed
+[INSTALLING] Codex High MCP with gpt-5.3-codex
+Added stdio MCP server codex-high with command: codex mcp-server -c model="gpt-5.3-codex" -c sandbox="workspace-write" --enable web_search_request -c model_reasoning_effort=high -c model_reasoning_summaries=detailed -c sandbox_workspace_write.network_access=true -c shell_environment_policy.inherit=all to local config
+File modified: /Users/arumm/.claude.json [project: /Users/arumm/info-web]
+[SUCCESS] Codex High MCP (gpt-5.3-codex) installed successfully
+[WARNING] Codex Medium MCP has outdated model: gpt-5.2-codex (target: gpt-5.3-codex)
+[INFO] Removing old configuration from all scopes...
+[SUCCESS] Old Codex Medium MCP removed
+[INSTALLING] Codex Medium MCP with gpt-5.3-codex
+Added stdio MCP server codex-medium with command: codex mcp-server -c model="gpt-5.3-codex" -c sandbox="workspace-write" --enable web_search_request -c model_reasoning_effort=medium -c model_reasoning_summaries=detailed -c sandbox_workspace_write.network_access=true -c shell_environment_policy.inherit=all to local config
+File modified: /Users/arumm/.claude.json [project: /Users/arumm/info-web]
+[SUCCESS] Codex Medium MCP (gpt-5.3-codex) installed successfully
+[WARNING] Gemini CLI MCP requires an API key from Google AI Studio
+[INFO] To get your API key:
+[INFO] 1. Go to https://aistudio.google.com/apikey
+[INFO] 2. Click 'Create API Key'
+[INFO] 3. Copy the generated key
+[INFO] Found saved Gemini API key
+[INSTALLING] Gemini CLI MCP
+Added stdio MCP server gemini-cli with command: npx -y gemini-mcp-tool@latest to local config
+File modified: /Users/arumm/.claude.json [project: /Users/arumm/info-web]
+[SUCCESS] Gemini CLI MCP installed successfully
+[WARNING] Storybook MCP requires Storybook to be running
+[INFO] The MCP server is embedded in Storybook via @storybook/addon-mcp
+[INFO] It will be available at http://localhost:6006/mcp when Storybook runs
+[WARNING] Skipping Storybook MCP installation
+[INFO] Run 'bun run storybook' and re-run this script to configure
+[SUCCESS] Mermaid Validator MCP already configured
+[SUCCESS] Mermaid Generator MCP already configured
+[INSTALLING] Chrome DevTools MCP
+error: unknown option '-y'
+[SUCCESS] Chrome DevTools MCP installed successfully
+[INFO] Provides performance analysis, debugging, and browser automation
+[WARNING] Next.js DevTools MCP requires Next.js 16+ with dev server running
+[INFO] Features: Error detection, live state queries, page metadata, server actions
+[INFO] Auto-discovers Next.js instances at http://localhost:PORT/_next/mcp
+[INSTALLING] Next.js DevTools MCP
+error: unknown option '-y'
+[SUCCESS] Next.js DevTools MCP installed successfully
+[INFO] Start your Next.js dev server to enable real-time integration
+[SUCCESS] Linear MCP already configured
+[SUCCESS] Asana MCP already configured
+[SUCCESS] Notion MCP already configured
+[SUCCESS] New MCPs installed successfully
+[INFO] Configured MCPs:
+[INFO] Context7 MCP: Ready for documentation queries
+[INFO] Playwright MCP: Ready for browser automation
+[INFO]   Note: Run 'npx playwright install' to install browsers if needed
+[WARNING] GitLab MCP: Not installed
+[WARNING] Figma MCP: Not installed
+[INFO] Codex High MCP (gpt-5.3-codex): Ready for advanced AI tasks
+[INFO] Codex Medium MCP (gpt-5.3-codex): Ready for standard AI tasks
+[INFO] Gemini CLI MCP: Ready for Google Docs integration and document processing
+[WARNING] Storybook MCP: Not installed
+[INFO] Mermaid Validator MCP: Ready for diagram validation
+[INFO]   Tools: Validate and render Mermaid diagrams
+[INFO]   MANDATORY: All diagrams in docs/plans must be validated
+[INFO] Mermaid Generator MCP: Ready for AI-powered diagram creation
+[INFO]   Tools: Generate diagrams from natural language, export PNG/SVG
+[INFO]   Use with Mermaid Validator for complete workflow
+[WARNING] Chrome DevTools MCP: Not installed
+[WARNING] Next.js DevTools MCP: Not installed
+[INFO] Linear MCP: Ready for project management integration
+[INFO]   Tools: Find, create, update issues, projects, comments
+[INFO]   Authentication via OAuth (run /mcp to authenticate)
+[INFO] Asana MCP: Ready for project management integration
+[INFO]   Tools: Manage tasks, projects, and team collaboration
+[INFO]   Authentication via OAuth (run /mcp to authenticate)
+[INFO] Notion MCP: Ready for workspace integration
+[INFO]   Tools: Search, read, create, update pages and databases
+[INFO]   Authentication via OAuth (run /mcp to authenticate)
+[SUCCESS] All health checks passed
+[INFO] Detailed log: /Users/arumm/info-web/.claude/scripts/mcp_verification.log
+[INFO] 🔧 Partial setup complete! Next steps:
+[INFO] 1. Restart Claude Code if running
+[INFO] 2. Test the newly installed MCPs
+[INFO] 3. Run this script again anytime to add missing MCPs

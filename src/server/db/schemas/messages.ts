@@ -1,13 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  boolean,
-  index,
-  integer,
-  pgEnum,
-  text,
-  timestamp,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgEnum, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 import { apartments, buildings, entrances, floors } from "./buildings";
 import { createTable } from "./create-table";
@@ -19,44 +11,44 @@ import { users } from "./users";
 // Область видимости сообщения
 export const messageScopeEnum = pgEnum("message_scope", [
   // Жилые здания
-  "complex",      // На весь ЖК (только УК и админы)
-  "building",     // На конкретный корпус
-  "entrance",     // На подъезд
-  "floor",        // На этаж
-  "apartment",    // Конкретная квартира (личное сообщение)
+  "complex", // На весь ЖК (только УК и админы)
+  "building", // На конкретный корпус
+  "entrance", // На подъезд
+  "floor", // На этаж
+  "apartment", // Конкретная квартира (личное сообщение)
   // Паркинг
-  "parking",      // На весь паркинг
+  "parking", // На весь паркинг
   "parking_floor", // На этаж паркинга
   "parking_spot", // Конкретное паркоместо (личное сообщение)
   // Специальные
-  "uk",           // Представителю УК
-  "chairman",     // Председателю дома
+  "uk", // Представителю УК
+  "chairman", // Председателю дома
 ]);
 
 // Статус сообщения
 export const messageStatusEnum = pgEnum("message_status", [
-  "draft",        // Черновик
-  "pending",      // На модерации (массовые рассылки)
-  "sent",         // Отправлено
-  "delivered",    // Доставлено
-  "rejected",     // Отклонено модератором
+  "draft", // Черновик
+  "pending", // На модерации (массовые рассылки)
+  "sent", // Отправлено
+  "delivered", // Доставлено
+  "rejected", // Отклонено модератором
 ]);
 
 // Тип жалобы на сообщение
 export const messageComplaintTypeEnum = pgEnum("message_complaint_type", [
-  "spam",           // Спам
-  "harassment",     // Оскорбления, травля
-  "fraud",          // Мошенничество
-  "inappropriate",  // Неприемлемый контент
-  "other",          // Другое
+  "spam", // Спам
+  "harassment", // Оскорбления, травля
+  "fraud", // Мошенничество
+  "inappropriate", // Неприемлемый контент
+  "other", // Другое
 ]);
 
 // Статус жалобы
 export const messageComplaintStatusEnum = pgEnum("message_complaint_status", [
-  "pending",    // На рассмотрении
-  "reviewed",   // Рассмотрена
-  "resolved",   // Решена (приняты меры)
-  "dismissed",  // Отклонена
+  "pending", // На рассмотрении
+  "reviewed", // Рассмотрена
+  "resolved", // Решена (приняты меры)
+  "dismissed", // Отклонена
 ]);
 
 // ============== MESSAGE THREAD ==============
@@ -78,39 +70,32 @@ export const messageThreads = createTable(
     // Область диалога
     scope: messageScopeEnum("scope").notNull(),
     // Привязки к объектам (в зависимости от scope)
-    buildingId: varchar("building_id", { length: 255 }).references(
-      () => buildings.id,
-      { onDelete: "cascade" }
-    ),
-    entranceId: varchar("entrance_id", { length: 255 }).references(
-      () => entrances.id,
-      { onDelete: "cascade" }
-    ),
-    floorId: varchar("floor_id", { length: 255 }).references(
-      () => floors.id,
-      { onDelete: "cascade" }
-    ),
-    apartmentId: varchar("apartment_id", { length: 255 }).references(
-      () => apartments.id,
-      { onDelete: "cascade" }
-    ),
-    parkingId: varchar("parking_id", { length: 255 }).references(
-      () => parkings.id,
-      { onDelete: "cascade" }
-    ),
+    buildingId: varchar("building_id", { length: 255 }).references(() => buildings.id, {
+      onDelete: "cascade",
+    }),
+    entranceId: varchar("entrance_id", { length: 255 }).references(() => entrances.id, {
+      onDelete: "cascade",
+    }),
+    floorId: varchar("floor_id", { length: 255 }).references(() => floors.id, {
+      onDelete: "cascade",
+    }),
+    apartmentId: varchar("apartment_id", { length: 255 }).references(() => apartments.id, {
+      onDelete: "cascade",
+    }),
+    parkingId: varchar("parking_id", { length: 255 }).references(() => parkings.id, {
+      onDelete: "cascade",
+    }),
     parkingFloorId: varchar("parking_floor_id", { length: 255 }).references(
       () => parkingFloors.id,
       { onDelete: "cascade" }
     ),
-    parkingSpotId: varchar("parking_spot_id", { length: 255 }).references(
-      () => parkingSpots.id,
-      { onDelete: "cascade" }
-    ),
+    parkingSpotId: varchar("parking_spot_id", { length: 255 }).references(() => parkingSpots.id, {
+      onDelete: "cascade",
+    }),
     // Для личных сообщений - второй участник
-    recipientId: varchar("recipient_id", { length: 255 }).references(
-      () => users.id,
-      { onDelete: "cascade" }
-    ),
+    recipientId: varchar("recipient_id", { length: 255 }).references(() => users.id, {
+      onDelete: "cascade",
+    }),
     // Флаги
     isArchived: boolean("is_archived").notNull().default(false),
     isLocked: boolean("is_locked").notNull().default(false), // Закрыт для новых сообщений
@@ -152,10 +137,9 @@ export const messages = createTable(
     // Статус
     status: messageStatusEnum("status").notNull().default("sent"),
     // Модерация (для массовых рассылок)
-    moderatedBy: varchar("moderated_by", { length: 255 }).references(
-      () => users.id,
-      { onDelete: "set null" }
-    ),
+    moderatedBy: varchar("moderated_by", { length: 255 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
     moderatedAt: timestamp("moderated_at"),
     moderationComment: text("moderation_comment"),
     // Ответ на сообщение (цитирование)
@@ -225,19 +209,22 @@ export const messageQuotas = createTable(
     // Дневной лимит массовых сообщений
     dailyLimit: integer("daily_limit").notNull().default(5),
     dailyUsed: integer("daily_used").notNull().default(0),
-    dailyResetAt: timestamp("daily_reset_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    dailyResetAt: timestamp("daily_reset_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
     // Недельный лимит
     weeklyLimit: integer("weekly_limit").notNull().default(20),
     weeklyUsed: integer("weekly_used").notNull().default(0),
-    weeklyResetAt: timestamp("weekly_reset_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    weeklyResetAt: timestamp("weekly_reset_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
     // Флаг блокировки рассылок
     isBlocked: boolean("is_blocked").notNull().default(false),
     blockedReason: text("blocked_reason"),
     blockedAt: timestamp("blocked_at"),
-    blockedBy: varchar("blocked_by", { length: 255 }).references(
-      () => users.id,
-      { onDelete: "set null" }
-    ),
+    blockedBy: varchar("blocked_by", { length: 255 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
     // Даты
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -272,10 +259,9 @@ export const messageComplaints = createTable(
     // Статус обработки
     status: messageComplaintStatusEnum("status").notNull().default("pending"),
     // Модерация
-    reviewedBy: varchar("reviewed_by", { length: 255 }).references(
-      () => users.id,
-      { onDelete: "set null" }
-    ),
+    reviewedBy: varchar("reviewed_by", { length: 255 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
     reviewedAt: timestamp("reviewed_at"),
     reviewComment: text("review_comment"),
     // Принятые меры
@@ -317,57 +303,52 @@ export const messageAttachments = createTable(
     // Даты
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [
-    index("message_attachment_message_idx").on(table.messageId),
-  ]
+  (table) => [index("message_attachment_message_idx").on(table.messageId)]
 );
 
 // ============== RELATIONS ==============
 
-export const messageThreadsRelations = relations(
-  messageThreads,
-  ({ one, many }) => ({
-    creator: one(users, {
-      fields: [messageThreads.createdBy],
-      references: [users.id],
-      relationName: "threadCreator",
-    }),
-    recipient: one(users, {
-      fields: [messageThreads.recipientId],
-      references: [users.id],
-      relationName: "threadRecipient",
-    }),
-    building: one(buildings, {
-      fields: [messageThreads.buildingId],
-      references: [buildings.id],
-    }),
-    entrance: one(entrances, {
-      fields: [messageThreads.entranceId],
-      references: [entrances.id],
-    }),
-    floor: one(floors, {
-      fields: [messageThreads.floorId],
-      references: [floors.id],
-    }),
-    apartment: one(apartments, {
-      fields: [messageThreads.apartmentId],
-      references: [apartments.id],
-    }),
-    parking: one(parkings, {
-      fields: [messageThreads.parkingId],
-      references: [parkings.id],
-    }),
-    parkingFloor: one(parkingFloors, {
-      fields: [messageThreads.parkingFloorId],
-      references: [parkingFloors.id],
-    }),
-    parkingSpot: one(parkingSpots, {
-      fields: [messageThreads.parkingSpotId],
-      references: [parkingSpots.id],
-    }),
-    messages: many(messages),
-  })
-);
+export const messageThreadsRelations = relations(messageThreads, ({ one, many }) => ({
+  creator: one(users, {
+    fields: [messageThreads.createdBy],
+    references: [users.id],
+    relationName: "threadCreator",
+  }),
+  recipient: one(users, {
+    fields: [messageThreads.recipientId],
+    references: [users.id],
+    relationName: "threadRecipient",
+  }),
+  building: one(buildings, {
+    fields: [messageThreads.buildingId],
+    references: [buildings.id],
+  }),
+  entrance: one(entrances, {
+    fields: [messageThreads.entranceId],
+    references: [entrances.id],
+  }),
+  floor: one(floors, {
+    fields: [messageThreads.floorId],
+    references: [floors.id],
+  }),
+  apartment: one(apartments, {
+    fields: [messageThreads.apartmentId],
+    references: [apartments.id],
+  }),
+  parking: one(parkings, {
+    fields: [messageThreads.parkingId],
+    references: [parkings.id],
+  }),
+  parkingFloor: one(parkingFloors, {
+    fields: [messageThreads.parkingFloorId],
+    references: [parkingFloors.id],
+  }),
+  parkingSpot: one(parkingSpots, {
+    fields: [messageThreads.parkingSpotId],
+    references: [parkingSpots.id],
+  }),
+  messages: many(messages),
+}));
 
 export const messagesRelations = relations(messages, ({ one, many }) => ({
   thread: one(messageThreads, {
@@ -397,19 +378,16 @@ export const messagesRelations = relations(messages, ({ one, many }) => ({
   complaints: many(messageComplaints),
 }));
 
-export const messageRecipientsRelations = relations(
-  messageRecipients,
-  ({ one }) => ({
-    message: one(messages, {
-      fields: [messageRecipients.messageId],
-      references: [messages.id],
-    }),
-    recipient: one(users, {
-      fields: [messageRecipients.recipientId],
-      references: [users.id],
-    }),
-  })
-);
+export const messageRecipientsRelations = relations(messageRecipients, ({ one }) => ({
+  message: one(messages, {
+    fields: [messageRecipients.messageId],
+    references: [messages.id],
+  }),
+  recipient: one(users, {
+    fields: [messageRecipients.recipientId],
+    references: [users.id],
+  }),
+}));
 
 export const messageQuotasRelations = relations(messageQuotas, ({ one }) => ({
   user: one(users, {
@@ -423,32 +401,26 @@ export const messageQuotasRelations = relations(messageQuotas, ({ one }) => ({
   }),
 }));
 
-export const messageComplaintsRelations = relations(
-  messageComplaints,
-  ({ one }) => ({
-    message: one(messages, {
-      fields: [messageComplaints.messageId],
-      references: [messages.id],
-    }),
-    reporter: one(users, {
-      fields: [messageComplaints.reporterId],
-      references: [users.id],
-      relationName: "complaintReporter",
-    }),
-    reviewer: one(users, {
-      fields: [messageComplaints.reviewedBy],
-      references: [users.id],
-      relationName: "complaintReviewer",
-    }),
-  })
-);
+export const messageComplaintsRelations = relations(messageComplaints, ({ one }) => ({
+  message: one(messages, {
+    fields: [messageComplaints.messageId],
+    references: [messages.id],
+  }),
+  reporter: one(users, {
+    fields: [messageComplaints.reporterId],
+    references: [users.id],
+    relationName: "complaintReporter",
+  }),
+  reviewer: one(users, {
+    fields: [messageComplaints.reviewedBy],
+    references: [users.id],
+    relationName: "complaintReviewer",
+  }),
+}));
 
-export const messageAttachmentsRelations = relations(
-  messageAttachments,
-  ({ one }) => ({
-    message: one(messages, {
-      fields: [messageAttachments.messageId],
-      references: [messages.id],
-    }),
-  })
-);
+export const messageAttachmentsRelations = relations(messageAttachments, ({ one }) => ({
+  message: one(messages, {
+    fields: [messageAttachments.messageId],
+    references: [messages.id],
+  }),
+}));

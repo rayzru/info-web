@@ -1,6 +1,7 @@
 import { Clock } from "lucide-react";
-import type { Schedule } from "./types";
+
 import { SectionCard } from "./section-card";
+import type { Schedule } from "./types";
 
 type ScheduleSectionProps = {
   schedules: Schedule[];
@@ -24,13 +25,11 @@ export function ScheduleSection({ schedules }: ScheduleSectionProps) {
       <div className="space-y-1 text-sm">
         {schedules.map((schedule) => (
           <div key={schedule.id} className="flex justify-between gap-4">
-            <span className="text-muted-foreground">
-              {DAY_NAMES[schedule.dayOfWeek]}
-            </span>
+            <span className="text-muted-foreground">{DAY_NAMES[schedule.dayOfWeek]}</span>
             <span>
               {schedule.openTime && schedule.closeTime
                 ? `${schedule.openTime.slice(0, 5)} – ${schedule.closeTime.slice(0, 5)}`
-                : schedule.note ?? "Выходной"}
+                : (schedule.note ?? "Выходной")}
             </span>
           </div>
         ))}

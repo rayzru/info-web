@@ -1,3 +1,4 @@
+import type { JSONContent } from "@tiptap/react";
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
@@ -10,30 +11,29 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import type { JSONContent } from "@tiptap/react";
 
 import { createTable } from "./create-table";
-import { users } from "./users";
 import { directoryTags } from "./directory";
+import { users } from "./users";
 
 // ============================================================================
 // Enums
 // ============================================================================
 
 export const newsTypeEnum = pgEnum("news_type_enum", [
-  "announcement",   // Объявление
-  "event",          // Мероприятие
-  "maintenance",    // Технические работы
-  "update",         // Обновление
-  "community",      // Сообщество
-  "urgent",         // Срочное
+  "announcement", // Объявление
+  "event", // Мероприятие
+  "maintenance", // Технические работы
+  "update", // Обновление
+  "community", // Сообщество
+  "urgent", // Срочное
 ]);
 
 export const newsStatusEnum = pgEnum("news_status_enum", [
-  "draft",          // Черновик
-  "scheduled",      // Запланирована
-  "published",      // Опубликована
-  "archived",       // В архиве
+  "draft", // Черновик
+  "scheduled", // Запланирована
+  "published", // Опубликована
+  "archived", // В архиве
 ]);
 
 // ============================================================================

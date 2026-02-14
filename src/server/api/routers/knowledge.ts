@@ -1,22 +1,18 @@
 import { and, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
+import { generateSlug } from "~/lib/utils/slug";
+import { adminProcedure, createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import {
-  createTRPCRouter,
-  publicProcedure,
-  adminProcedure,
-} from "~/server/api/trpc";
-import {
-  knowledgeBaseArticles,
-  knowledgeBaseArticleTags,
-  directoryTags,
+  buildings,
+  directoryContacts,
   directoryEntries,
   directoryEntryTags,
-  directoryContacts,
-  buildings,
+  directoryTags,
+  knowledgeBaseArticles,
+  knowledgeBaseArticleTags,
   users,
 } from "~/server/db/schema";
-import { generateSlug } from "~/lib/utils/slug";
 
 // ============== SCHEMAS ==============
 
@@ -123,7 +119,7 @@ export const knowledgeRouter = createTRPCRouter({
     const tagMap = new Map(allTags.map((t) => [t.id, t]));
 
     // Helper to find root tag (tag without parentId)
-    const findRootTag = (tagId: string): typeof allTags[0] | null => {
+    const findRootTag = (tagId: string): (typeof allTags)[0] | null => {
       const tag = tagMap.get(tagId);
       if (!tag) return null;
       if (!tag.parentId) return tag;
@@ -155,11 +151,14 @@ export const knowledgeRouter = createTRPCRouter({
     );
 
     // Group by ROOT tag (find root parent)
-    const grouped = new Map<string, {
-      tag: { id: string; name: string; slug: string; order: number | null };
-      articles: typeof articlesWithTags;
-      childTagIds: Set<string>;
-    }>();
+    const grouped = new Map<
+      string,
+      {
+        tag: { id: string; name: string; slug: string; order: number | null };
+        articles: typeof articlesWithTags;
+        childTagIds: Set<string>;
+      }
+    >();
 
     // Also track articles without tags
     const uncategorized: typeof articlesWithTags = [];
@@ -214,10 +213,7 @@ export const knowledgeRouter = createTRPCRouter({
             // Collect this tag + all its descendants
             const collectDescendantIds = (parentId: string): string[] => {
               const children = allTags.filter((t) => t.parentId === parentId);
-              return [
-                parentId,
-                ...children.flatMap((child) => collectDescendantIds(child.id)),
-              ];
+              return [parentId, ...children.flatMap((child) => collectDescendantIds(child.id))];
             };
             const tagIds = collectDescendantIds(childTag.id);
 
@@ -232,15 +228,9 @@ export const knowledgeRouter = createTRPCRouter({
                 order: directoryEntries.order,
               })
               .from(directoryEntries)
-              .innerJoin(
-                directoryEntryTags,
-                eq(directoryEntryTags.entryId, directoryEntries.id)
-              )
+              .innerJoin(directoryEntryTags, eq(directoryEntryTags.entryId, directoryEntries.id))
               .where(
-                and(
-                  eq(directoryEntries.isActive, 1),
-                  inArray(directoryEntryTags.tagId, tagIds)
-                )
+                and(eq(directoryEntries.isActive, 1), inArray(directoryEntryTags.tagId, tagIds))
               )
               .orderBy(directoryEntries.order, directoryEntries.title)
               .limit(20);
@@ -279,9 +269,7 @@ export const knowledgeRouter = createTRPCRouter({
         );
 
         // Filter out empty subcategories
-        const nonEmptySubcategories = subcategories.filter(
-          (sub) => sub.entries.length > 0
-        );
+        const nonEmptySubcategories = subcategories.filter((sub) => sub.entries.length > 0);
 
         return {
           tag: group.tag,
@@ -307,55 +295,53 @@ export const knowledgeRouter = createTRPCRouter({
   }),
 
   // Get article by slug
-  getBySlug: publicProcedure
-    .input(z.object({ slug: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const article = await ctx.db.query.knowledgeBaseArticles.findFirst({
-        where: and(
-          eq(knowledgeBaseArticles.slug, input.slug),
-          eq(knowledgeBaseArticles.status, "published")
-        ),
+  getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ ctx, input }) => {
+    const article = await ctx.db.query.knowledgeBaseArticles.findFirst({
+      where: and(
+        eq(knowledgeBaseArticles.slug, input.slug),
+        eq(knowledgeBaseArticles.status, "published")
+      ),
+    });
+
+    if (!article) return null;
+
+    // Increment view count
+    await ctx.db
+      .update(knowledgeBaseArticles)
+      .set({ viewCount: sql`${knowledgeBaseArticles.viewCount} + 1` })
+      .where(eq(knowledgeBaseArticles.id, article.id));
+
+    // Get tags
+    const articleTags = await ctx.db
+      .select({ tag: directoryTags })
+      .from(knowledgeBaseArticleTags)
+      .innerJoin(directoryTags, eq(knowledgeBaseArticleTags.tagId, directoryTags.id))
+      .where(eq(knowledgeBaseArticleTags.articleId, article.id));
+
+    // Get building if linked
+    let building = null;
+    if (article.buildingId) {
+      building = await ctx.db.query.buildings.findFirst({
+        where: eq(buildings.id, article.buildingId),
       });
+    }
 
-      if (!article) return null;
+    // Get author
+    let author = null;
+    if (article.authorId) {
+      author = await ctx.db.query.users.findFirst({
+        where: eq(users.id, article.authorId),
+        columns: { id: true, name: true, image: true },
+      });
+    }
 
-      // Increment view count
-      await ctx.db
-        .update(knowledgeBaseArticles)
-        .set({ viewCount: sql`${knowledgeBaseArticles.viewCount} + 1` })
-        .where(eq(knowledgeBaseArticles.id, article.id));
-
-      // Get tags
-      const articleTags = await ctx.db
-        .select({ tag: directoryTags })
-        .from(knowledgeBaseArticleTags)
-        .innerJoin(directoryTags, eq(knowledgeBaseArticleTags.tagId, directoryTags.id))
-        .where(eq(knowledgeBaseArticleTags.articleId, article.id));
-
-      // Get building if linked
-      let building = null;
-      if (article.buildingId) {
-        building = await ctx.db.query.buildings.findFirst({
-          where: eq(buildings.id, article.buildingId),
-        });
-      }
-
-      // Get author
-      let author = null;
-      if (article.authorId) {
-        author = await ctx.db.query.users.findFirst({
-          where: eq(users.id, article.authorId),
-          columns: { id: true, name: true, image: true },
-        });
-      }
-
-      return {
-        ...article,
-        tags: articleTags.map((at) => at.tag),
-        building,
-        author,
-      };
-    }),
+    return {
+      ...article,
+      tags: articleTags.map((at) => at.tag),
+      building,
+      author,
+    };
+  }),
 
   // Search articles (for directory search integration)
   search: publicProcedure
@@ -416,7 +402,11 @@ export const knowledgeRouter = createTRPCRouter({
 
           return {
             ...article,
-            tags: articleTags.map((at) => ({ id: at.tag.id, name: at.tag.name, slug: at.tag.slug })),
+            tags: articleTags.map((at) => ({
+              id: at.tag.id,
+              name: at.tag.name,
+              slug: at.tag.slug,
+            })),
           };
         })
       );
@@ -501,7 +491,11 @@ export const knowledgeRouter = createTRPCRouter({
 
           return {
             ...article,
-            tags: articleTags.map((at) => ({ id: at.tag.id, name: at.tag.name, slug: at.tag.slug })),
+            tags: articleTags.map((at) => ({
+              id: at.tag.id,
+              name: at.tag.name,
+              slug: at.tag.slug,
+            })),
           };
         })
       );
@@ -640,46 +634,44 @@ export const knowledgeRouter = createTRPCRouter({
       }),
 
     // Get article by ID for admin
-    get: adminProcedure
-      .input(z.object({ id: z.string() }))
-      .query(async ({ ctx, input }) => {
-        const article = await ctx.db.query.knowledgeBaseArticles.findFirst({
-          where: eq(knowledgeBaseArticles.id, input.id),
+    get: adminProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+      const article = await ctx.db.query.knowledgeBaseArticles.findFirst({
+        where: eq(knowledgeBaseArticles.id, input.id),
+      });
+
+      if (!article) return null;
+
+      // Get tags
+      const articleTags = await ctx.db
+        .select({ tag: directoryTags })
+        .from(knowledgeBaseArticleTags)
+        .innerJoin(directoryTags, eq(knowledgeBaseArticleTags.tagId, directoryTags.id))
+        .where(eq(knowledgeBaseArticleTags.articleId, article.id));
+
+      // Get building if linked
+      let building = null;
+      if (article.buildingId) {
+        building = await ctx.db.query.buildings.findFirst({
+          where: eq(buildings.id, article.buildingId),
         });
+      }
 
-        if (!article) return null;
+      // Get author
+      let author = null;
+      if (article.authorId) {
+        author = await ctx.db.query.users.findFirst({
+          where: eq(users.id, article.authorId),
+          columns: { id: true, name: true, image: true },
+        });
+      }
 
-        // Get tags
-        const articleTags = await ctx.db
-          .select({ tag: directoryTags })
-          .from(knowledgeBaseArticleTags)
-          .innerJoin(directoryTags, eq(knowledgeBaseArticleTags.tagId, directoryTags.id))
-          .where(eq(knowledgeBaseArticleTags.articleId, article.id));
-
-        // Get building if linked
-        let building = null;
-        if (article.buildingId) {
-          building = await ctx.db.query.buildings.findFirst({
-            where: eq(buildings.id, article.buildingId),
-          });
-        }
-
-        // Get author
-        let author = null;
-        if (article.authorId) {
-          author = await ctx.db.query.users.findFirst({
-            where: eq(users.id, article.authorId),
-            columns: { id: true, name: true, image: true },
-          });
-        }
-
-        return {
-          ...article,
-          tags: articleTags.map((at) => at.tag),
-          building,
-          author,
-        };
-      }),
+      return {
+        ...article,
+        tags: articleTags.map((at) => at.tag),
+        building,
+        author,
+      };
+    }),
 
     // Create article
     create: adminProcedure
@@ -762,10 +754,7 @@ export const knowledgeRouter = createTRPCRouter({
 
         // Set publishedAt if transitioning to published
         let publishedAt: Date | undefined;
-        if (
-          input.status === "published" &&
-          currentArticle?.status !== "published"
-        ) {
+        if (input.status === "published" && currentArticle?.status !== "published") {
           publishedAt = new Date();
         }
 
@@ -801,21 +790,17 @@ export const knowledgeRouter = createTRPCRouter({
       }),
 
     // Delete article
-    delete: adminProcedure
-      .input(z.object({ id: z.string() }))
-      .mutation(async ({ ctx, input }) => {
-        // Delete tag links first
-        await ctx.db
-          .delete(knowledgeBaseArticleTags)
-          .where(eq(knowledgeBaseArticleTags.articleId, input.id));
+    delete: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+      // Delete tag links first
+      await ctx.db
+        .delete(knowledgeBaseArticleTags)
+        .where(eq(knowledgeBaseArticleTags.articleId, input.id));
 
-        // Delete article
-        await ctx.db
-          .delete(knowledgeBaseArticles)
-          .where(eq(knowledgeBaseArticles.id, input.id));
+      // Delete article
+      await ctx.db.delete(knowledgeBaseArticles).where(eq(knowledgeBaseArticles.id, input.id));
 
-        return { success: true };
-      }),
+      return { success: true };
+    }),
 
     // Get stats
     getStats: adminProcedure.query(async ({ ctx }) => {

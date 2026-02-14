@@ -1,14 +1,7 @@
 export function DoubleGisLogo() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" fill="none">
-      <mask
-        id="a"
-        width="34"
-        height="33"
-        x="0"
-        y="0"
-        maskUnits="userSpaceOnUse"
-      >
+      <mask id="a" width="34" height="33" x="0" y="0" maskUnits="userSpaceOnUse">
         <path
           fill="#fff"
           d="M8.2 0h16.1a23.2 23.2 0 0 1 2.7.2 7.4 7.4 0 0 1 3.8 2 6.9 6.9 0 0 1 2 3.7 14 14 0 0 1 .2 3.2v14.8a40.9 40.9 0 0 1-.2 3.1 7.2 7.2 0 0 1-2 3.8 7 7 0 0 1-3.8 2l-2.2.2H8.7a26.8 26.8 0 0 1-2.7-.2c-.7-.1-1.4-.4-2-.7a7 7 0 0 1-3.8-5 14 14 0 0 1-.2-3.2V10.3a154 154 0 0 1 .2-4.4A7 7 0 0 1 6 .2L8.2 0Z"

@@ -21,7 +21,10 @@ export interface ICalEvent {
  * Format date to iCal format (YYYYMMDDTHHmmssZ)
  */
 function formatDateToICS(date: Date): string {
-  return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  return date
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}/, "");
 }
 
 /**
@@ -104,7 +107,9 @@ export function generateICS(event: ICalEvent): string {
         foldLine(`ORGANIZER;CN=${escapeICS(event.organizer.name)}:mailto:${event.organizer.email}`)
       );
     } else {
-      lines.push(foldLine(`ORGANIZER;CN=${escapeICS(event.organizer.name)}:MAILTO:noreply@example.com`));
+      lines.push(
+        foldLine(`ORGANIZER;CN=${escapeICS(event.organizer.name)}:MAILTO:noreply@example.com`)
+      );
     }
   }
 

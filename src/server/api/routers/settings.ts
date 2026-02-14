@@ -1,16 +1,9 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import {
-  systemSettings,
-  SETTING_KEYS,
-  type MaintenanceSettings,
-} from "~/server/db/schema";
-import {
-  adminProcedureWithFeature,
-  createTRPCRouter,
-  publicProcedure,
-} from "../trpc";
+import { type MaintenanceSettings, SETTING_KEYS, systemSettings } from "~/server/db/schema";
+
+import { adminProcedureWithFeature, createTRPCRouter, publicProcedure } from "../trpc";
 
 // ============================================================================
 // Validation Schemas
@@ -60,24 +53,22 @@ export const settingsRouter = createTRPCRouter({
   /**
    * Get maintenance mode settings
    */
-  getMaintenanceSettings: adminProcedureWithFeature("system:settings").query(
-    async ({ ctx }) => {
-      const setting = await ctx.db.query.systemSettings.findFirst({
-        where: eq(systemSettings.key, SETTING_KEYS.MAINTENANCE_MODE),
-      });
+  getMaintenanceSettings: adminProcedureWithFeature("system:settings").query(async ({ ctx }) => {
+    const setting = await ctx.db.query.systemSettings.findFirst({
+      where: eq(systemSettings.key, SETTING_KEYS.MAINTENANCE_MODE),
+    });
 
-      if (!setting) {
-        return {
-          enabled: false,
-          message: "",
-          expectedEndTime: undefined,
-          allowedIps: [],
-        } satisfies MaintenanceSettings;
-      }
-
-      return setting.value as MaintenanceSettings;
+    if (!setting) {
+      return {
+        enabled: false,
+        message: "",
+        expectedEndTime: undefined,
+        allowedIps: [],
+      } satisfies MaintenanceSettings;
     }
-  ),
+
+    return setting.value as MaintenanceSettings;
+  }),
 
   /**
    * Update maintenance mode settings

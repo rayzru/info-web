@@ -5,11 +5,7 @@ import { buildings } from "./buildings";
 import { createTable } from "./create-table";
 
 // Enum для типов паркомест
-export const parkingSpotTypeEnum = pgEnum("parking_spot_type", [
-  "moto",
-  "standard",
-  "wide",
-]);
+export const parkingSpotTypeEnum = pgEnum("parking_spot_type", ["moto", "standard", "wide"]);
 
 // Таблица парковок (у здания может быть одна подземная парковка)
 export const parkings = createTable("parking", {
@@ -58,16 +54,13 @@ export const parkingsRelations = relations(parkings, ({ one, many }) => ({
   floors: many(parkingFloors),
 }));
 
-export const parkingFloorsRelations = relations(
-  parkingFloors,
-  ({ one, many }) => ({
-    parking: one(parkings, {
-      fields: [parkingFloors.parkingId],
-      references: [parkings.id],
-    }),
-    spots: many(parkingSpots),
-  })
-);
+export const parkingFloorsRelations = relations(parkingFloors, ({ one, many }) => ({
+  parking: one(parkings, {
+    fields: [parkingFloors.parkingId],
+    references: [parkings.id],
+  }),
+  spots: many(parkingSpots),
+}));
 
 export const parkingSpotsRelations = relations(parkingSpots, ({ one }) => ({
   floor: one(parkingFloors, {

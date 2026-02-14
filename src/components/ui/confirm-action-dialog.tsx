@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
+
 import { Loader2 } from "lucide-react";
 
 import {
@@ -18,13 +19,7 @@ import { Button } from "~/components/ui/button";
 import { DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { cn } from "~/lib/utils";
 
-type ButtonVariant =
-  | "default"
-  | "destructive"
-  | "outline"
-  | "secondary"
-  | "ghost"
-  | "link";
+type ButtonVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 type ButtonSize = "default" | "sm" | "lg" | "icon" | "icon-sm" | "icon-lg";
 
 interface ConfirmActionDialogProps {
@@ -104,11 +99,7 @@ export function ConfirmActionDialog({
           {title}
         </AlertDialogTitle>
         <AlertDialogDescription asChild={typeof description !== "string"}>
-          {typeof description === "string" ? (
-            description
-          ) : (
-            <div>{description}</div>
-          )}
+          {typeof description === "string" ? description : <div>{description}</div>}
         </AlertDialogDescription>
       </AlertDialogHeader>
       {children}
@@ -119,7 +110,7 @@ export function ConfirmActionDialog({
           disabled={isLoading}
           className={cn(
             confirmVariant === "destructive" &&
-              "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+              "bg-destructive text-destructive-foreground hover:bg-destructive/90"
           )}
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -168,15 +159,12 @@ export function ConfirmActionDialog({
           variant={triggerVariant}
           size={triggerSize}
           className={cn(
-            destructive &&
-              "text-destructive hover:text-destructive hover:bg-destructive/10",
-            triggerClassName,
+            destructive && "text-destructive hover:text-destructive hover:bg-destructive/10",
+            triggerClassName
           )}
         >
           {icon}
-          {triggerLabel && (
-            <span className={cn(icon && "ml-2")}>{triggerLabel}</span>
-          )}
+          {triggerLabel && <span className={cn(icon && "ml-2")}>{triggerLabel}</span>}
         </Button>
       </AlertDialogTrigger>
       {dialogContent}

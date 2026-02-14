@@ -1,13 +1,14 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Calendar, Clock, MapPin, Users } from "lucide-react";
 
-import { api } from "~/trpc/server";
-import { Card, CardContent, CardFooter } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
+import { Calendar, Clock, MapPin, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
 import { PageHeader } from "~/components/page-header";
+import { Badge } from "~/components/ui/badge";
+import { Card, CardContent, CardFooter } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
+import { api } from "~/trpc/server";
 
 export const metadata = {
   title: "Мероприятия | SR2",
@@ -17,10 +18,7 @@ export const metadata = {
 export default async function EventsPage() {
   return (
     <div className="container py-8">
-      <PageHeader
-        title="Мероприятия"
-        description="Предстоящие и прошедшие мероприятия нашего ЖК"
-      />
+      <PageHeader title="Мероприятия" description="Предстоящие и прошедшие мероприятия нашего ЖК" />
 
       {/* Events List */}
       <Suspense fallback={<EventsListSkeleton />}>
@@ -36,30 +34,24 @@ async function EventsList() {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
+        <Calendar className="text-muted-foreground/50 mb-4 h-12 w-12" />
         <h3 className="font-semibold">Мероприятий пока нет</h3>
-        <p className="text-sm text-muted-foreground">
-          Скоро здесь появятся мероприятия
-        </p>
+        <p className="text-muted-foreground text-sm">Скоро здесь появятся мероприятия</p>
       </div>
     );
   }
 
   // Separate upcoming and past events
   const now = new Date();
-  const upcoming = items.filter(
-    (e) => e.eventStartAt && new Date(e.eventStartAt) > now
-  );
-  const past = items.filter(
-    (e) => !e.eventStartAt || new Date(e.eventStartAt) <= now
-  );
+  const upcoming = items.filter((e) => e.eventStartAt && new Date(e.eventStartAt) > now);
+  const past = items.filter((e) => !e.eventStartAt || new Date(e.eventStartAt) <= now);
 
   return (
     <div className="space-y-8">
       {/* Upcoming Events */}
       {upcoming.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
             <Badge variant="default">Предстоящие</Badge>
             <span className="text-muted-foreground text-sm font-normal">
               {upcoming.length} {getEventWord(upcoming.length)}
@@ -72,7 +64,7 @@ async function EventsList() {
       {/* Past Events */}
       {past.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
             <Badge variant="secondary">Прошедшие</Badge>
             <span className="text-muted-foreground text-sm font-normal">
               {past.length} {getEventWord(past.length)}
@@ -91,24 +83,21 @@ function EventsGrid({ events, isPast }: { events: EventItem[]; isPast?: boolean 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {events.map((event) => {
-        const startAt = event.eventStartAt
-          ? new Date(event.eventStartAt)
-          : null;
+        const startAt = event.eventStartAt ? new Date(event.eventStartAt) : null;
         const isToday = startAt && isSameDay(startAt, new Date());
         const isTomorrow =
-          startAt &&
-          isSameDay(startAt, new Date(Date.now() + 24 * 60 * 60 * 1000));
+          startAt && isSameDay(startAt, new Date(Date.now() + 24 * 60 * 60 * 1000));
 
         return (
           <Card
             key={event.id}
             className={cn(
-              "group overflow-hidden hover:shadow-md transition-shadow",
+              "group overflow-hidden transition-shadow hover:shadow-md",
               isPast && "opacity-75"
             )}
           >
             {/* Cover Image or Date Badge */}
-            <div className="relative aspect-video overflow-hidden bg-muted">
+            <div className="bg-muted relative aspect-video overflow-hidden">
               {event.coverImage ? (
                 <Image
                   src={event.coverImage}
@@ -118,17 +107,17 @@ function EventsGrid({ events, isPast }: { events: EventItem[]; isPast?: boolean 
                   unoptimized={event.coverImage.includes("/uploads/")}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Calendar className="h-12 w-12 text-muted-foreground/30" />
+                <div className="flex h-full w-full items-center justify-center">
+                  <Calendar className="text-muted-foreground/30 h-12 w-12" />
                 </div>
               )}
 
               {/* Date overlay */}
               {startAt && (
-                <div className="absolute top-2 left-2">
+                <div className="absolute left-2 top-2">
                   <div
                     className={cn(
-                      "rounded-lg overflow-hidden shadow-md text-center",
+                      "overflow-hidden rounded-lg text-center shadow-md",
                       isPast
                         ? "bg-muted"
                         : isToday
@@ -150,23 +139,21 @@ function EventsGrid({ events, isPast }: { events: EventItem[]; isPast?: boolean 
                     >
                       {formatMonth(startAt)}
                     </div>
-                    <div className="px-3 py-1 text-xl font-bold">
-                      {startAt.getDate()}
-                    </div>
+                    <div className="px-3 py-1 text-xl font-bold">{startAt.getDate()}</div>
                   </div>
                 </div>
               )}
 
               {/* Urgent badge */}
               {event.isUrgent && !isPast && (
-                <Badge variant="destructive" className="absolute top-2 right-2">
+                <Badge variant="destructive" className="absolute right-2 top-2">
                   Срочно
                 </Badge>
               )}
 
               {/* Past badge */}
               {isPast && (
-                <Badge variant="secondary" className="absolute top-2 right-2">
+                <Badge variant="secondary" className="absolute right-2 top-2">
                   Завершено
                 </Badge>
               )}
@@ -174,12 +161,12 @@ function EventsGrid({ events, isPast }: { events: EventItem[]; isPast?: boolean 
 
             <CardContent className="p-4">
               {/* Title */}
-              <h3 className="font-medium line-clamp-2 group-hover:text-primary transition-colors mb-2">
+              <h3 className="group-hover:text-primary mb-2 line-clamp-2 font-medium transition-colors">
                 <Link href={`/events/${event.id}`}>{event.title}</Link>
               </h3>
 
               {/* Time & Location */}
-              <div className="space-y-1 text-xs text-muted-foreground">
+              <div className="text-muted-foreground space-y-1 text-xs">
                 {startAt && (
                   <div className="flex items-center gap-1.5">
                     <Clock className="h-3 w-3" />
@@ -206,7 +193,7 @@ function EventsGrid({ events, isPast }: { events: EventItem[]; isPast?: boolean 
 
             <CardFooter className="px-4 pb-4 pt-0">
               {/* Building & Max Attendees */}
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="text-muted-foreground flex items-center gap-2 text-xs">
                 {event.building && (
                   <>
                     <span>Строение {event.building.number}</span>
@@ -232,12 +219,12 @@ function EventsListSkeleton() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="rounded-lg border overflow-hidden">
-          <div className="aspect-video bg-muted animate-pulse" />
-          <div className="p-4 space-y-2">
-            <div className="h-5 w-20 bg-muted animate-pulse rounded" />
-            <div className="h-5 w-full bg-muted animate-pulse rounded" />
-            <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
+        <div key={i} className="overflow-hidden rounded-lg border">
+          <div className="bg-muted aspect-video animate-pulse" />
+          <div className="space-y-2 p-4">
+            <div className="bg-muted h-5 w-20 animate-pulse rounded" />
+            <div className="bg-muted h-5 w-full animate-pulse rounded" />
+            <div className="bg-muted h-4 w-3/4 animate-pulse rounded" />
           </div>
         </div>
       ))}
