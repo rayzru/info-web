@@ -1,0 +1,98 @@
+name: Apply Migration 0025 (Document Fields)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - Beta
+          - Production
+
+jobs:
+  apply-migration:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+
+          if [[ -n "${{ secrets.KNOWN_HOSTS }}" ]]; then
+            echo "${{ secrets.KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          else
+            echo "StrictHostKeyChecking no" >> ~/.ssh/config
+            echo "UserKnownHostsFile /dev/null" >> ~/.ssh/config
+          fi
+
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          [[ -f ~/.ssh/config ]] && chmod 600 ~/.ssh/config || true
+
+      - name: Test connection
+        run: |
+          ssh -o ConnectTimeout=10 "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "echo 'Connection successful' && uptime"
+
+      - name: Apply migration
+        run: |
+          echo "Applying migration 0025 to ${{ inputs.environment }}..."
+
+          ssh "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "psql '${{ secrets.DATABASE_URL }}' << 'EOF'
+          -- Migration 0025: Add document fields
+          ALTER TABLE claim_document ADD COLUMN IF NOT EXISTS thumbnail_url varchar(500);
+          ALTER TABLE claim_document ADD COLUMN IF NOT EXISTS scheduled_for_deletion timestamp with time zone;
+          CREATE INDEX IF NOT EXISTS claim_document_scheduled_deletion_idx ON claim_document USING btree (scheduled_for_deletion);
+
+          -- Verify changes
+          SELECT column_name, data_type
+          FROM information_schema.columns
+          WHERE table_name = 'claim_document'
+          AND column_name IN ('thumbnail_url', 'scheduled_for_deletion');
+
+          SELECT indexname
+          FROM pg_indexes
+          WHERE tablename = 'claim_document'
+          AND indexname = 'claim_document_scheduled_deletion_idx';
+          EOF
+          "
+
+          echo "Migration applied successfully!"
+
+      - name: Verify migration
+        run: |
+          echo "Verifying migration on ${{ inputs.environment }}..."
+
+          ssh "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "psql '${{ secrets.DATABASE_URL }}' -c \"
+          SELECT
+            CASE
+              WHEN EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'claim_document' AND column_name = 'thumbnail_url'
+              ) THEN '✓ thumbnail_url column exists'
+              ELSE '✗ thumbnail_url column MISSING'
+            END as check1,
+            CASE
+              WHEN EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'claim_document' AND column_name = 'scheduled_for_deletion'
+              ) THEN '✓ scheduled_for_deletion column exists'
+              ELSE '✗ scheduled_for_deletion column MISSING'
+            END as check2,
+            CASE
+              WHEN EXISTS (
+                SELECT 1 FROM pg_indexes
+                WHERE tablename = 'claim_document' AND indexname = 'claim_document_scheduled_deletion_idx'
+              ) THEN '✓ index exists'
+              ELSE '✗ index MISSING'
+            END as check3;
+          \""
+
+          echo "Verification complete!"
