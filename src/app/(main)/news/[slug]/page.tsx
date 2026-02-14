@@ -25,41 +25,39 @@ import { api } from "~/trpc/server";
 // Constants
 // ============================================================================
 
-const NEWS_TYPE_CONFIG: Record<
-  NewsType,
-  { label: string; icon: typeof Megaphone; color: string }
-> = {
-  announcement: {
-    label: "Объявление",
-    icon: Megaphone,
-    color: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  },
-  event: {
-    label: "Мероприятие",
-    icon: Calendar,
-    color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-  },
-  maintenance: {
-    label: "Тех. работы",
-    icon: Wrench,
-    color: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
-  },
-  update: {
-    label: "Обновление",
-    icon: Sparkles,
-    color: "bg-green-500/10 text-green-600 dark:text-green-400",
-  },
-  community: {
-    label: "Сообщество",
-    icon: Users,
-    color: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
-  },
-  urgent: {
-    label: "Срочное",
-    icon: AlertTriangle,
-    color: "bg-red-500/10 text-red-600 dark:text-red-400",
-  },
-};
+const NEWS_TYPE_CONFIG: Record<NewsType, { label: string; icon: typeof Megaphone; color: string }> =
+  {
+    announcement: {
+      label: "Объявление",
+      icon: Megaphone,
+      color: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    },
+    event: {
+      label: "Мероприятие",
+      icon: Calendar,
+      color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    },
+    maintenance: {
+      label: "Тех. работы",
+      icon: Wrench,
+      color: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+    },
+    update: {
+      label: "Обновление",
+      icon: Sparkles,
+      color: "bg-green-500/10 text-green-600 dark:text-green-400",
+    },
+    community: {
+      label: "Сообщество",
+      icon: Users,
+      color: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
+    },
+    urgent: {
+      label: "Срочное",
+      icon: AlertTriangle,
+      color: "bg-red-500/10 text-red-600 dark:text-red-400",
+    },
+  };
 
 // ============================================================================
 // Metadata
@@ -93,12 +91,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         type: "article",
         title: news.title,
         description: news.excerpt ?? `Новость: ${news.title}`,
-        images: imageUrl ? [{
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: news.title,
-        }] : undefined,
+        images: imageUrl
+          ? [
+              {
+                url: imageUrl,
+                width: 1200,
+                height: 630,
+                alt: news.title,
+              },
+            ]
+          : undefined,
         publishedTime: publishDate.toISOString(),
         modifiedTime: news.updatedAt?.toISOString(),
         authors: news.author?.name ? [news.author.name] : undefined,
@@ -154,16 +156,16 @@ export default async function NewsDetailPage({ params }: PageProps) {
         {/* Header */}
         <header className="mb-8">
           {/* Type Badge */}
-          <Badge variant="secondary" className={cn("gap-1 mb-4", typeConfig.color)}>
+          <Badge variant="secondary" className={cn("mb-4 gap-1", typeConfig.color)}>
             <Icon className="h-3 w-3" />
             {typeConfig.label}
           </Badge>
 
           {/* Title */}
-          <h1 className="text-3xl font-bold mb-4">{news.title}</h1>
+          <h1 className="mb-4 text-3xl font-bold">{news.title}</h1>
 
           {/* Meta */}
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-4 text-sm">
             {/* Author */}
             {news.author ? (
               <div className="flex items-center gap-2">
@@ -182,15 +184,13 @@ export default async function NewsDetailPage({ params }: PageProps) {
             <span className="text-muted-foreground/50">•</span>
 
             {/* Date */}
-            <time dateTime={displayDate.toISOString()}>
-              {formatFullDate(displayDate)}
-            </time>
+            <time dateTime={displayDate.toISOString()}>{formatFullDate(displayDate)}</time>
           </div>
         </header>
 
         {/* Cover Image */}
         {news.coverImage && (
-          <div className="relative aspect-video overflow-hidden rounded-lg mb-8">
+          <div className="relative mb-8 aspect-video overflow-hidden rounded-lg">
             <Image
               src={news.coverImage}
               alt={news.title}
@@ -204,9 +204,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
 
         {/* Excerpt */}
         {news.excerpt && (
-          <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-            {news.excerpt}
-          </p>
+          <p className="text-muted-foreground mb-8 text-lg leading-relaxed">{news.excerpt}</p>
         )}
 
         {/* Content */}

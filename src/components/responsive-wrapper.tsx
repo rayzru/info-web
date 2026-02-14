@@ -7,12 +7,7 @@ export default function ResponsiveWrapper({
   className,
 }: Readonly<PropsWithChildren & { className?: string }>) {
   return (
-    <div
-      className={cn(
-        `container mx-auto max-w-7xl min-w-xs`,
-        className,
-      )}
-    >
+    <div className={cn(`min-w-xs container mx-auto max-w-7xl`, className)}>
       <div className="flex flex-col">{children}</div>
     </div>
   );

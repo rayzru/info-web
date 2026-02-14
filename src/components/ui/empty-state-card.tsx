@@ -2,13 +2,7 @@ import { type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
 
 interface EmptyStateCardProps {
@@ -49,12 +43,7 @@ export function EmptyStateCard({
     <Card className={cn(variantClasses[variant], className)}>
       <CardHeader className="text-center">
         {Icon && (
-          <div
-            className={cn(
-              "mx-auto rounded-lg p-4 w-fit mb-2",
-              iconVariantClasses[variant]
-            )}
-          >
+          <div className={cn("mx-auto mb-2 w-fit rounded-lg p-4", iconVariantClasses[variant])}>
             <Icon className="h-8 w-8" />
           </div>
         )}

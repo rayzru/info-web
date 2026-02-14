@@ -1,9 +1,9 @@
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
+
+import { redirect } from "next/navigation";
 
 import { LoginForm } from "~/components/login-form";
 import { auth } from "~/server/auth";
-
 
 export default async function Page({
   searchParams,

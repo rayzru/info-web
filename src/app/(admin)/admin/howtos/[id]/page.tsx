@@ -1,29 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
+
 import type { JSONContent } from "@tiptap/react";
-import {
-  ArrowLeft,
-  Eye,
-  Loader2,
-  Save,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, Eye, Loader2, Save, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
+import { StandardEditor } from "~/components/editor/rich-editor";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Dialog,
@@ -33,7 +19,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { StandardEditor } from "~/components/editor/rich-editor";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 
@@ -165,14 +160,14 @@ export default function EditHowtoPage() {
   if (!isNew && isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   if (!isNew && !article) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+      <div className="text-muted-foreground flex flex-col items-center justify-center py-12">
         <p>Статья не найдена</p>
         <Link href="/admin/howtos" className="mt-4">
           <Button variant="outline">
@@ -200,11 +195,7 @@ export default function EditHowtoPage() {
             </Link>
           )}
           {!isNew && status === "draft" && (
-            <Button
-              variant="outline"
-              onClick={handlePublish}
-              disabled={updateMutation.isPending}
-            >
+            <Button variant="outline" onClick={handlePublish} disabled={updateMutation.isPending}>
               {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Опубликовать
             </Button>
@@ -225,7 +216,7 @@ export default function EditHowtoPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6 lg:col-span-2">
             <Card>
               <CardHeader>
                 <CardTitle>Основное</CardTitle>
@@ -251,7 +242,7 @@ export default function EditHowtoPage() {
                     placeholder="Пошаговая инструкция по подключению домофона к мобильному приложению"
                     rows={3}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Будет показано в списке и результатах поиска
                   </p>
                 </div>
@@ -281,10 +272,7 @@ export default function EditHowtoPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="status">Статус</Label>
-                  <Select
-                    value={status}
-                    onValueChange={(v) => setStatus(v as typeof status)}
-                  >
+                  <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -306,9 +294,7 @@ export default function EditHowtoPage() {
                     value={order}
                     onChange={(e) => setOrder(parseInt(e.target.value) || 0)}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Меньшее число = выше в списке
-                  </p>
+                  <p className="text-muted-foreground text-xs">Меньшее число = выше в списке</p>
                 </div>
               </CardContent>
             </Card>
@@ -329,14 +315,16 @@ export default function EditHowtoPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Все строения</SelectItem>
-                      {buildings?.map((b: { id: string; number: number | null; title: string | null }) => (
-                        <SelectItem key={b.id} value={b.id}>
-                          {b.title ?? `Строение ${b.number}`}
-                        </SelectItem>
-                      ))}
+                      {buildings?.map(
+                        (b: { id: string; number: number | null; title: string | null }) => (
+                          <SelectItem key={b.id} value={b.id}>
+                            {b.title ?? `Строение ${b.number}`}
+                          </SelectItem>
+                        )
+                      )}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Ограничить показ только для определённого строения
                   </p>
                 </div>
@@ -358,13 +346,13 @@ export default function EditHowtoPage() {
                 <CardTitle>Теги</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto">
+                <div className="flex max-h-[300px] flex-wrap gap-2 overflow-y-auto">
                   {tags?.map((tag) => (
                     <button
                       key={tag.id}
                       type="button"
                       onClick={() => toggleTag(tag.id)}
-                      className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                      className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
                         tagIds.includes(tag.id)
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted hover:bg-muted/80"
@@ -374,7 +362,7 @@ export default function EditHowtoPage() {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-muted-foreground mt-2 text-xs">
                   Выберите теги для связи со справочником
                 </p>
               </CardContent>
@@ -408,8 +396,7 @@ export default function EditHowtoPage() {
           <DialogHeader>
             <DialogTitle>Удалить статью?</DialogTitle>
             <DialogDescription>
-              Вы уверены, что хотите удалить &quot;{title}&quot;? Это действие нельзя
-              отменить.
+              Вы уверены, что хотите удалить &quot;{title}&quot;? Это действие нельзя отменить.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

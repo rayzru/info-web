@@ -1,7 +1,8 @@
 "use client";
 
-import { Loader2, Send, Image as ImageIcon, AlertCircle } from "lucide-react";
+import { AlertCircle, Image as ImageIcon, Loader2, Send } from "lucide-react";
 
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -12,7 +13,6 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import { Alert, AlertDescription } from "~/components/ui/alert";
 import { api } from "~/trpc/react";
 
 interface TelegramPreviewDialogProps {
@@ -30,10 +30,11 @@ export function TelegramPreviewDialog({
   onSend,
   isSending,
 }: TelegramPreviewDialogProps) {
-  const { data: preview, isLoading, error } = api.news.telegramPreview.useQuery(
-    { id: newsId },
-    { enabled: open }
-  );
+  const {
+    data: preview,
+    isLoading,
+    error,
+  } = api.news.telegramPreview.useQuery({ id: newsId }, { enabled: open });
 
   // Convert HTML to display-friendly format
   const formatPreviewText = (html: string): string => {
@@ -72,26 +73,20 @@ export function TelegramPreviewDialog({
         <div className="space-y-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
             </div>
           ) : error ? (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Ошибка загрузки превью: {error.message}
-              </AlertDescription>
+              <AlertDescription>Ошибка загрузки превью: {error.message}</AlertDescription>
             </Alert>
           ) : preview ? (
             <>
               {/* Image indicator */}
               {preview.hasImage && preview.imageUrl && (
-                <div className="relative rounded-lg overflow-hidden bg-muted">
-                  <img
-                    src={preview.imageUrl}
-                    alt="Обложка"
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                <div className="bg-muted relative overflow-hidden rounded-lg">
+                  <img src={preview.imageUrl} alt="Обложка" className="h-48 w-full object-cover" />
+                  <div className="absolute right-2 top-2 flex items-center gap-1 rounded bg-black/50 px-2 py-1 text-xs text-white">
                     <ImageIcon className="h-3 w-3" />
                     Фото
                   </div>
@@ -101,7 +96,7 @@ export function TelegramPreviewDialog({
               {/* Message preview */}
               <div className="rounded-lg border bg-[#1e2a38] p-4">
                 <ScrollArea className="h-[300px]">
-                  <pre className="whitespace-pre-wrap font-sans text-sm text-white leading-relaxed">
+                  <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-white">
                     {formatPreviewText(preview.text)}
                   </pre>
                 </ScrollArea>
@@ -114,9 +109,7 @@ export function TelegramPreviewDialog({
                 </span>
                 <span
                   className={
-                    isOverCaptionLimit
-                      ? "text-destructive font-medium"
-                      : "text-muted-foreground"
+                    isOverCaptionLimit ? "text-destructive font-medium" : "text-muted-foreground"
                   }
                 >
                   {charCount} / {captionLimit} символов
@@ -142,10 +135,7 @@ export function TelegramPreviewDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Отмена
           </Button>
-          <Button
-            onClick={onSend}
-            disabled={isSending || isLoading || !!error}
-          >
+          <Button onClick={onSend} disabled={isSending || isLoading || !!error}>
             {isSending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (

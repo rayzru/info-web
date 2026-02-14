@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 import {
   AlertTriangle,
   ChevronLeft,
@@ -18,6 +17,8 @@ import {
   Tag,
   Trash2,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -153,7 +154,7 @@ export default function TagsManagementPage() {
   };
 
   // Render tag row in tree
-  const renderTagRow = (tag: TagWithCounts, depth: number = 0) => {
+  const renderTagRow = (tag: TagWithCounts, depth = 0) => {
     const children = getChildren(tag.id);
     const hasChildren = children.length > 0;
     const isExpanded = expandedIds.has(tag.id);
@@ -162,36 +163,32 @@ export default function TagsManagementPage() {
     return (
       <div key={tag.id}>
         <div
-          className={`
-            flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors
-            hover:bg-muted
-            ${isSelected ? "bg-primary/10 border-l-2 border-primary" : ""}
-          `}
+          className={`hover:bg-muted flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 transition-colors ${isSelected ? "bg-primary/10 border-primary border-l-2" : ""} `}
           style={{ paddingLeft: `${depth * 16 + 12}px` }}
           onClick={() => setSelectedTagId(tag.id)}
         >
           {hasChildren ? (
             <button
               type="button"
-              className="p-0.5 hover:bg-muted-foreground/20 rounded"
+              className="hover:bg-muted-foreground/20 rounded p-0.5"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleExpanded(tag.id);
               }}
             >
               {isExpanded ? (
-                <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                <FolderOpen className="text-muted-foreground h-4 w-4" />
               ) : (
-                <Folder className="h-4 w-4 text-muted-foreground" />
+                <Folder className="text-muted-foreground h-4 w-4" />
               )}
             </button>
           ) : (
-            <Tag className="h-4 w-4 text-muted-foreground" />
+            <Tag className="text-muted-foreground h-4 w-4" />
           )}
 
           <span className="flex-1 truncate text-sm font-medium">{tag.name}</span>
 
-          <span className="text-xs text-muted-foreground">{tag.entryCount}</span>
+          <span className="text-muted-foreground text-xs">{tag.entryCount}</span>
         </div>
 
         {hasChildren && isExpanded && (
@@ -221,25 +218,21 @@ export default function TagsManagementPage() {
     return (
       <div
         key={tag.id}
-        className={`
-          flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors
-          hover:bg-muted
-          ${isSelected ? "bg-primary/10 border-l-2 border-primary" : ""}
-        `}
+        className={`hover:bg-muted flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 transition-colors ${isSelected ? "bg-primary/10 border-primary border-l-2" : ""} `}
         onClick={() => setSelectedTagId(tag.id)}
       >
-        <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
+        <Tag className="text-muted-foreground h-4 w-4 shrink-0" />
 
-        <div className="flex-1 min-w-0">
-          <span className="text-sm font-medium truncate block">{tag.name}</span>
+        <div className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-medium">{tag.name}</span>
           {breadcrumb.length > 0 && (
-            <span className="text-xs text-muted-foreground truncate block">
+            <span className="text-muted-foreground block truncate text-xs">
               {breadcrumb.join(" → ")}
             </span>
           )}
         </div>
 
-        <span className="text-xs text-muted-foreground shrink-0">{tag.entryCount}</span>
+        <span className="text-muted-foreground shrink-0 text-xs">{tag.entryCount}</span>
       </div>
     );
   };
@@ -278,12 +271,12 @@ export default function TagsManagementPage() {
       </div>
 
       {/* Split View */}
-      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[350px_1fr]">
         {/* Left: Tree */}
         <Card className="h-[calc(100vh-220px)]">
           <CardHeader className="pb-3">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2" />
               <Input
                 placeholder="Поиск категорий..."
                 value={searchQuery}
@@ -302,7 +295,7 @@ export default function TagsManagementPage() {
                       {filteredTags.map((tag) => renderSearchResult(tag))}
                     </div>
                   ) : (
-                    <p className="py-6 text-center text-sm text-muted-foreground">
+                    <p className="text-muted-foreground py-6 text-center text-sm">
                       Ничего не найдено
                     </p>
                   )
@@ -310,13 +303,13 @@ export default function TagsManagementPage() {
                   // Tree view grouped by scope
                   Object.entries(groupedRoots).map(([scope, tags]) => (
                     <div key={scope} className="mb-4">
-                      <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
+                      <div className="mb-1 flex items-center gap-2 px-2 py-1.5">
                         <span
-                          className={`text-xs font-medium px-1.5 py-0.5 rounded ${SCOPE_COLORS[scope] ?? "bg-gray-100 text-gray-700"}`}
+                          className={`rounded px-1.5 py-0.5 text-xs font-medium ${SCOPE_COLORS[scope] ?? "bg-gray-100 text-gray-700"}`}
                         >
                           {SCOPE_LABELS[scope] ?? scope}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-muted-foreground text-xs">
                           {tags.length} корневых
                         </span>
                       </div>
@@ -347,9 +340,7 @@ export default function TagsManagementPage() {
                         </Badge>
                       )}
                     </CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      /{selectedTag.slug}
-                    </p>
+                    <p className="text-muted-foreground mt-1 text-sm">/{selectedTag.slug}</p>
                   </div>
                   <div className="flex gap-2">
                     <Link href={`/admin/directory/tags/${selectedTag.id}`}>
@@ -365,24 +356,22 @@ export default function TagsManagementPage() {
                 {/* Description */}
                 {selectedTag.description && (
                   <div>
-                    <h4 className="text-sm font-medium mb-1">Описание</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedTag.description}
-                    </p>
+                    <h4 className="mb-1 text-sm font-medium">Описание</h4>
+                    <p className="text-muted-foreground text-sm">{selectedTag.description}</p>
                   </div>
                 )}
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-muted rounded-lg">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                  <div className="bg-muted rounded-lg p-4">
+                    <div className="text-muted-foreground mb-1 flex items-center gap-2 text-sm">
                       <Eye className="h-4 w-4" />
                       Записей
                     </div>
                     <p className="text-2xl font-semibold">{selectedTag.entryCount}</p>
                   </div>
-                  <div className="p-4 bg-muted rounded-lg">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                  <div className="bg-muted rounded-lg p-4">
+                    <div className="text-muted-foreground mb-1 flex items-center gap-2 text-sm">
                       <Phone className="h-4 w-4" />
                       Контактов
                     </div>
@@ -393,11 +382,11 @@ export default function TagsManagementPage() {
                 {/* Parent */}
                 {selectedTag.parentId && (
                   <div>
-                    <h4 className="text-sm font-medium mb-2">Родительская категория</h4>
+                    <h4 className="mb-2 text-sm font-medium">Родительская категория</h4>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setSelectedTagId(selectedTag.parentId!)}
+                      onClick={() => setSelectedTagId(selectedTag.parentId)}
                     >
                       <ChevronLeft className="mr-1 h-3 w-3" />
                       {getParentName(selectedTag.parentId)}
@@ -408,7 +397,7 @@ export default function TagsManagementPage() {
                 {/* Children */}
                 {getChildren(selectedTag.id).length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium mb-2">Дочерние категории</h4>
+                    <h4 className="mb-2 text-sm font-medium">Дочерние категории</h4>
                     <div className="flex flex-wrap gap-2">
                       {getChildren(selectedTag.id).map((child) => (
                         <Button
@@ -421,9 +410,7 @@ export default function TagsManagementPage() {
                           }}
                         >
                           {child.name}
-                          <span className="ml-1 text-muted-foreground">
-                            ({child.entryCount})
-                          </span>
+                          <span className="text-muted-foreground ml-1">({child.entryCount})</span>
                           <ChevronRight className="ml-1 h-3 w-3" />
                         </Button>
                       ))}
@@ -435,9 +422,7 @@ export default function TagsManagementPage() {
 
                 {/* Danger Zone */}
                 <div>
-                  <h4 className="text-sm font-medium text-destructive mb-2">
-                    Опасная зона
-                  </h4>
+                  <h4 className="text-destructive mb-2 text-sm font-medium">Опасная зона</h4>
                   <Button
                     variant="outline"
                     size="sm"
@@ -451,9 +436,9 @@ export default function TagsManagementPage() {
                   {(selectedTag.entryCount > 0 ||
                     selectedTag.contactCount > 0 ||
                     getChildren(selectedTag.id).length > 0) && (
-                    <div className="mt-2 p-3 bg-destructive/10 rounded-lg flex items-start gap-2">
-                      <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-                      <div className="text-sm text-destructive">
+                    <div className="bg-destructive/10 mt-2 flex items-start gap-2 rounded-lg p-3">
+                      <AlertTriangle className="text-destructive mt-0.5 h-4 w-4 shrink-0" />
+                      <div className="text-destructive text-sm">
                         <p className="font-medium">При удалении будут затронуты:</p>
                         <ul className="mt-1 space-y-0.5">
                           {selectedTag.entryCount > 0 && (
@@ -476,9 +461,9 @@ export default function TagsManagementPage() {
               </CardContent>
             </>
           ) : (
-            <CardContent className="h-full flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <Tag className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <CardContent className="flex h-full items-center justify-center">
+              <div className="text-muted-foreground text-center">
+                <Tag className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>Выберите категорию для просмотра деталей</p>
               </div>
             </CardContent>
@@ -500,25 +485,20 @@ export default function TagsManagementPage() {
             (tagToDelete.entryCount > 0 ||
               tagToDelete.contactCount > 0 ||
               getChildren(tagToDelete.id).length > 0) && (
-              <div className="p-3 bg-destructive/10 rounded-lg flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-                <div className="text-sm text-destructive">
+              <div className="bg-destructive/10 flex items-start gap-2 rounded-lg p-3">
+                <AlertTriangle className="text-destructive mt-0.5 h-4 w-4 shrink-0" />
+                <div className="text-destructive text-sm">
                   <p className="font-medium">Внимание! При удалении:</p>
                   <ul className="mt-1 space-y-0.5">
                     {tagToDelete.entryCount > 0 && (
-                      <li>
-                        • Связи с {tagToDelete.entryCount} записями будут удалены
-                      </li>
+                      <li>• Связи с {tagToDelete.entryCount} записями будут удалены</li>
                     )}
                     {tagToDelete.contactCount > 0 && (
-                      <li>
-                        • Связи с {tagToDelete.contactCount} контактами будут удалены
-                      </li>
+                      <li>• Связи с {tagToDelete.contactCount} контактами будут удалены</li>
                     )}
                     {getChildren(tagToDelete.id).length > 0 && (
                       <li>
-                        • {getChildren(tagToDelete.id).length} дочерних категорий станут
-                        корневыми
+                        • {getChildren(tagToDelete.id).length} дочерних категорий станут корневыми
                       </li>
                     )}
                   </ul>
@@ -535,9 +515,7 @@ export default function TagsManagementPage() {
               onClick={confirmDelete}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Удалить
             </Button>
           </DialogFooter>

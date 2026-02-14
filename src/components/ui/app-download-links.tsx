@@ -39,10 +39,7 @@ interface AppDownloadLinksProps {
   size?: "sm" | "md" | "lg";
 }
 
-const STORE_CONFIG: Record<
-  AppStore,
-  { label: string; icon: React.ReactNode; bgColor: string }
-> = {
+const STORE_CONFIG: Record<AppStore, { label: string; icon: React.ReactNode; bgColor: string }> = {
   appstore: {
     label: "App Store",
     bgColor: "bg-black hover:bg-gray-800",

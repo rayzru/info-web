@@ -1,18 +1,18 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
-import { api } from "~/trpc/server";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { api } from "~/trpc/server";
 
 import {
-  PhonesSection,
-  MessengersSection,
   EmailsSection,
-  WebsitesSection,
   LocationSection,
+  MessengersSection,
+  PhonesSection,
   ScheduleSection,
+  WebsitesSection,
 } from "./_components";
 
 type Props = {
@@ -60,9 +60,7 @@ export default async function DirectoryEntryPage({ params }: Props) {
 
           <h1 className="text-2xl font-semibold sm:text-3xl">{entry.title}</h1>
 
-          {entry.description && (
-            <p className="mt-2 text-muted-foreground">{entry.description}</p>
-          )}
+          {entry.description && <p className="text-muted-foreground mt-2">{entry.description}</p>}
 
           {entry.tags.length > 0 && (
             <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -77,7 +75,7 @@ export default async function DirectoryEntryPage({ params }: Props) {
 
         {/* Content (if any HTML content) */}
         {entry.content && (
-          <div className="prose prose-sm mx-auto max-w-none dark:prose-invert">
+          <div className="prose prose-sm dark:prose-invert mx-auto max-w-none">
             <div dangerouslySetInnerHTML={{ __html: entry.content }} />
           </div>
         )}

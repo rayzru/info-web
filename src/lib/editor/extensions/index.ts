@@ -1,6 +1,2 @@
-export { VideoEmbed, parseVideoUrl } from "./video-embed";
-export {
-  PhoneNumber,
-  normalizePhoneNumber,
-  formatPhoneNumber,
-} from "./phone-number";
+export { formatPhoneNumber, normalizePhoneNumber, PhoneNumber } from "./phone-number";
+export { parseVideoUrl, VideoEmbed } from "./video-embed";

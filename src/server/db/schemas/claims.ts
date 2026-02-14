@@ -1,11 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  index,
-  pgEnum,
-  text,
-  timestamp,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { index, pgEnum, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 import { apartments } from "./buildings";
 import { createTable } from "./create-table";
@@ -44,18 +38,15 @@ export const propertyClaims = createTable(
     // Заявляемая роль (собственник, проживающий и т.д.)
     claimedRole: userRoleEnum("claimed_role").notNull(),
     // Ссылки на конкретные объекты (одна из них будет заполнена в зависимости от типа)
-    apartmentId: varchar("apartment_id", { length: 255 }).references(
-      () => apartments.id,
-      { onDelete: "cascade" }
-    ),
-    parkingSpotId: varchar("parking_spot_id", { length: 255 }).references(
-      () => parkingSpots.id,
-      { onDelete: "cascade" }
-    ),
-    organizationId: varchar("organization_id", { length: 255 }).references(
-      () => organizations.id,
-      { onDelete: "cascade" }
-    ),
+    apartmentId: varchar("apartment_id", { length: 255 }).references(() => apartments.id, {
+      onDelete: "cascade",
+    }),
+    parkingSpotId: varchar("parking_spot_id", { length: 255 }).references(() => parkingSpots.id, {
+      onDelete: "cascade",
+    }),
+    organizationId: varchar("organization_id", { length: 255 }).references(() => organizations.id, {
+      onDelete: "cascade",
+    }),
     // Статус заявки
     status: claimStatusEnum("status").notNull().default("pending"),
     // Комментарий пользователя
@@ -63,9 +54,7 @@ export const propertyClaims = createTable(
     // Комментарий администратора (причина отклонения и т.д.)
     adminComment: text("admin_comment"),
     // Кто рассмотрел заявку
-    reviewedBy: varchar("reviewed_by", { length: 255 }).references(
-      () => users.id
-    ),
+    reviewedBy: varchar("reviewed_by", { length: 255 }).references(() => users.id),
     reviewedAt: timestamp("reviewed_at", { mode: "date", withTimezone: true }),
     // Временные метки
     createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
@@ -75,10 +64,7 @@ export const propertyClaims = createTable(
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [
-    index("claim_user_idx").on(table.userId),
-    index("claim_status_idx").on(table.status),
-  ]
+  (table) => [index("claim_user_idx").on(table.userId), index("claim_status_idx").on(table.status)]
 );
 
 // Типы решений (шаблоны)
@@ -113,9 +99,7 @@ export const claimHistory = createTable(
     // Текст решения (заполняется из шаблона или вручную)
     resolutionText: text("resolution_text"),
     // Кто внес изменение
-    changedBy: varchar("changed_by", { length: 255 }).references(
-      () => users.id
-    ),
+    changedBy: varchar("changed_by", { length: 255 }).references(() => users.id),
     // Когда внесено изменение
     createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
       .notNull()
@@ -154,34 +138,31 @@ export const claimDocuments = createTable(
 );
 
 // Связи
-export const propertyClaimsRelations = relations(
-  propertyClaims,
-  ({ one, many }) => ({
-    user: one(users, {
-      fields: [propertyClaims.userId],
-      references: [users.id],
-    }),
-    apartment: one(apartments, {
-      fields: [propertyClaims.apartmentId],
-      references: [apartments.id],
-    }),
-    parkingSpot: one(parkingSpots, {
-      fields: [propertyClaims.parkingSpotId],
-      references: [parkingSpots.id],
-    }),
-    organization: one(organizations, {
-      fields: [propertyClaims.organizationId],
-      references: [organizations.id],
-    }),
-    reviewer: one(users, {
-      fields: [propertyClaims.reviewedBy],
-      references: [users.id],
-      relationName: "claimReviewer",
-    }),
-    documents: many(claimDocuments),
-    history: many(claimHistory),
-  })
-);
+export const propertyClaimsRelations = relations(propertyClaims, ({ one, many }) => ({
+  user: one(users, {
+    fields: [propertyClaims.userId],
+    references: [users.id],
+  }),
+  apartment: one(apartments, {
+    fields: [propertyClaims.apartmentId],
+    references: [apartments.id],
+  }),
+  parkingSpot: one(parkingSpots, {
+    fields: [propertyClaims.parkingSpotId],
+    references: [parkingSpots.id],
+  }),
+  organization: one(organizations, {
+    fields: [propertyClaims.organizationId],
+    references: [organizations.id],
+  }),
+  reviewer: one(users, {
+    fields: [propertyClaims.reviewedBy],
+    references: [users.id],
+    relationName: "claimReviewer",
+  }),
+  documents: many(claimDocuments),
+  history: many(claimHistory),
+}));
 
 export const claimHistoryRelations = relations(claimHistory, ({ one }) => ({
   claim: one(propertyClaims, {

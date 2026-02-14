@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
-import fs from "fs/promises";
-import path from "path";
 import sharp from "sharp";
+
+import { deleteFromS3, extractS3Key, generateS3Key, uploadToS3 } from "~/lib/s3/client";
 
 import {
   MAX_DOCUMENT_SIZE,
@@ -21,9 +21,9 @@ export interface ProcessedDocument {
   id: string;
   /** Filename with extension */
   filename: string;
-  /** Relative path from public folder */
+  /** S3 key (path in bucket) */
   relativePath: string;
-  /** Full URL path */
+  /** Full public URL */
   url: string;
   /** Original filename */
   originalFilename: string;
@@ -42,13 +42,16 @@ export interface DocumentProcessingOptions {
   generateThumbnail?: boolean;
   /** Thumbnail size (default: 200) */
   thumbnailSize?: number;
+  /** Upload type: determines folder structure */
+  uploadType?: "news" | "knowledge" | "publication" | "listing" | "media";
+  /** User ID for private uploads (required for publication, listing, media) */
+  userId?: string;
 }
 
 // ============================================================================
 // Constants
 // ============================================================================
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "documents");
 const THUMBNAIL_SIZE = 200;
 
 const MIME_TO_EXT: Record<string, string> = {
@@ -65,46 +68,38 @@ export async function processAndSaveDocument(
   file: File | Buffer,
   originalFilename: string,
   mimeType: string,
-  options: DocumentProcessingOptions = {},
+  options: DocumentProcessingOptions = {}
 ): Promise<ProcessedDocument> {
   const {
     customFilename,
     generateThumbnail = true,
     thumbnailSize = THUMBNAIL_SIZE,
+    uploadType = "media",
+    userId,
   } = options;
 
   // Convert File to Buffer if needed
-  const buffer =
-    file instanceof File ? Buffer.from(await file.arrayBuffer()) : file;
+  const buffer = file instanceof File ? Buffer.from(await file.arrayBuffer()) : file;
 
   // Generate unique ID
   const id = randomUUID();
-
-  // Get current date for folder structure
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-
-  // Create upload subdirectory: uploads/documents/YYYY/MM/
-  const uploadSubdir = path.join(UPLOAD_DIR, String(year), month);
-  await fs.mkdir(uploadSubdir, { recursive: true });
 
   // Determine extension from MIME type
   const extension = MIME_TO_EXT[mimeType] ?? "bin";
 
   // Generate filename
-  const filename = customFilename
-    ? `${customFilename}.${extension}`
-    : `${id}.${extension}`;
+  const filename = customFilename ? `${customFilename}.${extension}` : `${id}.${extension}`;
 
-  // Save file
-  const filePath = path.join(uploadSubdir, filename);
-  await fs.writeFile(filePath, buffer);
-
-  // Get file stats
-  const stats = await fs.stat(filePath);
-
-  const relativePath = `/uploads/documents/${year}/${month}/${filename}`;
+  // Upload document to S3 with proper folder structure
+  const s3Key = generateS3Key(filename, {
+    type: uploadType,
+    userId,
+  });
+  const url = await uploadToS3(buffer, s3Key, mimeType, {
+    originalFilename,
+    uploadId: id,
+    uploadType,
+  });
 
   // Generate thumbnail for images
   let thumbnailUrl: string | undefined;
@@ -112,17 +107,25 @@ export async function processAndSaveDocument(
   if (generateThumbnail && mimeType.startsWith("image/")) {
     try {
       const thumbnailFilename = `${id}_thumb.webp`;
-      const thumbnailPath = path.join(uploadSubdir, thumbnailFilename);
-
-      await sharp(buffer)
+      const thumbnailBuffer = await sharp(buffer)
         .resize(thumbnailSize, thumbnailSize, {
           fit: "cover",
           position: "center",
         })
         .webp({ quality: 80 })
-        .toFile(thumbnailPath);
+        .toBuffer();
 
-      thumbnailUrl = `/uploads/documents/${year}/${month}/${thumbnailFilename}`;
+      // Upload thumbnail to S3
+      const thumbnailKey = generateS3Key(thumbnailFilename, {
+        type: uploadType,
+        userId,
+      });
+      thumbnailUrl = await uploadToS3(thumbnailBuffer, thumbnailKey, "image/webp", {
+        originalFilename,
+        uploadId: id,
+        isThumbnail: "true",
+        uploadType,
+      });
     } catch (error) {
       console.error("Failed to generate thumbnail:", error);
       // Continue without thumbnail
@@ -132,10 +135,10 @@ export async function processAndSaveDocument(
   return {
     id,
     filename,
-    relativePath,
-    url: relativePath,
+    relativePath: s3Key, // S3 key
+    url, // Full public URL
     originalFilename,
-    size: stats.size,
+    size: buffer.length,
     mimeType,
     thumbnailUrl,
   };
@@ -170,21 +173,29 @@ export function validateDocumentFile(file: File): {
 // Delete Document
 // ============================================================================
 
-export async function deleteDocument(relativePath: string): Promise<boolean> {
+export async function deleteDocument(urlOrPath: string): Promise<boolean> {
   try {
-    const filePath = path.join(process.cwd(), "public", relativePath);
-    await fs.unlink(filePath);
+    // Extract S3 key from URL
+    const s3Key = extractS3Key(urlOrPath);
+    if (!s3Key) {
+      console.error("Invalid S3 URL:", urlOrPath);
+      return false;
+    }
+
+    // Delete main document
+    const deleted = await deleteFromS3(s3Key);
 
     // Try to delete thumbnail if exists
-    const thumbnailPath = filePath.replace(/\.[^.]+$/, "_thumb.webp");
+    const thumbnailKey = s3Key.replace(/\.[^.]+$/, "_thumb.webp");
     try {
-      await fs.unlink(thumbnailPath);
+      await deleteFromS3(thumbnailKey);
     } catch {
       // Thumbnail might not exist, ignore error
     }
 
-    return true;
-  } catch {
+    return deleted;
+  } catch (error) {
+    console.error("Failed to delete document:", error);
     return false;
   }
 }

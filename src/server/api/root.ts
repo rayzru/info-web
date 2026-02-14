@@ -14,6 +14,7 @@ import { postRouter } from "~/server/api/routers/post";
 import { profileRouter } from "~/server/api/routers/profile";
 import { publicationsRouter } from "~/server/api/routers/publications";
 import { settingsRouter } from "~/server/api/routers/settings";
+import { tagsRouter } from "~/server/api/routers/tags";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -38,6 +39,7 @@ export const appRouter = createTRPCRouter({
   notifications: notificationsRouter,
   publications: publicationsRouter,
   settings: settingsRouter,
+  tags: tagsRouter,
 });
 
 // export type definition of API

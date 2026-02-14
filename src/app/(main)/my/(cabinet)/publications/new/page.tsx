@@ -1,14 +1,27 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import type { JSONContent } from "@tiptap/react";
-import { ArrowLeft, Loader2, Send } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { JSONContent } from "@tiptap/react";
+import { ArrowLeft, Loader2, Send, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { StandardEditor } from "~/components/editor/rich-editor";
+import { ImageUploader } from "~/components/media";
+import { PageHeader } from "~/components/page-header";
+import { TagSelector } from "~/components/tag-selector";
 import { Button } from "~/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import {
   Select,
@@ -18,19 +31,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "~/components/ui/form";
-import { StandardEditor } from "~/components/editor/rich-editor";
-import { ImageUploader } from "~/components/media";
-import { TagSelector } from "~/components/tag-selector";
-import { PageHeader } from "~/components/page-header";
 import { useToast } from "~/hooks/use-toast";
+import { PUBLICATION_TYPE_LABELS, PUBLICATION_TYPES } from "~/lib/constants/publication-types";
 import { api } from "~/trpc/react";
 
 const INITIAL_CONTENT: JSONContent = {
@@ -43,29 +45,17 @@ const INITIAL_CONTENT: JSONContent = {
   ],
 };
 
-// Типы публикаций (без announcement и event - они управляются отдельно)
-const PUBLICATION_TYPES = [
-  { value: "help_request", label: "Просьба о помощи" },
-  { value: "lost_found", label: "Потеряно/найдено" },
-  { value: "recommendation", label: "Рекомендация" },
-  { value: "question", label: "Вопрос" },
-  { value: "discussion", label: "Обсуждение" },
-] as const;
-
 // Validation schema
 const publicationFormSchema = z.object({
-  title: z
-    .string()
-    .min(1, "Заголовок обязателен")
-    .max(255, "Заголовок слишком длинный"),
+  title: z.string().min(1, "Заголовок обязателен").max(255, "Заголовок слишком длинный"),
   content: z.custom<JSONContent>(),
   coverImage: z.string().optional(),
   type: z.enum([
-    "help_request",
-    "lost_found",
-    "recommendation",
-    "question",
-    "discussion",
+    PUBLICATION_TYPES.HELP_REQUEST,
+    PUBLICATION_TYPES.LOST_FOUND,
+    PUBLICATION_TYPES.RECOMMENDATION,
+    PUBLICATION_TYPES.QUESTION,
+    PUBLICATION_TYPES.DISCUSSION,
   ]),
   isUrgent: z.boolean(),
   isAnonymous: z.boolean(),
@@ -77,6 +67,7 @@ type PublicationFormValues = z.infer<typeof publicationFormSchema>;
 export default function NewPublicationPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { data: session } = useSession();
 
   const form = useForm<PublicationFormValues>({
     resolver: zodResolver(publicationFormSchema),
@@ -84,7 +75,7 @@ export default function NewPublicationPage() {
       title: "",
       content: INITIAL_CONTENT,
       coverImage: "",
-      type: "discussion",
+      type: PUBLICATION_TYPES.DISCUSSION,
       isUrgent: false,
       isAnonymous: false,
       tagIds: [],
@@ -129,10 +120,7 @@ export default function NewPublicationPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <PageHeader
-          title="Новая публикация"
-          description="Поделитесь информацией с соседями"
-        />
+        <PageHeader title="Новая публикация" description="Поделитесь информацией с соседями" />
       </div>
 
       <Form {...form}>
@@ -145,19 +133,16 @@ export default function NewPublicationPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Тип публикации</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
+                  <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {PUBLICATION_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
+                      {Object.values(PUBLICATION_TYPES).map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {PUBLICATION_TYPE_LABELS[type]}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -194,10 +179,7 @@ export default function NewPublicationPage() {
               <FormItem>
                 <FormLabel>Заголовок *</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Введите заголовок публикации"
-                    {...field}
-                  />
+                  <Input placeholder="Введите заголовок публикации" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -244,47 +226,65 @@ export default function NewPublicationPage() {
             )}
           />
 
-          {/* Settings row */}
-          <div className="flex flex-wrap items-center gap-6 py-2">
-            <FormField
-              control={form.control}
-              name="isUrgent"
-              render={({ field }) => (
-                <FormItem className="flex items-center gap-2">
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel className="mt-0! cursor-pointer">Срочно</FormLabel>
-                </FormItem>
-              )}
-            />
+          {/* Urgent setting */}
+          <FormField
+            control={form.control}
+            name="isUrgent"
+            render={({ field }) => (
+              <FormItem className="flex items-center gap-2">
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="flex-1">
+                  <FormLabel className="mt-0! cursor-pointer">Закрепить</FormLabel>
+                  <p className="text-muted-foreground text-xs">
+                    Публикация будет закреплена вверху списка
+                  </p>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          {/* Author section */}
+          <div className="space-y-3 rounded-lg border p-4">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <User className="h-4 w-4" />
+              <span>Автор</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <p className="text-sm font-medium">{session?.user?.name ?? "Пользователь"}</p>
+                <p className="text-muted-foreground text-xs">
+                  {new Date().toLocaleDateString("ru-RU", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
 
             <FormField
               control={form.control}
               name="isAnonymous"
               render={({ field }) => (
-                <FormItem className="flex items-center gap-2">
+                <FormItem className="flex items-center gap-2 border-t pt-2">
                   <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
-                  <FormLabel className="mt-0! cursor-pointer">Анонимно</FormLabel>
+                  <div className="flex-1">
+                    <FormLabel className="mt-0! cursor-pointer">Анонимно</FormLabel>
+                    <p className="text-muted-foreground text-xs">От имени ресурса</p>
+                  </div>
                 </FormItem>
               )}
             />
           </div>
 
           {/* Submit */}
-          <div className="flex items-center gap-4 pt-4 border-t">
-            <Button
-              type="submit"
-              disabled={createMutation.isPending}
-            >
+          <div className="flex items-center gap-4 border-t pt-4">
+            <Button type="submit" disabled={createMutation.isPending}>
               {createMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -292,7 +292,7 @@ export default function NewPublicationPage() {
               )}
               Отправить на модерацию
             </Button>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               После проверки модератором публикация станет доступна всем
             </p>
           </div>

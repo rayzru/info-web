@@ -21,12 +21,10 @@ export function FormSection({
     <section className={cn("space-y-6", className)}>
       <div className="border-b pb-3">
         <div className="flex items-center gap-2">
-          {Icon && <Icon className="h-5 w-5 text-muted-foreground" />}
+          {Icon && <Icon className="text-muted-foreground h-5 w-5" />}
           <h2 className="text-lg font-medium">{title}</h2>
         </div>
-        {description && (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        )}
+        {description && <p className="text-muted-foreground mt-1 text-sm">{description}</p>}
       </div>
       <div className="space-y-8">{children}</div>
     </section>

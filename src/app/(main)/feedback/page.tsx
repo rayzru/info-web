@@ -1,39 +1,34 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { useForm } from "react-hook-form";
+import { useEffect, useRef, useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
+  AlertTriangle,
   CheckCircle2,
+  FileText,
+  HelpCircle,
+  Image as ImageIcon,
+  Lightbulb,
   Loader2,
   MessageSquare,
-  Send,
-  AlertTriangle,
-  HelpCircle,
-  Lightbulb,
-  FileText,
   Paperclip,
-  Image as ImageIcon,
-  X,
+  Send,
   ShieldCheck,
+  X,
 } from "lucide-react";
-
 import Image from "next/image";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
 import { ImageUploader } from "~/components/media/image-uploader";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Form,
   FormControl,
@@ -43,12 +38,18 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Alert, AlertDescription } from "~/components/ui/alert";
-import { Badge } from "~/components/ui/badge";
+import { Input } from "~/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
-import { api } from "~/trpc/react";
 import { FEEDBACK_LIMITS } from "~/server/db/schema";
+import { api } from "~/trpc/react";
 
 const FEEDBACK_TYPES = [
   { value: "complaint", label: "Жалоба", icon: AlertTriangle, color: "text-red-500" },
@@ -88,8 +89,8 @@ export default function FeedbackPage() {
 
   // Validate type param
   const validTypes = ["complaint", "suggestion", "request", "question", "other"] as const;
-  const defaultType = validTypes.includes(typeParam as typeof validTypes[number])
-    ? (typeParam as typeof validTypes[number])
+  const defaultType = validTypes.includes(typeParam as (typeof validTypes)[number])
+    ? (typeParam as (typeof validTypes)[number])
     : "suggestion";
 
   const form = useForm<FeedbackFormValues>({
@@ -159,11 +160,11 @@ export default function FeedbackPage() {
 
   if (isSubmitted) {
     return (
-      <div className="container max-w-2xl mx-auto py-12">
+      <div className="container mx-auto max-w-2xl py-12">
         <Card className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20">
           <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+            <div className="space-y-4 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
                 <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
               <div>
@@ -198,21 +199,19 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="container max-w-2xl mx-auto py-8 space-y-6">
+    <div className="container mx-auto max-w-2xl space-y-6 py-8">
       {/* Header */}
-      <div className="text-center space-y-2">
+      <div className="space-y-2 text-center">
         <h1 className="text-2xl font-bold">Обратная связь</h1>
-        <p className="text-muted-foreground">
-          Оставьте жалобу, пожелание или заявку
-        </p>
+        <p className="text-muted-foreground">Оставьте жалобу, пожелание или заявку</p>
       </div>
 
       {/* Privacy notice */}
       <Alert>
         <ShieldCheck className="h-4 w-4" />
         <AlertDescription>
-          Ваши данные хранятся конфиденциально. Контактная информация используется
-          только для обратной связи и не передаётся третьим лицам.
+          Ваши данные хранятся конфиденциально. Контактная информация используется только для
+          обратной связи и не передаётся третьим лицам.
         </AlertDescription>
       </Alert>
 
@@ -222,7 +221,7 @@ export default function FeedbackPage() {
           <FileText className="h-4 w-4" />
           <AlertDescription className="flex items-center gap-2">
             <span>Контекст:</span>
-            <Link href={contextParam} className="font-medium text-primary hover:underline">
+            <Link href={contextParam} className="text-primary font-medium hover:underline">
               {contextParam}
             </Link>
           </AlertDescription>
@@ -238,7 +237,7 @@ export default function FeedbackPage() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Тип обращения</FormLabel>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
                   {FEEDBACK_TYPES.map((type) => {
                     const Icon = type.icon;
                     const isSelected = field.value === type.value;
@@ -247,13 +246,11 @@ export default function FeedbackPage() {
                         key={type.value}
                         type="button"
                         onClick={() => field.onChange(type.value)}
-                        className={`
-                          flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all
-                          ${isSelected
+                        className={`flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-all ${
+                          isSelected
                             ? "border-primary bg-primary/5"
                             : "border-muted hover:border-primary/50"
-                          }
-                        `}
+                        } `}
                       >
                         <Icon className={`h-5 w-5 ${type.color}`} />
                         <span className="text-xs font-medium">{type.label}</span>
@@ -276,10 +273,7 @@ export default function FeedbackPage() {
                   Тема <span className="text-muted-foreground font-normal">(необязательно)</span>
                 </FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Кратко опишите суть обращения"
-                    {...field}
-                  />
+                  <Input placeholder="Кратко опишите суть обращения" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -300,13 +294,18 @@ export default function FeedbackPage() {
                     {...field}
                     ref={(el) => {
                       field.ref(el);
-                      (contentRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
+                      (contentRef as React.MutableRefObject<HTMLTextAreaElement | null>).current =
+                        el;
                     }}
                   />
                 </FormControl>
-                <div className="flex justify-between text-xs text-muted-foreground">
+                <div className="text-muted-foreground flex justify-between text-xs">
                   <FormMessage />
-                  <span className={contentLength > FEEDBACK_LIMITS.MAX_CONTENT_LENGTH ? "text-destructive" : ""}>
+                  <span
+                    className={
+                      contentLength > FEEDBACK_LIMITS.MAX_CONTENT_LENGTH ? "text-destructive" : ""
+                    }
+                  >
                     {contentLength} / {FEEDBACK_LIMITS.MAX_CONTENT_LENGTH}
                   </span>
                 </div>
@@ -315,12 +314,10 @@ export default function FeedbackPage() {
           />
 
           {/* Contact info section */}
-          <div className="space-y-4 pt-4 border-t">
+          <div className="space-y-4 border-t pt-4">
             <div>
               <h3 className="font-medium">Контактные данные для обратной связи</h3>
-              <p className="text-sm text-muted-foreground">
-                Заполните, если хотите получить ответ
-              </p>
+              <p className="text-muted-foreground text-sm">Заполните, если хотите получить ответ</p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -360,15 +357,9 @@ export default function FeedbackPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="example@mail.ru"
-                      {...field}
-                    />
+                    <Input type="email" placeholder="example@mail.ru" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    На этот адрес будет отправлен ответ
-                  </FormDescription>
+                  <FormDescription>На этот адрес будет отправлен ответ</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -376,22 +367,25 @@ export default function FeedbackPage() {
           </div>
 
           {/* Photo attachments */}
-          <div className="space-y-4 pt-4 border-t">
+          <div className="space-y-4 border-t pt-4">
             <div>
-              <h3 className="font-medium flex items-center gap-2">
+              <h3 className="flex items-center gap-2 font-medium">
                 <ImageIcon className="h-4 w-4" />
                 Фотографии
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 До {FEEDBACK_LIMITS.MAX_PHOTOS} фотографий (необязательно)
               </p>
             </div>
 
             {/* Photo grid */}
             {photos.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                 {photos.map((photo, index) => (
-                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
+                  <div
+                    key={index}
+                    className="relative aspect-square overflow-hidden rounded-lg border"
+                  >
                     <Image
                       src={photo}
                       alt={`Фото ${index + 1}`}
@@ -402,7 +396,7 @@ export default function FeedbackPage() {
                     <button
                       type="button"
                       onClick={() => handleRemovePhoto(index)}
-                      className="absolute top-1 right-1 p-1 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                      className="absolute right-1 top-1 rounded-full bg-black/50 p-1 transition-colors hover:bg-black/70"
                     >
                       <X className="h-3 w-3 text-white" />
                     </button>
@@ -427,12 +421,7 @@ export default function FeedbackPage() {
 
           {/* Submit */}
           <div className="pt-4">
-            <Button
-              type="submit"
-              className="w-full"
-              size="lg"
-              disabled={submitMutation.isPending}
-            >
+            <Button type="submit" className="w-full" size="lg" disabled={submitMutation.isPending}>
               {submitMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (

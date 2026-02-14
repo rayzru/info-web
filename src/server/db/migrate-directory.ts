@@ -1,5 +1,6 @@
-import { db } from "./index";
 import { sql } from "drizzle-orm";
+
+import { db } from "./index";
 
 async function migrateDirectory() {
   console.log("Creating directory tables...");
@@ -57,9 +58,15 @@ async function migrateDirectory() {
       ADD COLUMN IF NOT EXISTS "scope" directory_scope NOT NULL DEFAULT 'core'
     `);
 
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_tag_slug_idx" ON "directory_tag" ("slug")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_tag_parent_idx" ON "directory_tag" ("parent_id")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_tag_scope_idx" ON "directory_tag" ("scope")`);
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_tag_slug_idx" ON "directory_tag" ("slug")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_tag_parent_idx" ON "directory_tag" ("parent_id")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_tag_scope_idx" ON "directory_tag" ("scope")`
+    );
 
     // Create directory_entry table
     await db.execute(sql`
@@ -80,9 +87,15 @@ async function migrateDirectory() {
       )
     `);
 
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_entry_type_idx" ON "directory_entry" ("type")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_entry_slug_idx" ON "directory_entry" ("slug")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_entry_building_idx" ON "directory_entry" ("building_id")`);
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_entry_type_idx" ON "directory_entry" ("type")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_entry_slug_idx" ON "directory_entry" ("slug")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_entry_building_idx" ON "directory_entry" ("building_id")`
+    );
 
     // Create directory_contact table
     await db.execute(sql`
@@ -103,14 +116,28 @@ async function migrateDirectory() {
     `);
 
     // Add new columns if they don't exist (for existing tables)
-    await db.execute(sql`ALTER TABLE "directory_contact" ADD COLUMN IF NOT EXISTS "subtitle" varchar(255)`);
-    await db.execute(sql`ALTER TABLE "directory_contact" ADD COLUMN IF NOT EXISTS "has_whatsapp" integer DEFAULT 0 NOT NULL`);
-    await db.execute(sql`ALTER TABLE "directory_contact" ADD COLUMN IF NOT EXISTS "has_telegram" integer DEFAULT 0 NOT NULL`);
-    await db.execute(sql`ALTER TABLE "directory_contact" ADD COLUMN IF NOT EXISTS "is_24h" integer DEFAULT 0 NOT NULL`);
-    await db.execute(sql`ALTER TABLE "directory_contact" ADD COLUMN IF NOT EXISTS "schedule_note" varchar(255)`);
+    await db.execute(
+      sql`ALTER TABLE "directory_contact" ADD COLUMN IF NOT EXISTS "subtitle" varchar(255)`
+    );
+    await db.execute(
+      sql`ALTER TABLE "directory_contact" ADD COLUMN IF NOT EXISTS "has_whatsapp" integer DEFAULT 0 NOT NULL`
+    );
+    await db.execute(
+      sql`ALTER TABLE "directory_contact" ADD COLUMN IF NOT EXISTS "has_telegram" integer DEFAULT 0 NOT NULL`
+    );
+    await db.execute(
+      sql`ALTER TABLE "directory_contact" ADD COLUMN IF NOT EXISTS "is_24h" integer DEFAULT 0 NOT NULL`
+    );
+    await db.execute(
+      sql`ALTER TABLE "directory_contact" ADD COLUMN IF NOT EXISTS "schedule_note" varchar(255)`
+    );
 
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_contact_entry_idx" ON "directory_contact" ("entry_id")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_contact_type_idx" ON "directory_contact" ("type")`);
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_contact_entry_idx" ON "directory_contact" ("entry_id")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_contact_type_idx" ON "directory_contact" ("type")`
+    );
 
     // Create directory_schedule table
     await db.execute(sql`
@@ -124,7 +151,9 @@ async function migrateDirectory() {
       )
     `);
 
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_schedule_entry_idx" ON "directory_schedule" ("entry_id")`);
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_schedule_entry_idx" ON "directory_schedule" ("entry_id")`
+    );
 
     // Create directory_entry_tag junction table
     await db.execute(sql`
@@ -135,8 +164,12 @@ async function migrateDirectory() {
       )
     `);
 
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_entry_tag_entry_idx" ON "directory_entry_tag" ("entry_id")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_entry_tag_tag_idx" ON "directory_entry_tag" ("tag_id")`);
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_entry_tag_entry_idx" ON "directory_entry_tag" ("entry_id")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_entry_tag_tag_idx" ON "directory_entry_tag" ("tag_id")`
+    );
 
     // Create directory_contact_tag junction table
     await db.execute(sql`
@@ -147,8 +180,12 @@ async function migrateDirectory() {
       )
     `);
 
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_contact_tag_contact_idx" ON "directory_contact_tag" ("contact_id")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_contact_tag_tag_idx" ON "directory_contact_tag" ("tag_id")`);
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_contact_tag_contact_idx" ON "directory_contact_tag" ("contact_id")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_contact_tag_tag_idx" ON "directory_contact_tag" ("tag_id")`
+    );
 
     // Create event type enum
     await db.execute(sql`
@@ -175,11 +212,21 @@ async function migrateDirectory() {
       )
     `);
 
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_analytics_event_type_idx" ON "directory_analytics" ("event_type")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_analytics_tag_idx" ON "directory_analytics" ("tag_id")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_analytics_entry_idx" ON "directory_analytics" ("entry_id")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_analytics_user_idx" ON "directory_analytics" ("user_id")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_analytics_created_idx" ON "directory_analytics" ("created_at")`);
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_analytics_event_type_idx" ON "directory_analytics" ("event_type")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_analytics_tag_idx" ON "directory_analytics" ("tag_id")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_analytics_entry_idx" ON "directory_analytics" ("entry_id")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_analytics_user_idx" ON "directory_analytics" ("user_id")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_analytics_created_idx" ON "directory_analytics" ("created_at")`
+    );
 
     // Create directory_tag_stats table (aggregated stats)
     await db.execute(sql`
@@ -193,8 +240,12 @@ async function migrateDirectory() {
       )
     `);
 
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_tag_stats_clicks_idx" ON "directory_tag_stats" ("click_count")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_tag_stats_views_idx" ON "directory_tag_stats" ("view_count")`);
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_tag_stats_clicks_idx" ON "directory_tag_stats" ("click_count")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_tag_stats_views_idx" ON "directory_tag_stats" ("view_count")`
+    );
 
     // Create directory_entry_stats table (aggregated stats)
     await db.execute(sql`
@@ -209,8 +260,12 @@ async function migrateDirectory() {
       )
     `);
 
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_entry_stats_views_idx" ON "directory_entry_stats" ("view_count")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "directory_entry_stats_calls_idx" ON "directory_entry_stats" ("call_count")`);
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_entry_stats_views_idx" ON "directory_entry_stats" ("view_count")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "directory_entry_stats_calls_idx" ON "directory_entry_stats" ("call_count")`
+    );
 
     // ============== BUILDING CHANNELS ==============
     // Create channel_type enum
@@ -237,9 +292,15 @@ async function migrateDirectory() {
       )
     `);
 
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "building_channel_building_idx" ON "building_channel" ("building_id")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "building_channel_type_idx" ON "building_channel" ("channel_type")`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS "building_channel_active_idx" ON "building_channel" ("is_active")`);
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "building_channel_building_idx" ON "building_channel" ("building_id")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "building_channel_type_idx" ON "building_channel" ("channel_type")`
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS "building_channel_active_idx" ON "building_channel" ("is_active")`
+    );
 
     console.log("Directory and building_channel tables created successfully!");
   } catch (error) {

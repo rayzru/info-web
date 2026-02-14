@@ -1,10 +1,11 @@
+import { Suspense } from "react";
+
+import { AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
-import { AlertCircle, ArrowLeft } from "lucide-react";
 
-import { Button } from "~/components/ui/button";
 import { ResetPasswordForm } from "~/components/reset-password-form";
+import { Button } from "~/components/ui/button";
 import { auth } from "~/server/auth";
 
 export default async function Page({
@@ -31,9 +32,8 @@ export default async function Page({
                 <AlertCircle className="h-6 w-6 text-red-600" />
               </div>
               <h1 className="text-lg font-semibold">Ссылка недействительна</h1>
-              <p className="text-sm text-muted-foreground">
-                Ссылка для сброса пароля отсутствует или повреждена. Запросите
-                новую ссылку.
+              <p className="text-muted-foreground text-sm">
+                Ссылка для сброса пароля отсутствует или повреждена. Запросите новую ссылку.
               </p>
             </div>
 

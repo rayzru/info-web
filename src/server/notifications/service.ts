@@ -5,20 +5,21 @@
  * (email, push notifications, in-app notifications, etc.)
  */
 
-import { sendEmail, type EmailTemplateId, type EmailPayload } from "~/server/email";
+import { type EmailPayload, type EmailTemplateId, sendEmail } from "~/server/email";
+
 import type {
-  NotificationEvent,
-  UserRegisteredEvent,
-  EmailVerificationRequestedEvent,
-  PasswordChangedEvent,
-  PasswordResetRequestedEvent,
-  PasswordResetCompletedEvent,
   AccountLinkedEvent,
   AccountUnlinkedEvent,
-  ClaimSubmittedEvent,
   ClaimApprovedEvent,
   ClaimRejectedEvent,
+  ClaimSubmittedEvent,
+  EmailVerificationRequestedEvent,
+  NotificationEvent,
+  PasswordChangedEvent,
+  PasswordResetCompletedEvent,
+  PasswordResetRequestedEvent,
   SecurityAlertEvent,
+  UserRegisteredEvent,
 } from "./types";
 
 // ============================================================================

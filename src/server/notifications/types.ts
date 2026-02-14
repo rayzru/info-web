@@ -144,7 +144,4 @@ export type EventType = NotificationEvent["type"];
 /**
  * Get event payload type by event type string
  */
-export type EventPayload<T extends EventType> = Extract<
-  NotificationEvent,
-  { type: T }
->;
+export type EventPayload<T extends EventType> = Extract<NotificationEvent, { type: T }>;

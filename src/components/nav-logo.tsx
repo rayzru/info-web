@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
 import Link from "next/link";
+
 import { cn } from "~/lib/utils";
 
 // SVG viewBox: 476 x 38
@@ -44,14 +46,14 @@ const initialVisibleLetters = [13, 7, 0]; // С, Р, 2
 // С stays at original position (16.7) - anchor point
 // Р and 2 move closer to С
 const compactPositions: Record<number, number> = {
-  13: 16.7,   // С stays at original position (anchor)
-  7: 34,      // Р moves left (from 209 to 34)
-  0: 62,      // 2 moves left (from 452.7 to 62)
+  13: 16.7, // С stays at original position (anchor)
+  7: 34, // Р moves left (from 209 to 34)
+  0: 62, // 2 moves left (from 452.7 to 62)
 };
 
 // Extract X coordinates from paths
 const pathXCoords = paths.map((path) => {
-  const match = path.match(/M([\d.]+)/);
+  const match = /M([\d.]+)/.exec(path);
   return match?.[1] ? parseFloat(match[1]) : 0;
 });
 
@@ -71,7 +73,7 @@ export function NavLogo() {
 
       // Get available width (parent width minus siblings)
       const parentRect = parent.getBoundingClientRect();
-      const siblings = Array.from(parent.children).filter(child => child !== container);
+      const siblings = Array.from(parent.children).filter((child) => child !== container);
       const siblingsWidth = siblings.reduce((acc, sibling) => {
         return acc + sibling.getBoundingClientRect().width;
       }, 0);
@@ -115,14 +117,14 @@ export function NavLogo() {
 
   // Calculate current width based on state
   const scaleFactor = LOGO_HEIGHT / SVG_HEIGHT;
-  const currentWidth = (isHovered && hasSpace) ? FULL_WIDTH : COMPACT_WIDTH;
+  const currentWidth = isHovered && hasSpace ? FULL_WIDTH : COMPACT_WIDTH;
 
   return (
     <Link
       ref={containerRef}
       href="/"
       data-testid="nav-logo"
-      className="relative flex h-9 items-center shrink-0"
+      className="relative flex h-9 shrink-0 items-center"
       style={{ width: PLACEHOLDER_WIDTH }} // Fixed placeholder width
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -149,11 +151,7 @@ export function NavLogo() {
           style={{ width: FULL_WIDTH * scaleFactor }}
         >
           {paths.map((pathData, index) => (
-            <path
-              key={index}
-              d={pathData}
-              style={getLetterStyle(index)}
-            />
+            <path key={index} d={pathData} style={getLetterStyle(index)} />
           ))}
         </svg>
       </div>

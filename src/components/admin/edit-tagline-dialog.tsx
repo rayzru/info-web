@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
 import { Loader2, MessageSquareText } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +18,6 @@ import {
 import { DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Checkbox } from "~/components/ui/checkbox";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 
@@ -26,18 +27,21 @@ interface EditTaglineDialogProps {
   asMenuItem?: boolean;
 }
 
-export function EditTaglineDialog({ userId, userName, asMenuItem = false }: EditTaglineDialogProps) {
+export function EditTaglineDialog({
+  userId,
+  userName,
+  asMenuItem = false,
+}: EditTaglineDialogProps) {
   const [open, setOpen] = useState(false);
   const [tagline, setTagline] = useState("");
   const [setByAdmin, setSetByAdmin] = useState(true);
   const { toast } = useToast();
   const utils = api.useUtils();
 
-  const { data: taglineData, isLoading: isLoadingTagline } =
-    api.admin.users.getTagline.useQuery(
-      { userId },
-      { enabled: open }
-    );
+  const { data: taglineData, isLoading: isLoadingTagline } = api.admin.users.getTagline.useQuery(
+    { userId },
+    { enabled: open }
+  );
 
   // Update local state when data loads
   useEffect(() => {
@@ -95,7 +99,7 @@ export function EditTaglineDialog({ userId, userName, asMenuItem = false }: Edit
 
       {isLoadingTagline ? (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -108,7 +112,7 @@ export function EditTaglineDialog({ userId, userName, asMenuItem = false }: Edit
               placeholder="Например: Представитель УК, Председатель дома"
               maxLength={100}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Отображается рядом с именем пользователя в публикациях и комментариях
             </p>
           </div>
@@ -130,7 +134,7 @@ export function EditTaglineDialog({ userId, userName, asMenuItem = false }: Edit
             </p>
           )}
 
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
             {taglineData?.tagline && (
               <Button
                 type="button"
@@ -142,17 +146,11 @@ export function EditTaglineDialog({ userId, userName, asMenuItem = false }: Edit
                 Сбросить
               </Button>
             )}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Отмена
             </Button>
             <Button type="submit" disabled={updateTagline.isPending}>
-              {updateTagline.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {updateTagline.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Сохранить
             </Button>
           </DialogFooter>

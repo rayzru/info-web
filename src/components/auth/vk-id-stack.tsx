@@ -15,7 +15,7 @@ export function VkIdStack({ className }: { className?: string }) {
       <img
         src="/logos/mailru.svg"
         alt=""
-        className="absolute size-6 rounded-full shadow-sm transition-all duration-300 ease-out opacity-0 scale-75 group-hover/vk:opacity-100 group-hover/vk:scale-100 group-hover/vk:-translate-x-6"
+        className="absolute size-6 scale-75 rounded-full opacity-0 shadow-sm transition-all duration-300 ease-out group-hover/vk:-translate-x-6 group-hover/vk:scale-100 group-hover/vk:opacity-100"
         aria-hidden="true"
       />
 
@@ -30,7 +30,7 @@ export function VkIdStack({ className }: { className?: string }) {
       <img
         src="/logos/ok.svg"
         alt=""
-        className="absolute size-6 rounded-full shadow-sm transition-all duration-300 ease-out opacity-0 scale-75 group-hover/vk:opacity-100 group-hover/vk:scale-100 group-hover/vk:translate-x-6"
+        className="absolute size-6 scale-75 rounded-full opacity-0 shadow-sm transition-all duration-300 ease-out group-hover/vk:translate-x-6 group-hover/vk:scale-100 group-hover/vk:opacity-100"
         aria-hidden="true"
       />
     </div>

@@ -13,9 +13,7 @@ export default function SecurityPage() {
       />
 
       <section>
-        <h2 className="text-lg font-medium pb-3 border-b mb-6">
-          Способы входа
-        </h2>
+        <h2 className="mb-6 border-b pb-3 text-lg font-medium">Способы входа</h2>
         <LinkedAccounts availableProviders={availableProviders} />
       </section>
     </div>

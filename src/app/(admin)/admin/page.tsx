@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+
 import {
   AlertCircle,
   ArrowRight,
@@ -15,9 +15,10 @@ import {
   Megaphone,
   MessageSquare,
   Newspaper,
-  UserX,
   Users as UsersIcon,
+  UserX,
 } from "lucide-react";
+import Link from "next/link";
 import {
   Area,
   AreaChart,
@@ -108,12 +109,13 @@ export default function AdminPage() {
 
   const { data: dashboardStats, isLoading: isLoadingDashboard } =
     api.admin.dashboardStats.useQuery();
-  const { data: navCounts, isLoading: isLoadingNav } =
-    api.admin.navCounts.useQuery();
-  const { data: analyticsData, isLoading: isLoadingAnalytics } =
-    api.analytics.dashboard.useQuery({ period: chartPeriod });
-  const { data: visitsData, isLoading: isLoadingVisits } =
-    api.analytics.visitsTimeSeries.useQuery({ period: chartPeriod });
+  const { data: navCounts, isLoading: isLoadingNav } = api.admin.navCounts.useQuery();
+  const { data: analyticsData, isLoading: isLoadingAnalytics } = api.analytics.dashboard.useQuery({
+    period: chartPeriod,
+  });
+  const { data: visitsData, isLoading: isLoadingVisits } = api.analytics.visitsTimeSeries.useQuery({
+    period: chartPeriod,
+  });
 
   const isLoading = isLoadingDashboard || isLoadingNav;
 
@@ -132,15 +134,10 @@ export default function AdminPage() {
   };
 
   // Filter action items to only show those with pending > 0
-  const activeActionItems = ACTION_ITEMS.filter(
-    (item) => getPendingCount(item.key) > 0
-  );
+  const activeActionItems = ACTION_ITEMS.filter((item) => getPendingCount(item.key) > 0);
 
   // Calculate total pending actions
-  const totalPending = ACTION_ITEMS.reduce(
-    (sum, item) => sum + getPendingCount(item.key),
-    0
-  );
+  const totalPending = ACTION_ITEMS.reduce((sum, item) => sum + getPendingCount(item.key), 0);
 
   // Format period label for chart
   const formatPeriodLabel = (period: string) => {
@@ -162,15 +159,12 @@ export default function AdminPage() {
       {/* Hero Section: Action Summary + Analytics */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Action Summary Card */}
-        <Card className={cn(
-          "lg:col-span-1",
-          totalPending > 0 && "border-amber-500/50 bg-amber-500/5"
-        )}>
+        <Card
+          className={cn("lg:col-span-1", totalPending > 0 && "border-amber-500/50 bg-amber-500/5")}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium">
-              {totalPending > 0 && (
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-              )}
+              {totalPending > 0 && <AlertCircle className="h-4 w-4 text-amber-600" />}
               Требуют внимания
             </CardTitle>
           </CardHeader>
@@ -179,10 +173,8 @@ export default function AdminPage() {
               <Skeleton className="h-12 w-24" />
             ) : (
               <>
-                <div className="text-4xl font-bold tabular-nums">
-                  {totalPending}
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <div className="text-4xl font-bold tabular-nums">{totalPending}</div>
+                <p className="text-muted-foreground mt-1 text-sm">
                   {totalPending === 0
                     ? "Нет активных задач"
                     : `${activeActionItems.length} ${activeActionItems.length === 1 ? "категория" : "категорий"}`}
@@ -219,7 +211,7 @@ export default function AdminPage() {
                       {analyticsData?.sessions.toLocaleString("ru-RU") ?? 0}
                     </div>
                   )}
-                  <p className="text-xs text-muted-foreground">сессий</p>
+                  <p className="text-muted-foreground text-xs">сессий</p>
                 </div>
                 <div>
                   {isLoadingAnalytics ? (
@@ -229,17 +221,17 @@ export default function AdminPage() {
                       {analyticsData?.pageViews.toLocaleString("ru-RU") ?? 0}
                     </div>
                   )}
-                  <p className="text-xs text-muted-foreground">просмотров</p>
+                  <p className="text-muted-foreground text-xs">просмотров</p>
                 </div>
               </div>
               {/* Mini chart */}
               <div className="flex-1">
                 {isLoadingVisits ? (
                   <div className="flex h-14 items-center justify-center">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
                   </div>
                 ) : visitsData?.data.length === 0 ? (
-                  <div className="flex h-14 items-center justify-center text-xs text-muted-foreground">
+                  <div className="text-muted-foreground flex h-14 items-center justify-center text-xs">
                     Нет данных
                   </div>
                 ) : (
@@ -270,13 +262,11 @@ export default function AdminPage() {
       {/* Action Items List */}
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
         </div>
       ) : activeActionItems.length > 0 ? (
         <section>
-          <h2 className="mb-3 text-sm font-medium text-muted-foreground">
-            Активные задачи
-          </h2>
+          <h2 className="text-muted-foreground mb-3 text-sm font-medium">Активные задачи</h2>
           <div className="space-y-2">
             {activeActionItems.map((item) => {
               const Icon = item.icon;
@@ -285,7 +275,7 @@ export default function AdminPage() {
 
               return (
                 <Link key={item.key} href={item.href}>
-                  <div className="group flex items-center justify-between rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50">
+                  <div className="bg-card hover:bg-accent/50 group flex items-center justify-between rounded-lg border p-3 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className={cn("rounded-md p-1.5", item.bgColor)}>
                         <Icon className={cn("h-4 w-4", item.color)} />
@@ -294,14 +284,12 @@ export default function AdminPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       {todayNew > 0 && (
-                        <span className="text-xs text-emerald-600">
-                          +{todayNew} сегодня
-                        </span>
+                        <span className="text-xs text-emerald-600">+{todayNew} сегодня</span>
                       )}
-                      <span className="min-w-8 rounded-full bg-muted px-2 py-0.5 text-center text-sm font-semibold tabular-nums">
+                      <span className="bg-muted min-w-8 rounded-full px-2 py-0.5 text-center text-sm font-semibold tabular-nums">
                         {count}
                       </span>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                      <ArrowRight className="text-muted-foreground h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
                     </div>
                   </div>
                 </Link>
@@ -313,16 +301,14 @@ export default function AdminPage() {
 
       {/* Quick Links */}
       <section>
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">
-          Разделы
-        </h2>
+        <h2 className="text-muted-foreground mb-3 text-sm font-medium">Разделы</h2>
         <div className="flex flex-wrap gap-2">
           {QUICK_LINKS.map((link) => {
             const Icon = link.icon;
             return (
               <Link key={link.key} href={link.href}>
-                <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm transition-colors hover:bg-accent/50">
-                  <Icon className="h-4 w-4 text-muted-foreground" />
+                <div className="bg-card hover:bg-accent/50 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors">
+                  <Icon className="text-muted-foreground h-4 w-4" />
                   <span>{link.title}</span>
                 </div>
               </Link>

@@ -3,11 +3,8 @@ import { and, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { media, mediaTags, mediaToTags, mediaTypeEnum } from "~/server/db/schema";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  adminProcedureWithFeature,
-} from "../trpc";
+
+import { adminProcedureWithFeature, createTRPCRouter, protectedProcedure } from "../trpc";
 
 // ============================================================================
 // Validation Schemas
@@ -39,13 +36,19 @@ const updateMediaSchema = z.object({
 
 const createTagSchema = z.object({
   name: z.string().min(1).max(50),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i)
+    .optional(),
 });
 
 const updateTagSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1).max(50).optional(),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i)
+    .optional(),
 });
 
 // ============================================================================
@@ -95,11 +98,18 @@ export const mediaRouter = createTRPCRouter({
           columns: { id: true },
         });
 
-        const tagMatchingMediaIds = matchingTags.length > 0
-          ? await ctx.db.select({ mediaId: mediaToTags.mediaId })
-              .from(mediaToTags)
-              .where(inArray(mediaToTags.tagId, matchingTags.map(t => t.id)))
-          : [];
+        const tagMatchingMediaIds =
+          matchingTags.length > 0
+            ? await ctx.db
+                .select({ mediaId: mediaToTags.mediaId })
+                .from(mediaToTags)
+                .where(
+                  inArray(
+                    mediaToTags.tagId,
+                    matchingTags.map((t) => t.id)
+                  )
+                )
+            : [];
 
         conditions.push(
           or(
@@ -107,7 +117,10 @@ export const mediaRouter = createTRPCRouter({
             ilike(media.alt, `%${search}%`),
             ilike(media.title, `%${search}%`),
             tagMatchingMediaIds.length > 0
-              ? inArray(media.id, tagMatchingMediaIds.map(t => t.mediaId))
+              ? inArray(
+                  media.id,
+                  tagMatchingMediaIds.map((t) => t.mediaId)
+                )
               : undefined
           )
         );
@@ -121,7 +134,12 @@ export const mediaRouter = createTRPCRouter({
           .where(inArray(mediaToTags.tagId, tagIds));
 
         if (mediaIdsWithTags.length > 0) {
-          conditions.push(inArray(media.id, mediaIdsWithTags.map(m => m.mediaId)));
+          conditions.push(
+            inArray(
+              media.id,
+              mediaIdsWithTags.map((m) => m.mediaId)
+            )
+          );
         } else {
           // No media with these tags, return empty
           return {
@@ -199,59 +217,51 @@ export const mediaRouter = createTRPCRouter({
   /**
    * Create media record (called after file upload)
    */
-  create: protectedProcedure
-    .input(createMediaSchema)
-    .mutation(async ({ ctx, input }) => {
-      const [created] = await ctx.db
-        .insert(media)
-        .values({
-          ...input,
-          uploadedBy: ctx.session.user.id,
-        })
-        .returning();
+  create: protectedProcedure.input(createMediaSchema).mutation(async ({ ctx, input }) => {
+    const [created] = await ctx.db
+      .insert(media)
+      .values({
+        ...input,
+        uploadedBy: ctx.session.user.id,
+      })
+      .returning();
 
-      return created;
-    }),
+    return created;
+  }),
 
   /**
    * Update media metadata
    */
-  update: protectedProcedure
-    .input(updateMediaSchema)
-    .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
+  update: protectedProcedure.input(updateMediaSchema).mutation(async ({ ctx, input }) => {
+    const { id, ...data } = input;
 
-      // Check existence and ownership
-      const existing = await ctx.db.query.media.findFirst({
-        where: eq(media.id, id),
+    // Check existence and ownership
+    const existing = await ctx.db.query.media.findFirst({
+      where: eq(media.id, id),
+    });
+
+    if (!existing) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Медиафайл не найден",
       });
+    }
 
-      if (!existing) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Медиафайл не найден",
-        });
-      }
+    // Allow update only if owner or admin
+    const isAdmin = ctx.session.user.roles?.some((role) =>
+      ["Root", "SuperAdmin", "Admin"].includes(role)
+    );
+    if (existing.uploadedBy !== ctx.session.user.id && !isAdmin) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет прав на редактирование",
+      });
+    }
 
-      // Allow update only if owner or admin
-      const isAdmin = ctx.session.user.roles?.some((role) =>
-        ["Root", "SuperAdmin", "Admin"].includes(role)
-      );
-      if (existing.uploadedBy !== ctx.session.user.id && !isAdmin) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Нет прав на редактирование",
-        });
-      }
+    const [updated] = await ctx.db.update(media).set(data).where(eq(media.id, id)).returning();
 
-      const [updated] = await ctx.db
-        .update(media)
-        .set(data)
-        .where(eq(media.id, id))
-        .returning();
-
-      return updated;
-    }),
+    return updated;
+  }),
 
   /**
    * Delete media item
@@ -281,12 +291,16 @@ export const mediaRouter = createTRPCRouter({
         });
       }
 
-      // Delete file from disk
+      // Delete file from S3
       try {
-        const { deleteImage } = await import("~/lib/upload");
-        await deleteImage(existing.path);
+        const { deleteFromS3, extractS3Key } = await import("~/lib/s3/client");
+        const s3Key = extractS3Key(existing.url);
+        if (s3Key) {
+          await deleteFromS3(s3Key);
+          console.log(`[Media] Deleted file from S3: ${s3Key}`);
+        }
       } catch (error) {
-        console.error("Failed to delete file:", error);
+        console.error("[Media] Failed to delete file from S3:", error);
       }
 
       await ctx.db.delete(media).where(eq(media.id, input.id));
@@ -310,64 +324,60 @@ export const mediaRouter = createTRPCRouter({
   /**
    * Create new tag
    */
-  createTag: protectedProcedure
-    .input(createTagSchema)
-    .mutation(async ({ ctx, input }) => {
-      // Generate slug from name
-      const slug = input.name
-        .toLowerCase()
-        .replace(/[^a-z0-9а-яё]+/g, "-")
-        .replace(/^-+|-+$/g, "");
+  createTag: protectedProcedure.input(createTagSchema).mutation(async ({ ctx, input }) => {
+    // Generate slug from name
+    const slug = input.name
+      .toLowerCase()
+      .replace(/[^a-z0-9а-яё]+/g, "-")
+      .replace(/^-+|-+$/g, "");
 
-      const [created] = await ctx.db
-        .insert(mediaTags)
-        .values({
-          name: input.name,
-          slug,
-          color: input.color,
-        })
-        .returning();
+    const [created] = await ctx.db
+      .insert(mediaTags)
+      .values({
+        name: input.name,
+        slug,
+        color: input.color,
+      })
+      .returning();
 
-      return created;
-    }),
+    return created;
+  }),
 
   /**
    * Update tag
    */
-  updateTag: protectedProcedure
-    .input(updateTagSchema)
-    .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
+  updateTag: protectedProcedure.input(updateTagSchema).mutation(async ({ ctx, input }) => {
+    const { id, ...data } = input;
 
-      // Check if tag exists
-      const existing = await ctx.db.query.mediaTags.findFirst({
-        where: eq(mediaTags.id, id),
+    // Check if tag exists
+    const existing = await ctx.db.query.mediaTags.findFirst({
+      where: eq(mediaTags.id, id),
+    });
+
+    if (!existing) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Тег не найден",
       });
+    }
 
-      if (!existing) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Тег не найден",
-        });
-      }
+    // Update slug if name changed
+    const updates: any = { ...data };
+    if (data.name) {
+      updates.slug = data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9а-яё]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
 
-      // Update slug if name changed
-      const updates: any = { ...data };
-      if (data.name) {
-        updates.slug = data.name
-          .toLowerCase()
-          .replace(/[^a-z0-9а-яё]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-      }
+    const [updated] = await ctx.db
+      .update(mediaTags)
+      .set(updates)
+      .where(eq(mediaTags.id, id))
+      .returning();
 
-      const [updated] = await ctx.db
-        .update(mediaTags)
-        .set(updates)
-        .where(eq(mediaTags.id, id))
-        .returning();
-
-      return updated;
-    }),
+    return updated;
+  }),
 
   /**
    * Delete tag
@@ -420,10 +430,7 @@ export const mediaRouter = createTRPCRouter({
         tagId,
       }));
 
-      await ctx.db
-        .insert(mediaToTags)
-        .values(values)
-        .onConflictDoNothing();
+      await ctx.db.insert(mediaToTags).values(values).onConflictDoNothing();
 
       return { success: true };
     }),
@@ -442,10 +449,7 @@ export const mediaRouter = createTRPCRouter({
       await ctx.db
         .delete(mediaToTags)
         .where(
-          and(
-            eq(mediaToTags.mediaId, input.mediaId),
-            inArray(mediaToTags.tagId, input.tagIds)
-          )
+          and(eq(mediaToTags.mediaId, input.mediaId), inArray(mediaToTags.tagId, input.tagIds))
         );
 
       return { success: true };
@@ -527,18 +531,10 @@ export const mediaRouter = createTRPCRouter({
    */
   stats: adminProcedureWithFeature("directory:manage").query(async ({ ctx }) => {
     const [imageCount, documentCount, totalCount, totalSize] = await Promise.all([
-      ctx.db
-        .select({ count: count() })
-        .from(media)
-        .where(eq(media.type, "image")),
-      ctx.db
-        .select({ count: count() })
-        .from(media)
-        .where(eq(media.type, "document")),
+      ctx.db.select({ count: count() }).from(media).where(eq(media.type, "image")),
+      ctx.db.select({ count: count() }).from(media).where(eq(media.type, "document")),
       ctx.db.select({ count: count() }).from(media),
-      ctx.db
-        .select({ total: count() })
-        .from(media),
+      ctx.db.select({ total: count() }).from(media),
     ]);
 
     return {

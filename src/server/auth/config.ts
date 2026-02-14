@@ -1,11 +1,7 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import bcrypt from "bcryptjs";
 import { and, eq, gt, isNotNull } from "drizzle-orm";
-import {
-  CredentialsSignin,
-  type DefaultSession,
-  type NextAuthConfig,
-} from "next-auth";
+import { CredentialsSignin, type DefaultSession, type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import YandexProvider from "next-auth/providers/yandex";
@@ -38,10 +34,7 @@ class UserBlockedError extends CredentialsSignin {
 }
 
 // Test accounts for development
-const TEST_ACCOUNTS: Record<
-  string,
-  { name: string; email: string; roles: UserRole[] }
-> = {
+const TEST_ACCOUNTS: Record<string, { name: string; email: string; roles: UserRole[] }> = {
   admin: {
     name: "Test Admin",
     email: "admin@test.local",
@@ -133,7 +126,7 @@ async function getOrCreateTestUser(accountKey: string) {
         account.roles.map((role) => ({
           userId: user!.id,
           role,
-        })),
+        }))
       );
     }
   }
@@ -168,7 +161,7 @@ function buildProviders() {
       clientId: process.env.YANDEX_CLIENT_ID!,
       clientSecret: process.env.YANDEX_CLIENT_SECRET!,
       authorization: "https://oauth.yandex.ru/authorize?scope=login:email",
-    }),
+    })
   );
 
   // VK ID (id.vk.com) - custom provider
@@ -177,7 +170,7 @@ function buildProviders() {
       VKIDProvider({
         clientId: process.env.VK_CLIENT_ID,
         clientSecret: process.env.VK_CLIENT_SECRET,
-      }),
+      })
     );
   }
 
@@ -187,7 +180,7 @@ function buildProviders() {
       GoogleProvider({
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      }),
+      })
     );
   }
 
@@ -197,7 +190,7 @@ function buildProviders() {
       SberProvider({
         clientId: process.env.SBER_CLIENT_ID,
         clientSecret: process.env.SBER_CLIENT_SECRET,
-      }),
+      })
     );
   }
 
@@ -207,7 +200,7 @@ function buildProviders() {
       TinkoffProvider({
         clientId: process.env.TINKOFF_CLIENT_ID,
         clientSecret: process.env.TINKOFF_CLIENT_SECRET,
-      }),
+      })
     );
   }
 
@@ -231,7 +224,7 @@ function buildProviders() {
               eq(telegramAuthTokens.code, code),
               eq(telegramAuthTokens.verified, true),
               isNotNull(telegramAuthTokens.telegramId),
-              gt(telegramAuthTokens.expires, new Date()),
+              gt(telegramAuthTokens.expires, new Date())
             ),
           });
 
@@ -257,9 +250,8 @@ function buildProviders() {
               .values({
                 email: `tg_${token.telegramId}@telegram.local`,
                 name:
-                  [token.telegramFirstName, token.telegramLastName]
-                    .filter(Boolean)
-                    .join(" ") || `Telegram User`,
+                  [token.telegramFirstName, token.telegramLastName].filter(Boolean).join(" ") ||
+                  `Telegram User`,
                 emailVerified: new Date(),
               })
               .returning();
@@ -285,7 +277,7 @@ function buildProviders() {
           const existingAccount = await db.query.accounts.findFirst({
             where: and(
               eq(accounts.provider, "telegram"),
-              eq(accounts.providerAccountId, token.telegramId!),
+              eq(accounts.providerAccountId, token.telegramId!)
             ),
           });
 
@@ -305,7 +297,7 @@ function buildProviders() {
             image: user.image,
           };
         },
-      }),
+      })
     );
   }
 
@@ -369,7 +361,7 @@ function buildProviders() {
           image: user.image,
         };
       },
-    }),
+    })
   );
 
   // Email + Password Credentials
@@ -425,7 +417,7 @@ function buildProviders() {
           image: user.image,
         };
       },
-    }),
+    })
   );
 
   // Development-only test credentials provider
@@ -438,8 +430,7 @@ function buildProviders() {
           account: {
             label: "Account Type",
             type: "text",
-            placeholder:
-              "admin, moderator, owner, resident, guest, editor, chairman, ukRep",
+            placeholder: "admin, moderator, owner, resident, guest, editor, chairman, ukRep",
           },
         },
         async authorize(credentials) {
@@ -453,7 +444,7 @@ function buildProviders() {
             name: user.name,
           };
         },
-      }),
+      })
     );
   }
 
@@ -509,19 +500,26 @@ export const authConfig = {
   },
   callbacks: {
     signIn: async ({ user, account }) => {
-      // Check if user is blocked (for OAuth providers)
-      if (
-        user?.id &&
-        account?.provider !== "credentials" &&
-        account?.provider !== "telegram"
-      ) {
-        // For credentials and telegram, block check happens in authorize()
-        // For OAuth, we need to check here
-        if (await isUserBlocked(user.id)) {
-          return "/login?error=USER_BLOCKED";
+      try {
+        // Check if user is blocked (for OAuth providers)
+        if (user?.id && account?.provider !== "credentials" && account?.provider !== "telegram") {
+          // For credentials and telegram, block check happens in authorize()
+          // For OAuth, we need to check here
+          if (await isUserBlocked(user.id)) {
+            console.warn(`[auth][signIn] User ${user.id} is blocked`);
+            return "/login?error=USER_BLOCKED";
+          }
         }
+
+        console.log(
+          `[auth][signIn] User ${user?.id ?? "unknown"} signed in via ${account?.provider ?? "unknown"}`
+        );
+        return true;
+      } catch (error) {
+        console.error("[auth][signIn] Error in signIn callback:", error);
+        // Allow sign in to continue even if block check fails
+        return true;
       }
-      return true;
     },
     jwt: async ({ token, user }) => {
       if (user) {
@@ -534,48 +532,108 @@ export const authConfig = {
       const userId = user?.id ?? (token?.id as string);
 
       if (!userId) {
+        console.warn("[auth][session] No userId in session callback");
         return session;
       }
 
-      // Fetch user roles and profile avatar from database
-      const [roles, profile] = await Promise.all([
-        db
-          .select({ role: userRoles.role })
-          .from(userRoles)
-          .where(eq(userRoles.userId, userId)),
-        db.query.userProfiles.findFirst({
-          where: eq(userProfiles.userId, userId),
-          columns: { avatar: true },
-        }),
-      ]);
+      try {
+        // Fetch user roles and profile avatar from database
+        const [roles, profile] = await Promise.all([
+          db
+            .select({ role: userRoles.role })
+            .from(userRoles)
+            .where(eq(userRoles.userId, userId))
+            .catch((error) => {
+              console.error(`[auth][session] Error fetching roles for user ${userId}:`, error);
+              return [];
+            }),
+          db.query.userProfiles
+            .findFirst({
+              where: eq(userProfiles.userId, userId),
+              columns: { avatar: true },
+            })
+            .catch((error) => {
+              console.error(`[auth][session] Error fetching profile for user ${userId}:`, error);
+              return null;
+            }),
+        ]);
 
-      const userRolesList = roles.map((r) => r.role);
+        let userRolesList = roles.map((r) => r.role);
 
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: userId,
-          roles: userRolesList,
-          isAdmin: isAdmin(userRolesList),
-          // Use profile avatar if set, otherwise fall back to OAuth avatar
-          image: profile?.avatar ?? session.user.image,
-        },
-      };
+        // Fallback: If user has no roles, assign Guest role
+        if (userRolesList.length === 0) {
+          console.warn(`[auth][session] User ${userId} has no roles, assigning Guest role`);
+          try {
+            await db
+              .insert(userRoles)
+              .values({
+                userId,
+                role: "Guest",
+              })
+              .onConflictDoNothing();
+            userRolesList = ["Guest"];
+          } catch (error) {
+            console.error(`[auth][session] Failed to assign Guest role to user ${userId}:`, error);
+            // Still allow session with empty roles array
+            userRolesList = ["Guest"];
+          }
+        }
+
+        return {
+          ...session,
+          user: {
+            ...session.user,
+            id: userId,
+            roles: userRolesList,
+            isAdmin: isAdmin(userRolesList),
+            // Use profile avatar if set, otherwise fall back to OAuth avatar
+            image: profile?.avatar ?? session.user.image,
+          },
+        };
+      } catch (error) {
+        console.error(
+          `[auth][session] Unexpected error in session callback for user ${userId}:`,
+          error
+        );
+        // Return session with minimal data to prevent complete auth failure
+        return {
+          ...session,
+          user: {
+            ...session.user,
+            id: userId,
+            roles: ["Guest"],
+            isAdmin: false,
+          },
+        };
+      }
     },
   },
   events: {
     // Send notification when a new OAuth account is linked
     linkAccount: async ({ user, account }) => {
-      if (user.email && account.provider) {
-        notifyAsync({
-          type: "account.linked",
-          userId: user.id ?? "",
-          email: user.email,
-          name: user.name ?? "Пользователь",
-          provider: account.provider,
-          providerName: getProviderDisplayName(account.provider),
-        });
+      try {
+        console.log(`[auth][linkAccount] Linking ${account.provider} account for user ${user.id}`);
+        if (user.email && account.provider) {
+          notifyAsync({
+            type: "account.linked",
+            userId: user.id ?? "",
+            email: user.email,
+            name: user.name ?? "Пользователь",
+            provider: account.provider,
+            providerName: getProviderDisplayName(account.provider),
+          });
+        }
+      } catch (error) {
+        console.error("[auth][linkAccount] Error in linkAccount event:", error);
+      }
+    },
+    createUser: async ({ user }) => {
+      console.log(`[auth][createUser] New user created: ${user.id} (${user.email})`);
+    },
+    session: async ({ session }) => {
+      // Log session creation for debugging
+      if (isDev) {
+        console.log(`[auth][session] Session created for user: ${session.user?.id ?? "unknown"}`);
       }
     },
   },

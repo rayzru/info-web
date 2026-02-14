@@ -7,13 +7,13 @@
 
 import { db } from "~/server/db";
 import {
+  FEEDBACK_HISTORY_ACTION_LABELS,
+  FEEDBACK_PRIORITY_LABELS,
+  FEEDBACK_STATUS_LABELS,
   feedbackHistory,
   type FeedbackHistoryAction,
-  type FeedbackStatus,
   type FeedbackPriority,
-  FEEDBACK_STATUS_LABELS,
-  FEEDBACK_PRIORITY_LABELS,
-  FEEDBACK_HISTORY_ACTION_LABELS,
+  type FeedbackStatus,
 } from "~/server/db/schema";
 
 // ============================================================================
@@ -46,11 +46,8 @@ interface CreateFeedbackHistoryInput {
 /**
  * Создаёт запись в истории обращения
  */
-export async function createFeedbackHistoryRecord(
-  input: CreateFeedbackHistoryInput
-) {
-  const description =
-    input.description ?? generateFeedbackDescription(input);
+export async function createFeedbackHistoryRecord(input: CreateFeedbackHistoryInput) {
+  const description = input.description ?? generateFeedbackDescription(input);
 
   return await db.insert(feedbackHistory).values({
     feedbackId: input.feedbackId,
@@ -72,9 +69,7 @@ export async function createFeedbackHistoryRecord(
 // Helper Functions
 // ============================================================================
 
-function generateFeedbackDescription(
-  input: CreateFeedbackHistoryInput
-): string {
+function generateFeedbackDescription(input: CreateFeedbackHistoryInput): string {
   const baseLabel = FEEDBACK_HISTORY_ACTION_LABELS[input.action];
 
   switch (input.action) {
@@ -95,9 +90,7 @@ function generateFeedbackDescription(
       return baseLabel;
 
     case "forwarded":
-      return input.forwardedTo
-        ? `${baseLabel}: ${input.forwardedTo}`
-        : baseLabel;
+      return input.forwardedTo ? `${baseLabel}: ${input.forwardedTo}` : baseLabel;
 
     case "responded":
       return baseLabel;
@@ -117,10 +110,7 @@ function generateFeedbackDescription(
 /**
  * Логирует создание обращения
  */
-export async function logFeedbackCreated(
-  feedbackId: string,
-  context: FeedbackHistoryContext
-) {
+export async function logFeedbackCreated(feedbackId: string, context: FeedbackHistoryContext) {
   return await createFeedbackHistoryRecord({
     feedbackId,
     action: "created",
@@ -186,10 +176,7 @@ export async function logFeedbackAssigned(
 /**
  * Логирует снятие ответственного
  */
-export async function logFeedbackUnassigned(
-  feedbackId: string,
-  context: FeedbackHistoryContext
-) {
+export async function logFeedbackUnassigned(feedbackId: string, context: FeedbackHistoryContext) {
   return await createFeedbackHistoryRecord({
     feedbackId,
     action: "unassigned",

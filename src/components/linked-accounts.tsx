@@ -1,17 +1,10 @@
 "use client";
 
 import { useState } from "react";
+
+import { AlertTriangle, Check, Loader2, Mail, Pencil, Plus, Unlink } from "lucide-react";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
-import {
-  AlertTriangle,
-  Check,
-  Loader2,
-  Mail,
-  Pencil,
-  Plus,
-  Unlink,
-} from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -25,6 +18,7 @@ import {
 } from "~/components/ui/dialog";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
+
 import { PasswordChangeDialog } from "./password-change-dialog";
 
 // Provider display info with logo paths
@@ -76,7 +70,7 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
       </div>
     );
   }
@@ -112,9 +106,9 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
         {/* Email/Password card - first */}
         {hasPassword ? (
           // Password is set - active card with change password button inside
-          <div className="flex flex-col items-center rounded-xl border bg-card p-6">
-            <div className="mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-muted">
-              <Mail className="h-7 w-7 text-muted-foreground" />
+          <div className="bg-card flex flex-col items-center rounded-xl border p-6">
+            <div className="bg-muted mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl">
+              <Mail className="text-muted-foreground h-7 w-7" />
             </div>
             <p className="text-sm font-medium">Email и пароль</p>
             <span className="mt-2 flex items-center gap-1 text-xs text-green-600">
@@ -123,7 +117,7 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
             </span>
             <button
               onClick={() => setPasswordDialogOpen(true)}
-              className="mt-3 flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary"
+              className="text-muted-foreground hover:text-primary mt-3 flex items-center gap-1 text-xs transition-colors"
             >
               <Pencil className="h-3 w-3" />
               Сменить пароль
@@ -133,15 +127,13 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
           // Password not set - inactive clickable card
           <button
             onClick={() => setPasswordDialogOpen(true)}
-            className="flex flex-col items-center rounded-xl border border-dashed p-6 transition-colors hover:border-primary hover:bg-primary/5"
+            className="hover:border-primary hover:bg-primary/5 flex flex-col items-center rounded-xl border border-dashed p-6 transition-colors"
           >
-            <div className="mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-muted opacity-50">
-              <Mail className="h-7 w-7 text-muted-foreground" />
+            <div className="bg-muted mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl opacity-50">
+              <Mail className="text-muted-foreground h-7 w-7" />
             </div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Email и пароль
-            </p>
-            <span className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-sm font-medium">Email и пароль</p>
+            <span className="text-muted-foreground mt-2 flex items-center gap-1 text-xs">
               <Plus className="h-3 w-3" />
               Установить
             </span>
@@ -169,25 +161,21 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
             return (
               <div
                 key={provider.id}
-                className="relative flex flex-col items-center rounded-xl border bg-card p-6"
+                className="bg-card relative flex flex-col items-center rounded-xl border p-6"
               >
                 {/* Unlink button in top-right corner */}
                 <Dialog
                   open={unlinkProvider === provider.id}
-                  onOpenChange={(open) =>
-                    setUnlinkProvider(open ? provider.id : null)
-                  }
+                  onOpenChange={(open) => setUnlinkProvider(open ? provider.id : null)}
                 >
                   <DialogTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute right-2 top-2 h-7 w-7 text-muted-foreground/50 hover:text-destructive"
+                      className="text-muted-foreground/50 hover:text-destructive absolute right-2 top-2 h-7 w-7"
                       disabled={!canUnlink}
                       title={
-                        canUnlink
-                          ? "Отвязать аккаунт"
-                          : "Нельзя отвязать единственный способ входа"
+                        canUnlink ? "Отвязать аккаунт" : "Нельзя отвязать единственный способ входа"
                       }
                     >
                       <Unlink className="h-3.5 w-3.5" />
@@ -197,15 +185,12 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
                     <DialogHeader>
                       <DialogTitle>Отвязать {info.name}?</DialogTitle>
                       <DialogDescription>
-                        Вы больше не сможете входить через {info.name}. Вы
-                        сможете привязать этот аккаунт снова в любое время.
+                        Вы больше не сможете входить через {info.name}. Вы сможете привязать этот
+                        аккаунт снова в любое время.
                       </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => setUnlinkProvider(null)}
-                      >
+                      <Button variant="outline" onClick={() => setUnlinkProvider(null)}>
                         Отмена
                       </Button>
                       <Button
@@ -223,7 +208,7 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
                 </Dialog>
 
                 {/* Logo */}
-                <div className="mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-muted">
+                <div className="bg-muted mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl">
                   {info.logo ? (
                     <Image
                       src={info.logo}
@@ -233,9 +218,7 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
                       className="rounded-lg"
                     />
                   ) : (
-                    <span className="text-lg font-bold text-muted-foreground">
-                      ?
-                    </span>
+                    <span className="text-muted-foreground text-lg font-bold">?</span>
                   )}
                 </div>
 
@@ -256,10 +239,10 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
             <button
               key={provider.id}
               onClick={() => handleLinkProvider(provider.id)}
-              className="flex flex-col items-center rounded-xl border border-dashed p-6 transition-colors hover:border-primary hover:bg-primary/5"
+              className="hover:border-primary hover:bg-primary/5 flex flex-col items-center rounded-xl border border-dashed p-6 transition-colors"
             >
               {/* Logo */}
-              <div className="mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-muted opacity-50">
+              <div className="bg-muted mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl opacity-50">
                 {info.logo ? (
                   <Image
                     src={info.logo}
@@ -269,19 +252,15 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
                     className="rounded-lg"
                   />
                 ) : (
-                  <span className="text-lg font-bold text-muted-foreground">
-                    ?
-                  </span>
+                  <span className="text-muted-foreground text-lg font-bold">?</span>
                 )}
               </div>
 
               {/* Provider name */}
-              <p className="text-sm font-medium text-muted-foreground">
-                {info.name}
-              </p>
+              <p className="text-muted-foreground text-sm font-medium">{info.name}</p>
 
               {/* Add hint */}
-              <span className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="text-muted-foreground mt-2 flex items-center gap-1 text-xs">
                 <Plus className="h-3 w-3" />
                 Привязать
               </span>
@@ -298,9 +277,9 @@ export function LinkedAccounts({ availableProviders }: LinkedAccountsProps) {
             <p className="font-medium text-amber-600">
               Рекомендуем добавить резервный способ входа
             </p>
-            <p className="mt-1 text-muted-foreground">
-              Если вы потеряете доступ к единственному способу авторизации,
-              восстановить доступ к аккаунту будет сложно.
+            <p className="text-muted-foreground mt-1">
+              Если вы потеряете доступ к единственному способу авторизации, восстановить доступ к
+              аккаунту будет сложно.
             </p>
           </div>
         </div>

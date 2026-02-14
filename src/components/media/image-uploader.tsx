@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop";
+import { useCallback, useRef, useState } from "react";
+
 import {
   Check,
   Crop as CropIcon,
@@ -13,11 +13,9 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import "react-image-crop/dist/ReactCrop.css";
+import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop";
 
 import { Button } from "~/components/ui/button";
-import { Label } from "~/components/ui/label";
-import { Switch } from "~/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -25,9 +23,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import { Label } from "~/components/ui/label";
+import { Switch } from "~/components/ui/switch";
 import { cn } from "~/lib/utils";
-import { MediaLibrary } from "./media-library";
 import type { Media } from "~/server/db/schema";
+
+import { MediaLibrary } from "./media-library";
+
+import "react-image-crop/dist/ReactCrop.css";
 
 // ============================================================================
 // Types
@@ -295,13 +298,9 @@ export function ImageUploader({
 
       {/* Current image preview */}
       {value ? (
-        <div className="relative group rounded-lg overflow-hidden border bg-muted">
-          <img
-            src={value}
-            alt="Preview"
-            className="w-full h-48 object-cover"
-          />
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+        <div className="bg-muted group relative overflow-hidden rounded-lg border">
+          <img src={value} alt="Preview" className="h-48 w-full object-cover" />
+          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
             <Button
               type="button"
               variant="secondary"
@@ -309,7 +308,7 @@ export function ImageUploader({
               onClick={() => inputRef.current?.click()}
               disabled={disabled || isUploading}
             >
-              <Upload className="h-4 w-4 mr-1" />
+              <Upload className="mr-1 h-4 w-4" />
               Заменить
             </Button>
             <Button
@@ -319,7 +318,7 @@ export function ImageUploader({
               onClick={() => setLibraryOpen(true)}
               disabled={disabled}
             >
-              <FolderOpen className="h-4 w-4 mr-1" />
+              <FolderOpen className="mr-1 h-4 w-4" />
               Библиотека
             </Button>
             <Button
@@ -341,32 +340,25 @@ export function ImageUploader({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(
-            "relative flex flex-col items-center justify-center gap-2 p-8 rounded-lg border-2 border-dashed transition-colors cursor-pointer",
+            "relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 transition-colors",
             isDragging
               ? "border-primary bg-primary/5"
               : "border-muted-foreground/25 hover:border-primary/50",
-            disabled && "opacity-50 cursor-not-allowed"
+            disabled && "cursor-not-allowed opacity-50"
           )}
         >
           {isUploading ? (
             <>
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Загрузка...</p>
+              <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+              <p className="text-muted-foreground text-sm">Загрузка...</p>
             </>
           ) : (
             <>
-              <ImageIcon className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground text-center">
-                {placeholder}
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={disabled}
-                >
-                  <Upload className="h-4 w-4 mr-1" />
+              <ImageIcon className="text-muted-foreground h-8 w-8" />
+              <p className="text-muted-foreground text-center text-sm">{placeholder}</p>
+              <div className="mt-2 flex items-center gap-2">
+                <Button type="button" variant="outline" size="sm" disabled={disabled}>
+                  <Upload className="mr-1 h-4 w-4" />
                   Загрузить
                 </Button>
                 <Button
@@ -379,7 +371,7 @@ export function ImageUploader({
                   }}
                   disabled={disabled}
                 >
-                  <FolderOpen className="h-4 w-4 mr-1" />
+                  <FolderOpen className="mr-1 h-4 w-4" />
                   Библиотека
                 </Button>
               </div>
@@ -389,9 +381,7 @@ export function ImageUploader({
       )}
 
       {/* Error message */}
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       {/* Hidden file input */}
       <input
@@ -420,19 +410,14 @@ export function ImageUploader({
           <div className="space-y-4">
             {/* Crop area */}
             {imageToCrop && (
-              <div className="flex justify-center bg-muted rounded-lg p-2 max-h-[50vh] overflow-auto">
+              <div className="bg-muted flex max-h-[50vh] justify-center overflow-auto rounded-lg p-2">
                 <ReactCrop
                   crop={crop}
                   onChange={(c) => setCrop(c)}
                   onComplete={(c) => setCompletedCrop(c)}
                   aspect={aspectRatio}
                 >
-                  <img
-                    ref={imgRef}
-                    src={imageToCrop}
-                    alt="Crop preview"
-                    className="max-h-[45vh]"
-                  />
+                  <img ref={imgRef} src={imageToCrop} alt="Crop preview" className="max-h-[45vh]" />
                 </ReactCrop>
               </div>
             )}
@@ -477,18 +462,18 @@ export function ImageUploader({
                 setOriginalFile(null);
               }}
             >
-              <X className="h-4 w-4 mr-1" />
+              <X className="mr-1 h-4 w-4" />
               Отмена
             </Button>
             <Button variant="outline" onClick={handleSkipCrop}>
-              <RotateCcw className="h-4 w-4 mr-1" />
+              <RotateCcw className="mr-1 h-4 w-4" />
               Без обрезки
             </Button>
             <Button onClick={handleCropConfirm} disabled={isUploading}>
               {isUploading ? (
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               ) : (
-                <Check className="h-4 w-4 mr-1" />
+                <Check className="mr-1 h-4 w-4" />
               )}
               {completedCrop ? "Применить и загрузить" : "Загрузить"}
             </Button>
