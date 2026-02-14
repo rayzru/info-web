@@ -34,7 +34,7 @@ const navigation = [
     testId: "nav-community",
   },
   {
-    title: "Обратная связь",
+    title: "Контакты",
     link: "/feedback",
     icon: MessageSquareText,
     testId: "nav-feedback",
@@ -50,7 +50,7 @@ export function NavLinks() {
   };
 
   return (
-    <div className="hidden items-center gap-1 xl:flex">
+    <div className="hidden items-center gap-1 lg:flex">
       {navigation.map((item) => {
         const active = isActive(item.link);
         return (

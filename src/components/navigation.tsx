@@ -25,7 +25,7 @@ export async function Navigation({ pathname = "" }: NavigationProps) {
   const rankConfig = getRankConfig(userRoles);
 
   return (
-    <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-4 xl:gap-6">
+    <div className="mt-4 flex items-center justify-between gap-4 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-6">
       {/* Left side: Logo - aligned left */}
       <div className="flex items-center justify-start">
         <NavLogo />
@@ -45,7 +45,7 @@ export async function Navigation({ pathname = "" }: NavigationProps) {
         {session && (
           <>
             {/* Desktop: user menu with role-colored ring, auto width up to sidebar width */}
-            <div className="hidden max-w-64 items-center justify-end xl:flex">
+            <div className="hidden max-w-64 items-center justify-end lg:flex">
               <Link href="/my" passHref data-testid="nav-user-cabinet">
                 <Button variant="ghost" size="sm" className="justify-start">
                   <Avatar
@@ -65,7 +65,7 @@ export async function Navigation({ pathname = "" }: NavigationProps) {
             </div>
 
             {/* Mobile/Tablet: only avatar with role ring */}
-            <Link href="/my" passHref data-testid="nav-user-cabinet-mobile" className="xl:hidden">
+            <Link href="/my" passHref data-testid="nav-user-cabinet-mobile" className="lg:hidden">
               <Button variant="ghost" size="icon">
                 <Avatar
                   className={cn(

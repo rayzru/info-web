@@ -61,7 +61,7 @@ const navigation = [
     testId: "nav-community",
   },
   {
-    title: "Обратная связь",
+    title: "Контакты",
     link: "/feedback",
     icon: MessageSquare,
     testId: "nav-feedback",
@@ -107,7 +107,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="xl:hidden">
+        <Button variant="ghost" size="icon" className="lg:hidden">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Меню</span>
         </Button>
