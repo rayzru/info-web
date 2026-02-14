@@ -9,7 +9,14 @@ import { api } from "~/trpc/server";
 
 export default async function CabinetPage() {
   const session = await auth();
-  const userName = session?.user?.name ?? "Пользователь";
+
+  // This should never happen due to parent layout redirect,
+  // but adding defensive check to prevent tRPC calls without auth
+  if (!session?.user) {
+    return null;
+  }
+
+  const userName = session.user.name ?? "Пользователь";
 
   // Get user's claims
   const claims = await api.claims.my();
