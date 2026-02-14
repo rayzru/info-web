@@ -7,7 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
-import { PageHeader } from "~/components/page-header";
+import { PropertyCard } from "~/components/property-card";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -17,8 +17,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { Textarea } from "~/components/ui/textarea";
-import { UserPill } from "~/components/user-pill";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
@@ -32,12 +39,17 @@ const STATUS_LABELS: Record<string, string> = {
   documents_requested: "Запрос документов",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-yellow-500",
-  review: "bg-blue-500",
-  approved: "bg-green-500",
-  rejected: "bg-red-500",
-  documents_requested: "bg-orange-500",
+const ROLE_LABELS: Record<string, string> = {
+  ApartmentOwner: "Собственник",
+  ApartmentResident: "Проживающий",
+  ParkingOwner: "Собственник",
+  ParkingResident: "Арендатор",
+};
+
+const ACTOR_TYPE_LABELS: Record<string, string> = {
+  owner: "Собственник",
+  resident: "Арендатор",
+  admin: "Администрация",
 };
 
 // ============ Types ============
@@ -159,7 +171,9 @@ export default function PropertyHistoryPage() {
 
       claim.history?.forEach((historyEntry) => {
         const changedByName = historyEntry.changedByUser?.name ?? "Система";
-        const actorIsAdmin = historyEntry.changedBy !== claim.userId;
+        // Check if changedBy user has admin role
+        const changedByUserRoles = historyEntry.changedByUser?.roles?.map((r) => r.role) ?? [];
+        const actorIsAdmin = changedByUserRoles.includes("admin");
 
         timelineEvents.push({
           id: historyEntry.id,
@@ -191,183 +205,184 @@ export default function PropertyHistoryPage() {
     (c) => c.userId === currentUserId && c.status === "approved"
   );
 
+  // Get property details from first claim
+  const firstClaim = claims?.[0];
+  const buildingNum =
+    type === "apartment"
+      ? firstClaim?.apartment?.floor?.entrance?.building?.number
+      : firstClaim?.parkingSpot?.floor?.parking?.building?.number;
+
+  const propertyNumber =
+    type === "apartment" ? firstClaim?.apartment?.number : firstClaim?.parkingSpot?.number;
+
+  const floorNum = type === "parking" ? firstClaim?.parkingSpot?.floor?.floorNumber : undefined;
+  const floorLabel = floorNum !== undefined ? ` (${floorNum} э)` : "";
+
+  const propertyLabel =
+    type === "apartment"
+      ? `кв. ${propertyNumber ?? "?"}\nСтроение ${buildingNum ?? "?"}`
+      : `м/м. ${propertyNumber ?? "?"}${floorLabel}\nСтроение ${buildingNum ?? "?"}`;
+
+  const currentRole = firstClaim?.claimedRole ?? "";
+  const currentStatus = firstClaim?.status ?? "pending";
+
+  // Determine which action buttons to show on card
+  const isOwnClaim = firstClaim?.userId === currentUserId;
+  const isTenantClaim =
+    currentRole === "ApartmentResident" || currentRole === "ParkingResident";
+
+  const showRevokeButton = hasApprovedClaim && currentStatus === "approved" && isOwnClaim;
+  const showCancelButton = currentStatus === "pending" && isOwnClaim;
+  const showOwnerReviewButtons =
+    isOwner && currentStatus === "pending" && !isOwnClaim && isTenantClaim;
+
+  // Build action buttons for card
+  const cardActionButtons = (
+    <>
+      {showRevokeButton && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-destructive hover:text-destructive h-8"
+          onClick={() =>
+            revokeMutation.mutate({
+              propertyType: type,
+              propertyId,
+            })
+          }
+          disabled={revokeMutation.isPending}
+        >
+          <X className="mr-1.5 h-3 w-3" />
+          Отозвать
+        </Button>
+      )}
+
+      {showCancelButton && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8"
+          onClick={() => setClaimToCancel(firstClaim?.id ?? null)}
+        >
+          <X className="mr-1.5 h-3 w-3" />
+          Отменить
+        </Button>
+      )}
+
+      {showOwnerReviewButtons && (
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-green-600 hover:bg-green-50 hover:text-green-700"
+            onClick={() =>
+              setClaimToReview({
+                id: firstClaim?.id ?? "",
+                action: "approve",
+                userName: firstClaim?.user?.name ?? "Пользователь",
+              })
+            }
+          >
+            <Check className="mr-1.5 h-3 w-3" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-destructive hover:text-destructive h-8"
+            onClick={() =>
+              setClaimToReview({
+                id: firstClaim?.id ?? "",
+                action: "reject",
+                userName: firstClaim?.user?.name ?? "Пользователь",
+              })
+            }
+          >
+            <X className="mr-1.5 h-3 w-3" />
+          </Button>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="История заявок"
-        description={`История заявок на ${type === "apartment" ? "квартиру" : "машиноместо"}`}
-        backHref="/my/property"
-        icon={
-          <Button variant="ghost" size="icon" onClick={() => router.push("/my/property")}>
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-        }
-      />
+      {/* Back button */}
+      <div>
+        <Button variant="ghost" size="sm" onClick={() => router.push("/my/property")}>
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          Назад
+        </Button>
+      </div>
 
-      {/* Timeline */}
+      {/* Property Card */}
+      {firstClaim && (
+        <PropertyCard
+          type={type}
+          propertyId={propertyId}
+          label={propertyLabel}
+          role={currentRole}
+          status={currentStatus}
+          disableLink={true}
+          actionButtons={cardActionButtons}
+        />
+      )}
+
+      {/* History Table */}
       {isLoading ? (
         <div className="text-muted-foreground py-4 text-center text-sm">Загрузка...</div>
       ) : timelineEvents.length === 0 ? (
         <div className="text-muted-foreground py-4 text-center text-sm">Нет истории заявок</div>
       ) : (
-        <div className="relative pl-7">
-          <div className="flex flex-col gap-8">
-            {timelineEvents.map((event, index) => {
-              const isOwnAction = event.actorId === currentUserId;
-              const isOwnClaim = event.claimUserId === currentUserId;
-              const isLast = index === timelineEvents.length - 1;
+        <div>
+          <h3 className="mb-4 text-lg font-semibold">История изменений</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-45">Дата</TableHead>
+                <TableHead className="w-45">Кто</TableHead>
+                <TableHead>Данные</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {timelineEvents.map((event) => {
+                // Determine actor type based on who performed the action
+                let actorType: string;
+                if (event.isSubmission) {
+                  // For submissions, show the role of the person submitting
+                  actorType =
+                    event.claimedRole === "ApartmentOwner" || event.claimedRole === "ParkingOwner"
+                      ? "owner"
+                      : "resident";
+                } else {
+                  // For status changes, show who made the change
+                  actorType = event.actorIsAdmin ? "admin" : "owner";
+                }
 
-              const showRevokeButton =
-                hasApprovedClaim &&
-                event.currentClaimStatus === "approved" &&
-                event.status === "approved" &&
-                isOwnClaim &&
-                isLast;
+                return (
+                  <TableRow key={event.id}>
+                    {/* Date */}
+                    <TableCell className="text-sm">{formatDate(event.date)}</TableCell>
 
-              const showCancelOwnButton =
-                event.currentClaimStatus === "pending" &&
-                event.isSubmission &&
-                isOwnClaim &&
-                isLast;
-
-              const isTenantClaim =
-                event.claimedRole === "ApartmentResident" ||
-                event.claimedRole === "ParkingResident";
-              const showOwnerReviewButtons =
-                isOwner &&
-                event.currentClaimStatus === "pending" &&
-                event.isSubmission &&
-                !isOwnClaim &&
-                isTenantClaim;
-
-              const isCurrent = isLast;
-              const isPast = !isLast;
-
-              return (
-                <div key={event.id} className="relative flex gap-4">
-                  {/* Vertical line */}
-                  {!isLast && (
-                    <div
-                      className="bg-border absolute left-[-20px] top-[10px] w-px"
-                      style={{ height: "calc(100% + 32px - 10px)" }}
-                    />
-                  )}
-
-                  {/* Status dot */}
-                  <div
-                    className={cn(
-                      "absolute left-[-27px] top-[3px] z-10 h-[14px] w-[14px] rounded-full",
-                      isCurrent
-                        ? (STATUS_COLORS[event.status] ?? "bg-gray-400")
-                        : isPast && event.status === "approved"
-                          ? "bg-green-500"
-                          : isPast && event.status === "rejected"
-                            ? "bg-red-500"
-                            : "bg-muted-foreground/30"
-                    )}
-                  />
-
-                  {/* Content */}
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium leading-5">
-                      {event.isSubmission
-                        ? "Подана заявка"
-                        : (STATUS_LABELS[event.status] ?? event.status)}
-                    </div>
-
-                    <div className="text-muted-foreground mt-1 text-xs">
-                      {formatDate(event.date)}
-                    </div>
-
-                    <div className="mt-2">
-                      <UserPill
-                        name={event.actorName}
-                        isAdmin={event.actorIsAdmin}
-                        isCurrentUser={isOwnAction}
-                      />
-                    </div>
-
-                    {event.comment && (
-                      <p className="text-muted-foreground border-muted mt-2 border-l-2 pl-3 text-sm">
-                        {event.comment}
-                      </p>
-                    )}
-
-                    {/* Action buttons */}
-                    {/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing */}
-                    {(showRevokeButton || showCancelOwnButton || showOwnerReviewButtons) && (
-                      <div className="mt-3 flex items-center gap-2">
-                        {showRevokeButton && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive hover:text-destructive h-8"
-                            onClick={() =>
-                              revokeMutation.mutate({
-                                propertyType: type,
-                                propertyId,
-                              })
-                            }
-                            disabled={revokeMutation.isPending}
-                          >
-                            <X className="mr-1.5 h-3 w-3" />
-                            Отозвать права
-                          </Button>
-                        )}
-
-                        {showCancelOwnButton && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8"
-                            onClick={() => setClaimToCancel(event.claimId)}
-                          >
-                            <X className="mr-1.5 h-3 w-3" />
-                            Отменить заявку
-                          </Button>
-                        )}
-
-                        {showOwnerReviewButtons && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 text-green-600 hover:bg-green-50 hover:text-green-700"
-                              onClick={() =>
-                                setClaimToReview({
-                                  id: event.claimId,
-                                  action: "approve",
-                                  userName: event.actorName,
-                                })
-                              }
-                            >
-                              <Check className="mr-1.5 h-3 w-3" />
-                              Подтвердить
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-destructive hover:text-destructive h-8"
-                              onClick={() =>
-                                setClaimToReview({
-                                  id: event.claimId,
-                                  action: "reject",
-                                  userName: event.actorName,
-                                })
-                              }
-                            >
-                              <X className="mr-1.5 h-3 w-3" />
-                              Отклонить
-                            </Button>
-                          </>
-                        )}
+                    {/* Actor (Who) */}
+                    <TableCell>
+                      <div className="text-sm">
+                        {ACTOR_TYPE_LABELS[actorType] ?? actorType}
                       </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                    </TableCell>
+
+                    {/* Data (Comment) */}
+                    <TableCell>
+                      {event.comment ? (
+                        <p className="text-muted-foreground text-sm">{event.comment}</p>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">—</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
       )}
 

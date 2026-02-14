@@ -3,8 +3,8 @@
 import { Car, Check, Home, X } from "lucide-react";
 import Link from "next/link";
 
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader } from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
 
 // ============ Constants ============
@@ -16,6 +16,13 @@ const ROLE_LABELS: Record<string, string> = {
   ParkingResident: "Арендатор",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  approved: "Одобрено",
+  rejected: "Отклонено",
+  pending: "Ожидает",
+  review: "На рассмотрении",
+};
+
 // ============ Component ============
 
 interface PropertyCardProps {
@@ -24,65 +31,91 @@ interface PropertyCardProps {
   label: string;
   role: string;
   status: string;
+  disableLink?: boolean;
+  actionButtons?: React.ReactNode;
 }
 
-export function PropertyCard({ type, propertyId, label, role, status }: PropertyCardProps) {
-  // Split label into lines: "кв. 209\nЛарина 45/2" -> ["кв. 209", "Ларина 45/2"]
-  const [propertyNumber, address] = label.split("\n");
+export function PropertyCard({
+  type,
+  propertyId,
+  label,
+  role,
+  status,
+  disableLink = false,
+  actionButtons,
+}: PropertyCardProps) {
+  // Split label into lines: "кв. 209\nСтроение 2" -> ["кв. 209", "Строение 2"]
+  const [propertyNumber, building] = label.split("\n");
 
-  return (
+  const cardContent = (
     <Card className="overflow-hidden">
-      {/* Header image placeholder with icon and large property number */}
-      <div className="bg-muted relative aspect-video">
-        <div className="flex h-full flex-col items-center justify-center gap-2">
-          {/* Icon */}
-          {type === "apartment" ? (
-            <Home className="text-muted-foreground/20 h-12 w-12" />
-          ) : (
-            <Car className="text-muted-foreground/20 h-12 w-12" />
-          )}
+      {/* Compact header with icon and number */}
+      <div className="bg-muted relative flex h-24 items-center justify-center">
+        {/* Background icon */}
+        {type === "apartment" ? (
+          <Home className="text-muted-foreground/10 absolute h-16 w-16" />
+        ) : (
+          <Car className="text-muted-foreground/10 absolute h-16 w-16" />
+        )}
 
-          {/* Large property number - MAIN FOCUS */}
-          <div className="text-center">
-            <div className="font-mono text-4xl font-bold">{propertyNumber}</div>
-          </div>
+        {/* Property number */}
+        <div className="relative z-10 text-center">
+          <div className="text-3xl font-black">{propertyNumber}</div>
         </div>
 
-        {/* Status icon (top-left) */}
-        <div className="absolute left-2 top-2">
-          <div
-            className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-full",
-              status === "approved" && "bg-green-500",
-              status === "rejected" && "bg-red-500",
-              status === "pending" && "bg-yellow-500",
-              status === "review" && "bg-blue-500"
-            )}
-          >
-            {status === "approved" && <Check className="h-5 w-5 text-white" />}
-            {status === "rejected" && <X className="h-5 w-5 text-white" />}
-            {status === "pending" && <span className="text-xs font-bold text-white">...</span>}
-            {status === "review" && <span className="text-xs font-bold text-white">?</span>}
-          </div>
-        </div>
+        {/* Status badge (top-right) */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="absolute right-2 top-2">
+                <div
+                  className={cn(
+                    "flex h-6 w-6 items-center justify-center rounded-full",
+                    status === "approved" && "bg-green-500",
+                    status === "rejected" && "bg-red-500",
+                    status === "pending" && "bg-yellow-500",
+                    status === "review" && "bg-blue-500"
+                  )}
+                >
+                  {status === "approved" && <Check className="h-3.5 w-3.5 text-white" />}
+                  {status === "rejected" && <X className="h-3.5 w-3.5 text-white" />}
+                  {status === "pending" && (
+                    <span className="text-[10px] font-bold text-white">...</span>
+                  )}
+                  {status === "review" && (
+                    <span className="text-[10px] font-bold text-white">?</span>
+                  )}
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{STATUS_LABELS[status] ?? status}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
-      <CardHeader className="pb-3">
-        {/* Address */}
-        <h3 className="text-base font-semibold leading-tight">{address}</h3>
+      {/* Compact content */}
+      <CardContent className="relative space-y-1 p-3 text-center">
+        <p className="text-sm font-medium">{building}</p>
+        <p className="text-muted-foreground text-xs">{ROLE_LABELS[role]}</p>
 
-        {/* Role below */}
-        <p className="text-muted-foreground mt-1 text-sm">{ROLE_LABELS[role]}</p>
-      </CardHeader>
-
-      <CardContent className="pt-0">
-        {/* History button - full width, small, no icon */}
-        <Link href={`/my/property/${type}/${propertyId}/history`} className="block">
-          <Button variant="ghost" size="sm" className="h-8 w-full text-xs">
-            Показать историю
-          </Button>
-        </Link>
+        {/* Action buttons in bottom-right corner */}
+        {actionButtons && <div className="absolute bottom-2 right-2">{actionButtons}</div>}
       </CardContent>
     </Card>
+  );
+
+  if (disableLink) {
+    return cardContent;
+  }
+
+  return (
+    <Link
+      href={`/my/property/${type}/${propertyId}/history`}
+      className="block transition-opacity hover:opacity-80"
+    >
+      {cardContent}
+    </Link>
   );
 }

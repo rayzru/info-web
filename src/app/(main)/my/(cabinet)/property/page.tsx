@@ -164,7 +164,7 @@ export default function PropertyPage() {
         propertyMap.set(key, {
           id: claim.apartment.id,
           type: "apartment",
-          label: `кв. ${claim.apartment.number}\nЛарина 45${buildingNum ? `/${buildingNum}` : ""}`,
+          label: `кв. ${claim.apartment.number}\nСтроение ${buildingNum ?? "?"}`,
           role: claim.claimedRole,
           latestStatus: claim.status,
           isConfirmed: confirmedApartmentIds.has(claim.apartment.id),
@@ -187,7 +187,7 @@ export default function PropertyPage() {
         propertyMap.set(key, {
           id: claim.parkingSpot.id,
           type: "parking",
-          label: `м/м. ${claim.parkingSpot.number}${floorLabel}\nЛарина 45${buildingNum ? `/${buildingNum}` : ""}`,
+          label: `м/м. ${claim.parkingSpot.number}${floorLabel}\nСтроение ${buildingNum ?? "?"}`,
           role: claim.claimedRole,
           latestStatus: claim.status,
           isConfirmed: confirmedParkingIds.has(claim.parkingSpot.id),
