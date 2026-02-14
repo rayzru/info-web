@@ -49,9 +49,7 @@ export default async function Home() {
   const hasAnyWidget = hasNews || hasEvents || hasPublications;
 
   // Count non-empty sections for grid
-  const widgetCount = [hasNews, hasEvents, hasPublications].filter(
-    Boolean,
-  ).length;
+  const widgetCount = [hasNews, hasEvents, hasPublications].filter(Boolean).length;
 
   return (
     <div className="container py-8">
@@ -63,11 +61,7 @@ export default async function Home() {
       {hasAnyWidget && (
         <div
           className={`grid gap-6 py-8 ${
-            widgetCount === 3
-              ? "lg:grid-cols-3"
-              : widgetCount === 2
-                ? "lg:grid-cols-2"
-                : ""
+            widgetCount === 3 ? "lg:grid-cols-3" : widgetCount === 2 ? "lg:grid-cols-2" : ""
           }`}
         >
           {hasNews && (
@@ -100,10 +94,7 @@ function DirectoryContentSkeleton() {
         <div className="bg-muted h-14 animate-pulse rounded-lg" />
         <div className="flex justify-center gap-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="bg-muted h-10 w-24 animate-pulse rounded-full"
-            />
+            <div key={i} className="bg-muted h-10 w-24 animate-pulse rounded-full" />
           ))}
         </div>
       </div>

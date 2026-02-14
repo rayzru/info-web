@@ -67,34 +67,10 @@ const FEATURE_PERMISSIONS: Record<AdminFeature, UserRole[]> = {
   "users:delete": ["Root", "SuperAdmin", "Admin"],
   "buildings:view": ["Root", "SuperAdmin", "Admin", "BuildingChairman"],
   "buildings:manage": ["Root", "SuperAdmin", "Admin"],
-  "properties:view": [
-    "Root",
-    "SuperAdmin",
-    "Admin",
-    "BuildingChairman",
-    "ComplexChairman",
-  ],
-  "properties:approve": [
-    "Root",
-    "SuperAdmin",
-    "Admin",
-    "BuildingChairman",
-    "ComplexChairman",
-  ],
-  "claims:view": [
-    "Root",
-    "SuperAdmin",
-    "Admin",
-    "BuildingChairman",
-    "ComplexChairman",
-  ],
-  "claims:review": [
-    "Root",
-    "SuperAdmin",
-    "Admin",
-    "BuildingChairman",
-    "ComplexChairman",
-  ],
+  "properties:view": ["Root", "SuperAdmin", "Admin", "BuildingChairman", "ComplexChairman"],
+  "properties:approve": ["Root", "SuperAdmin", "Admin", "BuildingChairman", "ComplexChairman"],
+  "claims:view": ["Root", "SuperAdmin", "Admin", "BuildingChairman", "ComplexChairman"],
+  "claims:review": ["Root", "SuperAdmin", "Admin", "BuildingChairman", "ComplexChairman"],
   "listings:view": ["Root", "SuperAdmin", "Admin", "Moderator"],
   "listings:moderate": ["Root", "SuperAdmin", "Admin", "Moderator"],
   "content:view": ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"],
@@ -149,10 +125,7 @@ export function getEffectiveRoles(userRoles: UserRole[]): Set<UserRole> {
 /**
  * Check if user has access to a specific feature
  */
-export function hasFeatureAccess(
-  userRoles: UserRole[],
-  feature: AdminFeature,
-): boolean {
+export function hasFeatureAccess(userRoles: UserRole[], feature: AdminFeature): boolean {
   const allowedRoles = FEATURE_PERMISSIONS[feature];
   if (!allowedRoles) return false;
 
@@ -346,9 +319,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
  * Get navigation items available for user based on their roles
  */
 export function getAdminNavItems(userRoles: UserRole[]): AdminNavItem[] {
-  return ADMIN_NAV_ITEMS.filter((item) =>
-    hasFeatureAccess(userRoles, item.feature),
-  );
+  return ADMIN_NAV_ITEMS.filter((item) => hasFeatureAccess(userRoles, item.feature));
 }
 
 /**

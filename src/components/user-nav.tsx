@@ -44,10 +44,8 @@ export async function UserNav() {
           <DropdownMenuContent align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm leading-none font-medium">{userName}</p>
-                <p className="text-muted-foreground text-xs leading-none">
-                  {userEmail}
-                </p>
+                <p className="text-sm font-medium leading-none">{userName}</p>
+                <p className="text-muted-foreground text-xs leading-none">{userEmail}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -55,7 +53,7 @@ export async function UserNav() {
               <DropdownMenuItem asChild>
                 <Link
                   href="/my"
-                  className="text-muted-foreground hover:text-primary text-sm leading-none font-medium transition-colors"
+                  className="text-muted-foreground hover:text-primary text-sm font-medium leading-none transition-colors"
                 >
                   Мой кабинет
                   <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>

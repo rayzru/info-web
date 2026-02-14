@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
+import {
+  type ImageProcessingOptions,
+  processAndSaveImage,
+  validateImageFile,
+} from "~/lib/upload/image-processor";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { media } from "~/server/db/schema";
-import {
-  processAndSaveImage,
-  validateImageFile,
-  type ImageProcessingOptions,
-} from "~/lib/upload/image-processor";
 
 /**
  * POST /api/upload
@@ -28,10 +28,7 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Parse form data
@@ -39,19 +36,13 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Validate file
     const validation = validateImageFile(file);
     if (!validation.valid) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
     // Parse options from form data
@@ -95,6 +86,18 @@ export async function POST(request: NextRequest) {
     if (outputFormat && ["jpeg", "png", "webp", "original"].includes(outputFormat as string)) {
       options.outputFormat = outputFormat as ImageProcessingOptions["outputFormat"];
     }
+
+    // Parse upload type and userId for folder structure
+    const uploadType = formData.get("uploadType") as string | null;
+    if (
+      uploadType &&
+      ["news", "knowledge", "publication", "listing", "media"].includes(uploadType)
+    ) {
+      options.uploadType = uploadType as ImageProcessingOptions["uploadType"];
+    }
+
+    // Always use current user's ID
+    options.userId = session.user.id;
 
     // Process and save image file
     const result = await processAndSaveImage(file, file.name, options);

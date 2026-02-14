@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+
 import { CheckEmailContent } from "./check-email-content";
 
 export default function CheckEmailPage() {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import {
   BookOpen,
   Building,
@@ -19,14 +20,14 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 
-import { api } from "~/trpc/react";
 import { EmergencyPhoneButton } from "~/components/emergency-phone-button";
-import { Input } from "~/components/ui/input";
 import { KeyboardShortcut } from "~/components/keyboard-shortcut";
+import { Input } from "~/components/ui/input";
 import { cn } from "~/lib/utils";
+import { api } from "~/trpc/react";
 
 // Склонение слова "запись" для русского языка
 function pluralizeRecords(count: number): string {
@@ -151,31 +152,31 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
   // Contact search results (new granular search)
   const contactResults = api.directory.searchContacts.useQuery(
     { query: searchQuery, limit: 50 },
-    { enabled: searchQuery.length >= 2 },
+    { enabled: searchQuery.length >= 2 }
   );
 
   // Knowledge base articles search
   const articlesResults = api.knowledge.search.useQuery(
     { query: searchQuery, limit: 5 },
-    { enabled: searchQuery.length >= 2 },
+    { enabled: searchQuery.length >= 2 }
   );
 
   // Contacts by tag (when a tag is clicked) - flat list
   const contactsByTag = api.directory.contactsByTag.useQuery(
     { tagSlug: selectedTagSlug ?? "", limit: 50 },
-    { enabled: !!selectedTagSlug },
+    { enabled: !!selectedTagSlug }
   );
 
   // Entries grouped by child tags (for hierarchical display)
   const entriesGrouped = api.directory.entriesGroupedByTag.useQuery(
     { tagSlug: selectedTagSlug ?? "", limit: 50 },
-    { enabled: !!selectedTagSlug },
+    { enabled: !!selectedTagSlug }
   );
 
   // Knowledge base articles by tag (when a tag is clicked)
   const articlesByTag = api.knowledge.getByTag.useQuery(
     { tagSlug: selectedTagSlug ?? "", limit: 10 },
-    { enabled: !!selectedTagSlug },
+    { enabled: !!selectedTagSlug }
   );
 
   // Track search events (debounced via useEffect)
@@ -245,9 +246,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
     return Array.from(entriesMap.values());
   }, [isSearching, contactResults.data?.contacts]);
 
-  const matchedTags = isSearching
-    ? (contactResults.data?.matchedTags ?? [])
-    : [];
+  const matchedTags = isSearching ? (contactResults.data?.matchedTags ?? []) : [];
 
   const handleTagClick = useCallback(
     (slug: string, tagId?: string) => {
@@ -261,7 +260,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
         });
       }
     },
-    [trackEvent],
+    [trackEvent]
   );
 
   const handleClearFilter = () => {
@@ -301,18 +300,18 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
       <div
         className={cn(
           "transition-all duration-300 ease-out",
-          hasActiveQuery ? "pt-0" : "flex flex-1 items-center justify-center",
+          hasActiveQuery ? "pt-0" : "flex flex-1 items-center justify-center"
         )}
       >
         <div
           className={cn(
             "w-full transition-all duration-300",
-            hasActiveQuery ? "max-w-full" : "mx-auto max-w-xl px-4",
+            hasActiveQuery ? "max-w-full" : "mx-auto max-w-xl px-4"
           )}
         >
           {/* Search Input */}
           <div className="relative">
-            <Search className="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
+            <Search className="text-muted-foreground absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2" />
             <Input
               ref={inputRef}
               placeholder="Что вас интересует?"
@@ -331,10 +330,10 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                 "border-2",
                 isSearchFocused
                   ? "border-primary shadow-primary/20 shadow-lg"
-                  : "border-primary/30 hover:border-primary/50",
+                  : "border-primary/30 hover:border-primary/50"
               )}
             />
-            <div className="absolute top-1/2 right-4 flex -translate-y-1/2 items-center gap-2">
+            <div className="absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2">
               {/* Clear button (X) */}
               {hasActiveQuery && (
                 <button
@@ -369,26 +368,24 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                     {tagGroups.services.title}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
-                    {tagGroups.services.tags.map(
-                      ({ slug, icon: Icon, label, tag }) => (
-                        <button
-                          key={slug}
-                          onClick={() => handleTagClick(slug, tag?.id)}
-                          className={cn(
-                            "group flex max-w-[140px] cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5",
-                            "bg-background border-primary/20 border",
-                            "hover:border-primary hover:shadow-sm",
-                            "transition-all duration-150",
-                            "text-sm",
-                          )}
-                        >
-                          {Icon && (
-                            <Icon className="group-hover:text-primary h-3.5 w-3.5 shrink-0 opacity-50 transition-all group-hover:opacity-100" />
-                          )}
-                          <span className="truncate">{label}</span>
-                        </button>
-                      ),
-                    )}
+                    {tagGroups.services.tags.map(({ slug, icon: Icon, label, tag }) => (
+                      <button
+                        key={slug}
+                        onClick={() => handleTagClick(slug, tag?.id)}
+                        className={cn(
+                          "group flex max-w-[140px] cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5",
+                          "bg-background border-primary/20 border",
+                          "hover:border-primary hover:shadow-sm",
+                          "transition-all duration-150",
+                          "text-sm"
+                        )}
+                      >
+                        {Icon && (
+                          <Icon className="group-hover:text-primary h-3.5 w-3.5 shrink-0 opacity-50 transition-all group-hover:opacity-100" />
+                        )}
+                        <span className="truncate">{label}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -398,26 +395,24 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                     {tagGroups.emergency.title}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
-                    {tagGroups.emergency.tags.map(
-                      ({ slug, icon: Icon, label, tag }) => (
-                        <button
-                          key={slug}
-                          onClick={() => handleTagClick(slug, tag?.id)}
-                          className={cn(
-                            "group flex max-w-[140px] cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5",
-                            "bg-background border-primary/20 border",
-                            "hover:border-primary hover:shadow-sm",
-                            "transition-all duration-150",
-                            "text-sm",
-                          )}
-                        >
-                          {Icon && (
-                            <Icon className="group-hover:text-primary h-3.5 w-3.5 shrink-0 opacity-50 transition-all group-hover:opacity-100" />
-                          )}
-                          <span className="truncate">{label}</span>
-                        </button>
-                      ),
-                    )}
+                    {tagGroups.emergency.tags.map(({ slug, icon: Icon, label, tag }) => (
+                      <button
+                        key={slug}
+                        onClick={() => handleTagClick(slug, tag?.id)}
+                        className={cn(
+                          "group flex max-w-[140px] cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5",
+                          "bg-background border-primary/20 border",
+                          "hover:border-primary hover:shadow-sm",
+                          "transition-all duration-150",
+                          "text-sm"
+                        )}
+                      >
+                        {Icon && (
+                          <Icon className="group-hover:text-primary h-3.5 w-3.5 shrink-0 opacity-50 transition-all group-hover:opacity-100" />
+                        )}
+                        <span className="truncate">{label}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -436,7 +431,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                           "bg-background border-primary/20 border",
                           "hover:border-primary hover:shadow-sm",
                           "transition-all duration-150",
-                          "text-sm",
+                          "text-sm"
                         )}
                       >
                         <Building className="group-hover:text-primary h-3.5 w-3.5 shrink-0 opacity-50 transition-all group-hover:opacity-100" />
@@ -455,26 +450,24 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                     {tagGroups.services.title}
                   </span>
                   <div className="flex flex-col gap-1.5">
-                    {tagGroups.services.tags.map(
-                      ({ slug, icon: Icon, label, tag }) => (
-                        <button
-                          key={slug}
-                          onClick={() => handleTagClick(slug, tag?.id)}
-                          className={cn(
-                            "group flex w-fit cursor-pointer items-center gap-2 rounded-full px-3 py-1.5",
-                            "bg-background border-primary/20 border",
-                            "hover:border-primary hover:shadow-sm",
-                            "transition-all duration-150",
-                            "text-sm",
-                          )}
-                        >
-                          {Icon && (
-                            <Icon className="group-hover:text-primary h-4 w-4 shrink-0 opacity-50 transition-all group-hover:opacity-100" />
-                          )}
-                          <span>{label}</span>
-                        </button>
-                      ),
-                    )}
+                    {tagGroups.services.tags.map(({ slug, icon: Icon, label, tag }) => (
+                      <button
+                        key={slug}
+                        onClick={() => handleTagClick(slug, tag?.id)}
+                        className={cn(
+                          "group flex w-fit cursor-pointer items-center gap-2 rounded-full px-3 py-1.5",
+                          "bg-background border-primary/20 border",
+                          "hover:border-primary hover:shadow-sm",
+                          "transition-all duration-150",
+                          "text-sm"
+                        )}
+                      >
+                        {Icon && (
+                          <Icon className="group-hover:text-primary h-4 w-4 shrink-0 opacity-50 transition-all group-hover:opacity-100" />
+                        )}
+                        <span>{label}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -484,26 +477,24 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                     {tagGroups.emergency.title}
                   </span>
                   <div className="flex flex-col gap-1.5">
-                    {tagGroups.emergency.tags.map(
-                      ({ slug, icon: Icon, label, tag }) => (
-                        <button
-                          key={slug}
-                          onClick={() => handleTagClick(slug, tag?.id)}
-                          className={cn(
-                            "group flex w-fit cursor-pointer items-center gap-2 rounded-full px-3 py-1.5",
-                            "bg-background border-primary/20 border",
-                            "hover:border-primary hover:shadow-sm",
-                            "transition-all duration-150",
-                            "text-sm",
-                          )}
-                        >
-                          {Icon && (
-                            <Icon className="group-hover:text-primary h-4 w-4 shrink-0 opacity-50 transition-all group-hover:opacity-100" />
-                          )}
-                          <span>{label}</span>
-                        </button>
-                      ),
-                    )}
+                    {tagGroups.emergency.tags.map(({ slug, icon: Icon, label, tag }) => (
+                      <button
+                        key={slug}
+                        onClick={() => handleTagClick(slug, tag?.id)}
+                        className={cn(
+                          "group flex w-fit cursor-pointer items-center gap-2 rounded-full px-3 py-1.5",
+                          "bg-background border-primary/20 border",
+                          "hover:border-primary hover:shadow-sm",
+                          "transition-all duration-150",
+                          "text-sm"
+                        )}
+                      >
+                        {Icon && (
+                          <Icon className="group-hover:text-primary h-4 w-4 shrink-0 opacity-50 transition-all group-hover:opacity-100" />
+                        )}
+                        <span>{label}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -522,7 +513,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                           "bg-background border-primary/20 border",
                           "hover:border-primary hover:shadow-sm",
                           "transition-all duration-150",
-                          "text-sm",
+                          "text-sm"
                         )}
                       >
                         <Building className="group-hover:text-primary h-3.5 w-3.5 shrink-0 opacity-50 transition-all group-hover:opacity-100" />
@@ -553,7 +544,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                       "bg-background border-primary/20 border",
                       "hover:border-primary hover:shadow-sm",
                       "transition-all duration-150",
-                      "text-foreground/80 text-sm",
+                      "text-foreground/80 text-sm"
                     )}
                   >
                     {tag.name}
@@ -569,7 +560,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                       className={cn(
                         "cursor-pointer rounded-full px-2.5 py-1",
                         "bg-primary/10 border-primary/30 border",
-                        "text-primary text-sm font-medium",
+                        "text-primary text-sm font-medium"
                       )}
                     >
                       {tag.name}
@@ -578,9 +569,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                 })()}
             </div>
             <span className="text-muted-foreground ml-4 shrink-0 text-sm">
-              {isSearching &&
-                contactResults.data &&
-                pluralizeRecords(contactResults.data.total)}
+              {isSearching && contactResults.data && pluralizeRecords(contactResults.data.total)}
               {isFiltering &&
                 entriesGrouped.data &&
                 entriesGrouped.data.groups.length > 0 &&
@@ -593,15 +582,10 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
           </div>
 
           {/* Loading */}
-          {(contactResults.isLoading ||
-            contactsByTag.isLoading ||
-            entriesGrouped.isLoading) && (
+          {(contactResults.isLoading || contactsByTag.isLoading || entriesGrouped.isLoading) && (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="bg-muted h-24 animate-pulse rounded-lg"
-                />
+                <div key={i} className="bg-muted h-24 animate-pulse rounded-lg" />
               ))}
             </div>
           )}
@@ -611,12 +595,9 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
             !contactsByTag.isLoading &&
             !entriesGrouped.isLoading &&
             displayContacts.length === 0 &&
-            (!entriesGrouped.data ||
-              entriesGrouped.data.groups.length === 0) && (
+            (!entriesGrouped.data || entriesGrouped.data.groups.length === 0) && (
               <div className="text-muted-foreground py-12 text-center">
-                {isSearching
-                  ? "Ничего не найдено"
-                  : "Нет контактов с этим тегом"}
+                {isSearching ? "Ничего не найдено" : "Нет контактов с этим тегом"}
               </div>
             )}
 
@@ -638,11 +619,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {articles.map((article) => (
-                    <ArticleCard
-                      key={article.id}
-                      article={article}
-                      onTagClick={handleTagClick}
-                    />
+                    <ArticleCard key={article.id} article={article} onTagClick={handleTagClick} />
                   ))}
                 </div>
               </div>
@@ -673,9 +650,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
               ))}
             </div>
           ) : /* Grouped entries (when filtering by tag) */
-          isFiltering &&
-            entriesGrouped.data &&
-            entriesGrouped.data.groups.length > 0 ? (
+          isFiltering && entriesGrouped.data && entriesGrouped.data.groups.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {entriesGrouped.data.groups.flatMap((group) =>
                 group.entries.map((entry) => (
@@ -696,7 +671,7 @@ export function DirectoryContent({ initialTags }: DirectoryContentProps) {
                     }
                     onTagClick={handleTagClick}
                   />
-                )),
+                ))
               )}
             </div>
           ) : (
@@ -823,7 +798,7 @@ function SearchHint({ onHintClick }: { onHintClick: (hint: string) => void }) {
                   "bg-background border-primary/20 border",
                   "hover:border-primary hover:shadow-sm",
                   "transition-all duration-150",
-                  "text-foreground/80",
+                  "text-foreground/80"
                 )}
               >
                 {hintPair[0]}
@@ -836,7 +811,7 @@ function SearchHint({ onHintClick }: { onHintClick: (hint: string) => void }) {
                   "bg-background border-primary/20 border",
                   "hover:border-primary hover:shadow-sm",
                   "transition-all duration-150",
-                  "text-foreground/80",
+                  "text-foreground/80"
                 )}
               >
                 {hintPair[1]}
@@ -923,9 +898,7 @@ function ContactCard({
       href = contact.value;
   }
 
-  const isExternalLink = ["telegram", "whatsapp", "website", "vk"].includes(
-    contact.type,
-  );
+  const isExternalLink = ["telegram", "whatsapp", "website", "vk"].includes(contact.type);
 
   // Display text for contact
   const contactDisplayText =
@@ -940,7 +913,7 @@ function ContactCard({
   return (
     <div className="bg-card hover:border-primary/30 relative flex min-h-[140px] flex-col overflow-hidden rounded-lg border p-4 transition-all hover:shadow-md">
       {/* Icon in corner - like listings page */}
-      <Icon className="text-muted-foreground/10 absolute -right-4 -bottom-4 h-20 w-20" />
+      <Icon className="text-muted-foreground/10 absolute -bottom-4 -right-4 h-20 w-20" />
 
       {/* Header: Entry title (smaller, not primary) + 24h badge */}
       <div className="relative mb-1 flex items-start justify-between gap-2">
@@ -987,7 +960,7 @@ function ContactCard({
                 "cursor-pointer rounded-full px-2 py-0.5 text-[11px]",
                 "bg-background border-primary/20 text-muted-foreground border",
                 "hover:border-primary hover:text-foreground",
-                "transition-all duration-150",
+                "transition-all duration-150"
               )}
             >
               {tag.name}
@@ -1031,11 +1004,9 @@ function EntryCard({
 }) {
   // Group contacts by type for better organization
   const phoneContacts = entry.contacts.filter((c) => c.type === "phone");
-  const messengerContacts = entry.contacts.filter((c) =>
-    ["telegram", "whatsapp"].includes(c.type),
-  );
+  const messengerContacts = entry.contacts.filter((c) => ["telegram", "whatsapp"].includes(c.type));
   const otherContacts = entry.contacts.filter(
-    (c) => !["phone", "telegram", "whatsapp"].includes(c.type),
+    (c) => !["phone", "telegram", "whatsapp"].includes(c.type)
   );
 
   // Build contact href
@@ -1058,8 +1029,7 @@ function EntryCard({
     }
   };
 
-  const isExternalLink = (type: string) =>
-    ["telegram", "whatsapp", "website", "vk"].includes(type);
+  const isExternalLink = (type: string) => ["telegram", "whatsapp", "website", "vk"].includes(type);
 
   return (
     <div className="bg-card hover:border-primary/30 flex flex-col rounded-lg border p-4 transition-all hover:shadow-md">
@@ -1073,9 +1043,7 @@ function EntryCard({
             {entry.title}
           </h3>
           {entry.subtitle && (
-            <p className="text-muted-foreground mt-0.5 text-sm">
-              {entry.subtitle}
-            </p>
+            <p className="text-muted-foreground mt-0.5 text-sm">{entry.subtitle}</p>
           )}
         </div>
         <ExternalLink className="text-muted-foreground/50 group-hover:text-primary mt-1 h-4 w-4 shrink-0" />
@@ -1089,7 +1057,7 @@ function EntryCard({
             key={contact.id}
             href={getContactHref(contact)}
             onClick={() => onPhoneClick?.(contact.id)}
-            className="group hover:bg-muted/50 -mx-2 flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors"
+            className="hover:bg-muted/50 group -mx-2 flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors"
           >
             <Phone className="text-muted-foreground h-4 w-4 shrink-0" />
             <div className="min-w-0 flex-1">
@@ -1105,9 +1073,7 @@ function EntryCard({
               </div>
               {(contact.label || contact.subtitle) && (
                 <span className="text-muted-foreground text-xs">
-                  {[contact.label, contact.subtitle]
-                    .filter(Boolean)
-                    .join(" — ")}
+                  {[contact.label, contact.subtitle].filter(Boolean).join(" — ")}
                 </span>
               )}
             </div>
@@ -1156,13 +1122,13 @@ function EntryCard({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => onLinkClick?.(contact.id)}
-              className="group hover:bg-muted/50 -mx-2 flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors"
+              className="hover:bg-muted/50 group -mx-2 flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors"
             >
               <Icon
                 className={cn(
                   "h-4 w-4 shrink-0",
                   contact.type === "whatsapp" && "text-green-600",
-                  contact.type === "telegram" && "text-blue-500",
+                  contact.type === "telegram" && "text-blue-500"
                 )}
               />
               <div className="min-w-0 flex-1">
@@ -1170,9 +1136,7 @@ function EntryCard({
                   {contact.label ?? contact.value}
                 </span>
                 {contact.subtitle && (
-                  <span className="text-muted-foreground ml-2 text-xs">
-                    {contact.subtitle}
-                  </span>
+                  <span className="text-muted-foreground ml-2 text-xs">{contact.subtitle}</span>
                 )}
               </div>
             </a>
@@ -1182,8 +1146,7 @@ function EntryCard({
         {/* Other contacts (email, website, address, etc.) */}
         {otherContacts.map((contact) => {
           const Icon = CONTACT_ICONS[contact.type] ?? ExternalLink;
-          const isLink =
-            isExternalLink(contact.type) || contact.type === "email";
+          const isLink = isExternalLink(contact.type) || contact.type === "email";
           const href = getContactHref(contact);
 
           return (
@@ -1193,7 +1156,7 @@ function EntryCard({
               target={isLink ? "_blank" : undefined}
               rel={isLink ? "noopener noreferrer" : undefined}
               onClick={() => onLinkClick?.(contact.id)}
-              className="group hover:bg-muted/50 -mx-2 flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors"
+              className="hover:bg-muted/50 group -mx-2 flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors"
             >
               <Icon className="text-muted-foreground h-4 w-4 shrink-0" />
               <div className="min-w-0 flex-1">
@@ -1213,9 +1176,7 @@ function EntryCard({
 
       {/* Empty state if no contacts */}
       {entry.contacts.length === 0 && (
-        <p className="text-muted-foreground text-sm italic">
-          Нет контактной информации
-        </p>
+        <p className="text-muted-foreground text-sm italic">Нет контактной информации</p>
       )}
     </div>
   );
@@ -1239,10 +1200,10 @@ function ArticleCard({
   return (
     <Link
       href={`/howtos/${article.slug}`}
-      className="group from-primary/5 hover:border-primary/30 relative flex min-h-30 flex-col overflow-hidden rounded-lg border bg-linear-to-br to-transparent p-4 transition-all hover:shadow-md"
+      className="from-primary/5 hover:border-primary/30 min-h-30 bg-linear-to-br group relative flex flex-col overflow-hidden rounded-lg border to-transparent p-4 transition-all hover:shadow-md"
     >
       {/* Icon in corner */}
-      <FileText className="text-primary/10 absolute -right-4 -bottom-4 h-20 w-20" />
+      <FileText className="text-primary/10 absolute -bottom-4 -right-4 h-20 w-20" />
 
       {/* Title */}
       <h3 className="text-foreground group-hover:text-primary relative line-clamp-2 pr-8 font-medium transition-colors">
@@ -1271,7 +1232,7 @@ function ArticleCard({
                 "cursor-pointer rounded-full px-2 py-0.5 text-[11px]",
                 "bg-background border-primary/20 text-muted-foreground border",
                 "hover:border-primary hover:text-foreground",
-                "transition-all duration-150",
+                "transition-all duration-150"
               )}
             >
               {tag.name}

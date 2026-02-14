@@ -4,10 +4,7 @@ import { cn } from "~/lib/utils";
 
 import { MainNavItem } from "./main-nav-item";
 
-export function MainNav({
-  className,
-  ...props
-}: Readonly<React.HTMLAttributes<HTMLElement>>) {
+export function MainNav({ className, ...props }: Readonly<React.HTMLAttributes<HTMLElement>>) {
   return (
     <nav className={cn("flex items-center gap-5", className)} {...props}>
       <MainNavItem title="Справочная" link="/info" icon={<Info />} />

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+
 import { Check, ChevronsUpDown, X } from "lucide-react";
 
-import { cn } from "~/lib/utils";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   Command,
@@ -13,12 +14,8 @@ import {
   CommandItem,
   CommandList,
 } from "~/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import { Badge } from "~/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
+import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 interface Tag {
@@ -73,9 +70,7 @@ export function TagSelector({
             disabled={disabled || isLoading}
             className="w-full justify-between"
           >
-            {selectedTags.length > 0
-              ? `Выбрано: ${selectedTags.length}`
-              : placeholder}
+            {selectedTags.length > 0 ? `Выбрано: ${selectedTags.length}` : placeholder}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -86,11 +81,7 @@ export function TagSelector({
               <CommandEmpty>Теги не найдены</CommandEmpty>
               <CommandGroup className="max-h-64 overflow-y-auto">
                 {tags.map((tag) => (
-                  <CommandItem
-                    key={tag.id}
-                    value={tag.name}
-                    onSelect={() => handleSelect(tag.id)}
-                  >
+                  <CommandItem key={tag.id} value={tag.name} onSelect={() => handleSelect(tag.id)}>
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",

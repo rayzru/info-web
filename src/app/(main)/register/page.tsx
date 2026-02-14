@@ -1,5 +1,6 @@
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
+
+import { redirect } from "next/navigation";
 
 import { RegisterForm } from "~/components/register-form";
 import { auth } from "~/server/auth";

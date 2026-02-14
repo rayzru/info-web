@@ -1,15 +1,11 @@
 "use client";
 
-import { Node, mergeAttributes } from "@tiptap/core";
-import {
-  ReactNodeViewRenderer,
-  NodeViewWrapper,
-  type NodeViewProps,
-} from "@tiptap/react";
-import { FileText, HelpCircle, User, Building2, Home } from "lucide-react";
+import { mergeAttributes, Node } from "@tiptap/core";
+import { type NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
+import { Building2, FileText, HelpCircle, Home, User } from "lucide-react";
 
-import { cn } from "~/lib/utils";
 import type { ReferenceCardAttrs } from "~/lib/editor";
+import { cn } from "~/lib/utils";
 
 // ============================================================================
 // Reference Card Extension
@@ -61,10 +57,7 @@ export const ReferenceCard = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return [
-      "div",
-      mergeAttributes(HTMLAttributes, { "data-type": "reference-card" }),
-    ];
+    return ["div", mergeAttributes(HTMLAttributes, { "data-type": "reference-card" })];
   },
 
   addNodeView() {
@@ -99,33 +92,27 @@ function ReferenceCardComponent({ node, selected, deleteNode }: NodeViewProps) {
     <NodeViewWrapper className="my-2">
       <div
         className={cn(
-          "group relative flex items-center gap-3 rounded-lg border bg-muted/50 p-3 transition-all",
-          selected && "ring-2 ring-primary ring-offset-2",
+          "bg-muted/50 group relative flex items-center gap-3 rounded-lg border p-3 transition-all",
+          selected && "ring-primary ring-2 ring-offset-2",
           "hover:border-primary hover:bg-muted"
         )}
         contentEditable={false}
       >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <Icon className="h-5 w-5 text-primary" />
+        <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+          <Icon className="text-primary h-5 w-5" />
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="font-medium truncate">{title || "Без названия"}</p>
-          {description && (
-            <p className="text-sm text-muted-foreground truncate">
-              {description}
-            </p>
-          )}
-          <p className="text-xs text-muted-foreground/60 mt-0.5">
-            {getTypeLabel(type)}
-          </p>
+          <p className="truncate font-medium">{title || "Без названия"}</p>
+          {description && <p className="text-muted-foreground truncate text-sm">{description}</p>}
+          <p className="text-muted-foreground/60 mt-0.5 text-xs">{getTypeLabel(type)}</p>
         </div>
 
         {/* Delete button */}
         <button
           type="button"
           onClick={deleteNode}
-          className="absolute -right-2 -top-2 hidden h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs group-hover:flex"
+          className="bg-destructive text-destructive-foreground absolute -right-2 -top-2 hidden h-5 w-5 items-center justify-center rounded-full text-xs group-hover:flex"
         >
           ×
         </button>

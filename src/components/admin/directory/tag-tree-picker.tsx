@@ -1,17 +1,14 @@
 "use client";
 
 import * as React from "react";
+
 import { ChevronRight, ChevronsUpDown, Search, X } from "lucide-react";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { cn } from "~/lib/utils";
 
@@ -195,7 +192,7 @@ export function TagTreePicker({
     }
   }, [selected, allTags]);
 
-  const renderTagNode = (node: TagTreeNode, depth: number = 0) => {
+  const renderTagNode = (node: TagTreeNode, depth = 0) => {
     const hasChildren = node.children && node.children.length > 0;
     const isExpanded = expandedIds.has(node.id);
     const isSelected = selected.includes(node.id);
@@ -204,7 +201,7 @@ export function TagTreePicker({
       <div key={node.id}>
         <div
           className={cn(
-            "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors",
+            "flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors",
             "hover:bg-muted",
             isSelected && "bg-primary/10"
           )}
@@ -214,14 +211,11 @@ export function TagTreePicker({
           {hasChildren ? (
             <button
               type="button"
-              className="p-0.5 hover:bg-muted-foreground/20 rounded"
+              className="hover:bg-muted-foreground/20 rounded p-0.5"
               onClick={(e) => toggleExpanded(node.id, e)}
             >
               <ChevronRight
-                className={cn(
-                  "h-4 w-4 transition-transform",
-                  isExpanded && "rotate-90"
-                )}
+                className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-90")}
               />
             </button>
           ) : (
@@ -237,16 +231,12 @@ export function TagTreePicker({
           <span className="flex-1 truncate text-sm">{node.name}</span>
 
           {showCounts && (node.entryCount !== undefined || node.contactCount !== undefined) && (
-            <span className="text-xs text-muted-foreground">
-              {node.entryCount ?? 0}
-            </span>
+            <span className="text-muted-foreground text-xs">{node.entryCount ?? 0}</span>
           )}
         </div>
 
         {hasChildren && isExpanded && (
-          <div>
-            {node.children!.map((child) => renderTagNode(child, depth + 1))}
-          </div>
+          <div>{node.children!.map((child) => renderTagNode(child, depth + 1))}</div>
         )}
       </div>
     );
@@ -272,7 +262,7 @@ export function TagTreePicker({
       <div
         key={tag.id}
         className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors",
+          "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 transition-colors",
           "hover:bg-muted",
           isSelected && "bg-primary/10"
         )}
@@ -284,26 +274,22 @@ export function TagTreePicker({
           onClick={(e) => e.stopPropagation()}
         />
 
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate text-sm font-medium">{tag.name}</span>
             {tag.scope && (
-              <span className={cn("text-[10px] px-1.5 py-0.5 rounded", SCOPE_COLORS[tag.scope])}>
+              <span className={cn("rounded px-1.5 py-0.5 text-[10px]", SCOPE_COLORS[tag.scope])}>
                 {SCOPE_LABELS[tag.scope]}
               </span>
             )}
           </div>
           {breadcrumb.length > 0 && (
-            <span className="text-xs text-muted-foreground truncate">
-              {breadcrumb.join(" → ")}
-            </span>
+            <span className="text-muted-foreground truncate text-xs">{breadcrumb.join(" → ")}</span>
           )}
         </div>
 
         {showCounts && tag.entryCount !== undefined && (
-          <span className="text-xs text-muted-foreground shrink-0">
-            {tag.entryCount}
-          </span>
+          <span className="text-muted-foreground shrink-0 text-xs">{tag.entryCount}</span>
         )}
       </div>
     );
@@ -318,26 +304,22 @@ export function TagTreePicker({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "min-h-9 h-auto w-full justify-between font-normal",
+            "h-auto min-h-9 w-full justify-between font-normal",
             !selected.length && "text-muted-foreground",
             className
           )}
         >
-          <div className="flex flex-wrap gap-1 flex-1">
+          <div className="flex flex-1 flex-wrap gap-1">
             {selectedTags.length === 0 ? (
               <span>{placeholder}</span>
             ) : (
               <>
                 {selectedTags.slice(0, maxDisplay).map((tag) => (
-                  <Badge
-                    key={tag.id}
-                    variant="secondary"
-                    className="text-xs py-0 h-5 pr-1"
-                  >
+                  <Badge key={tag.id} variant="secondary" className="h-5 py-0 pr-1 text-xs">
                     {tag.name}
                     <button
                       type="button"
-                      className="ml-1 rounded-full outline-none hover:bg-secondary-foreground/20"
+                      className="hover:bg-secondary-foreground/20 ml-1 rounded-full outline-none"
                       onClick={(e) => handleRemove(tag.id, e)}
                     >
                       <X className="h-3 w-3" />
@@ -345,7 +327,7 @@ export function TagTreePicker({
                   </Badge>
                 ))}
                 {selectedTags.length > maxDisplay && (
-                  <Badge variant="secondary" className="text-xs py-0 h-5">
+                  <Badge variant="secondary" className="h-5 py-0 text-xs">
                     +{selectedTags.length - maxDisplay}
                   </Badge>
                 )}
@@ -357,14 +339,14 @@ export function TagTreePicker({
       </PopoverTrigger>
 
       <PopoverContent className="w-[360px] p-0" align="start">
-        <div className="p-2 border-b">
+        <div className="border-b p-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder={searchPlaceholder}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="pl-8 h-9"
+              className="h-9 pl-8"
             />
           </div>
         </div>
@@ -378,16 +360,19 @@ export function TagTreePicker({
                   {filteredTags.map((tag) => renderSearchResult(tag))}
                 </div>
               ) : (
-                <div className="py-6 text-center text-sm text-muted-foreground">
-                  {emptyText}
-                </div>
+                <div className="text-muted-foreground py-6 text-center text-sm">{emptyText}</div>
               )
             ) : (
               // Tree view grouped by scope
               Array.from(groupedRoots.entries()).map(([scope, roots]) => (
                 <div key={scope} className="mb-4">
-                  <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
-                    <span className={cn("text-xs font-medium px-1.5 py-0.5 rounded", SCOPE_COLORS[scope] ?? "bg-gray-100 text-gray-700")}>
+                  <div className="mb-1 flex items-center gap-2 px-2 py-1.5">
+                    <span
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-xs font-medium",
+                        SCOPE_COLORS[scope] ?? "bg-gray-100 text-gray-700"
+                      )}
+                    >
                       {SCOPE_LABELS[scope] ?? scope}
                     </span>
                   </div>
@@ -399,16 +384,9 @@ export function TagTreePicker({
         </ScrollArea>
 
         {selected.length > 0 && (
-          <div className="border-t p-2 flex justify-between items-center">
-            <span className="text-xs text-muted-foreground">
-              Выбрано: {selected.length}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs"
-              onClick={() => onChange([])}
-            >
+          <div className="flex items-center justify-between border-t p-2">
+            <span className="text-muted-foreground text-xs">Выбрано: {selected.length}</span>
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => onChange([])}>
               Очистить
             </Button>
           </div>

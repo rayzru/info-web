@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -17,18 +18,12 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { cn } from "~/lib/utils";
-import {
-  forgotPasswordSchema,
-  type ForgotPasswordFormData,
-} from "~/lib/validations/auth";
+import { type ForgotPasswordFormData, forgotPasswordSchema } from "~/lib/validations/auth";
 import { api } from "~/trpc/react";
 
 interface ForgotPasswordFormProps extends React.ComponentPropsWithoutRef<"div"> {}
 
-export function ForgotPasswordForm({
-  className,
-  ...props
-}: Readonly<ForgotPasswordFormProps>) {
+export function ForgotPasswordForm({ className, ...props }: Readonly<ForgotPasswordFormProps>) {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const form = useForm<ForgotPasswordFormData>({
@@ -62,9 +57,9 @@ export function ForgotPasswordForm({
             <CheckCircle2 className="h-6 w-6 text-green-600" />
           </div>
           <h1 className="text-lg font-semibold">Проверьте почту</h1>
-          <p className="text-sm text-muted-foreground">
-            Если аккаунт с указанным email существует, мы отправили на него
-            инструкции по восстановлению пароля.
+          <p className="text-muted-foreground text-sm">
+            Если аккаунт с указанным email существует, мы отправили на него инструкции по
+            восстановлению пароля.
           </p>
         </div>
 
@@ -82,9 +77,7 @@ export function ForgotPasswordForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col gap-2 text-center">
         <h1 className="text-lg font-semibold">Восстановление пароля</h1>
-        <p className="text-sm text-muted-foreground">
-          Введите email, указанный при регистрации
-        </p>
+        <p className="text-muted-foreground text-sm">Введите email, указанный при регистрации</p>
       </div>
 
       <Form {...form}>
@@ -109,9 +102,7 @@ export function ForgotPasswordForm({
           />
 
           {requestResetMutation.error && (
-            <p className="text-sm text-destructive">
-              {requestResetMutation.error.message}
-            </p>
+            <p className="text-destructive text-sm">{requestResetMutation.error.message}</p>
           )}
 
           <Button
@@ -126,10 +117,7 @@ export function ForgotPasswordForm({
       </Form>
 
       <div className="text-center text-sm">
-        <Link
-          href="/login"
-          className="text-muted-foreground hover:text-foreground hover:underline"
-        >
+        <Link href="/login" className="text-muted-foreground hover:text-foreground hover:underline">
           <ArrowLeft className="mr-1 inline h-3 w-3" />
           Вернуться к входу
         </Link>

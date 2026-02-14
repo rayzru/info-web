@@ -5,22 +5,16 @@ import { hasFeatureAccess, type UserRole } from "~/server/auth/rbac";
 
 export default async function AdminUsersPage() {
   const session = await auth();
-  const userRoles = (session?.user.roles ?? []) as UserRole[];
+  const userRoles = session?.user.roles ?? [];
 
   const canManageRoles = hasFeatureAccess(userRoles, "users:roles");
   const canDeleteUsers = hasFeatureAccess(userRoles, "users:delete");
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title="Пользователи"
-        description="Управление пользователями системы"
-      />
+      <AdminPageHeader title="Пользователи" description="Управление пользователями системы" />
 
-      <UsersTable
-        canManageRoles={canManageRoles}
-        canDeleteUsers={canDeleteUsers}
-      />
+      <UsersTable canManageRoles={canManageRoles} canDeleteUsers={canDeleteUsers} />
     </div>
   );
 }

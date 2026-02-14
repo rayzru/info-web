@@ -1,14 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  index,
-  jsonb,
-  pgEnum,
-  text,
-  timestamp,
-  uuid,
-  varchar,
-  boolean,
-} from "drizzle-orm/pg-core";
+import { boolean, index, jsonb, pgEnum, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 import { createTable } from "./create-table";
 import { users } from "./users";
@@ -18,40 +9,40 @@ import { users } from "./users";
 // ============================================================================
 
 export const feedbackTypeEnum = pgEnum("feedback_type_enum", [
-  "complaint",      // Жалоба
-  "suggestion",     // Пожелание/предложение
-  "request",        // Заявка/просьба
-  "question",       // Вопрос
-  "other",          // Другое
+  "complaint", // Жалоба
+  "suggestion", // Пожелание/предложение
+  "request", // Заявка/просьба
+  "question", // Вопрос
+  "other", // Другое
 ]);
 
 export const feedbackStatusEnum = pgEnum("feedback_status_enum", [
-  "new",            // Новое (не рассмотрено)
-  "in_progress",    // В работе
-  "forwarded",      // Перенаправлено (в УК, МСК и т.д.)
-  "resolved",       // Решено
-  "closed",         // Закрыто (без решения)
+  "new", // Новое (не рассмотрено)
+  "in_progress", // В работе
+  "forwarded", // Перенаправлено (в УК, МСК и т.д.)
+  "resolved", // Решено
+  "closed", // Закрыто (без решения)
 ]);
 
 export const feedbackPriorityEnum = pgEnum("feedback_priority_enum", [
-  "low",            // Низкий
-  "normal",         // Обычный
-  "high",           // Высокий
-  "urgent",         // Срочный
+  "low", // Низкий
+  "normal", // Обычный
+  "high", // Высокий
+  "urgent", // Срочный
 ]);
 
 // Действия в истории обращения
 export const feedbackHistoryActionEnum = pgEnum("feedback_history_action_enum", [
-  "created",           // Создано
-  "status_changed",    // Изменён статус
-  "priority_changed",  // Изменён приоритет
-  "assigned",          // Назначено ответственному
-  "unassigned",        // Снято с ответственного
-  "forwarded",         // Перенаправлено
-  "responded",         // Дан ответ
-  "note_added",        // Добавлена заметка
-  "closed",            // Закрыто
-  "reopened",          // Переоткрыто
+  "created", // Создано
+  "status_changed", // Изменён статус
+  "priority_changed", // Изменён приоритет
+  "assigned", // Назначено ответственному
+  "unassigned", // Снято с ответственного
+  "forwarded", // Перенаправлено
+  "responded", // Дан ответ
+  "note_added", // Добавлена заметка
+  "closed", // Закрыто
+  "reopened", // Переоткрыто
 ]);
 
 // ============================================================================
@@ -95,8 +86,9 @@ export const feedback = createTable(
     // ========== Метаданные ==========
     // ID пользователя (если авторизован, но хранится анонимно)
     // Администратор НЕ видит привязку к пользователю, только контактные данные
-    submittedByUserId: varchar("submitted_by_user_id", { length: 255 })
-      .references(() => users.id, { onDelete: "set null" }),
+    submittedByUserId: varchar("submitted_by_user_id", { length: 255 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
 
     // IP адрес отправителя (для защиты от спама)
     ipAddress: varchar("ip_address", { length: 45 }),
@@ -109,8 +101,7 @@ export const feedback = createTable(
 
     // ========== Обработка администратором ==========
     // Кто взял в работу
-    assignedToId: varchar("assigned_to_id", { length: 255 })
-      .references(() => users.id),
+    assignedToId: varchar("assigned_to_id", { length: 255 }).references(() => users.id),
 
     // Куда перенаправлено (текстовое описание)
     forwardedTo: varchar("forwarded_to", { length: 500 }),
@@ -121,15 +112,13 @@ export const feedback = createTable(
     // Ответ заявителю
     response: text("response"),
     respondedAt: timestamp("responded_at", { withTimezone: true }),
-    respondedById: varchar("responded_by_id", { length: 255 })
-      .references(() => users.id),
+    respondedById: varchar("responded_by_id", { length: 255 }).references(() => users.id),
 
     // ========== Soft Delete ==========
     // Обращения не удаляются физически, только помечаются удалёнными
     isDeleted: boolean("is_deleted").notNull().default(false),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
-    deletedById: varchar("deleted_by_id", { length: 255 })
-      .references(() => users.id),
+    deletedById: varchar("deleted_by_id", { length: 255 }).references(() => users.id),
     deleteReason: text("delete_reason"),
 
     // Timestamps
@@ -177,8 +166,7 @@ export const feedbackHistory = createTable(
     toPriority: feedbackPriorityEnum("to_priority"),
 
     // Назначение ответственному
-    assignedToId: varchar("assigned_to_id", { length: 255 })
-      .references(() => users.id),
+    assignedToId: varchar("assigned_to_id", { length: 255 }).references(() => users.id),
 
     // Перенаправление
     forwardedTo: varchar("forwarded_to", { length: 500 }),
@@ -190,8 +178,7 @@ export const feedbackHistory = createTable(
     internalNote: text("internal_note"),
 
     // Кто сделал изменение
-    changedById: varchar("changed_by_id", { length: 255 })
-      .references(() => users.id),
+    changedById: varchar("changed_by_id", { length: 255 }).references(() => users.id),
 
     // Человекочитаемое описание (автогенерируемое)
     description: text("description").notNull(),

@@ -19,12 +19,8 @@ export function PrivacyCheckbox({
 }: PrivacyCheckboxProps) {
   return (
     <div className={cn("flex items-center space-x-2", className)}>
-      <Checkbox
-        id={id}
-        checked={checked}
-        onCheckedChange={(c) => onCheckedChange(c === true)}
-      />
-      <Label htmlFor={id} className="text-xs font-normal text-muted-foreground">
+      <Checkbox id={id} checked={checked} onCheckedChange={(c) => onCheckedChange(c === true)} />
+      <Label htmlFor={id} className="text-muted-foreground text-xs font-normal">
         {label}
       </Label>
     </div>

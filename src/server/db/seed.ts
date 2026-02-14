@@ -10,6 +10,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import postgres from "postgres";
+
 import { env } from "~/env";
 
 async function seedDatabase() {
@@ -38,7 +39,6 @@ async function seedDatabase() {
     console.log("  • 794 total parking spots");
     console.log("");
     console.log("🎉 Ready to use! Try: bun run db:studio");
-
   } catch (error) {
     if (error instanceof Error) {
       // Check if error is due to data already existing

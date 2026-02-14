@@ -1,5 +1,6 @@
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
+
+import { redirect } from "next/navigation";
 
 import { ForgotPasswordForm } from "~/components/forgot-password-form";
 import { auth } from "~/server/auth";

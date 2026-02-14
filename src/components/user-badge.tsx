@@ -1,17 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { MessageCircle, Phone, Mail } from "lucide-react";
+
+import { Mail, MessageCircle, Phone } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "~/components/ui/hover-card";
-import { cn } from "~/lib/utils";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "~/components/ui/hover-card";
 import { getRankConfig, type RankTier, TIER_CONFIG } from "~/lib/ranks";
+import { cn } from "~/lib/utils";
 import type { UserRole } from "~/server/auth/rbac";
 
 export interface UserBadgeProps {
@@ -94,9 +91,7 @@ function getContextLabel(
     store: "маг.",
   };
 
-  const propertyLabel = context.propertyType
-    ? propertyLabels[context.propertyType]
-    : "";
+  const propertyLabel = context.propertyType ? propertyLabels[context.propertyType] : "";
   const propertyNum = context.propertyNumber ? ` ${context.propertyNumber}` : "";
 
   return `${context.buildingName}${propertyLabel ? `, ${propertyLabel}${propertyNum}` : ""}`;
@@ -116,25 +111,21 @@ export function UserBadge({
   const contextLabel = getContextLabel(context, rankConfig);
 
   const badge = (
-    <div
-      className={cn(
-        "inline-flex items-center",
-        sizeStyles.gap,
-        className
-      )}
-    >
+    <div className={cn("inline-flex items-center", sizeStyles.gap, className)}>
       {/* Avatar with rank ring */}
       <div className="relative">
         <Avatar
           className={cn(
             sizeStyles.avatar,
             sizeStyles.ring,
-            "ring-offset-2 ring-offset-background",
+            "ring-offset-background ring-offset-2",
             rankConfig.ringColor
           )}
         >
           <AvatarImage src={user.image ?? undefined} alt={displayName} />
-          <AvatarFallback className={cn("text-xs font-medium", rankConfig.badgeColor, "text-white")}>
+          <AvatarFallback
+            className={cn("text-xs font-medium", rankConfig.badgeColor, "text-white")}
+          >
             {getInitials(user.name)}
           </AvatarFallback>
         </Avatar>
@@ -142,14 +133,10 @@ export function UserBadge({
 
       {/* Name and status */}
       {showName && (
-        <div className="flex flex-col min-w-0">
-          <span className={cn("font-medium truncate", sizeStyles.text)}>
-            {displayName}
-          </span>
+        <div className="flex min-w-0 flex-col">
+          <span className={cn("truncate font-medium", sizeStyles.text)}>{displayName}</span>
           {contextLabel && (
-            <span className="text-xs text-muted-foreground truncate">
-              {contextLabel}
-            </span>
+            <span className="text-muted-foreground truncate text-xs">{contextLabel}</span>
           )}
         </div>
       )}
@@ -163,7 +150,7 @@ export function UserBadge({
   return (
     <HoverCard openDelay={200} closeDelay={100}>
       <HoverCardTrigger asChild>
-        <button className="cursor-pointer rounded-lg p-1 -m-1 transition-colors hover:bg-muted/50">
+        <button className="hover:bg-muted/50 -m-1 cursor-pointer rounded-lg p-1 transition-colors">
           {badge}
         </button>
       </HoverCardTrigger>
@@ -171,7 +158,7 @@ export function UserBadge({
         side="top"
         align="start"
         className={cn(
-          "w-72 p-0 overflow-hidden",
+          "w-72 overflow-hidden p-0",
           "border-2",
           rankConfig.ringColor.replace("ring-", "border-")
         )}
@@ -201,48 +188,41 @@ function UserCardContent({ user, context, rankConfig }: UserCardContentProps) {
       <div
         className={cn(
           "p-4 pb-6",
-          rankConfig.badgeColor.replace("bg-", "bg-gradient-to-b from-") + "/20 to-transparent"
+          rankConfig.badgeColor.replace("bg-", "from- bg-gradient-to-b") + "/20 to-transparent"
         )}
       >
         {/* Large avatar */}
         <div className="flex items-start gap-4">
           <Avatar
             className={cn(
-              "h-16 w-16 ring-[3px] ring-offset-2 ring-offset-background",
+              "ring-offset-background h-16 w-16 ring-[3px] ring-offset-2",
               rankConfig.ringColor
             )}
           >
             <AvatarImage src={user.image ?? undefined} alt={displayName} />
-            <AvatarFallback className={cn("text-lg font-medium", rankConfig.badgeColor, "text-white")}>
+            <AvatarFallback
+              className={cn("text-lg font-medium", rankConfig.badgeColor, "text-white")}
+            >
               {getInitials(user.name)}
             </AvatarFallback>
           </Avatar>
 
-          <div className="flex-1 min-w-0 pt-1">
-            <h4 className="font-semibold truncate">{displayName}</h4>
-            <p className={cn("text-sm font-medium", rankConfig.textColor)}>
-              {rankConfig.label}
-            </p>
+          <div className="min-w-0 flex-1 pt-1">
+            <h4 className="truncate font-semibold">{displayName}</h4>
+            <p className={cn("text-sm font-medium", rankConfig.textColor)}>{rankConfig.label}</p>
             {contextLabel && (
-              <p className="text-xs text-muted-foreground mt-1 truncate">
-                {contextLabel}
-              </p>
+              <p className="text-muted-foreground mt-1 truncate text-xs">{contextLabel}</p>
             )}
           </div>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="px-4 pb-4 flex gap-2">
+      <div className="flex gap-2 px-4 pb-4">
         {showPhone && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            asChild
-          >
+          <Button variant="outline" size="sm" className="flex-1" asChild>
             <a href={`tel:${user.phone}`}>
-              <Phone className="h-4 w-4 mr-2" />
+              <Phone className="mr-2 h-4 w-4" />
               Позвонить
             </a>
           </Button>
@@ -255,7 +235,7 @@ function UserCardContent({ user, context, rankConfig }: UserCardContentProps) {
           disabled={!showMessage}
           title={showMessage ? "Написать сообщение" : "Сообщения скрыты"}
         >
-          <MessageCircle className="h-4 w-4 mr-2" />
+          <MessageCircle className="mr-2 h-4 w-4" />
           Написать
         </Button>
       </div>
@@ -276,7 +256,7 @@ export function UserCard({
   return (
     <div
       className={cn(
-        "rounded-xl border-2 overflow-hidden",
+        "overflow-hidden rounded-xl border-2",
         rankConfig.ringColor.replace("ring-", "border-"),
         className
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import {
   Check,
   ChevronLeft,
@@ -22,13 +23,7 @@ import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -150,9 +145,7 @@ function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProp
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Рассмотрение заявки</DialogTitle>
-          <DialogDescription>
-            Выберите решение и укажите причину
-          </DialogDescription>
+          <DialogDescription>Выберите решение и укажите причину</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
@@ -171,19 +164,17 @@ function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProp
                       href={doc.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex items-center gap-2 rounded-md border bg-muted/30 px-2 py-1.5 text-xs hover:bg-muted transition-colors"
+                      className="bg-muted/30 hover:bg-muted group flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs transition-colors"
                     >
                       {isImage ? (
                         <ImageIcon className="h-3.5 w-3.5 text-blue-500" />
                       ) : isPdf ? (
                         <FileText className="h-3.5 w-3.5 text-red-500" />
                       ) : (
-                        <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Download className="text-muted-foreground h-3.5 w-3.5" />
                       )}
-                      <span className="max-w-32 truncate">
-                        {doc.fileName}
-                      </span>
-                      <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <span className="max-w-32 truncate">{doc.fileName}</span>
+                      <ExternalLink className="text-muted-foreground h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
                     </a>
                   );
                 })}
@@ -229,7 +220,7 @@ function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProp
               {templates.map((t) => (
                 <div key={t.value} className="flex items-center space-x-2">
                   <RadioGroupItem value={t.value} id={t.value} />
-                  <Label htmlFor={t.value} className="font-normal cursor-pointer">
+                  <Label htmlFor={t.value} className="cursor-pointer font-normal">
                     {t.label}
                   </Label>
                 </div>
@@ -264,9 +255,7 @@ function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProp
             }
             variant={action === "reject" ? "destructive" : "default"}
           >
-            {reviewMutation.isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {reviewMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {action === "approve" ? "Одобрить" : "Отклонить"}
           </Button>
         </DialogFooter>
@@ -300,9 +289,9 @@ function HistoryDialog({ claimId, open, onOpenChange }: HistoryDialogProps) {
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : history && history.length > 0 ? (
-            <div className="relative pl-6 space-y-6">
+            <div className="relative space-y-6 pl-6">
               {/* Timeline line */}
-              <div className="absolute left-[9px] top-2 bottom-2 w-px bg-border" />
+              <div className="bg-border absolute bottom-2 left-[9px] top-2 w-px" />
 
               {history.map((entry, idx) => (
                 <div key={entry.id} className="relative">
@@ -310,9 +299,9 @@ function HistoryDialog({ claimId, open, onOpenChange }: HistoryDialogProps) {
                   <div
                     className={`absolute -left-6 top-1 h-4 w-4 rounded-full border-2 ${
                       entry.toStatus === "approved"
-                        ? "bg-green-500 border-green-500"
+                        ? "border-green-500 bg-green-500"
                         : entry.toStatus === "rejected"
-                          ? "bg-red-500 border-red-500"
+                          ? "border-red-500 bg-red-500"
                           : "bg-background border-primary"
                     }`}
                   />
@@ -330,19 +319,17 @@ function HistoryDialog({ claimId, open, onOpenChange }: HistoryDialogProps) {
                       >
                         {STATUS_LABELS[entry.toStatus]}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         {new Date(entry.createdAt).toLocaleString("ru-RU")}
                       </span>
                     </div>
 
                     {entry.resolutionText && (
-                      <p className="text-sm text-muted-foreground">
-                        {entry.resolutionText}
-                      </p>
+                      <p className="text-muted-foreground text-sm">{entry.resolutionText}</p>
                     )}
 
                     {entry.changedByUser && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         {entry.changedByUser.name ?? entry.changedByUser.email}
                       </p>
                     )}
@@ -351,9 +338,7 @@ function HistoryDialog({ claimId, open, onOpenChange }: HistoryDialogProps) {
               ))}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">
-              История пуста
-            </p>
+            <p className="text-muted-foreground py-8 text-center">История пуста</p>
           )}
         </div>
       </DialogContent>
@@ -425,8 +410,9 @@ export default function AdminClaimsPage() {
       return {
         icon: Home,
         title: `Квартира ${claim.apartment.number}`,
-        subtitle: claim.apartment.floor?.entrance?.building?.title
-          ?? `Строение ${claim.apartment.floor?.entrance?.building?.number}`,
+        subtitle:
+          claim.apartment.floor?.entrance?.building?.title ??
+          `Строение ${claim.apartment.floor?.entrance?.building?.number}`,
       };
     }
     if (claim.parkingSpot) {
@@ -452,78 +438,60 @@ export default function AdminClaimsPage() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid gap-4 grid-cols-2 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
           <Card
             className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "all"
-                ? "ring-2 ring-primary ring-offset-2"
-                : ""
+              statusFilter === "all" ? "ring-primary ring-2 ring-offset-2" : ""
             }`}
             onClick={() => setFilter("all")}
           >
             <CardContent className="pt-4">
               <div className="text-2xl font-bold">{totalClaims}</div>
-              <p className="text-sm text-muted-foreground">Все заявки</p>
+              <p className="text-muted-foreground text-sm">Все заявки</p>
             </CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "pending"
-                ? "ring-2 ring-yellow-500 ring-offset-2"
-                : ""
+              statusFilter === "pending" ? "ring-2 ring-yellow-500 ring-offset-2" : ""
             }`}
             onClick={() => setFilter("pending")}
           >
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-yellow-600">
-                {stats.pending}
-              </div>
-              <p className="text-sm text-muted-foreground">Ожидают</p>
+              <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+              <p className="text-muted-foreground text-sm">Ожидают</p>
             </CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "review"
-                ? "ring-2 ring-blue-500 ring-offset-2"
-                : ""
+              statusFilter === "review" ? "ring-2 ring-blue-500 ring-offset-2" : ""
             }`}
             onClick={() => setFilter("review")}
           >
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-blue-600">
-                {stats.underReview}
-              </div>
-              <p className="text-sm text-muted-foreground">На рассмотрении</p>
+              <div className="text-2xl font-bold text-blue-600">{stats.underReview}</div>
+              <p className="text-muted-foreground text-sm">На рассмотрении</p>
             </CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "approved"
-                ? "ring-2 ring-green-500 ring-offset-2"
-                : ""
+              statusFilter === "approved" ? "ring-2 ring-green-500 ring-offset-2" : ""
             }`}
             onClick={() => setFilter("approved")}
           >
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-600">
-                {stats.approved}
-              </div>
-              <p className="text-sm text-muted-foreground">Одобрено</p>
+              <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
+              <p className="text-muted-foreground text-sm">Одобрено</p>
             </CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "rejected"
-                ? "ring-2 ring-red-500 ring-offset-2"
-                : ""
+              statusFilter === "rejected" ? "ring-2 ring-red-500 ring-offset-2" : ""
             }`}
             onClick={() => setFilter("rejected")}
           >
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-red-600">
-                {stats.rejected}
-              </div>
-              <p className="text-sm text-muted-foreground">Отклонено</p>
+              <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
+              <p className="text-muted-foreground text-sm">Отклонено</p>
             </CardContent>
           </Card>
         </div>
@@ -569,11 +537,9 @@ export default function AdminClaimsPage() {
                     </Avatar>
 
                     {/* Claim Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium">
-                          {claim.user?.name ?? claim.user?.email}
-                        </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium">{claim.user?.name ?? claim.user?.email}</span>
                         <Badge
                           variant={
                             claim.status === "approved"
@@ -589,31 +555,27 @@ export default function AdminClaimsPage() {
                         </Badge>
                       </div>
 
-                      <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                      <div className="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
                         <PropertyIcon className="h-4 w-4" />
                         <span>{propertyInfo.title}</span>
                         <span>·</span>
                         <span>{propertyInfo.subtitle}</span>
                       </div>
 
-                      <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                      <div className="text-muted-foreground mt-1 flex items-center gap-4 text-xs">
                         <span>{ROLE_LABELS[claim.claimedRole]}</span>
                         <span>·</span>
-                        <span>
-                          {new Date(claim.createdAt).toLocaleDateString("ru-RU")}
-                        </span>
+                        <span>{new Date(claim.createdAt).toLocaleDateString("ru-RU")}</span>
                       </div>
 
                       {claim.userComment && (
-                        <p className="mt-2 text-sm bg-muted p-2 rounded">
-                          {claim.userComment}
-                        </p>
+                        <p className="bg-muted mt-2 rounded p-2 text-sm">{claim.userComment}</p>
                       )}
 
                       {/* Documents Section */}
                       {claim.documents && claim.documents.length > 0 && (
                         <div className="mt-3 space-y-2">
-                          <p className="text-xs font-medium text-muted-foreground">
+                          <p className="text-muted-foreground text-xs font-medium">
                             Документы ({claim.documents.length})
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -627,19 +589,17 @@ export default function AdminClaimsPage() {
                                   href={doc.fileUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="group flex items-center gap-2 rounded-md border bg-muted/30 px-2 py-1.5 text-xs hover:bg-muted transition-colors"
+                                  className="bg-muted/30 hover:bg-muted group flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs transition-colors"
                                 >
                                   {isImage ? (
                                     <ImageIcon className="h-3.5 w-3.5 text-blue-500" />
                                   ) : isPdf ? (
                                     <FileText className="h-3.5 w-3.5 text-red-500" />
                                   ) : (
-                                    <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                                    <Download className="text-muted-foreground h-3.5 w-3.5" />
                                   )}
-                                  <span className="max-w-40 truncate">
-                                    {doc.fileName}
-                                  </span>
-                                  <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  <span className="max-w-40 truncate">{doc.fileName}</span>
+                                  <ExternalLink className="text-muted-foreground h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
                                 </a>
                               );
                             })}
@@ -648,7 +608,7 @@ export default function AdminClaimsPage() {
                       )}
 
                       {claim.adminComment && (
-                        <p className="mt-2 text-sm text-muted-foreground italic">
+                        <p className="text-muted-foreground mt-2 text-sm italic">
                           Решение: {claim.adminComment}
                         </p>
                       )}
@@ -664,13 +624,8 @@ export default function AdminClaimsPage() {
                         <History className="h-4 w-4" />
                       </Button>
 
-                      {(claim.status === "pending" ||
-                        claim.status === "review") && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openReviewDialog(claim)}
-                        >
+                      {(claim.status === "pending" || claim.status === "review") && (
+                        <Button variant="outline" size="sm" onClick={() => openReviewDialog(claim)}>
                           Рассмотреть
                         </Button>
                       )}
@@ -708,7 +663,7 @@ export default function AdminClaimsPage() {
         </div>
       ) : (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
+          <CardContent className="text-muted-foreground py-12 text-center">
             Заявок не найдено
           </CardContent>
         </Card>

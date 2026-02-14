@@ -16,5 +16,6 @@ export * from "./schemas/parkings";
 export * from "./schemas/posts";
 export * from "./schemas/publications";
 export * from "./schemas/settings";
+export * from "./schemas/tags";
 export * from "./schemas/users";
 export * from "./schemas/users-property";

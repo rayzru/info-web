@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
+
 import {
   Building2,
+  Car,
   ChevronDown,
   ChevronRight,
   DoorOpen,
-  Layers,
   Home,
-  Car,
+  Layers,
   ParkingSquare,
 } from "lucide-react";
 
@@ -94,29 +95,25 @@ function TreeNode({
         onClick={() => hasChildren && setIsExpanded(!isExpanded)}
         className={cn(
           "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-          hasChildren
-            ? "cursor-pointer hover:bg-muted"
-            : "cursor-default",
-          level === 0 && "font-medium",
+          hasChildren ? "hover:bg-muted cursor-pointer" : "cursor-default",
+          level === 0 && "font-medium"
         )}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
       >
         {hasChildren ? (
           isExpanded ? (
-            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
           ) : (
-            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
           )
         ) : (
           <span className="w-4" />
         )}
-        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <Icon className="text-muted-foreground h-4 w-4 shrink-0" />
         <span className="flex-1 truncate">{label}</span>
-        {sublabel && (
-          <span className="text-xs text-muted-foreground">{sublabel}</span>
-        )}
+        {sublabel && <span className="text-muted-foreground text-xs">{sublabel}</span>}
         {count !== undefined && (
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+          <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
             {count}
           </span>
         )}
@@ -144,11 +141,9 @@ function LeafNode({
       style={{ paddingLeft: `${level * 16 + 8 + 16}px` }}
     >
       <span className="w-4" />
-      <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="flex-1 truncate text-muted-foreground">{label}</span>
-      {sublabel && (
-        <span className="text-xs text-muted-foreground">{sublabel}</span>
-      )}
+      <Icon className="text-muted-foreground h-4 w-4 shrink-0" />
+      <span className="text-muted-foreground flex-1 truncate">{label}</span>
+      {sublabel && <span className="text-muted-foreground text-xs">{sublabel}</span>}
     </div>
   );
 }
@@ -157,11 +152,9 @@ export function BuildingTree({ buildings }: BuildingTreeProps) {
   if (buildings.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Building2 className="mb-4 h-12 w-12 text-muted-foreground" />
+        <Building2 className="text-muted-foreground mb-4 h-12 w-12" />
         <p className="text-lg font-medium">Нет данных о зданиях</p>
-        <p className="text-sm text-muted-foreground">
-          Здания еще не добавлены в систему
-        </p>
+        <p className="text-muted-foreground text-sm">Здания еще не добавлены в систему</p>
       </div>
     );
   }
@@ -172,27 +165,17 @@ export function BuildingTree({ buildings }: BuildingTreeProps) {
         const totalApartments = building.entrances.reduce(
           (sum, entrance) =>
             sum +
-            entrance.floors.reduce(
-              (floorSum, floor) => floorSum + floor.apartments.length,
-              0,
-            ),
-          0,
+            entrance.floors.reduce((floorSum, floor) => floorSum + floor.apartments.length, 0),
+          0
         );
         const totalParkingSpots = building.parkings.reduce(
           (sum, parking) =>
-            sum +
-            parking.floors.reduce(
-              (floorSum, floor) => floorSum + floor.spots.length,
-              0,
-            ),
-          0,
+            sum + parking.floors.reduce((floorSum, floor) => floorSum + floor.spots.length, 0),
+          0
         );
 
         return (
-          <div
-            key={building.id}
-            className="rounded-lg border bg-card"
-          >
+          <div key={building.id} className="bg-card rounded-lg border">
             <TreeNode
               icon={Building2}
               label={`${building.title ?? `Здание ${building.number ?? "?"}`}${building.liter ? ` (${building.liter})` : ""}`}
@@ -206,7 +189,7 @@ export function BuildingTree({ buildings }: BuildingTreeProps) {
                   {building.entrances.map((entrance) => {
                     const entranceApartments = entrance.floors.reduce(
                       (sum, floor) => sum + floor.apartments.length,
-                      0,
+                      0
                     );
 
                     return (
@@ -248,7 +231,7 @@ export function BuildingTree({ buildings }: BuildingTreeProps) {
                   {building.parkings.map((parking) => {
                     const parkingSpots = parking.floors.reduce(
                       (sum, floor) => sum + floor.spots.length,
-                      0,
+                      0
                     );
 
                     return (

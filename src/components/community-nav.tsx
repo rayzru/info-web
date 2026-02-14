@@ -61,7 +61,7 @@ function CommunityNavLink({
     <Link
       href={`/community/${category.slug}`}
       key={category.slug}
-      className="text-muted-foreground hover:text-foreground data-[active=true]:bg-muted data-[active=true]:text-foreground flex h-7 shrink-0 items-center justify-center rounded-full px-4 text-center text-sm font-medium whitespace-nowrap transition-colors"
+      className="text-muted-foreground hover:text-foreground data-[active=true]:bg-muted data-[active=true]:text-foreground flex h-7 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-4 text-center text-sm font-medium transition-colors"
       data-active={isActive}
     >
       {category.name}

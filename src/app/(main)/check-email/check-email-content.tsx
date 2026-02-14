@@ -1,12 +1,13 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useState } from "react";
+
 import { Mail, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
-import { useState } from "react";
 
 export function CheckEmailContent() {
   const searchParams = useSearchParams();
@@ -27,29 +28,25 @@ export function CheckEmailContent() {
 
   return (
     <div className="flex flex-col items-center gap-6 text-center">
-      <h1 className="text-lg font-bold uppercase tracking-[0.2em] text-foreground/90">
+      <h1 className="text-foreground/90 text-lg font-bold uppercase tracking-[0.2em]">
         Проверьте почту
       </h1>
 
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-        <Mail className="h-8 w-8 text-primary" />
+      <div className="bg-primary/10 flex h-16 w-16 items-center justify-center rounded-full">
+        <Mail className="text-primary h-8 w-8" />
       </div>
 
       <div className="space-y-2">
-        <p className="text-muted-foreground">
-          Мы отправили письмо для подтверждения на
-        </p>
-        {email && (
-          <p className="font-medium text-foreground">{email}</p>
-        )}
+        <p className="text-muted-foreground">Мы отправили письмо для подтверждения на</p>
+        {email && <p className="text-foreground font-medium">{email}</p>}
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        Перейдите по ссылке в письме, чтобы активировать аккаунт.
-        Письмо действительно в течение 24 часов.
+      <p className="text-muted-foreground text-sm">
+        Перейдите по ссылке в письме, чтобы активировать аккаунт. Письмо действительно в течение 24
+        часов.
       </p>
 
-      <div className="flex flex-col gap-3 w-full">
+      <div className="flex w-full flex-col gap-3">
         {email && (
           <Button
             variant="outline"
@@ -57,7 +54,9 @@ export function CheckEmailContent() {
             disabled={resendMutation.isPending || resent}
             className="w-full"
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${resendMutation.isPending ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${resendMutation.isPending ? "animate-spin" : ""}`}
+            />
             {resent ? "Письмо отправлено" : "Отправить повторно"}
           </Button>
         )}
@@ -67,9 +66,12 @@ export function CheckEmailContent() {
         </Button>
       </div>
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-muted-foreground text-xs">
         Не получили письмо? Проверьте папку «Спам» или{" "}
-        <Link href="/resend-verification" className="underline underline-offset-2 hover:text-foreground">
+        <Link
+          href="/resend-verification"
+          className="hover:text-foreground underline underline-offset-2"
+        >
           запросите новое
         </Link>
         .

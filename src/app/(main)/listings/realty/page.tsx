@@ -1,13 +1,14 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpDown, Building2, Calendar, Home, ListFilter, Loader2, Phone } from "lucide-react";
 
+import { ArrowUpDown, Building2, Calendar, Home, ListFilter, Loader2, Phone } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+
+import { PageHeader } from "~/components/page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
-import { PageHeader } from "~/components/page-header";
 import {
   Select,
   SelectContent,
@@ -22,7 +23,13 @@ type ListingType = "rent" | "sale";
 type ListingData = RouterOutputs["listings"]["public"]["list"]["listings"][0];
 
 // Get apartment info for sorting and display
-function getApartmentInfo(listing: ListingData): { building: number; entrance: number; floor: number; apt: string; display: string } {
+function getApartmentInfo(listing: ListingData): {
+  building: number;
+  entrance: number;
+  floor: number;
+  apt: string;
+  display: string;
+} {
   if (!listing.apartment?.floor?.entrance?.building?.number) {
     return { building: 999, entrance: 999, floor: 999, apt: "999", display: "Адрес не указан" };
   }
@@ -115,10 +122,14 @@ function RealtyListingsPageContent() {
 
   const getSortLabel = () => {
     switch (currentSort) {
-      case "price_asc": return "Сначала дешевые";
-      case "price_desc": return "Сначала дорогие";
-      case "date": return "По дате";
-      default: return "По адресу";
+      case "price_asc":
+        return "Сначала дешевые";
+      case "price_desc":
+        return "Сначала дорогие";
+      case "date":
+        return "По дате";
+      default:
+        return "По адресу";
     }
   };
 
@@ -136,11 +147,8 @@ function RealtyListingsPageContent() {
         }
       >
         {/* Type filter */}
-        <Select
-          value={currentType ?? "all"}
-          onValueChange={(value) => setFilter("type", value)}
-        >
-          <SelectTrigger className="border-transparent hover:border-border focus:ring-0 h-auto py-1.5 px-2 gap-1.5">
+        <Select value={currentType ?? "all"} onValueChange={(value) => setFilter("type", value)}>
+          <SelectTrigger className="hover:border-border h-auto gap-1.5 border-transparent px-2 py-1.5 focus:ring-0">
             <ListFilter className="h-3.5 w-3.5 opacity-60" />
             <SelectValue>{getTypeLabel()}</SelectValue>
           </SelectTrigger>
@@ -156,7 +164,7 @@ function RealtyListingsPageContent() {
           value={currentBuilding ?? "all"}
           onValueChange={(value) => setFilter("building", value)}
         >
-          <SelectTrigger className="border-transparent hover:border-border focus:ring-0 h-auto py-1.5 px-2 gap-1.5">
+          <SelectTrigger className="hover:border-border h-auto gap-1.5 border-transparent px-2 py-1.5 focus:ring-0">
             <Building2 className="h-3.5 w-3.5 opacity-60" />
             <SelectValue>{getBuildingLabel()}</SelectValue>
           </SelectTrigger>
@@ -171,11 +179,8 @@ function RealtyListingsPageContent() {
         </Select>
 
         {/* Sort */}
-        <Select
-          value={currentSort}
-          onValueChange={(value) => setFilter("sort", value)}
-        >
-          <SelectTrigger className="border-transparent hover:border-border focus:ring-0 h-auto py-1.5 px-2 gap-1.5">
+        <Select value={currentSort} onValueChange={(value) => setFilter("sort", value)}>
+          <SelectTrigger className="hover:border-border h-auto gap-1.5 border-transparent px-2 py-1.5 focus:ring-0">
             <ArrowUpDown className="h-3.5 w-3.5 opacity-60" />
             <SelectValue>{getSortLabel()}</SelectValue>
           </SelectTrigger>
@@ -195,14 +200,12 @@ function RealtyListingsPageContent() {
         </div>
       ) : paginatedListings.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <Home className="h-12 w-12 text-muted-foreground/50" />
-          <p className="mt-4 text-lg font-medium text-muted-foreground">
-            Объявления не найдены
-          </p>
+          <Home className="text-muted-foreground/50 h-12 w-12" />
+          <p className="text-muted-foreground mt-4 text-lg font-medium">Объявления не найдены</p>
           {(currentType || currentBuilding) && (
             <button
               onClick={() => router.push("/listings/realty")}
-              className="mt-2 text-sm text-primary hover:underline"
+              className="text-primary mt-2 text-sm hover:underline"
             >
               Сбросить фильтры
             </button>
@@ -215,7 +218,7 @@ function RealtyListingsPageContent() {
             return (
               <Card key={listing.id} className="overflow-hidden">
                 {/* Main photo placeholder */}
-                <div className="relative aspect-video bg-muted">
+                <div className="bg-muted relative aspect-video">
                   {listing.photos && listing.photos.length > 0 ? (
                     <img
                       src={listing.photos.find((p) => p.isMain)?.url ?? listing.photos[0]?.url}
@@ -224,7 +227,7 @@ function RealtyListingsPageContent() {
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
-                      <Home className="h-12 w-12 text-muted-foreground/30" />
+                      <Home className="text-muted-foreground/30 h-12 w-12" />
                     </div>
                   )}
                   {/* Type badge */}
@@ -249,10 +252,8 @@ function RealtyListingsPageContent() {
 
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="line-clamp-2 font-semibold leading-tight">
-                      {listing.title}
-                    </h3>
-                    <span className="shrink-0 text-lg font-bold text-primary">
+                    <h3 className="line-clamp-2 font-semibold leading-tight">{listing.title}</h3>
+                    <span className="text-primary shrink-0 text-lg font-bold">
                       {formatPrice(listing.price, listing.listingType)}
                     </span>
                   </div>
@@ -260,13 +261,13 @@ function RealtyListingsPageContent() {
 
                 <CardContent className="space-y-3">
                   {/* Location */}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex items-center gap-2 text-sm">
                     <Building2 className="h-4 w-4 shrink-0" />
                     <span className="line-clamp-1">{aptInfo.display}</span>
                   </div>
 
                   {/* Publication date */}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 shrink-0" />
                     <span>
                       {listing.publishedAt
@@ -288,7 +289,7 @@ function RealtyListingsPageContent() {
                           {listing.user?.name?.slice(0, 2).toUpperCase() ?? "U"}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         {listing.user?.name ?? "Пользователь"}
                       </span>
                     </div>
@@ -307,7 +308,7 @@ function RealtyListingsPageContent() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Страница {page} из {totalPages} (всего {sortedListings.length})
           </p>
           <div className="flex gap-2">

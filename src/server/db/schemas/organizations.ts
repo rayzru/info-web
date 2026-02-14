@@ -1,12 +1,5 @@
 import { relations } from "drizzle-orm";
-import {
-  integer,
-  jsonb,
-  pgEnum,
-  primaryKey,
-  text,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { integer, jsonb, pgEnum, primaryKey, text, varchar } from "drizzle-orm/pg-core";
 
 import { buildings } from "./buildings";
 import { createTable } from "./create-table";
@@ -58,31 +51,25 @@ export const organizationToTags = createTable(
   },
   (table) => ({
     compoundKey: primaryKey({ columns: [table.organizationId, table.tagId] }),
-  }),
+  })
 );
 
 // Определяем связи
-export const organizationsRelations = relations(
-  organizations,
-  ({ one, many }) => ({
-    building: one(buildings, {
-      fields: [organizations.buildingId],
-      references: [buildings.id],
-    }),
-    tags: many(organizationToTags),
+export const organizationsRelations = relations(organizations, ({ one, many }) => ({
+  building: one(buildings, {
+    fields: [organizations.buildingId],
+    references: [buildings.id],
   }),
-);
+  tags: many(organizationToTags),
+}));
 
-export const organizationToTagsRelations = relations(
-  organizationToTags,
-  ({ one }) => ({
-    organization: one(organizations, {
-      fields: [organizationToTags.organizationId],
-      references: [organizations.id],
-    }),
-    tag: one(organizationTags, {
-      fields: [organizationToTags.tagId],
-      references: [organizationTags.id],
-    }),
+export const organizationToTagsRelations = relations(organizationToTags, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [organizationToTags.organizationId],
+    references: [organizations.id],
   }),
-);
+  tag: one(organizationTags, {
+    fields: [organizationToTags.tagId],
+    references: [organizationTags.id],
+  }),
+}));

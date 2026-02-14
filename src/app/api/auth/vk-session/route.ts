@@ -1,8 +1,8 @@
+import { encode } from "@auth/core/jwt";
 import crypto from "crypto";
 import { eq } from "drizzle-orm";
-import { encode } from "@auth/core/jwt";
 import { cookies } from "next/headers";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { db } from "~/server/db";
 import { sessions, users } from "~/server/db/schema";
@@ -68,22 +68,16 @@ export async function GET(request: NextRequest) {
 
   if (!credsCookie) {
     console.error("[VK Session] No credentials cookie found");
-    return NextResponse.redirect(
-      new URL("/login?error=NoCredentials", baseUrl)
-    );
+    return NextResponse.redirect(new URL("/login?error=NoCredentials", baseUrl));
   }
 
   try {
-    const { userId, token } = JSON.parse(
-      Buffer.from(credsCookie, "base64").toString()
-    );
+    const { userId, token } = JSON.parse(Buffer.from(credsCookie, "base64").toString());
 
     // Verify the token
     if (!verifySessionToken(userId, token)) {
       console.error("[VK Session] Invalid token");
-      return NextResponse.redirect(
-        new URL("/login?error=InvalidToken", baseUrl)
-      );
+      return NextResponse.redirect(new URL("/login?error=InvalidToken", baseUrl));
     }
 
     // Get user from database
@@ -93,9 +87,7 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       console.error("[VK Session] User not found:", userId);
-      return NextResponse.redirect(
-        new URL("/login?error=UserNotFound", baseUrl)
-      );
+      return NextResponse.redirect(new URL("/login?error=UserNotFound", baseUrl));
     }
 
     console.log("[VK Session] Creating session for user:", userId);
@@ -106,9 +98,7 @@ export async function GET(request: NextRequest) {
     response.cookies.delete("vk_session_creds");
 
     // Cookie name depends on whether URL uses HTTPS
-    const cookieName = useSecureCookies
-      ? "__Secure-authjs.session-token"
-      : "authjs.session-token";
+    const cookieName = useSecureCookies ? "__Secure-authjs.session-token" : "authjs.session-token";
 
     if (isDev) {
       // JWT strategy in development
@@ -160,8 +150,6 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (err) {
     console.error("[VK Session] Error:", err);
-    return NextResponse.redirect(
-      new URL("/login?error=SessionError", baseUrl)
-    );
+    return NextResponse.redirect(new URL("/login?error=SessionError", baseUrl));
   }
 }

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+
 import {
   Calendar,
   CalendarPlus,
@@ -21,6 +20,8 @@ import {
   Users,
   X,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Badge } from "~/components/ui/badge";
@@ -50,8 +51,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useToast } from "~/hooks/use-toast";
-import { api } from "~/trpc/react";
 import type { PublicationStatus } from "~/server/db/schema";
+import { api } from "~/trpc/react";
 
 const STATUS_CONFIG: Record<
   PublicationStatus,
@@ -80,7 +81,11 @@ export default function AdminEventsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<{ id: string; title: string } | null>(null);
   const [moderateDialogOpen, setModerateDialogOpen] = useState(false);
-  const [eventToModerate, setEventToModerate] = useState<{ id: string; title: string; action: "approve" | "reject" } | null>(null);
+  const [eventToModerate, setEventToModerate] = useState<{
+    id: string;
+    title: string;
+    action: "approve" | "reject";
+  } | null>(null);
 
   // Queries - filter by type="event"
   const { data, isLoading, refetch } = api.publications.admin.list.useQuery({
@@ -90,7 +95,7 @@ export default function AdminEventsPage() {
   });
 
   // Filter events client-side (since admin.list doesn't filter by type)
-  const events = data?.items.filter(item => item.type === "event") ?? [];
+  const events = data?.items.filter((item) => item.type === "event") ?? [];
 
   // Utils for cache invalidation
   const utils = api.useUtils();
@@ -110,7 +115,12 @@ export default function AdminEventsPage() {
 
   const moderateMutation = api.publications.admin.moderate.useMutation({
     onSuccess: () => {
-      toast({ title: eventToModerate?.action === "approve" ? "Мероприятие опубликовано" : "Мероприятие отклонено" });
+      toast({
+        title:
+          eventToModerate?.action === "approve"
+            ? "Мероприятие опубликовано"
+            : "Мероприятие отклонено",
+      });
       setModerateDialogOpen(false);
       setEventToModerate(null);
       refetch();
@@ -165,7 +175,10 @@ export default function AdminEventsPage() {
     setDeleteDialogOpen(true);
   };
 
-  const openModerateDialog = (event: { id: string; title: string }, action: "approve" | "reject") => {
+  const openModerateDialog = (
+    event: { id: string; title: string },
+    action: "approve" | "reject"
+  ) => {
     setEventToModerate({ ...event, action });
     setModerateDialogOpen(true);
   };
@@ -228,8 +241,8 @@ export default function AdminEventsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="relative max-w-md flex-1">
+          <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Поиск по названию..."
             value={localSearch}
@@ -266,11 +279,11 @@ export default function AdminEventsPage() {
       ) : events.length > 0 ? (
         <div className="rounded-lg border">
           {/* Table Header */}
-          <div className="flex items-center gap-4 border-b bg-muted/50 px-4 py-3 text-sm font-medium text-muted-foreground">
+          <div className="bg-muted/50 text-muted-foreground flex items-center gap-4 border-b px-4 py-3 text-sm font-medium">
             <div className="w-24">Дата</div>
-            <div className="flex-1 min-w-0">Название</div>
-            <div className="w-32 hidden sm:block">Место</div>
-            <div className="w-32 hidden md:block">Автор</div>
+            <div className="min-w-0 flex-1">Название</div>
+            <div className="hidden w-32 sm:block">Место</div>
+            <div className="hidden w-32 md:block">Автор</div>
             <div className="w-28">Статус</div>
             <div className="w-10"></div>
           </div>
@@ -285,7 +298,7 @@ export default function AdminEventsPage() {
             return (
               <div
                 key={item.id}
-                className={`flex items-center gap-4 border-b px-4 py-3 last:border-b-0 hover:bg-muted/30 transition-colors ${isPast ? "opacity-50" : ""}`}
+                className={`hover:bg-muted/30 flex items-center gap-4 border-b px-4 py-3 transition-colors last:border-b-0 ${isPast ? "opacity-50" : ""}`}
               >
                 {/* Date Column */}
                 <div className="w-24 shrink-0">
@@ -297,7 +310,7 @@ export default function AdminEventsPage() {
                           month: "short",
                         })}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {new Date(item.eventStartAt).toLocaleTimeString("ru-RU", {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -310,30 +323,32 @@ export default function AdminEventsPage() {
                 </div>
 
                 {/* Title Column */}
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-start gap-2">
                     <Link
                       href={`/admin/events/${item.id}`}
-                      className="font-medium hover:underline line-clamp-2"
+                      className="line-clamp-2 font-medium hover:underline"
                     >
                       {item.title}
                     </Link>
                     {item.isUrgent && (
-                      <Badge variant="destructive" className="text-xs px-1.5 py-0 shrink-0">!</Badge>
+                      <Badge variant="destructive" className="shrink-0 px-1.5 py-0 text-xs">
+                        !
+                      </Badge>
                     )}
                   </div>
                   {item.eventLocation && (
-                    <div className="text-xs text-muted-foreground truncate sm:hidden mt-0.5">
-                      <MapPin className="inline h-3 w-3 mr-1" />
+                    <div className="text-muted-foreground mt-0.5 truncate text-xs sm:hidden">
+                      <MapPin className="mr-1 inline h-3 w-3" />
                       {item.eventLocation}
                     </div>
                   )}
                 </div>
 
                 {/* Location Column */}
-                <div className="w-32 hidden sm:block">
+                <div className="hidden w-32 sm:block">
                   {item.eventLocation ? (
-                    <span className="text-sm text-muted-foreground truncate block">
+                    <span className="text-muted-foreground block truncate text-sm">
                       {item.eventLocation}
                     </span>
                   ) : (
@@ -342,8 +357,8 @@ export default function AdminEventsPage() {
                 </div>
 
                 {/* Author Column */}
-                <div className="w-32 hidden md:block">
-                  <span className="text-sm text-muted-foreground truncate block">
+                <div className="hidden w-32 md:block">
+                  <span className="text-muted-foreground block truncate text-sm">
                     {item.author?.name ?? "—"}
                   </span>
                 </div>
@@ -355,12 +370,15 @@ export default function AdminEventsPage() {
                       {statusConfig.label}
                     </Badge>
                     {ongoing && (
-                      <Badge variant="default" className="bg-green-500 w-fit text-xs">
+                      <Badge variant="default" className="w-fit bg-green-500 text-xs">
                         Сейчас
                       </Badge>
                     )}
                     {upcoming && !ongoing && (
-                      <Badge variant="outline" className="text-purple-600 border-purple-600 w-fit text-xs">
+                      <Badge
+                        variant="outline"
+                        className="w-fit border-purple-600 text-xs text-purple-600"
+                      >
                         Скоро
                       </Badge>
                     )}
@@ -387,7 +405,7 @@ export default function AdminEventsPage() {
                         <Pencil className="mr-2 h-4 w-4" />
                         Редактировать
                         {isPast && (
-                          <span className="ml-2 text-xs text-muted-foreground">(прошло)</span>
+                          <span className="text-muted-foreground ml-2 text-xs">(прошло)</span>
                         )}
                       </DropdownMenuItem>
                       {item.status === "published" && (
@@ -401,13 +419,17 @@ export default function AdminEventsPage() {
                       {item.status === "pending" && (
                         <>
                           <DropdownMenuItem
-                            onClick={() => openModerateDialog({ id: item.id, title: item.title }, "approve")}
+                            onClick={() =>
+                              openModerateDialog({ id: item.id, title: item.title }, "approve")
+                            }
                           >
                             <Check className="mr-2 h-4 w-4" />
                             Одобрить
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => openModerateDialog({ id: item.id, title: item.title }, "reject")}
+                            onClick={() =>
+                              openModerateDialog({ id: item.id, title: item.title }, "reject")
+                            }
                           >
                             <X className="mr-2 h-4 w-4" />
                             Отклонить
@@ -458,10 +480,12 @@ export default function AdminEventsPage() {
       ) : (
         <Card>
           <CardContent className="py-12 text-center">
-            <Calendar className="mx-auto h-12 w-12 text-muted-foreground/30" />
+            <Calendar className="text-muted-foreground/30 mx-auto h-12 w-12" />
             <h3 className="mt-4 text-lg font-medium">Мероприятий пока нет</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {searchQuery ? "Ничего не найдено по вашему запросу" : "Создайте первое мероприятие для сообщества"}
+            <p className="text-muted-foreground mt-2 text-sm">
+              {searchQuery
+                ? "Ничего не найдено по вашему запросу"
+                : "Создайте первое мероприятие для сообщества"}
             </p>
             <Link href="/admin/events/new" className="mt-4 inline-block">
               <Button>
@@ -479,8 +503,8 @@ export default function AdminEventsPage() {
           <DialogHeader>
             <DialogTitle>Удалить мероприятие?</DialogTitle>
             <DialogDescription>
-              Вы уверены, что хотите удалить &quot;{eventToDelete?.title}&quot;? Это действие
-              нельзя отменить.
+              Вы уверены, что хотите удалить &quot;{eventToDelete?.title}&quot;? Это действие нельзя
+              отменить.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -504,7 +528,9 @@ export default function AdminEventsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {eventToModerate?.action === "approve" ? "Одобрить мероприятие?" : "Отклонить мероприятие?"}
+              {eventToModerate?.action === "approve"
+                ? "Одобрить мероприятие?"
+                : "Отклонить мероприятие?"}
             </DialogTitle>
             <DialogDescription>
               {eventToModerate?.action === "approve"

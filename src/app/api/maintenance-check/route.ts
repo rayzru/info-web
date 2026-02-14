@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
-import { db } from "~/server/db";
-import { systemSettings, SETTING_KEYS, type MaintenanceSettings } from "~/server/db/schema";
 import { auth } from "~/server/auth";
+import { db } from "~/server/db";
+import { type MaintenanceSettings, SETTING_KEYS, systemSettings } from "~/server/db/schema";
 
 export async function GET() {
   try {

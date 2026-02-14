@@ -1,36 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+
 import {
   ArrowLeft,
   Calendar,
   Clock,
   Eye,
+  FileText,
+  Link as LinkIcon,
   Loader2,
   MapPin,
-  Send,
-  Users,
-  Link as LinkIcon,
   Phone,
-  User,
-  UserX,
   Repeat,
-  FileText,
+  Send,
+  User,
+  Users,
+  UserX,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { z } from "zod";
 
+import { ImageUploader } from "~/components/media/image-uploader";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
+import { DatePicker, DateTimePicker } from "~/components/ui/date-picker";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Separator } from "~/components/ui/separator";
-import { Textarea } from "~/components/ui/textarea";
-import { Switch } from "~/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -38,48 +38,60 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Separator } from "~/components/ui/separator";
+import { Switch } from "~/components/ui/switch";
+import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
-import { api } from "~/trpc/react";
-import { ImageUploader } from "~/components/media/image-uploader";
-import { DatePicker, DateTimePicker } from "~/components/ui/date-picker";
 import { EVENT_RECURRENCE_TYPE_LABELS, type EventRecurrenceType } from "~/server/db/schema";
+import { api } from "~/trpc/react";
 
 // Zod validation schema for event form
-const eventFormSchema = z.object({
-  title: z.string().min(1, "Введите название мероприятия").max(255, "Название слишком длинное (макс. 255 символов)"),
-  description: z.string().max(5000, "Описание слишком длинное").optional(),
-  coverImage: z.string().max(500).optional(),
-  publishAt: z.date().optional(), // Дата и время публикации
-  eventStartAt: z.date({ error: "Укажите дату и время начала" }),
-  eventEndAt: z.date().optional(),
-  eventLocation: z.string().max(500, "Адрес слишком длинный (макс. 500 символов)").optional(),
-  eventMaxAttendees: z.string().optional().transform((val) => {
-    if (!val) return undefined;
-    const num = parseInt(val, 10);
-    return isNaN(num) ? undefined : num;
-  }),
-  eventExternalUrl: z.string().max(500, "Ссылка слишком длинная").optional()
-    .refine((val) => !val || val.startsWith("http://") || val.startsWith("https://"), {
-      message: "Ссылка должна начинаться с http:// или https://",
-    }),
-  eventOrganizer: z.string().max(255, "Имя организатора слишком длинное").optional(),
-  eventOrganizerPhone: z.string().max(20, "Номер телефона слишком длинный").optional(),
-  buildingId: z.string().optional(),
-  isUrgent: z.boolean().default(false),
-  isAnonymous: z.boolean().default(false),
-  publishToTelegram: z.boolean().default(false),
-}).refine(
-  (data) => {
-    if (data.eventEndAt && data.eventStartAt) {
-      return data.eventEndAt > data.eventStartAt;
+const eventFormSchema = z
+  .object({
+    title: z
+      .string()
+      .min(1, "Введите название мероприятия")
+      .max(255, "Название слишком длинное (макс. 255 символов)"),
+    description: z.string().max(5000, "Описание слишком длинное").optional(),
+    coverImage: z.string().max(500).optional(),
+    publishAt: z.date().optional(), // Дата и время публикации
+    eventStartAt: z.date({ error: "Укажите дату и время начала" }),
+    eventEndAt: z.date().optional(),
+    eventLocation: z.string().max(500, "Адрес слишком длинный (макс. 500 символов)").optional(),
+    eventMaxAttendees: z
+      .string()
+      .optional()
+      .transform((val) => {
+        if (!val) return undefined;
+        const num = parseInt(val, 10);
+        return isNaN(num) ? undefined : num;
+      }),
+    eventExternalUrl: z
+      .string()
+      .max(500, "Ссылка слишком длинная")
+      .optional()
+      .refine((val) => !val || val.startsWith("http://") || val.startsWith("https://"), {
+        message: "Ссылка должна начинаться с http:// или https://",
+      }),
+    eventOrganizer: z.string().max(255, "Имя организатора слишком длинное").optional(),
+    eventOrganizerPhone: z.string().max(20, "Номер телефона слишком длинный").optional(),
+    buildingId: z.string().optional(),
+    isUrgent: z.boolean().default(false),
+    isAnonymous: z.boolean().default(false),
+    publishToTelegram: z.boolean().default(false),
+  })
+  .refine(
+    (data) => {
+      if (data.eventEndAt && data.eventStartAt) {
+        return data.eventEndAt > data.eventStartAt;
+      }
+      return true;
+    },
+    {
+      message: "Время окончания должно быть позже времени начала",
+      path: ["eventEndAt"],
     }
-    return true;
-  },
-  {
-    message: "Время окончания должно быть позже времени начала",
-    path: ["eventEndAt"],
-  }
-);
+  );
 
 type EventFormData = z.infer<typeof eventFormSchema>;
 type FormErrors = Partial<Record<keyof EventFormData | "root", string>>;
@@ -114,9 +126,10 @@ export default function NewEventPage() {
   const [linkedArticleId, setLinkedArticleId] = useState<string>("");
 
   // Check if user is admin
-  const isAdmin = session?.user?.roles?.some((r) =>
-    ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"].includes(r)
-  ) ?? false;
+  const isAdmin =
+    session?.user?.roles?.some((r) =>
+      ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"].includes(r)
+    ) ?? false;
 
   // Get buildings for selector
   const { data: buildings } = api.profile.getAvailableBuildings.useQuery();
@@ -175,7 +188,11 @@ export default function NewEventPage() {
 
       const firstIssue = result.error.issues[0];
       if (firstIssue) {
-        toast({ title: "Ошибка валидации", description: firstIssue.message, variant: "destructive" });
+        toast({
+          title: "Ошибка валидации",
+          description: firstIssue.message,
+          variant: "destructive",
+        });
       }
       return;
     }
@@ -185,7 +202,12 @@ export default function NewEventPage() {
     createMutation.mutate({
       title: validData.title,
       content: validData.description
-        ? { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: validData.description }] }] }
+        ? {
+            type: "doc",
+            content: [
+              { type: "paragraph", content: [{ type: "text", text: validData.description }] },
+            ],
+          }
         : { type: "doc", content: [] },
       type: "event",
       coverImage: validData.coverImage,
@@ -203,8 +225,12 @@ export default function NewEventPage() {
       eventOrganizerPhone: validData.eventOrganizerPhone,
       // Recurrence fields
       eventRecurrenceType: eventRecurrenceType !== "none" ? eventRecurrenceType : undefined,
-      eventRecurrenceStartDay: eventRecurrenceStartDay ? parseInt(eventRecurrenceStartDay, 10) : undefined,
-      eventRecurrenceEndDay: eventRecurrenceEndDay ? parseInt(eventRecurrenceEndDay, 10) : undefined,
+      eventRecurrenceStartDay: eventRecurrenceStartDay
+        ? parseInt(eventRecurrenceStartDay, 10)
+        : undefined,
+      eventRecurrenceEndDay: eventRecurrenceEndDay
+        ? parseInt(eventRecurrenceEndDay, 10)
+        : undefined,
       linkedArticleId: linkedArticleId || undefined,
     });
   };
@@ -223,13 +249,11 @@ export default function NewEventPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
+          <h1 className="flex items-center gap-2 text-2xl font-semibold">
             <Calendar className="h-6 w-6" />
             Новое мероприятие
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Создание события для сообщества
-          </p>
+          <p className="text-muted-foreground mt-1">Создание события для сообщества</p>
         </div>
       </div>
 
@@ -253,9 +277,7 @@ export default function NewEventPage() {
                     placeholder="Например: Субботник во дворе"
                     className={errors.title ? "border-destructive" : ""}
                   />
-                  {errors.title && (
-                    <p className="text-sm text-destructive">{errors.title}</p>
-                  )}
+                  {errors.title && <p className="text-destructive text-sm">{errors.title}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Описание</Label>
@@ -268,15 +290,11 @@ export default function NewEventPage() {
                     className={errors.description ? "border-destructive" : ""}
                   />
                   {errors.description && (
-                    <p className="text-sm text-destructive">{errors.description}</p>
+                    <p className="text-destructive text-sm">{errors.description}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  <Switch
-                    id="urgent"
-                    checked={isUrgent}
-                    onCheckedChange={setIsUrgent}
-                  />
+                  <Switch id="urgent" checked={isUrgent} onCheckedChange={setIsUrgent} />
                   <Label htmlFor="urgent">Срочное мероприятие</Label>
                 </div>
               </CardContent>
@@ -301,7 +319,7 @@ export default function NewEventPage() {
                     className={errors.eventStartAt ? "border-destructive" : ""}
                   />
                   {errors.eventStartAt && (
-                    <p className="text-sm text-destructive">{errors.eventStartAt}</p>
+                    <p className="text-destructive text-sm">{errors.eventStartAt}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -314,7 +332,7 @@ export default function NewEventPage() {
                     className={errors.eventEndAt ? "border-destructive" : ""}
                   />
                   {errors.eventEndAt && (
-                    <p className="text-sm text-destructive">{errors.eventEndAt}</p>
+                    <p className="text-destructive text-sm">{errors.eventEndAt}</p>
                   )}
                 </div>
               </CardContent>
@@ -378,11 +396,14 @@ export default function NewEventPage() {
                   </div>
                 )}
 
-                {eventRecurrenceType !== "none" && eventRecurrenceStartDay && eventRecurrenceEndDay && (
-                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                    Событие будет повторяться ежемесячно с {eventRecurrenceStartDay} по {eventRecurrenceEndDay} число
-                  </p>
-                )}
+                {eventRecurrenceType !== "none" &&
+                  eventRecurrenceStartDay &&
+                  eventRecurrenceEndDay && (
+                    <p className="text-muted-foreground bg-muted rounded-md p-3 text-sm">
+                      Событие будет повторяться ежемесячно с {eventRecurrenceStartDay} по{" "}
+                      {eventRecurrenceEndDay} число
+                    </p>
+                  )}
               </CardContent>
             </Card>
 
@@ -412,7 +433,7 @@ export default function NewEventPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-muted-foreground mt-2 text-xs">
                   Подробная инструкция будет показана в карточке события
                 </p>
               </CardContent>
@@ -438,12 +459,15 @@ export default function NewEventPage() {
                     className={errors.eventLocation ? "border-destructive" : ""}
                   />
                   {errors.eventLocation && (
-                    <p className="text-sm text-destructive">{errors.eventLocation}</p>
+                    <p className="text-destructive text-sm">{errors.eventLocation}</p>
                   )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="building">Строение</Label>
-                  <Select value={buildingId || "all"} onValueChange={(v) => setBuildingId(v === "all" ? "" : v)}>
+                  <Select
+                    value={buildingId || "all"}
+                    onValueChange={(v) => setBuildingId(v === "all" ? "" : v)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите строение (опционально)" />
                     </SelectTrigger>
@@ -481,7 +505,7 @@ export default function NewEventPage() {
                       className={errors.eventOrganizer ? "border-destructive" : ""}
                     />
                     {errors.eventOrganizer && (
-                      <p className="text-sm text-destructive">{errors.eventOrganizer}</p>
+                      <p className="text-destructive text-sm">{errors.eventOrganizer}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -497,7 +521,7 @@ export default function NewEventPage() {
                       className={errors.eventOrganizerPhone ? "border-destructive" : ""}
                     />
                     {errors.eventOrganizerPhone && (
-                      <p className="text-sm text-destructive">{errors.eventOrganizerPhone}</p>
+                      <p className="text-destructive text-sm">{errors.eventOrganizerPhone}</p>
                     )}
                   </div>
                 </div>
@@ -517,7 +541,7 @@ export default function NewEventPage() {
                       className={errors.eventMaxAttendees ? "border-destructive" : ""}
                     />
                     {errors.eventMaxAttendees && (
-                      <p className="text-sm text-destructive">{errors.eventMaxAttendees}</p>
+                      <p className="text-destructive text-sm">{errors.eventMaxAttendees}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -534,7 +558,7 @@ export default function NewEventPage() {
                       className={errors.eventExternalUrl ? "border-destructive" : ""}
                     />
                     {errors.eventExternalUrl && (
-                      <p className="text-sm text-destructive">{errors.eventExternalUrl}</p>
+                      <p className="text-destructive text-sm">{errors.eventExternalUrl}</p>
                     )}
                   </div>
                 </div>
@@ -546,7 +570,7 @@ export default function NewEventPage() {
           <div className="w-80 space-y-4">
             {/* Actions */}
             <Card>
-              <CardContent className="pt-6 space-y-3">
+              <CardContent className="space-y-3 pt-6">
                 <Button type="submit" className="w-full" disabled={createMutation.isPending}>
                   {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Опубликовать
@@ -566,7 +590,7 @@ export default function NewEventPage() {
             {/* Publication Settings */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-sm font-medium">
                   <Clock className="h-4 w-4" />
                   Публикация
                 </CardTitle>
@@ -581,7 +605,7 @@ export default function NewEventPage() {
                     className="text-sm"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   {publishAt ? "Отложенная публикация" : "Публикация сразу после создания"}
                 </p>
 
@@ -598,12 +622,12 @@ export default function NewEventPage() {
                   <div className="space-y-1">
                     <Label
                       htmlFor="telegram"
-                      className={`text-sm font-medium cursor-pointer flex items-center gap-2 ${!isAdmin ? "text-muted-foreground" : ""}`}
+                      className={`flex cursor-pointer items-center gap-2 text-sm font-medium ${!isAdmin ? "text-muted-foreground" : ""}`}
                     >
                       <Send className="h-3.5 w-3.5" />
                       Опубликовать в Telegram
                     </Label>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {isAdmin ? "Отправить в Telegram-канал" : "Только для администраторов"}
                     </p>
                   </div>
@@ -618,15 +642,17 @@ export default function NewEventPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Author Profile */}
-                <div className={`flex items-center gap-3 p-3 rounded-lg border ${isAnonymous ? "bg-muted/50" : ""}`}>
+                <div
+                  className={`flex items-center gap-3 rounded-lg border p-3 ${isAnonymous ? "bg-muted/50" : ""}`}
+                >
                   {isAnonymous ? (
                     <>
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                        <UserX className="h-5 w-5 text-muted-foreground" />
+                      <div className="bg-muted flex h-10 w-10 items-center justify-center rounded-full">
+                        <UserX className="text-muted-foreground h-5 w-5" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-muted-foreground">Анонимно</p>
-                        <p className="text-xs text-muted-foreground">Автор скрыт</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-muted-foreground text-sm font-medium">Анонимно</p>
+                        <p className="text-muted-foreground text-xs">Автор скрыт</p>
                       </div>
                     </>
                   ) : (
@@ -637,11 +663,11 @@ export default function NewEventPage() {
                           {session?.user?.name?.slice(0, 2).toUpperCase() ?? "U"}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">
                           {session?.user?.name ?? "Пользователь"}
                         </p>
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p className="text-muted-foreground truncate text-xs">
                           {session?.user?.email}
                         </p>
                       </div>
@@ -659,10 +685,10 @@ export default function NewEventPage() {
                     onCheckedChange={(checked) => setIsAnonymous(checked === true)}
                   />
                   <div className="space-y-1">
-                    <Label htmlFor="anonymous" className="text-sm font-medium cursor-pointer">
+                    <Label htmlFor="anonymous" className="cursor-pointer text-sm font-medium">
                       Опубликовать анонимно
                     </Label>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Ваше имя и фото не будут показаны
                     </p>
                   </div>

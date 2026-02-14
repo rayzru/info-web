@@ -1,0 +1,25 @@
+{
+  "type": "contact",
+  "title": "Сантехник",
+  "subtitle": "Кащеев Алексей Петрович",
+  "description": "Сантехник управляющей компании",
+  "contacts": [
+    {
+      "type": "phone",
+      "value": "8-951-516-26-46",
+      "label": "Телефон",
+      "subtitle": "Кащеев Алексей Петрович",
+      "isPrimary": true,
+      "order": 0
+    },
+    {
+      "type": "address",
+      "value": "Ларина 45/6",
+      "label": "Адрес",
+      "subtitle": "",
+      "isPrimary": false,
+      "order": 1
+    }
+  ],
+  "tagIds": []
+}

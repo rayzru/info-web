@@ -1,12 +1,13 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+
 import Mention from "@tiptap/extension-mention";
 import { ReactRenderer } from "@tiptap/react";
 import tippy, { type Instance } from "tippy.js";
 
-import { cn } from "~/lib/utils";
 import type { MentionAttrs } from "~/lib/editor";
+import { cn } from "~/lib/utils";
 
 // ============================================================================
 // Mention Extension with Suggestions
@@ -106,109 +107,102 @@ interface MentionListRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
 }
 
-const MentionList = forwardRef<MentionListRef, MentionListProps>(
-  function MentionList({ items, command }, ref) {
-    const [selectedIndex, setSelectedIndex] = useState(0);
+const MentionList = forwardRef<MentionListRef, MentionListProps>(function MentionList(
+  { items, command },
+  ref
+) {
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-    const selectItem = (index: number) => {
-      const item = items[index];
-      if (item) {
-        command({
-          id: item.id,
-          label: item.label,
-          type: item.type,
-        });
-      }
-    };
-
-    const upHandler = () => {
-      setSelectedIndex((prev) => (prev + items.length - 1) % items.length);
-    };
-
-    const downHandler = () => {
-      setSelectedIndex((prev) => (prev + 1) % items.length);
-    };
-
-    const enterHandler = () => {
-      selectItem(selectedIndex);
-    };
-
-    useEffect(() => {
-      setSelectedIndex(0);
-    }, [items]);
-
-    useImperativeHandle(ref, () => ({
-      onKeyDown: ({ event }) => {
-        if (event.key === "ArrowUp") {
-          upHandler();
-          return true;
-        }
-
-        if (event.key === "ArrowDown") {
-          downHandler();
-          return true;
-        }
-
-        if (event.key === "Enter") {
-          enterHandler();
-          return true;
-        }
-
-        return false;
-      },
-    }));
-
-    if (items.length === 0) {
-      return (
-        <div className="rounded-lg border bg-popover p-2 text-sm text-muted-foreground shadow-md">
-          Ничего не найдено
-        </div>
-      );
+  const selectItem = (index: number) => {
+    const item = items[index];
+    if (item) {
+      command({
+        id: item.id,
+        label: item.label,
+        type: item.type,
+      });
     }
+  };
 
+  const upHandler = () => {
+    setSelectedIndex((prev) => (prev + items.length - 1) % items.length);
+  };
+
+  const downHandler = () => {
+    setSelectedIndex((prev) => (prev + 1) % items.length);
+  };
+
+  const enterHandler = () => {
+    selectItem(selectedIndex);
+  };
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [items]);
+
+  useImperativeHandle(ref, () => ({
+    onKeyDown: ({ event }) => {
+      if (event.key === "ArrowUp") {
+        upHandler();
+        return true;
+      }
+
+      if (event.key === "ArrowDown") {
+        downHandler();
+        return true;
+      }
+
+      if (event.key === "Enter") {
+        enterHandler();
+        return true;
+      }
+
+      return false;
+    },
+  }));
+
+  if (items.length === 0) {
     return (
-      <div className="overflow-hidden rounded-lg border bg-popover shadow-md">
-        {items.map((item, index) => (
-          <button
-            key={item.id}
-            type="button"
-            className={cn(
-              "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors",
-              index === selectedIndex
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted"
-            )}
-            onClick={() => selectItem(index)}
-          >
-            {item.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={item.image}
-                alt=""
-                className="h-6 w-6 rounded-full"
-              />
-            ) : (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium">
-                {item.label.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <span className="flex-1 truncate">{item.label}</span>
-            <span
-              className={cn(
-                "text-xs",
-                index === selectedIndex
-                  ? "text-primary-foreground/70"
-                  : "text-muted-foreground"
-              )}
-            >
-              {getTypeLabel(item.type)}
-            </span>
-          </button>
-        ))}
+      <div className="bg-popover text-muted-foreground rounded-lg border p-2 text-sm shadow-md">
+        Ничего не найдено
       </div>
     );
   }
-);
+
+  return (
+    <div className="bg-popover overflow-hidden rounded-lg border shadow-md">
+      {items.map((item, index) => (
+        <button
+          key={item.id}
+          type="button"
+          className={cn(
+            "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors",
+            index === selectedIndex ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+          )}
+          onClick={() => selectItem(index)}
+        >
+          {item.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={item.image} alt="" className="h-6 w-6 rounded-full" />
+          ) : (
+            <div className="bg-muted flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium">
+              {item.label.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <span className="flex-1 truncate">{item.label}</span>
+          <span
+            className={cn(
+              "text-xs",
+              index === selectedIndex ? "text-primary-foreground/70" : "text-muted-foreground"
+            )}
+          >
+            {getTypeLabel(item.type)}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+});
 
 function getTypeLabel(type: string): string {
   switch (type) {

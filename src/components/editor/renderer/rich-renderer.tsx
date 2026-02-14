@@ -1,23 +1,25 @@
-import { type ReactNode, Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
+
 import type { JSONContent } from "@tiptap/react";
 
-import { cn } from "~/lib/utils";
 import type { RichRendererProps } from "~/lib/editor";
+import { cn } from "~/lib/utils";
+
 import {
-  renderMark,
-  Paragraph,
-  Heading,
-  BulletList,
-  OrderedList,
-  ListItem,
   Blockquote,
+  BulletList,
   CodeBlock,
-  HorizontalRule,
   HardBreak,
+  Heading,
+  HorizontalRule,
   ImageNode,
-  YoutubeNode,
+  ListItem,
   MentionNode,
+  OrderedList,
+  Paragraph,
   ReferenceCardNode,
+  renderMark,
+  YoutubeNode,
 } from "./node-renderers";
 
 // ============================================================================
@@ -29,7 +31,7 @@ import {
  * Can be used in Server Components without loading TipTap
  */
 export function RichRenderer({ content, className }: RichRendererProps) {
-  if (!content || !content.content) {
+  if (!content?.content) {
     return null;
   }
 
@@ -45,9 +47,7 @@ export function RichRenderer({ content, className }: RichRendererProps) {
 // ============================================================================
 
 function renderNodes(nodes: JSONContent[]): ReactNode {
-  return nodes.map((node, index) => (
-    <Fragment key={index}>{renderNode(node)}</Fragment>
-  ));
+  return nodes.map((node, index) => <Fragment key={index}>{renderNode(node)}</Fragment>);
 }
 
 function renderNode(node: JSONContent): ReactNode {
@@ -137,11 +137,8 @@ function renderTextNode(node: JSONContent): ReactNode {
  * Inline renderer for short content (e.g., in lists, previews)
  * Renders without block-level styling
  */
-export function RichInlineRenderer({
-  content,
-  className,
-}: RichRendererProps) {
-  if (!content || !content.content) {
+export function RichInlineRenderer({ content, className }: RichRendererProps) {
+  if (!content?.content) {
     return null;
   }
 
@@ -151,11 +148,7 @@ export function RichInlineRenderer({
     return null;
   }
 
-  return (
-    <span className={className}>
-      {renderNodes(firstParagraph.content)}
-    </span>
-  );
+  return <span className={className}>{renderNodes(firstParagraph.content)}</span>;
 }
 
 /**
@@ -166,16 +159,14 @@ export function RichPreviewRenderer({
   maxLength = 200,
   className,
 }: RichRendererProps & { maxLength?: number }) {
-  if (!content || !content.content) {
+  if (!content?.content) {
     return null;
   }
 
   // Extract plain text
   const plainText = extractText(content);
   const truncated =
-    plainText.length > maxLength
-      ? plainText.slice(0, maxLength).trim() + "..."
-      : plainText;
+    plainText.length > maxLength ? plainText.slice(0, maxLength).trim() + "..." : plainText;
 
   return <p className={cn("text-muted-foreground", className)}>{truncated}</p>;
 }

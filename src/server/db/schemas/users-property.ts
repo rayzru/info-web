@@ -1,12 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  index,
-  pgEnum,
-  primaryKey,
-  text,
-  timestamp,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { index, pgEnum, primaryKey, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 import { apartments } from "./buildings";
 import { createTable } from "./create-table";
@@ -41,9 +34,7 @@ export const userApartments = createTable(
     role: userRoleEnum("role").notNull(),
     // Поля для soft-delete (отзыв прав)
     revokedAt: timestamp("revoked_at", { mode: "date", withTimezone: true }),
-    revokedBy: varchar("revoked_by", { length: 255 }).references(
-      () => users.id
-    ),
+    revokedBy: varchar("revoked_by", { length: 255 }).references(() => users.id),
     revocationTemplate: revocationTemplateEnum("revocation_template"),
     revocationReason: text("revocation_reason"),
     // Временные метки
@@ -71,9 +62,7 @@ export const userParkingSpots = createTable(
     role: userRoleEnum("role").notNull(),
     // Поля для soft-delete (отзыв прав)
     revokedAt: timestamp("revoked_at", { mode: "date", withTimezone: true }),
-    revokedBy: varchar("revoked_by", { length: 255 }).references(
-      () => users.id
-    ),
+    revokedBy: varchar("revoked_by", { length: 255 }).references(() => users.id),
     revocationTemplate: revocationTemplateEnum("revocation_template"),
     revocationReason: text("revocation_reason"),
     // Временные метки
@@ -101,21 +90,18 @@ export const userApartmentsRelations = relations(userApartments, ({ one }) => ({
   }),
 }));
 
-export const userParkingSpotsRelations = relations(
-  userParkingSpots,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [userParkingSpots.userId],
-      references: [users.id],
-    }),
-    parkingSpot: one(parkingSpots, {
-      fields: [userParkingSpots.parkingSpotId],
-      references: [parkingSpots.id],
-    }),
-    revokedByUser: one(users, {
-      fields: [userParkingSpots.revokedBy],
-      references: [users.id],
-      relationName: "parkingRevoker",
-    }),
-  })
-);
+export const userParkingSpotsRelations = relations(userParkingSpots, ({ one }) => ({
+  user: one(users, {
+    fields: [userParkingSpots.userId],
+    references: [users.id],
+  }),
+  parkingSpot: one(parkingSpots, {
+    fields: [userParkingSpots.parkingSpotId],
+    references: [parkingSpots.id],
+  }),
+  revokedByUser: one(users, {
+    fields: [userParkingSpots.revokedBy],
+    references: [users.id],
+    relationName: "parkingRevoker",
+  }),
+}));

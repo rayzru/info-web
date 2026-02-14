@@ -16,7 +16,7 @@ import { parkings } from "./parkings";
 // Enum для типов каналов коммуникации
 export const channelTypeEnum = pgEnum("channel_type", [
   "telegram",
-  "max",       // Будущий MAX
+  "max", // Будущий MAX
   "whatsapp",
   "vk",
   "email",
@@ -24,12 +24,7 @@ export const channelTypeEnum = pgEnum("channel_type", [
 ]);
 
 // Enum для типов квартир
-export const apartmentTypeEnum = pgEnum("apartment_type", [
-  "studio",
-  "1k",
-  "2k",
-  "3k",
-]);
+export const apartmentTypeEnum = pgEnum("apartment_type", ["studio", "1k", "2k", "3k", "4k"]);
 
 // Таблица строений
 export const buildings = createTable("building", {
@@ -57,11 +52,8 @@ export const entrances = createTable(
     entranceNumber: smallint("entrance_number").notNull(), // Номер подъезда
   },
   (entrance) => [
-    unique("building_id_entrance_number_idx").on(
-      entrance.buildingId,
-      entrance.entranceNumber,
-    ),
-  ],
+    unique("building_id_entrance_number_idx").on(entrance.buildingId, entrance.entranceNumber),
+  ]
 );
 
 // Таблица этажей
@@ -77,12 +69,7 @@ export const floors = createTable(
       .references(() => entrances.id, { onDelete: "cascade" }),
     floorNumber: smallint("floor_number").notNull(), // Номер этажа
   },
-  (floor) => [
-    unique("endtance_id_floor_number_idx").on(
-      floor.floorNumber,
-      floor.entranceId,
-    ),
-  ],
+  (floor) => [unique("endtance_id_floor_number_idx").on(floor.floorNumber, floor.entranceId)]
 );
 
 // Таблица квартир
@@ -110,10 +97,9 @@ export const buildingChannels = createTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     // Привязка к зданию (опционально - может быть общий канал ЖК)
-    buildingId: varchar("building_id", { length: 255 }).references(
-      () => buildings.id,
-      { onDelete: "cascade" }
-    ),
+    buildingId: varchar("building_id", { length: 255 }).references(() => buildings.id, {
+      onDelete: "cascade",
+    }),
     // Тип канала
     channelType: channelTypeEnum("channel_type").notNull(),
     // ID/ссылка канала (chat_id для Telegram, URL для других)
@@ -161,12 +147,9 @@ export const apartmentsRelations = relations(apartments, ({ one }) => ({
   floor: one(floors, { fields: [apartments.floorId], references: [floors.id] }),
 }));
 
-export const buildingChannelsRelations = relations(
-  buildingChannels,
-  ({ one }) => ({
-    building: one(buildings, {
-      fields: [buildingChannels.buildingId],
-      references: [buildings.id],
-    }),
-  })
-);
+export const buildingChannelsRelations = relations(buildingChannels, ({ one }) => ({
+  building: one(buildings, {
+    fields: [buildingChannels.buildingId],
+    references: [buildings.id],
+  }),
+}));

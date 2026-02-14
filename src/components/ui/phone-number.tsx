@@ -1,7 +1,9 @@
 "use client";
 
-import { Phone, Copy, Check } from "lucide-react";
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+import { Check, Copy, Phone } from "lucide-react";
+
 import { cn } from "~/lib/utils";
 
 /**
@@ -58,9 +60,7 @@ export function PhoneNumber({
 
   useEffect(() => {
     setIsMobile(
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      )
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     );
   }, []);
 
@@ -86,7 +86,7 @@ export function PhoneNumber({
 
   const baseClasses = cn(
     "inline-flex items-center gap-1.5 rounded-md px-2 py-0.5",
-    "bg-muted/50 text-foreground font-medium text-sm",
+    "bg-muted/50 text-foreground text-sm font-medium",
     "transition-colors duration-150",
     className
   );
@@ -95,10 +95,7 @@ export function PhoneNumber({
     return (
       <a
         href={`tel:${normalizedPhone}`}
-        className={cn(
-          baseClasses,
-          "hover:bg-primary/10 hover:text-primary active:bg-primary/20"
-        )}
+        className={cn(baseClasses, "hover:bg-primary/10 hover:text-primary active:bg-primary/20")}
       >
         {showIcon && <Phone className="h-3.5 w-3.5 shrink-0" />}
         <span className="font-mono">{formattedPhone}</span>
@@ -108,11 +105,7 @@ export function PhoneNumber({
 
   return (
     <span
-      className={cn(
-        baseClasses,
-        "cursor-pointer select-none",
-        "hover:bg-muted"
-      )}
+      className={cn(baseClasses, "cursor-pointer select-none", "hover:bg-muted")}
       onClick={handleCopy}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -124,23 +117,19 @@ export function PhoneNumber({
       tabIndex={0}
       title="Нажмите для копирования"
     >
-      {showIcon && <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
+      {showIcon && <Phone className="text-muted-foreground h-3.5 w-3.5 shrink-0" />}
       <span className="font-mono">{formattedPhone}</span>
       {showCopyButton && (
         <span
           className={cn(
-            "ml-1 p-0.5 rounded transition-colors",
+            "ml-1 rounded p-0.5 transition-colors",
             copied
               ? "text-green-600 dark:text-green-400"
               : "text-muted-foreground hover:text-foreground"
           )}
           aria-label={copied ? "Скопировано" : "Копировать"}
         >
-          {copied ? (
-            <Check className="h-3.5 w-3.5" />
-          ) : (
-            <Copy className="h-3.5 w-3.5" />
-          )}
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
         </span>
       )}
     </span>
@@ -156,8 +145,7 @@ interface PhoneNumberTextProps {
   className?: string;
 }
 
-const PHONE_REGEX =
-  /(?:\+7|8)[\s-]?(?:\(?\d{3}\)?[\s-]?)?\d{3}[\s-]?\d{2}[\s-]?\d{2}/g;
+const PHONE_REGEX = /(?:\+7|8)[\s-]?(?:\(?\d{3}\)?[\s-]?)?\d{3}[\s-]?\d{2}[\s-]?\d{2}/g;
 
 export function PhoneNumberText({ text, className }: PhoneNumberTextProps) {
   const parts: (string | { phone: string; key: number })[] = [];
@@ -185,11 +173,7 @@ export function PhoneNumberText({ text, className }: PhoneNumberTextProps) {
   return (
     <span className={className}>
       {parts.map((part, index) =>
-        typeof part === "string" ? (
-          part
-        ) : (
-          <PhoneNumber key={part.key} phone={part.phone} />
-        )
+        typeof part === "string" ? part : <PhoneNumber key={part.key} phone={part.phone} />
       )}
     </span>
   );

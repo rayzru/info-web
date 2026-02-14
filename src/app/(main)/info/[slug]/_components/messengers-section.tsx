@@ -1,7 +1,9 @@
 import { MessageCircle } from "lucide-react";
+
 import { cn } from "~/lib/utils";
-import type { Contact } from "./types";
+
 import { SectionCard } from "./section-card";
+import type { Contact } from "./types";
 
 type MessengersSectionProps = {
   contacts: Contact[];

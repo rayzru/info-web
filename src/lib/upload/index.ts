@@ -1,12 +1,8 @@
 // Re-export types and utilities
-export type {
-  ImageProcessingOptions,
-  ProcessedImage,
-} from "./image-processor";
-
+export type { ImageProcessingOptions, ProcessedImage } from "./image-processor";
 export {
-  processAndSaveImage,
-  validateImageFile,
   deleteImage,
   imageProcessor,
+  processAndSaveImage,
+  validateImageFile,
 } from "./image-processor";

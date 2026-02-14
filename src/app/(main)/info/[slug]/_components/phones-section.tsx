@@ -1,6 +1,7 @@
 import { Phone } from "lucide-react";
-import type { Contact } from "./types";
+
 import { SectionCard } from "./section-card";
+import type { Contact } from "./types";
 
 type PhonesSectionProps = {
   contacts: Contact[];
@@ -32,17 +33,17 @@ function PhoneItem({ contact, showLabel = false }: { contact: Contact; showLabel
   return (
     <a
       href={`tel:${contact.value}`}
-      className="group -mx-2 flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-muted"
+      className="hover:bg-muted group -mx-2 flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
-        <Phone className="h-4 w-4 text-primary" />
+      <div className="bg-primary/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
+        <Phone className="text-primary h-4 w-4" />
       </div>
       <div>
-        <span className="font-medium transition-colors group-hover:text-primary">
+        <span className="group-hover:text-primary font-medium transition-colors">
           {contact.value}
         </span>
         {showLabel && contact.label && (
-          <p className="text-sm text-muted-foreground">{contact.label}</p>
+          <p className="text-muted-foreground text-sm">{contact.label}</p>
         )}
       </div>
     </a>
@@ -59,10 +60,8 @@ export function PhonesSection({ contacts }: PhonesSectionProps) {
       <section>
         <div className="grid gap-4 sm:grid-cols-2">
           {Array.from(phoneGroups.entries()).map(([category, phones]) => (
-            <div key={category} className="rounded-xl border bg-card p-4">
-              <h3 className="mb-3 text-sm font-medium text-muted-foreground">
-                {category}
-              </h3>
+            <div key={category} className="bg-card rounded-xl border p-4">
+              <h3 className="text-muted-foreground mb-3 text-sm font-medium">{category}</h3>
               <div className="space-y-2">
                 {phones.map((contact) => (
                   <PhoneItem key={contact.id} contact={contact} />

@@ -4,8 +4,9 @@ import { BookOpen, Info, MessageSquareText, Tag, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Button } from "./ui/button";
 import { cn } from "~/lib/utils";
+
+import { Button } from "./ui/button";
 
 const navigation = [
   {
@@ -49,7 +50,7 @@ export function NavLinks() {
   };
 
   return (
-    <div className="hidden xl:flex items-center gap-1">
+    <div className="hidden items-center gap-1 xl:flex">
       {navigation.map((item) => {
         const active = isActive(item.link);
         return (
@@ -57,9 +58,7 @@ export function NavLinks() {
             <Button
               variant={active ? "secondary" : "ghost"}
               size="sm"
-              className={cn(
-                active && "text-primary font-medium"
-              )}
+              className={cn(active && "text-primary font-medium")}
             >
               {item.title}
             </Button>
