@@ -645,7 +645,7 @@ export default function AdminClaimsPage() {
             {data.totalPages > 1 && (
               <div className="flex items-center justify-between">
                 <p className="text-muted-foreground text-sm">
-                  Показано {(page - 1) * 20 + 1}–{Math.min(page * 20, totalClaims)} из {totalClaims}
+                  Показано {(page - 1) * 20 + 1}–{Math.min(page * 20, data.total)} из {data.total}
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
