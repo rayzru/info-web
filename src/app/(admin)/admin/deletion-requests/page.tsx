@@ -5,10 +5,8 @@ import { useState } from "react";
 import {
   AlertTriangle,
   Check,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
   Loader2,
+  MoreHorizontal,
   Trash2,
   X,
 } from "lucide-react";
@@ -18,7 +16,6 @@ import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +24,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import {
@@ -37,6 +41,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import { useMobile } from "~/hooks/use-mobile";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 
@@ -162,7 +167,7 @@ function ReviewDialog({ request, open, onOpenChange, onSuccess }: ReviewDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-125">
         <DialogHeader>
           <DialogTitle>Рассмотрение заявки на удаление</DialogTitle>
           <DialogDescription>
@@ -383,8 +388,10 @@ function ExecuteDialog({ request, open, onOpenChange, onSuccess }: ExecuteDialog
 export default function AdminDeletionRequestsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isMobile = useMobile();
 
   const statusFilter = searchParams.get("status") ?? "all";
+  const [localSearch, setLocalSearch] = useState("");
 
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
@@ -398,8 +405,6 @@ export default function AdminDeletionRequestsPage() {
     status: statusFilter !== "all" ? (statusFilter as any) : undefined,
   });
 
-  const { data: counts, refetch: refetchCounts } = api.admin.deletionRequests.counts.useQuery();
-
   const setFilter = (status: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (status === "all") {
@@ -412,7 +417,6 @@ export default function AdminDeletionRequestsPage() {
 
   const handleSuccess = () => {
     void refetch();
-    void refetchCounts();
   };
 
   const openReviewDialog = (request: any) => {
@@ -425,6 +429,14 @@ export default function AdminDeletionRequestsPage() {
     setExecuteDialogOpen(true);
   };
 
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <AdminPageHeader
@@ -432,70 +444,17 @@ export default function AdminDeletionRequestsPage() {
         description="Рассмотрение запросов пользователей на удаление персональных данных"
       />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${
-            statusFilter === "pending" ? "ring-2 ring-yellow-500 ring-offset-2" : ""
-          }`}
-          onClick={() => setFilter("pending")}
-        >
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-yellow-600" />
-              <div className="text-2xl font-bold text-yellow-600">{counts?.pending ?? 0}</div>
-            </div>
-            <p className="text-muted-foreground text-sm">Ожидают</p>
-          </CardContent>
-        </Card>
-        <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${
-            statusFilter === "approved" ? "ring-2 ring-green-500 ring-offset-2" : ""
-          }`}
-          onClick={() => setFilter("approved")}
-        >
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2">
-              <Check className="h-5 w-5 text-green-600" />
-              <div className="text-2xl font-bold text-green-600">{counts?.approved ?? 0}</div>
-            </div>
-            <p className="text-muted-foreground text-sm">К выполнению</p>
-          </CardContent>
-        </Card>
-        <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${
-            statusFilter === "rejected" ? "ring-2 ring-red-500 ring-offset-2" : ""
-          }`}
-          onClick={() => setFilter("rejected")}
-        >
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2">
-              <X className="h-5 w-5 text-red-600" />
-              <div className="text-2xl font-bold text-red-600">{counts?.rejected ?? 0}</div>
-            </div>
-            <p className="text-muted-foreground text-sm">Отклонено</p>
-          </CardContent>
-        </Card>
-        <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${
-            statusFilter === "completed" ? "ring-primary ring-2 ring-offset-2" : ""
-          }`}
-          onClick={() => setFilter("completed")}
-        >
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2">
-              <Trash2 className="text-muted-foreground h-5 w-5" />
-              <div className="text-2xl font-bold">{counts?.completed ?? 0}</div>
-            </div>
-            <p className="text-muted-foreground text-sm">Выполнено</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-4">
+        <Input
+          placeholder="Поиск по имени или email..."
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
+          className="w-full sm:w-64"
+        />
 
-      {/* Filter */}
-      <div className="flex items-center gap-4">
         <Select value={statusFilter} onValueChange={setFilter}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-50">
             <SelectValue placeholder="Все статусы" />
           </SelectTrigger>
           <SelectContent>
@@ -508,92 +467,172 @@ export default function AdminDeletionRequestsPage() {
         </Select>
       </div>
 
-      {/* Requests List */}
+      {/* Requests Table/Cards */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : requests && requests.length > 0 ? (
-        <div className="space-y-4">
-          {requests.map((request) => (
-            <Card key={request.id}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  {/* User Avatar */}
-                  <Avatar className="h-10 w-10">
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden rounded-lg border md:block">
+            <div className="bg-muted/50 text-muted-foreground flex items-center gap-4 border-b px-4 py-3 text-sm font-medium">
+              <div className="w-24">Дата</div>
+              <div className="min-w-0 flex-1">Пользователь</div>
+              <div className="hidden w-64 lg:block">Причина</div>
+              <div className="w-28">Статус</div>
+              <div className="w-10"></div>
+            </div>
+
+            {requests.map((request) => (
+              <div
+                key={request.id}
+                className="hover:bg-muted/30 flex items-center gap-4 border-b px-4 py-3 last:border-b-0"
+              >
+                {/* Date */}
+                <div className="text-muted-foreground w-24 text-sm">
+                  {formatDate(request.createdAt)}
+                </div>
+
+                {/* User */}
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <Avatar className="h-8 w-8 shrink-0">
                     <AvatarImage src={request.user?.image ?? undefined} />
-                    <AvatarFallback>
+                    <AvatarFallback className="text-xs">
                       {request.user?.name?.slice(0, 2).toUpperCase() ?? "??"}
                     </AvatarFallback>
                   </Avatar>
-
-                  {/* Request Info */}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium">
-                        {request.user?.name ?? request.user?.email}
-                      </span>
-                      <Badge variant={STATUS_COLORS[request.status]}>
-                        {STATUS_LABELS[request.status]}
-                      </Badge>
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">
+                      {request.user?.name ?? "Без имени"}
                     </div>
-
-                    <div className="text-muted-foreground mt-1 flex items-center gap-4 text-xs">
-                      <span>{request.user?.email}</span>
-                      <span>·</span>
-                      <span>
-                        {new Date(request.createdAt).toLocaleDateString("ru-RU", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </span>
+                    <div className="text-muted-foreground truncate text-xs">
+                      {request.user?.email}
                     </div>
-
-                    {request.reason && (
-                      <p className="bg-muted mt-2 rounded p-2 text-sm">{request.reason}</p>
-                    )}
-
-                    {request.adminNotes && (
-                      <p className="text-muted-foreground mt-2 text-sm italic">
-                        Решение: {request.adminNotes}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2">
-                    {request.status === "pending" && (
-                      <Button variant="outline" size="sm" onClick={() => openReviewDialog(request)}>
-                        Рассмотреть
-                      </Button>
-                    )}
-                    {request.status === "approved" && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => openExecuteDialog(request)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Выполнить
-                      </Button>
-                    )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+
+                {/* Reason */}
+                <div className="hidden w-64 lg:block">
+                  {request.reason ? (
+                    <p className="text-muted-foreground line-clamp-2 text-sm">
+                      {request.reason}
+                    </p>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">—</span>
+                  )}
+                </div>
+
+                {/* Status */}
+                <div className="w-28">
+                  <Badge variant={STATUS_COLORS[request.status]}>
+                    {STATUS_LABELS[request.status]}
+                  </Badge>
+                </div>
+
+                {/* Actions */}
+                <div className="w-10">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {request.status === "pending" && (
+                        <DropdownMenuItem onClick={() => openReviewDialog(request)}>
+                          Рассмотреть
+                        </DropdownMenuItem>
+                      )}
+                      {request.status === "approved" && (
+                        <DropdownMenuItem
+                          onClick={() => openExecuteDialog(request)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Выполнить удаление
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="space-y-3 md:hidden">
+            {requests.map((request) => (
+              <div key={request.id} className="bg-card rounded-lg border p-4">
+                <div className="mb-3 flex items-start justify-between">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <Avatar className="h-10 w-10 shrink-0">
+                      <AvatarImage src={request.user?.image ?? undefined} />
+                      <AvatarFallback>
+                        {request.user?.name?.slice(0, 2).toUpperCase() ?? "??"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <div className="truncate font-medium">
+                        {request.user?.name ?? "Без имени"}
+                      </div>
+                      <div className="text-muted-foreground truncate text-xs">
+                        {request.user?.email}
+                      </div>
+                    </div>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {request.status === "pending" && (
+                        <DropdownMenuItem onClick={() => openReviewDialog(request)}>
+                          Рассмотреть
+                        </DropdownMenuItem>
+                      )}
+                      {request.status === "approved" && (
+                        <DropdownMenuItem
+                          onClick={() => openExecuteDialog(request)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Выполнить удаление
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <div className="mb-3 flex flex-wrap gap-2">
+                  <Badge variant={STATUS_COLORS[request.status]}>
+                    {STATUS_LABELS[request.status]}
+                  </Badge>
+                </div>
+
+                <div className="text-muted-foreground space-y-1 text-sm">
+                  <div className="text-xs">{formatDate(request.createdAt)}</div>
+                  {request.reason && (
+                    <p className="bg-muted rounded p-2 text-xs">{request.reason}</p>
+                  )}
+                  {request.adminNotes && (
+                    <p className="text-xs italic">Решение: {request.adminNotes}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
-        <Card>
-          <CardContent className="text-muted-foreground py-12 text-center">
-            {statusFilter === "pending"
-              ? "Нет заявок на рассмотрение"
-              : statusFilter === "approved"
-                ? "Нет одобренных заявок к выполнению"
-                : "Заявок не найдено"}
-          </CardContent>
-        </Card>
+        <div className="text-muted-foreground rounded-lg border py-12 text-center">
+          {statusFilter === "pending"
+            ? "Нет заявок на рассмотрение"
+            : statusFilter === "approved"
+              ? "Нет одобренных заявок к выполнению"
+              : "Заявок не найдено"}
+        </div>
       )}
 
       {/* Review Dialog */}
