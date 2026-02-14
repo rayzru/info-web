@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Car, ExternalLink, Home } from "lucide-react";
+import { Car, Check, Home, X } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "~/components/ui/button";
@@ -8,14 +8,6 @@ import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
 
 // ============ Constants ============
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Ожидает",
-  review: "На рассмотрении",
-  approved: "Одобрено",
-  rejected: "Отклонено",
-  documents_requested: "Запрос документов",
-};
 
 const ROLE_LABELS: Record<string, string> = {
   ApartmentOwner: "Собственник",
@@ -40,64 +32,56 @@ export function PropertyCard({ type, propertyId, label, role, status }: Property
 
   return (
     <Card className="overflow-hidden">
-      {/* Header image placeholder with icon */}
+      {/* Header image placeholder with icon and large property number */}
       <div className="bg-muted relative aspect-video">
-        <div className="flex h-full items-center justify-center">
+        <div className="flex h-full flex-col items-center justify-center gap-2">
+          {/* Icon */}
           {type === "apartment" ? (
-            <Home className="text-muted-foreground/20 h-16 w-16" />
+            <Home className="text-muted-foreground/20 h-12 w-12" />
           ) : (
-            <Car className="text-muted-foreground/20 h-16 w-16" />
+            <Car className="text-muted-foreground/20 h-12 w-12" />
           )}
+
+          {/* Large property number - MAIN FOCUS */}
+          <div className="text-center">
+            <div className="font-mono text-4xl font-bold">{propertyNumber}</div>
+          </div>
         </div>
 
-        {/* Status badge (top-left) */}
+        {/* Status icon (top-left) */}
         <div className="absolute left-2 top-2">
-          <span
+          <div
             className={cn(
-              "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-              status === "approved" && "bg-green-100 text-green-800",
-              status === "rejected" && "bg-red-100 text-red-800",
-              status === "pending" && "bg-yellow-100 text-yellow-800",
-              status === "review" && "bg-blue-100 text-blue-800"
+              "flex h-8 w-8 items-center justify-center rounded-full",
+              status === "approved" && "bg-green-500",
+              status === "rejected" && "bg-red-500",
+              status === "pending" && "bg-yellow-500",
+              status === "review" && "bg-blue-500"
             )}
           >
-            {STATUS_LABELS[status]}
-          </span>
-        </div>
-
-        {/* Property number badge (top-right) */}
-        <div className="absolute right-2 top-2">
-          <span className="inline-flex items-center rounded-full bg-gray-900/80 px-2.5 py-0.5 font-mono text-xs font-bold text-white">
-            {propertyNumber}
-          </span>
+            {status === "approved" && <Check className="h-5 w-5 text-white" />}
+            {status === "rejected" && <X className="h-5 w-5 text-white" />}
+            {status === "pending" && <span className="text-xs font-bold text-white">...</span>}
+            {status === "review" && <span className="text-xs font-bold text-white">?</span>}
+          </div>
         </div>
       </div>
 
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="line-clamp-1 text-base font-semibold leading-tight">
-            {type === "apartment" ? "Квартира" : "Машиноместо"}
-          </h3>
-          <span className="text-muted-foreground shrink-0 text-sm">{ROLE_LABELS[role]}</span>
-        </div>
+      <CardHeader className="pb-3">
+        {/* Address */}
+        <h3 className="text-base font-semibold leading-tight">{address}</h3>
+
+        {/* Role below */}
+        <p className="text-muted-foreground mt-1 text-sm">{ROLE_LABELS[role]}</p>
       </CardHeader>
 
-      <CardContent className="space-y-3">
-        {/* Address */}
-        <div className="text-muted-foreground flex items-center gap-2 text-sm">
-          <Building2 className="h-4 w-4 shrink-0" />
-          <span className="line-clamp-1">{address}</span>
-        </div>
-
-        {/* History button */}
-        <div className="border-t pt-3">
-          <Link href={`/my/property/${type}/${propertyId}/history`} passHref>
-            <Button variant="ghost" size="sm" className="-mx-2 h-9 w-full justify-between">
-              <span className="text-sm">Показать историю</span>
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
+      <CardContent className="pt-0">
+        {/* History button - full width, small, no icon */}
+        <Link href={`/my/property/${type}/${propertyId}/history`} className="block">
+          <Button variant="ghost" size="sm" className="h-8 w-full text-xs">
+            Показать историю
+          </Button>
+        </Link>
       </CardContent>
     </Card>
   );
