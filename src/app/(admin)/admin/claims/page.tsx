@@ -301,8 +301,6 @@ export default function AdminClaimsPage() {
     type: typeFilter !== "all" ? (typeFilter as any) : undefined,
   });
 
-  const { data: stats } = api.claims.admin.stats.useQuery();
-
   // URL helpers
   const setPage = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -388,75 +386,12 @@ export default function AdminClaimsPage() {
     };
   };
 
-  const totalClaims = data?.total ?? 0;
-
   return (
     <div className="space-y-6">
       <AdminPageHeader
         title="Заявки на недвижимость"
         description="Рассмотрение заявок пользователей"
       />
-
-      {/* Stats */}
-      {stats && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "all" ? "ring-primary ring-2 ring-offset-2" : ""
-            }`}
-            onClick={() => setStatusFilter("all")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{totalClaims}</div>
-              <p className="text-muted-foreground text-sm">Все заявки</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "pending" ? "ring-2 ring-yellow-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setStatusFilter("pending")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-              <p className="text-muted-foreground text-sm">Ожидают</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "review" ? "ring-2 ring-blue-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setStatusFilter("review")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-blue-600">{stats.underReview}</div>
-              <p className="text-muted-foreground text-sm">На рассмотрении</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "approved" ? "ring-2 ring-green-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setStatusFilter("approved")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
-              <p className="text-muted-foreground text-sm">Одобрено</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "rejected" ? "ring-2 ring-red-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setStatusFilter("rejected")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
-              <p className="text-muted-foreground text-sm">Отклонено</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
