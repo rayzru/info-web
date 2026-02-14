@@ -12,9 +12,9 @@ import {
   Shield,
   User,
 } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
@@ -85,16 +85,12 @@ const navigationItems: NavigationEntry[] = [
   },
 ];
 
-export default function CabinetLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function CabinetLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { data: unreadCount } = api.notifications.unreadCount.useQuery(
     undefined,
-    { refetchInterval: 30000 }, // Refetch every 30 seconds
+    { refetchInterval: 30000 } // Refetch every 30 seconds
   );
 
   const isAdmin = session?.user?.isAdmin;
@@ -103,11 +99,11 @@ export default function CabinetLayout({
     <div className="py-6">
       <div className="flex gap-8">
         {/* Main Content */}
-        <main className="flex-1 min-w-0">{children}</main>
+        <main className="min-w-0 flex-1">{children}</main>
 
         {/* Sidebar Navigation (Right side) */}
-        <aside className="hidden md:block w-64 shrink-0">
-          <nav className="space-y-1 sticky top-6 pt-14">
+        <aside className="hidden w-64 shrink-0 md:block">
+          <nav className="sticky top-6 space-y-1 pt-14">
             {navigationItems.map((entry, index) => {
               if (entry === "separator") {
                 return <div key={`sep-${index}`} className="my-2 border-t" />;
@@ -124,11 +120,11 @@ export default function CabinetLayout({
                   key={item.href}
                   href={item.disabled ? "#" : item.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
                     isActive
                       ? "bg-secondary text-primary font-medium"
                       : isPrimaryHighlight
-                        ? "bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
                         : item.disabled
                           ? "text-muted-foreground/50 cursor-not-allowed"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -141,17 +137,17 @@ export default function CabinetLayout({
                   </div>
                   <div className="flex-1">
                     <div>{item.title}</div>
-                    {item.disabled && (
-                      <div className="text-xs opacity-60">{item.description}</div>
-                    )}
+                    {item.disabled && <div className="text-xs opacity-60">{item.description}</div>}
                   </div>
                   {showBadge && (
-                    <span className={cn(
-                      "h-5 min-w-5 flex items-center justify-center rounded-full text-[11px] font-medium px-1.5",
-                      isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-primary-foreground text-primary"
-                    )}>
+                    <span
+                      className={cn(
+                        "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-medium",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-primary-foreground text-primary"
+                      )}
+                    >
                       {unreadCount > 99 ? "99+" : unreadCount}
                     </span>
                   )}
@@ -166,7 +162,7 @@ export default function CabinetLayout({
                 <Link
                   href="/admin"
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
                     "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                   data-testid="nav-admin"
@@ -182,7 +178,7 @@ export default function CabinetLayout({
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors w-full",
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
                 "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               )}
               data-testid="nav-logout"

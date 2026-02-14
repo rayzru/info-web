@@ -1,24 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import {
-  HomeIcon,
-  Loader2,
-  ParkingCircleIcon,
-  Store,
-  X,
-} from "lucide-react";
+
+import { HomeIcon, Loader2, ParkingCircleIcon, Store, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { ClaimDocumentUploader, type UploadedDocument } from "~/components/claim-document-uploader";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
+import { PropertyNumberGrid } from "~/components/ui/property-number-grid";
 import {
   Select,
   SelectContent,
@@ -29,10 +20,6 @@ import {
 import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
-import {
-  ClaimDocumentUploader,
-  type UploadedDocument,
-} from "~/components/claim-document-uploader";
 
 type ClaimType = "apartment" | "parking" | "commercial";
 
@@ -149,18 +136,10 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
 
   // Get selected building data
   const selectedBuilding = buildings.find((b) => b.id === selectedBuildingId);
-  const selectedEntrance = selectedBuilding?.entrances.find(
-    (e) => e.id === selectedEntranceId
-  );
-  const selectedFloor = selectedEntrance?.floors.find(
-    (f) => f.id === selectedFloorId
-  );
-  const selectedParking = selectedBuilding?.parkings.find(
-    (p) => p.id === selectedParkingId
-  );
-  const selectedParkingFloor = selectedParking?.floors.find(
-    (f) => f.id === selectedParkingFloorId
-  );
+  const selectedEntrance = selectedBuilding?.entrances.find((e) => e.id === selectedEntranceId);
+  const selectedFloor = selectedEntrance?.floors.find((f) => f.id === selectedFloorId);
+  const selectedParking = selectedBuilding?.parkings.find((p) => p.id === selectedParkingId);
+  const selectedParkingFloor = selectedParking?.floors.find((f) => f.id === selectedParkingFloorId);
 
   // Check if property already has a claim
   const hasExistingClaim = (type: "apartment" | "parking", id: string) => {
@@ -211,33 +190,29 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
       {!claimType && (
         <div className="grid gap-4 md:grid-cols-3">
           <Card
-            className="relative flex min-h-40 flex-col overflow-hidden cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
+            className="hover:border-primary/30 relative flex min-h-40 cursor-pointer flex-col overflow-hidden transition-all hover:shadow-md"
             onClick={() => setClaimType("apartment")}
           >
-            <HomeIcon className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <HomeIcon className="text-muted-foreground/10 absolute -bottom-6 -right-6 h-32 w-32" />
             <CardHeader className="relative z-10 flex-1">
               <CardTitle className="text-xl">Квартира</CardTitle>
-              <CardDescription>
-                Подать заявку на квартиру
-              </CardDescription>
+              <CardDescription>Подать заявку на квартиру</CardDescription>
             </CardHeader>
           </Card>
 
           <Card
-            className="relative flex min-h-40 flex-col overflow-hidden cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
+            className="hover:border-primary/30 relative flex min-h-40 cursor-pointer flex-col overflow-hidden transition-all hover:shadow-md"
             onClick={() => setClaimType("parking")}
           >
-            <ParkingCircleIcon className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <ParkingCircleIcon className="text-muted-foreground/10 absolute -bottom-6 -right-6 h-32 w-32" />
             <CardHeader className="relative z-10 flex-1">
               <CardTitle className="text-xl">Парковка</CardTitle>
-              <CardDescription>
-                Подать заявку на машиноместо
-              </CardDescription>
+              <CardDescription>Подать заявку на машиноместо</CardDescription>
             </CardHeader>
           </Card>
 
           <Card
-            className="relative flex min-h-40 flex-col overflow-hidden cursor-pointer opacity-50"
+            className="relative flex min-h-40 cursor-pointer flex-col overflow-hidden opacity-50"
             onClick={() =>
               toast({
                 title: "Скоро",
@@ -245,12 +220,10 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
               })
             }
           >
-            <Store className="absolute -bottom-6 -right-6 h-32 w-32 text-muted-foreground/10" />
+            <Store className="text-muted-foreground/10 absolute -bottom-6 -right-6 h-32 w-32" />
             <CardHeader className="relative z-10 flex-1">
               <CardTitle className="text-xl">Коммерция</CardTitle>
-              <CardDescription>
-                Подать заявку на коммерцию
-              </CardDescription>
+              <CardDescription>Подать заявку на коммерцию</CardDescription>
             </CardHeader>
           </Card>
         </div>
@@ -262,14 +235,12 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <HomeIcon className="h-5 w-5 text-primary" />
+                <div className="bg-primary/10 rounded-lg p-2">
+                  <HomeIcon className="text-primary h-5 w-5" />
                 </div>
                 <div>
                   <CardTitle>Заявка на квартиру</CardTitle>
-                  <CardDescription>
-                    Выберите строение и номер квартиры
-                  </CardDescription>
+                  <CardDescription>Выберите строение и номер квартиры</CardDescription>
                 </div>
               </div>
               <Button
@@ -309,42 +280,57 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
               </Select>
             </div>
 
-            {/* Apartment Selection - Flat list from all entrances/floors */}
+            {/* Apartment Selection - Compact grid */}
             {selectedBuilding && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label>Квартира</Label>
-                <Select
+                <PropertyNumberGrid
+                  groups={selectedBuilding.entrances
+                    .sort((a, b) => a.entranceNumber - b.entranceNumber)
+                    .flatMap((entrance) =>
+                      entrance.floors
+                        .sort((a, b) => a.floorNumber - b.floorNumber)
+                        .map((floor) => ({
+                          label: `Подъезд ${entrance.entranceNumber}, Этаж ${floor.floorNumber}`,
+                          items: floor.apartments
+                            .map((apt) => ({
+                              id: apt.id,
+                              number: apt.number,
+                              disabled: hasExistingClaim("apartment", apt.id),
+                              disabledLabel: hasExistingClaim("apartment", apt.id)
+                                ? "заявка подана"
+                                : undefined,
+                              entranceNumber: entrance.entranceNumber,
+                              floorNumber: floor.floorNumber,
+                            }))
+                            .sort((a, b) => parseInt(a.number) - parseInt(b.number)),
+                        }))
+                    )}
                   value={selectedApartmentId}
                   onValueChange={setSelectedApartmentId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите квартиру" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedBuilding.entrances
-                      .flatMap((entrance) =>
-                        entrance.floors.flatMap((floor) =>
-                          floor.apartments.map((apt) => ({
-                            ...apt,
-                            entranceNumber: entrance.entranceNumber,
-                            floorNumber: floor.floorNumber,
-                          }))
-                        )
-                      )
-                      .sort((a, b) => parseInt(a.number) - parseInt(b.number))
-                      .map((apt) => (
-                        <SelectItem
-                          key={apt.id}
-                          value={apt.id}
-                          disabled={hasExistingClaim("apartment", apt.id)}
-                        >
-                          Квартира {apt.number}
-                          {hasExistingClaim("apartment", apt.id) &&
-                            " — заявка подана"}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                  itemsPerRow={5}
+                  selectedLabel={
+                    selectedApartmentId
+                      ? (() => {
+                          const selected = selectedBuilding.entrances
+                            .flatMap((e) =>
+                              e.floors.flatMap((f) =>
+                                f.apartments.map((a) => ({
+                                  ...a,
+                                  entrance: e.entranceNumber,
+                                  floor: f.floorNumber,
+                                }))
+                              )
+                            )
+                            .find((a) => a.id === selectedApartmentId);
+                          return selected
+                            ? `Подъезд ${selected.entrance}, Этаж ${selected.floor}, квартира №${selected.number}`
+                            : undefined;
+                        })()
+                      : undefined
+                  }
+                  placeholder="Выберите квартиру"
+                />
               </div>
             )}
 
@@ -389,13 +375,8 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
             {/* Submit Button */}
             {role && (
               <div className="flex justify-end pt-4">
-                <Button
-                  onClick={handleSubmit}
-                  disabled={createClaim.isPending}
-                >
-                  {createClaim.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                <Button onClick={handleSubmit} disabled={createClaim.isPending}>
+                  {createClaim.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Отправить заявку
                 </Button>
               </div>
@@ -415,9 +396,7 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
                 </div>
                 <div>
                   <CardTitle>Заявка на парковку</CardTitle>
-                  <CardDescription>
-                    Выберите ваше парковочное место
-                  </CardDescription>
+                  <CardDescription>Выберите ваше парковочное место</CardDescription>
                 </div>
               </div>
               <Button
@@ -474,56 +453,49 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
               </Select>
             </div>
 
-            {/* Floor Selection - only show if more than one level (buildings 1, 2) */}
-            {selectedParking && selectedParking.floors.length > 1 && (
-              <div className="space-y-2">
-                <Label>Уровень</Label>
-                <Select
-                  value={selectedParkingFloorId}
-                  onValueChange={(value) => {
-                    setSelectedParkingFloorId(value);
-                    setSelectedParkingSpotId("");
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите уровень" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedParking.floors.map((floor) => (
-                      <SelectItem key={floor.id} value={floor.id}>
-                        Уровень {floor.floorNumber}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* Spot Selection */}
-            {selectedParkingFloor && (
-              <div className="space-y-2">
+            {/* Spot Selection - Compact grid with floor grouping */}
+            {selectedParking && (
+              <div className="space-y-3">
                 <Label>Парковочное место</Label>
-                <Select
+                <PropertyNumberGrid
+                  groups={selectedParking.floors
+                    .sort((a, b) => a.floorNumber - b.floorNumber)
+                    .map((floor) => ({
+                      label: `Этаж ${floor.floorNumber}`,
+                      items: floor.spots
+                        .map((spot) => ({
+                          id: spot.id,
+                          number: spot.number,
+                          disabled: hasExistingClaim("parking", spot.id),
+                          disabledLabel: hasExistingClaim("parking", spot.id)
+                            ? "заявка подана"
+                            : undefined,
+                          floorNumber: floor.floorNumber,
+                        }))
+                        .sort((a, b) => parseInt(a.number) - parseInt(b.number)),
+                    }))}
                   value={selectedParkingSpotId}
                   onValueChange={setSelectedParkingSpotId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите место" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedParkingFloor.spots.map((spot) => (
-                      <SelectItem
-                        key={spot.id}
-                        value={spot.id}
-                        disabled={hasExistingClaim("parking", spot.id)}
-                      >
-                        Место {spot.number}
-                        {hasExistingClaim("parking", spot.id) &&
-                          " — заявка подана"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  itemsPerRow={5}
+                  selectedLabel={
+                    selectedParkingSpotId
+                      ? (() => {
+                          const selected = selectedParking.floors
+                            .flatMap((f) =>
+                              f.spots.map((s) => ({
+                                ...s,
+                                floor: f.floorNumber,
+                              }))
+                            )
+                            .find((s) => s.id === selectedParkingSpotId);
+                          return selected
+                            ? `Этаж ${selected.floor}, парковочное место №${selected.number}`
+                            : undefined;
+                        })()
+                      : undefined
+                  }
+                  placeholder="Выберите парковочное место"
+                />
               </div>
             )}
 
@@ -568,13 +540,8 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
             {/* Submit Button */}
             {role && (
               <div className="flex justify-end pt-4">
-                <Button
-                  onClick={handleSubmit}
-                  disabled={createClaim.isPending}
-                >
-                  {createClaim.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                <Button onClick={handleSubmit} disabled={createClaim.isPending}>
+                  {createClaim.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Отправить заявку
                 </Button>
               </div>
@@ -593,11 +560,8 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
           <CardContent>
             <div className="space-y-3">
               {existingClaims.map((claim) => (
-                <div
-                  key={claim.id}
-                  className="flex items-center gap-4 p-3 rounded-lg border"
-                >
-                  <div className="rounded-lg bg-muted p-2">
+                <div key={claim.id} className="flex items-center gap-4 rounded-lg border p-3">
+                  <div className="bg-muted rounded-lg p-2">
                     {claim.claimType === "apartment" ? (
                       <HomeIcon className="h-5 w-5" />
                     ) : claim.claimType === "parking" ? (
@@ -616,7 +580,7 @@ export function ClaimForm({ buildings, existingClaims }: ClaimFormProps) {
                     </p>
                   </div>
                   <span
-                    className={`text-xs px-2 py-1 rounded ${
+                    className={`rounded px-2 py-1 text-xs ${
                       claim.status === "approved"
                         ? "bg-green-100 text-green-700"
                         : claim.status === "rejected"

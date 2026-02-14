@@ -12,12 +12,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { auth } from "~/server/auth";
-import {
-  type AdminFeature,
-  type UserRole,
-  hasFeatureAccess,
-  isAdmin,
-} from "~/server/auth/rbac";
+import { type AdminFeature, hasFeatureAccess, isAdmin, type UserRole } from "~/server/auth/rbac";
 import { db } from "~/server/db";
 
 /**
@@ -56,8 +51,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       ...shape,
       data: {
         ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
+        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
     };
   },
@@ -124,19 +118,17 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
  *
  * @see https://trpc.io/docs/procedures
  */
-export const protectedProcedure = t.procedure
-  .use(timingMiddleware)
-  .use(({ ctx, next }) => {
-    if (!ctx.session || !ctx.session.user) {
-      throw new TRPCError({ code: "UNAUTHORIZED" });
-    }
-    return next({
-      ctx: {
-        // infers the `session` as non-nullable
-        session: { ...ctx.session, user: ctx.session.user },
-      },
-    });
+export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      // infers the `session` as non-nullable
+      session: { ...ctx.session, user: ctx.session.user },
+    },
   });
+});
 
 /**
  * Admin procedure
@@ -146,29 +138,27 @@ export const protectedProcedure = t.procedure
  *
  * @see ~/server/auth/rbac.ts for role definitions
  */
-export const adminProcedure = t.procedure
-  .use(timingMiddleware)
-  .use(({ ctx, next }) => {
-    if (!ctx.session || !ctx.session.user) {
-      throw new TRPCError({ code: "UNAUTHORIZED" });
-    }
+export const adminProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
 
-    const userRoles = (ctx.session.user.roles ?? []) as UserRole[];
+  const userRoles = ctx.session.user.roles ?? [];
 
-    if (!isAdmin(userRoles)) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Admin access required",
-      });
-    }
-
-    return next({
-      ctx: {
-        session: { ...ctx.session, user: ctx.session.user },
-        userRoles,
-      },
+  if (!isAdmin(userRoles)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Admin access required",
     });
+  }
+
+  return next({
+    ctx: {
+      session: { ...ctx.session, user: ctx.session.user },
+      userRoles,
+    },
   });
+});
 
 /**
  * Admin procedure with feature check
@@ -178,11 +168,11 @@ export const adminProcedure = t.procedure
  */
 export const adminProcedureWithFeature = (feature: AdminFeature) =>
   t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
-    if (!ctx.session || !ctx.session.user) {
+    if (!ctx.session?.user) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
 
-    const userRoles = (ctx.session.user.roles ?? []) as UserRole[];
+    const userRoles = ctx.session.user.roles ?? [];
 
     if (!hasFeatureAccess(userRoles, feature)) {
       throw new TRPCError({
@@ -205,28 +195,25 @@ export const adminProcedureWithFeature = (feature: AdminFeature) =>
  * Requires user to have SuperAdmin or Root role.
  * Use this for critical operations that should only be available to top-level admins.
  */
-export const superAdminProcedure = t.procedure
-  .use(timingMiddleware)
-  .use(({ ctx, next }) => {
-    if (!ctx.session || !ctx.session.user) {
-      throw new TRPCError({ code: "UNAUTHORIZED" });
-    }
+export const superAdminProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
 
-    const userRoles = (ctx.session.user.roles ?? []) as UserRole[];
-    const isSuperAdmin =
-      userRoles.includes("SuperAdmin") || userRoles.includes("Root");
+  const userRoles = ctx.session.user.roles ?? [];
+  const isSuperAdmin = userRoles.includes("SuperAdmin") || userRoles.includes("Root");
 
-    if (!isSuperAdmin) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "SuperAdmin access required",
-      });
-    }
-
-    return next({
-      ctx: {
-        session: { ...ctx.session, user: ctx.session.user },
-        userRoles,
-      },
+  if (!isSuperAdmin) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "SuperAdmin access required",
     });
+  }
+
+  return next({
+    ctx: {
+      session: { ...ctx.session, user: ctx.session.user },
+      userRoles,
+    },
   });
+});

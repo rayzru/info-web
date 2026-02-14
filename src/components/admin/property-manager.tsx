@@ -1,16 +1,11 @@
 "use client";
 
 import { useState } from "react";
+
 import { AlertTriangle, Building2, Car, History, XCircle } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -45,10 +40,16 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
     id: string;
     label: string;
   } | null>(null);
-  const [revocationTemplate, setRevocationTemplate] = useState<RevocationTemplate>("community_rules_violation");
+  const [revocationTemplate, setRevocationTemplate] = useState<RevocationTemplate>(
+    "community_rules_violation"
+  );
   const [customReason, setCustomReason] = useState("");
 
-  const { data: properties, isLoading, refetch } = api.admin.users.getProperties.useQuery({
+  const {
+    data: properties,
+    isLoading,
+    refetch,
+  } = api.admin.users.getProperties.useQuery({
     userId,
   });
 
@@ -103,7 +104,10 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
 
   const formatApartmentLabel = (apartment: {
     number: string;
-    floor?: { floorNumber: number; entrance?: { entranceNumber: number; building?: { number: number | null } | null } | null } | null;
+    floor?: {
+      floorNumber: number;
+      entrance?: { entranceNumber: number; building?: { number: number | null } | null } | null;
+    } | null;
   }) => {
     const building = apartment.floor?.entrance?.building?.number;
     const entrance = apartment.floor?.entrance?.entranceNumber;
@@ -113,7 +117,10 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
 
   const formatParkingLabel = (spot: {
     number: string;
-    floor?: { floorNumber: number; parking?: { building?: { number: number | null } | null } | null } | null;
+    floor?: {
+      floorNumber: number;
+      parking?: { building?: { number: number | null } | null } | null;
+    } | null;
   }) => {
     const building = spot.floor?.parking?.building?.number;
     const floor = spot.floor?.floorNumber;
@@ -125,8 +132,7 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
   }
 
   const hasProperties =
-    (properties?.apartments?.length ?? 0) > 0 ||
-    (properties?.parkingSpots?.length ?? 0) > 0;
+    (properties?.apartments?.length ?? 0) > 0 || (properties?.parkingSpots?.length ?? 0) > 0;
 
   const hasRevocationHistory =
     (revocationHistory?.apartments?.length ?? 0) > 0 ||
@@ -141,13 +147,11 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
             <Building2 className="h-5 w-5" />
             Активные привязки
           </CardTitle>
-          <CardDescription>
-            Собственность пользователя {userName ?? ""}
-          </CardDescription>
+          <CardDescription>Собственность пользователя {userName ?? ""}</CardDescription>
         </CardHeader>
         <CardContent>
           {!hasProperties ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               У пользователя нет привязанной собственности
             </p>
           ) : (
@@ -155,7 +159,7 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
               {/* Apartments */}
               {properties?.apartments && properties.apartments.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-muted-foreground">Квартиры</h4>
+                  <h4 className="text-muted-foreground text-sm font-medium">Квартиры</h4>
                   <div className="space-y-2">
                     {properties.apartments.map((binding) => (
                       <div
@@ -163,12 +167,10 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
                         className="flex items-center justify-between rounded-lg border p-3"
                       >
                         <div className="flex items-center gap-3">
-                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                          <Building2 className="text-muted-foreground h-4 w-4" />
                           <div>
-                            <p className="font-medium">
-                              {formatApartmentLabel(binding.apartment)}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="font-medium">{formatApartmentLabel(binding.apartment)}</p>
+                            <p className="text-muted-foreground text-sm">
                               Роль: {binding.role} | Статус: {binding.status}
                             </p>
                           </div>
@@ -196,7 +198,7 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
               {/* Parking Spots */}
               {properties?.parkingSpots && properties.parkingSpots.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-muted-foreground">Паркоместа</h4>
+                  <h4 className="text-muted-foreground text-sm font-medium">Паркоместа</h4>
                   <div className="space-y-2">
                     {properties.parkingSpots.map((binding) => (
                       <div
@@ -204,12 +206,10 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
                         className="flex items-center justify-between rounded-lg border p-3"
                       >
                         <div className="flex items-center gap-3">
-                          <Car className="h-4 w-4 text-muted-foreground" />
+                          <Car className="text-muted-foreground h-4 w-4" />
                           <div>
-                            <p className="font-medium">
-                              {formatParkingLabel(binding.parkingSpot)}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="font-medium">{formatParkingLabel(binding.parkingSpot)}</p>
+                            <p className="text-muted-foreground text-sm">
                               Роль: {binding.role} | Статус: {binding.status}
                             </p>
                           </div>
@@ -252,25 +252,26 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
               {/* Revoked Apartments */}
               {revocationHistory?.apartments && revocationHistory.apartments.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-muted-foreground">Квартиры</h4>
+                  <h4 className="text-muted-foreground text-sm font-medium">Квартиры</h4>
                   <div className="space-y-2">
                     {revocationHistory.apartments.map((binding, idx) => (
                       <div
                         key={`apt-${idx}`}
-                        className="rounded-lg border border-destructive/20 bg-destructive/5 p-3"
+                        className="border-destructive/20 bg-destructive/5 rounded-lg border p-3"
                       >
                         <div className="flex items-start gap-3">
-                          <AlertTriangle className="mt-0.5 h-4 w-4 text-destructive" />
+                          <AlertTriangle className="text-destructive mt-0.5 h-4 w-4" />
                           <div className="flex-1">
-                            <p className="font-medium text-destructive">
+                            <p className="text-destructive font-medium">
                               {formatApartmentLabel(binding.apartment)}
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-muted-foreground text-sm">
                               Причина: {binding.revocationReason}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-muted-foreground text-xs">
                               Отозвано: {binding.revokedAt?.toLocaleDateString("ru-RU")}
-                              {binding.revokedByUser && ` пользователем ${binding.revokedByUser.name ?? binding.revokedByUser.email}`}
+                              {binding.revokedByUser &&
+                                ` пользователем ${binding.revokedByUser.name ?? binding.revokedByUser.email}`}
                             </p>
                           </div>
                         </div>
@@ -283,25 +284,26 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
               {/* Revoked Parking Spots */}
               {revocationHistory?.parkingSpots && revocationHistory.parkingSpots.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-muted-foreground">Паркоместа</h4>
+                  <h4 className="text-muted-foreground text-sm font-medium">Паркоместа</h4>
                   <div className="space-y-2">
                     {revocationHistory.parkingSpots.map((binding, idx) => (
                       <div
                         key={`park-${idx}`}
-                        className="rounded-lg border border-destructive/20 bg-destructive/5 p-3"
+                        className="border-destructive/20 bg-destructive/5 rounded-lg border p-3"
                       >
                         <div className="flex items-start gap-3">
-                          <AlertTriangle className="mt-0.5 h-4 w-4 text-destructive" />
+                          <AlertTriangle className="text-destructive mt-0.5 h-4 w-4" />
                           <div className="flex-1">
-                            <p className="font-medium text-destructive">
+                            <p className="text-destructive font-medium">
                               {formatParkingLabel(binding.parkingSpot)}
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-muted-foreground text-sm">
                               Причина: {binding.revocationReason}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-muted-foreground text-xs">
                               Отозвано: {binding.revokedAt?.toLocaleDateString("ru-RU")}
-                              {binding.revokedByUser && ` пользователем ${binding.revokedByUser.name ?? binding.revokedByUser.email}`}
+                              {binding.revokedByUser &&
+                                ` пользователем ${binding.revokedByUser.name ?? binding.revokedByUser.email}`}
                             </p>
                           </div>
                         </div>
@@ -319,7 +321,7 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
       <Dialog open={revokeDialogOpen} onOpenChange={setRevokeDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
+            <DialogTitle className="text-destructive flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />
               Отзыв прав на собственность
             </DialogTitle>
@@ -340,7 +342,7 @@ export function PropertyManager({ userId, userName }: PropertyManagerProps) {
                 {Object.entries(REVOCATION_TEMPLATES).map(([value, label]) => (
                   <div key={value} className="flex items-center space-x-2">
                     <RadioGroupItem value={value} id={value} />
-                    <Label htmlFor={value} className="font-normal cursor-pointer">
+                    <Label htmlFor={value} className="cursor-pointer font-normal">
                       {label}
                     </Label>
                   </div>

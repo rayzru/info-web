@@ -1,9 +1,9 @@
-import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Building2 } from "lucide-react";
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 
-import { Button } from "~/components/ui/button";
 import { PropertyManager } from "~/components/admin/property-manager";
+import { Button } from "~/components/ui/button";
 import { auth } from "~/server/auth";
 import { hasFeatureAccess, type UserRole } from "~/server/auth/rbac";
 import { api } from "~/trpc/server";
@@ -20,7 +20,7 @@ export default async function UserPropertiesPage({ params }: Props) {
     redirect("/login");
   }
 
-  const currentUserRoles = (session.user.roles ?? []) as UserRole[];
+  const currentUserRoles = session.user.roles ?? [];
 
   // Check permission
   if (!hasFeatureAccess(currentUserRoles, "users:roles")) {
@@ -45,12 +45,12 @@ export default async function UserPropertiesPage({ params }: Props) {
           </Button>
         </Link>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-            <Building2 className="h-5 w-5 text-primary-foreground" />
+          <div className="bg-primary flex h-10 w-10 items-center justify-center rounded-lg">
+            <Building2 className="text-primary-foreground h-5 w-5" />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Управление собственностью</h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {user.name ?? "Без имени"} ({user.email})
             </p>
           </div>

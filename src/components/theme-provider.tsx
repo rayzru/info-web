@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+
 import { useThemeStore } from "~/stores/theme-store";
 
 export function ThemeProvider({

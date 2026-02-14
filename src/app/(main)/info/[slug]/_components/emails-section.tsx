@@ -1,6 +1,7 @@
 import { Mail } from "lucide-react";
-import type { Contact } from "./types";
+
 import { SectionCard } from "./section-card";
+import type { Contact } from "./types";
 
 type EmailsSectionProps = {
   contacts: Contact[];
@@ -16,18 +17,16 @@ export function EmailsSection({ contacts }: EmailsSectionProps) {
           <a
             key={contact.id}
             href={`mailto:${contact.value}`}
-            className="group -mx-2 flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-muted"
+            className="hover:bg-muted group -mx-2 flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
-              <Mail className="h-4 w-4 text-primary" />
+            <div className="bg-primary/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
+              <Mail className="text-primary h-4 w-4" />
             </div>
             <div>
-              <span className="font-medium transition-colors group-hover:text-primary">
+              <span className="group-hover:text-primary font-medium transition-colors">
                 {contact.value}
               </span>
-              {contact.label && (
-                <p className="text-sm text-muted-foreground">{contact.label}</p>
-              )}
+              {contact.label && <p className="text-muted-foreground text-sm">{contact.label}</p>}
             </div>
           </a>
         ))}

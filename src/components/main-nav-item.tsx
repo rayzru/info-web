@@ -13,11 +13,7 @@ export function MainNavItem({
 }>) {
   return (
     <>
-      <Button
-        variant="ghost"
-        asChild
-        className="inline-flex rounded-full md:hidden"
-      >
+      <Button variant="ghost" asChild className="inline-flex rounded-full md:hidden">
         <Link
           href={link}
           className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"

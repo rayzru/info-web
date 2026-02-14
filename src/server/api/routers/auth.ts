@@ -3,10 +3,7 @@ import crypto from "crypto";
 import { and, eq, gt } from "drizzle-orm";
 import { z } from "zod";
 
-import {
-  passwordSchema,
-  registerInputSchema,
-} from "~/lib/validations/auth";
+import { passwordSchema, registerInputSchema } from "~/lib/validations/auth";
 import {
   accounts,
   emailVerificationTokens,
@@ -14,37 +11,38 @@ import {
   userRoles,
   users,
 } from "~/server/db/schema";
-import { getProviderDisplayName,notifyAsync } from "~/server/notifications";
+import { getProviderDisplayName, notifyAsync } from "~/server/notifications";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const authRouter = createTRPCRouter({
   // Register new user with email and password
-  register: publicProcedure
-    .input(registerInputSchema)
-    .mutation(async ({ ctx, input }) => {
-      // Check if user already exists
-      const existingUser = await ctx.db.query.users.findFirst({
-        where: eq(users.email, input.email.toLowerCase()),
-      });
+  register: publicProcedure.input(registerInputSchema).mutation(async ({ ctx, input }) => {
+    // Check if user already exists
+    const existingUser = await ctx.db.query.users.findFirst({
+      where: eq(users.email, input.email.toLowerCase()),
+    });
 
-      if (existingUser) {
-        if (existingUser.passwordHash) {
-          throw new Error("Пользователь с таким email уже зарегистрирован");
-        }
-        // User exists via OAuth but has no password - allow setting password
-        const passwordHash = await bcrypt.hash(input.password, 12);
-        await ctx.db
-          .update(users)
-          .set({ passwordHash, name: input.name })
-          .where(eq(users.id, existingUser.id));
-
-        return { success: true, message: "Пароль установлен для существующего аккаунта" };
+    if (existingUser) {
+      if (existingUser.passwordHash) {
+        throw new Error("Пользователь с таким email уже зарегистрирован");
       }
-
-      // Create new user
+      // User exists via OAuth but has no password - allow setting password
       const passwordHash = await bcrypt.hash(input.password, 12);
-      const [newUser] = await ctx.db
+      await ctx.db
+        .update(users)
+        .set({ passwordHash, name: input.name })
+        .where(eq(users.id, existingUser.id));
+
+      return { success: true, message: "Пароль установлен для существующего аккаунта" };
+    }
+
+    // Create new user with transaction to ensure atomicity
+    const passwordHash = await bcrypt.hash(input.password, 12);
+
+    const result = await ctx.db.transaction(async (tx) => {
+      // Create user
+      const [newUser] = await tx
         .insert(users)
         .values({
           email: input.email.toLowerCase(),
@@ -54,35 +52,41 @@ export const authRouter = createTRPCRouter({
         })
         .returning();
 
-      // Assign Guest role by default
-      if (newUser) {
-        await ctx.db.insert(userRoles).values({
-          userId: newUser.id,
-          role: "Guest",
-        });
-
-        // Generate email verification token
-        const verificationToken = crypto.randomBytes(32).toString("hex");
-        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-        await ctx.db.insert(emailVerificationTokens).values({
-          userId: newUser.id,
-          token: verificationToken,
-          expires,
-        });
-
-        // Send verification email
-        notifyAsync({
-          type: "email.verification_requested",
-          userId: newUser.id,
-          email: input.email.toLowerCase(),
-          name: input.name,
-          verificationToken,
-        });
+      if (!newUser) {
+        throw new Error("Не удалось создать пользователя");
       }
 
-      return { success: true, message: "На вашу почту отправлено письмо для подтверждения email." };
-    }),
+      // Assign Guest role by default
+      await tx.insert(userRoles).values({
+        userId: newUser.id,
+        role: "Guest",
+      });
+
+      // Generate email verification token
+      const verificationToken = crypto.randomBytes(32).toString("hex");
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      await tx.insert(emailVerificationTokens).values({
+        userId: newUser.id,
+        token: verificationToken,
+        expires,
+      });
+
+      return { newUser, verificationToken };
+    });
+
+    // Send verification email AFTER transaction commits
+    // This way if email fails, user is still created with role
+    notifyAsync({
+      type: "email.verification_requested",
+      userId: result.newUser.id,
+      email: input.email.toLowerCase(),
+      name: input.name,
+      verificationToken: result.verificationToken,
+    });
+
+    return { success: true, message: "На вашу почту отправлено письмо для подтверждения email." };
+  }),
 
   // Request password reset
   requestPasswordReset: publicProcedure
@@ -94,7 +98,10 @@ export const authRouter = createTRPCRouter({
 
       // Always return success to prevent email enumeration
       if (!user || user.isDeleted) {
-        return { success: true, message: "Если email существует, на него отправлена ссылка для сброса пароля" };
+        return {
+          success: true,
+          message: "Если email существует, на него отправлена ссылка для сброса пароля",
+        };
       }
 
       // Generate token
@@ -102,9 +109,7 @@ export const authRouter = createTRPCRouter({
       const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
       // Delete any existing tokens for this user
-      await ctx.db
-        .delete(passwordResetTokens)
-        .where(eq(passwordResetTokens.userId, user.id));
+      await ctx.db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, user.id));
 
       // Create new token
       await ctx.db.insert(passwordResetTokens).values({
@@ -122,7 +127,10 @@ export const authRouter = createTRPCRouter({
         resetToken: token,
       });
 
-      return { success: true, message: "Если email существует, на него отправлена ссылка для сброса пароля" };
+      return {
+        success: true,
+        message: "Если email существует, на него отправлена ссылка для сброса пароля",
+      };
     }),
 
   // Reset password with token
@@ -210,10 +218,7 @@ export const authRouter = createTRPCRouter({
       const passwordHash = await bcrypt.hash(input.newPassword, 12);
 
       // Update password
-      await ctx.db
-        .update(users)
-        .set({ passwordHash })
-        .where(eq(users.id, user.id));
+      await ctx.db.update(users).set({ passwordHash }).where(eq(users.id, user.id));
 
       // Send password changed notification
       notifyAsync({
@@ -265,17 +270,16 @@ export const authRouter = createTRPCRouter({
       const totalAuthMethods = linkedAccounts.length + (hasPassword ? 1 : 0);
 
       if (totalAuthMethods <= 1) {
-        throw new Error("Нельзя отвязать единственный способ входа. Сначала добавьте другой способ авторизации.");
+        throw new Error(
+          "Нельзя отвязать единственный способ входа. Сначала добавьте другой способ авторизации."
+        );
       }
 
       // Delete the account link
       await ctx.db
         .delete(accounts)
         .where(
-          and(
-            eq(accounts.userId, ctx.session.user.id),
-            eq(accounts.provider, input.provider)
-          )
+          and(eq(accounts.userId, ctx.session.user.id), eq(accounts.provider, input.provider))
         );
 
       // Send account unlinked notification
@@ -332,7 +336,10 @@ export const authRouter = createTRPCRouter({
         });
       }
 
-      return { success: true, message: "Email успешно подтверждён! Теперь вы можете войти в аккаунт." };
+      return {
+        success: true,
+        message: "Email успешно подтверждён! Теперь вы можете войти в аккаунт.",
+      };
     }),
 
   // Resend verification email
@@ -345,12 +352,18 @@ export const authRouter = createTRPCRouter({
 
       // Always return success to prevent email enumeration
       if (!user || user.isDeleted || user.emailVerified) {
-        return { success: true, message: "Если email существует и не подтверждён, на него будет отправлено письмо" };
+        return {
+          success: true,
+          message: "Если email существует и не подтверждён, на него будет отправлено письмо",
+        };
       }
 
       // Check if user registered via password (has passwordHash)
       if (!user.passwordHash) {
-        return { success: true, message: "Если email существует и не подтверждён, на него будет отправлено письмо" };
+        return {
+          success: true,
+          message: "Если email существует и не подтверждён, на него будет отправлено письмо",
+        };
       }
 
       // Delete any existing tokens for this user
@@ -377,6 +390,9 @@ export const authRouter = createTRPCRouter({
         verificationToken,
       });
 
-      return { success: true, message: "Если email существует и не подтверждён, на него будет отправлено письмо" };
+      return {
+        success: true,
+        message: "Если email существует и не подтверждён, на него будет отправлено письмо",
+      };
     }),
 });

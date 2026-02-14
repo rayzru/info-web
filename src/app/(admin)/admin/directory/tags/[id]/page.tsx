@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+
 import { ChevronLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -128,9 +129,7 @@ export default function EditTagPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-semibold">Редактирование категории</h1>
-          <p className="text-muted-foreground mt-1">
-            /{tagData.slug}
-          </p>
+          <p className="text-muted-foreground mt-1">/{tagData.slug}</p>
         </div>
       </div>
 
@@ -177,9 +176,7 @@ export default function EditTagPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Позволяет создать иерархию категорий
-              </p>
+              <p className="text-muted-foreground text-xs">Позволяет создать иерархию категорий</p>
             </div>
 
             <div className="space-y-2">
@@ -189,7 +186,7 @@ export default function EditTagPage() {
                 onChange={(e) => setSynonyms(e.target.value)}
                 placeholder="экстренка, скорая, 112"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Перечислите через запятую альтернативные названия для поиска
               </p>
             </div>
@@ -198,9 +195,7 @@ export default function EditTagPage() {
 
         <div className="flex gap-4">
           <Button type="submit" disabled={updateMutation.isPending}>
-            {updateMutation.isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Сохранить изменения
           </Button>
           <Link href="/admin/directory?tab=tags">

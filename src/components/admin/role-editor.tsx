@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+
 import { Check, Loader2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
@@ -20,7 +21,11 @@ const ROLE_GROUPS: {
     description: "Административный доступ к системе",
     roles: [
       { role: "Root", label: "Root", description: "Полный доступ ко всем функциям системы" },
-      { role: "SuperAdmin", label: "SuperAdmin", description: "Административный доступ, кроме критических функций" },
+      {
+        role: "SuperAdmin",
+        label: "SuperAdmin",
+        description: "Административный доступ, кроме критических функций",
+      },
       { role: "Admin", label: "Admin", description: "Управление пользователями и контентом" },
     ],
   },
@@ -28,9 +33,21 @@ const ROLE_GROUPS: {
     title: "Представители УК",
     description: "Организационные роли для взаимодействия с собственниками и жителями",
     roles: [
-      { role: "BuildingChairman", label: "Председатель дома", description: "Управление своим зданием" },
-      { role: "ComplexChairman", label: "Председатель комплекса", description: "Управление комплексом" },
-      { role: "ComplexRepresenative", label: "Представитель комплекса", description: "Представительские функции" },
+      {
+        role: "BuildingChairman",
+        label: "Председатель дома",
+        description: "Управление своим зданием",
+      },
+      {
+        role: "ComplexChairman",
+        label: "Председатель комплекса",
+        description: "Управление комплексом",
+      },
+      {
+        role: "ComplexRepresenative",
+        label: "Представитель комплекса",
+        description: "Представительские функции",
+      },
     ],
   },
   {
@@ -38,26 +55,58 @@ const ROLE_GROUPS: {
     description: "Сотрудники для работы с контентом",
     roles: [
       { role: "Editor", label: "Редактор", description: "Редактирование контента" },
-      { role: "Moderator", label: "Модератор", description: "Модерация пользовательского контента" },
+      {
+        role: "Moderator",
+        label: "Модератор",
+        description: "Модерация пользовательского контента",
+      },
     ],
   },
   {
     title: "Жители и собственники",
     description: "Роли жителей комплекса",
     roles: [
-      { role: "ApartmentOwner", label: "Владелец квартиры", description: "Владелец квартиры в комплексе" },
-      { role: "ApartmentResident", label: "Житель квартиры", description: "Проживающий в квартире" },
-      { role: "ParkingOwner", label: "Владелец парковки", description: "Владелец парковочного места" },
-      { role: "ParkingResident", label: "Пользователь парковки", description: "Пользователь парковочного места" },
-      { role: "StoreOwner", label: "Владелец магазина", description: "Владелец коммерческого помещения" },
-      { role: "StoreRepresenative", label: "Представитель магазина", description: "Сотрудник коммерческого помещения" },
+      {
+        role: "ApartmentOwner",
+        label: "Владелец квартиры",
+        description: "Владелец квартиры в комплексе",
+      },
+      {
+        role: "ApartmentResident",
+        label: "Житель квартиры",
+        description: "Проживающий в квартире",
+      },
+      {
+        role: "ParkingOwner",
+        label: "Владелец парковки",
+        description: "Владелец парковочного места",
+      },
+      {
+        role: "ParkingResident",
+        label: "Пользователь парковки",
+        description: "Пользователь парковочного места",
+      },
+      {
+        role: "StoreOwner",
+        label: "Владелец магазина",
+        description: "Владелец коммерческого помещения",
+      },
+      {
+        role: "StoreRepresenative",
+        label: "Представитель магазина",
+        description: "Сотрудник коммерческого помещения",
+      },
     ],
   },
   {
     title: "Гостевой доступ",
     description: "Роль по умолчанию",
     roles: [
-      { role: "Guest", label: "Гость", description: "Ограниченный доступ для незарегистрированных действий" },
+      {
+        role: "Guest",
+        label: "Гость",
+        description: "Ограниченный доступ для незарегистрированных действий",
+      },
     ],
   },
 ];
@@ -69,16 +118,9 @@ interface RoleEditorProps {
   currentUserRoles: UserRole[];
 }
 
-export function RoleEditor({
-  userId,
-  userName,
-  currentRoles,
-  currentUserRoles,
-}: RoleEditorProps) {
+export function RoleEditor({ userId, userName, currentRoles, currentUserRoles }: RoleEditorProps) {
   const router = useRouter();
-  const [selectedRoles, setSelectedRoles] = useState<Set<UserRole>>(
-    new Set(currentRoles),
-  );
+  const [selectedRoles, setSelectedRoles] = useState<Set<UserRole>>(new Set(currentRoles));
   const [isSaving, setIsSaving] = useState(false);
 
   const updateRoles = api.admin.users.updateRoles.useMutation({
@@ -133,10 +175,8 @@ export function RoleEditor({
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold">
-          Роли пользователя: {userName ?? "Без имени"}
-        </h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-lg font-semibold">Роли пользователя: {userName ?? "Без имени"}</h2>
+        <p className="text-muted-foreground text-sm">
           Выберите роли, которые будут назначены пользователю
         </p>
       </div>
@@ -150,7 +190,7 @@ export function RoleEditor({
             {/* Group Header */}
             <div className="mb-3">
               <h3 className="font-semibold">{group.title}</h3>
-              <p className="text-sm text-muted-foreground">{group.description}</p>
+              <p className="text-muted-foreground text-sm">{group.description}</p>
             </div>
 
             {/* Group Roles */}
@@ -182,7 +222,7 @@ export function RoleEditor({
                     </div>
                     <div className="flex-1">
                       <div className="font-medium">{label}</div>
-                      <div className="text-xs text-muted-foreground">{description}</div>
+                      <div className="text-muted-foreground text-xs">{description}</div>
                     </div>
                   </button>
                 );
@@ -194,15 +234,9 @@ export function RoleEditor({
 
       {/* Actions */}
       <div className="flex items-center justify-between border-t pt-4">
-        <div className="text-sm text-muted-foreground">
-          Выбрано ролей: {selectedRoles.size}
-        </div>
+        <div className="text-muted-foreground text-sm">Выбрано ролей: {selectedRoles.size}</div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => router.push("/admin/users")}
-            disabled={isSaving}
-          >
+          <Button variant="outline" onClick={() => router.push("/admin/users")} disabled={isSaving}>
             <X className="mr-2 h-4 w-4" />
             Отмена
           </Button>

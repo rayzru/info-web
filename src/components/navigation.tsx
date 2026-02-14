@@ -1,15 +1,15 @@
 import Link from "next/link";
 
-import { auth } from "~/server/auth";
-import { isAdmin, type UserRole } from "~/server/auth/rbac";
 import { getRankConfig } from "~/lib/ranks";
 import { cn } from "~/lib/utils";
+import { auth } from "~/server/auth";
+import { isAdmin, type UserRole } from "~/server/auth/rbac";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { NavLogo } from "./nav-logo";
 import { MobileNav } from "./mobile-nav";
 import { NavLinks } from "./nav-links";
+import { NavLogo } from "./nav-logo";
 
 // Pages where we don't show the login button (user is already on auth flow)
 const AUTH_PAGES = ["/login", "/register", "/forgot-password", "/reset-password"];
@@ -20,7 +20,7 @@ interface NavigationProps {
 
 export async function Navigation({ pathname = "" }: NavigationProps) {
   const session = await auth();
-  const userRoles = (session?.user?.roles ?? []) as UserRole[];
+  const userRoles = session?.user?.roles ?? [];
   const hasAdminAccess = isAdmin(userRoles);
   const rankConfig = getRankConfig(userRoles);
 
@@ -45,13 +45,15 @@ export async function Navigation({ pathname = "" }: NavigationProps) {
         {session && (
           <>
             {/* Desktop: user menu with role-colored ring, auto width up to sidebar width */}
-            <div className="hidden xl:flex items-center justify-end max-w-64">
+            <div className="hidden max-w-64 items-center justify-end xl:flex">
               <Link href="/my" passHref data-testid="nav-user-cabinet">
                 <Button variant="ghost" size="sm" className="justify-start">
-                  <Avatar className={cn(
-                    "h-5 w-5 shrink-0 ring-2 ring-offset-1 ring-offset-background",
-                    rankConfig.ringColor
-                  )}>
+                  <Avatar
+                    className={cn(
+                      "ring-offset-background h-5 w-5 shrink-0 ring-2 ring-offset-1",
+                      rankConfig.ringColor
+                    )}
+                  >
                     <AvatarImage src={session.user.image ?? undefined} />
                     <AvatarFallback className="text-[10px]">
                       {session.user.name?.slice(0, 2)}
@@ -65,10 +67,12 @@ export async function Navigation({ pathname = "" }: NavigationProps) {
             {/* Mobile/Tablet: only avatar with role ring */}
             <Link href="/my" passHref data-testid="nav-user-cabinet-mobile" className="xl:hidden">
               <Button variant="ghost" size="icon">
-                <Avatar className={cn(
-                  "h-6 w-6 ring-2 ring-offset-1 ring-offset-background",
-                  rankConfig.ringColor
-                )}>
+                <Avatar
+                  className={cn(
+                    "ring-offset-background h-6 w-6 ring-2 ring-offset-1",
+                    rankConfig.ringColor
+                  )}
+                >
                   <AvatarImage src={session.user.image ?? undefined} />
                   <AvatarFallback className="text-xs">
                     {session.user.name?.slice(0, 2)}
@@ -80,10 +84,7 @@ export async function Navigation({ pathname = "" }: NavigationProps) {
         )}
 
         {/* Mobile: burger menu */}
-        <MobileNav
-          user={session?.user}
-          isAdmin={hasAdminAccess}
-        />
+        <MobileNav user={session?.user} isAdmin={hasAdminAccess} />
       </div>
     </div>
   );

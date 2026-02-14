@@ -1,32 +1,29 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
+
 import {
+  AlertCircle,
   FileText,
   Image as ImageIcon,
+  Info,
   Loader2,
+  ShieldCheck,
   Trash2,
   Upload,
   X,
-  AlertCircle,
-  Info,
-  ShieldCheck,
 } from "lucide-react";
 
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "~/components/ui/alert";
 import { Card, CardContent } from "~/components/ui/card";
 import { Progress } from "~/components/ui/progress";
-import { cn } from "~/lib/utils";
 import {
   MAX_DOCUMENT_SIZE,
   MAX_DOCUMENTS_PER_CLAIM,
   SUPPORTED_DOCUMENT_FORMATS,
 } from "~/lib/upload/document-constants";
+import { cn } from "~/lib/utils";
 
 // ============================================================================
 // Types
@@ -74,9 +71,9 @@ function DocumentPreview({
   const isImage = document.mimeType.startsWith("image/");
 
   return (
-    <div className="group relative flex items-center gap-3 rounded-lg border bg-muted/30 p-3 overflow-hidden">
+    <div className="bg-muted/30 group relative flex items-center gap-3 overflow-hidden rounded-lg border p-3">
       {/* Thumbnail or Icon */}
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted">
+      <div className="bg-muted flex h-12 w-12 shrink-0 items-center justify-center rounded-md">
         {isImage && document.thumbnailUrl ? (
           <img
             src={document.thumbnailUrl}
@@ -93,7 +90,7 @@ function DocumentPreview({
       {/* Info */}
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{document.fileName}</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           {formatFileSize(parseInt(document.fileSize))}
         </p>
       </div>
@@ -107,7 +104,7 @@ function DocumentPreview({
           className="h-8 w-8 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
           onClick={onRemove}
         >
-          <Trash2 className="h-4 w-4 text-destructive" />
+          <Trash2 className="text-destructive h-4 w-4" />
         </Button>
       )}
     </div>
@@ -272,21 +269,20 @@ export function ClaimDocumentUploader({
         <AlertTitle>Зачем нужны документы?</AlertTitle>
         <AlertDescription className="space-y-2 text-sm">
           <p>
-            Для подтверждения права собственности или проживания нам необходимы
-            документы. Это защищает вас и других жильцов от мошенничества.
+            Для подтверждения права собственности или проживания нам необходимы документы. Это
+            защищает вас и других жильцов от мошенничества.
           </p>
           <p className="font-medium">Какие документы подойдут:</p>
-          <ul className="list-inside list-disc space-y-1 text-muted-foreground">
+          <ul className="text-muted-foreground list-inside list-disc space-y-1">
             <li>Выписка из ЕГРН (подтверждает право собственности)</li>
             <li>Договор купли-продажи или дарения</li>
             <li>Договор аренды (для проживающих)</li>
             <li>Страница паспорта с пропиской</li>
           </ul>
-          <p className="mt-2 text-xs text-muted-foreground">
-            <strong>Конфиденциальность:</strong> Документы используются только для
-            проверки заявки и автоматически удаляются после её рассмотрения.
-            Если у вас есть сомнения, вы можете показать документы лично
-            администратору.
+          <p className="text-muted-foreground mt-2 text-xs">
+            <strong>Конфиденциальность:</strong> Документы используются только для проверки заявки и
+            автоматически удаляются после её рассмотрения. Если у вас есть сомнения, вы можете
+            показать документы лично администратору.
           </p>
         </AlertDescription>
       </Alert>
@@ -323,19 +319,19 @@ export function ClaimDocumentUploader({
 
           {isUploading ? (
             <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="text-primary h-8 w-8 animate-spin" />
               <div className="w-48">
                 <Progress value={uploadProgress} />
               </div>
-              <p className="text-sm text-muted-foreground">Загрузка...</p>
+              <p className="text-muted-foreground text-sm">Загрузка...</p>
             </div>
           ) : (
             <>
-              <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
-              <p className="text-center text-sm text-muted-foreground">
+              <Upload className="text-muted-foreground mb-2 h-8 w-8" />
+              <p className="text-muted-foreground text-center text-sm">
                 Перетащите файл или нажмите для выбора
               </p>
-              <p className="mt-1 text-center text-xs text-muted-foreground">
+              <p className="text-muted-foreground mt-1 text-center text-xs">
                 PDF, JPEG, PNG до 5MB
               </p>
             </>
@@ -374,7 +370,7 @@ export function ClaimDocumentUploader({
 
       {/* Limit reached message */}
       {!canAddMore && (
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-center text-sm">
           Достигнут лимит документов ({maxDocuments})
         </p>
       )}

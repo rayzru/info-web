@@ -45,8 +45,8 @@ export function StatusBadge<T extends string>({
       className={cn(
         "border-0 font-normal",
         colorClasses[statusConfig.color],
-        size === "sm" && "text-xs px-2 py-0.5",
-        size === "md" && "text-sm px-2.5 py-1",
+        size === "sm" && "px-2 py-0.5 text-xs",
+        size === "md" && "px-2.5 py-1 text-sm",
         className
       )}
     >

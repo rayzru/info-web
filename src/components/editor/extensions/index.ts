@@ -1,3 +1,7 @@
+export { createMention, type CreateMentionOptions, type MentionSuggestion } from "./mention";
 export { ReferenceCard } from "./reference-card";
-export { createMention, type MentionSuggestion, type CreateMentionOptions } from "./mention";
-export { createStructureMention, type StructureSuggestion, type CreateStructureMentionOptions } from "./structure-mention";
+export {
+  createStructureMention,
+  type CreateStructureMentionOptions,
+  type StructureSuggestion,
+} from "./structure-mention";

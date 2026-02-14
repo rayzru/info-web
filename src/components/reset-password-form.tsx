@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -18,10 +19,7 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { cn } from "~/lib/utils";
-import {
-  resetPasswordSchema,
-  type ResetPasswordFormData,
-} from "~/lib/validations/auth";
+import { type ResetPasswordFormData, resetPasswordSchema } from "~/lib/validations/auth";
 import { api } from "~/trpc/react";
 
 interface ResetPasswordFormProps extends React.ComponentPropsWithoutRef<"div"> {
@@ -69,7 +67,7 @@ export function ResetPasswordForm({
             <CheckCircle2 className="h-6 w-6 text-green-600" />
           </div>
           <h1 className="text-lg font-semibold">Пароль изменён</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Ваш пароль успешно изменён. Теперь вы можете войти с новым паролем.
           </p>
         </div>
@@ -85,7 +83,7 @@ export function ResetPasswordForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col gap-2 text-center">
         <h1 className="text-lg font-semibold">Новый пароль</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Придумайте надёжный пароль для вашего аккаунта
         </p>
       </div>
@@ -133,9 +131,7 @@ export function ResetPasswordForm({
           />
 
           {resetMutation.error && (
-            <p className="text-sm text-destructive">
-              {resetMutation.error.message}
-            </p>
+            <p className="text-destructive text-sm">{resetMutation.error.message}</p>
           )}
 
           <Button
@@ -150,10 +146,7 @@ export function ResetPasswordForm({
       </Form>
 
       <div className="text-center text-sm">
-        <Link
-          href="/login"
-          className="text-muted-foreground hover:text-foreground hover:underline"
-        >
+        <Link href="/login" className="text-muted-foreground hover:text-foreground hover:underline">
           <ArrowLeft className="mr-1 inline h-3 w-3" />
           Вернуться к входу
         </Link>

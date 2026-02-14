@@ -10,13 +10,7 @@ const ButtonGroup = React.forwardRef<
   React.ComponentRef<typeof RadioGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
 >(({ className, ...props }, ref) => {
-  return (
-    <RadioGroupPrimitive.Root
-      className={cn("flex gap-5", className)}
-      {...props}
-      ref={ref}
-    />
-  );
+  return <RadioGroupPrimitive.Root className={cn("flex gap-5", className)} {...props} ref={ref} />;
 });
 ButtonGroup.displayName = RadioGroupPrimitive.Root.displayName;
 
@@ -32,7 +26,7 @@ const ButtonGroupItem = React.forwardRef<
       ref={ref}
       className={cn(
         `focus-visible:ring-ring data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground rounded-md border text-center focus:outline-none focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`,
-        className,
+        className
       )}
       {...props}
     >

@@ -1,1 +1,1 @@
-export { RichRenderer, RichInlineRenderer, RichPreviewRenderer } from "./rich-renderer";
+export { RichInlineRenderer, RichPreviewRenderer, RichRenderer } from "./rich-renderer";

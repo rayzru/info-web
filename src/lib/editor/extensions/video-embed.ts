@@ -1,4 +1,4 @@
-import { Node, mergeAttributes } from "@tiptap/core";
+import { mergeAttributes, Node } from "@tiptap/core";
 
 /**
  * Supported video platforms configuration
@@ -27,15 +27,11 @@ const VIDEO_PLATFORMS: VideoPlatform[] = [
       }
       return null;
     },
-    getEmbedUrl: (videoId: string) =>
-      `https://www.youtube.com/embed/${videoId}`,
+    getEmbedUrl: (videoId: string) => `https://www.youtube.com/embed/${videoId}`,
   },
   {
     name: "rutube",
-    patterns: [
-      /rutube\.ru\/video\/([a-zA-Z0-9]+)/,
-      /rutube\.ru\/play\/embed\/([a-zA-Z0-9]+)/,
-    ],
+    patterns: [/rutube\.ru\/video\/([a-zA-Z0-9]+)/, /rutube\.ru\/play\/embed\/([a-zA-Z0-9]+)/],
     getVideoId: (url: string) => {
       for (const pattern of VIDEO_PLATFORMS[1]!.patterns) {
         const match = url.match(pattern);
@@ -43,23 +39,16 @@ const VIDEO_PLATFORMS: VideoPlatform[] = [
       }
       return null;
     },
-    getEmbedUrl: (videoId: string) =>
-      `https://rutube.ru/play/embed/${videoId}`,
+    getEmbedUrl: (videoId: string) => `https://rutube.ru/play/embed/${videoId}`,
   },
   {
     name: "vk",
-    patterns: [
-      /vk\.com\/video(-?\d+)_(\d+)/,
-      /vk\.com\/video_ext\.php\?oid=(-?\d+)&id=(\d+)/,
-    ],
+    patterns: [/vk\.com\/video(-?\d+)_(\d+)/, /vk\.com\/video_ext\.php\?oid=(-?\d+)&id=(\d+)/],
     getVideoId: (url: string) => {
-      const match = url.match(/vk\.com\/video(-?\d+)_(\d+)/);
+      const match = /vk\.com\/video(-?\d+)_(\d+)/.exec(url);
       if (match?.[1] && match?.[2]) return `${match[1]}_${match[2]}`;
-      const extMatch = url.match(
-        /vk\.com\/video_ext\.php\?oid=(-?\d+)&id=(\d+)/
-      );
-      if (extMatch?.[1] && extMatch?.[2])
-        return `${extMatch[1]}_${extMatch[2]}`;
+      const extMatch = /vk\.com\/video_ext\.php\?oid=(-?\d+)&id=(\d+)/.exec(url);
+      if (extMatch?.[1] && extMatch?.[2]) return `${extMatch[1]}_${extMatch[2]}`;
       return null;
     },
     getEmbedUrl: (videoId: string) => {
@@ -81,8 +70,7 @@ const VIDEO_PLATFORMS: VideoPlatform[] = [
       }
       return null;
     },
-    getEmbedUrl: (videoId: string) =>
-      `https://frontend.vh.yandex.ru/player/${videoId}`,
+    getEmbedUrl: (videoId: string) => `https://frontend.vh.yandex.ru/player/${videoId}`,
   },
 ];
 
@@ -206,8 +194,7 @@ export const VideoEmbed = Node.create<VideoEmbedOptions>({
           src,
           width: "100%",
           height: "100%",
-          style:
-            "position: absolute; top: 0; left: 0; width: 100%; height: 100%;",
+          style: "position: absolute; top: 0; left: 0; width: 100%; height: 100%;",
           frameborder: "0",
           allowfullscreen: "true",
           allow:

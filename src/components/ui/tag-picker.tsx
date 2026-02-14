@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { X, ChevronsUpDown, Check } from "lucide-react";
+
+import { Check, ChevronsUpDown, X } from "lucide-react";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -13,11 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "~/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { cn } from "~/lib/utils";
 
 export type TagOption = {
@@ -136,31 +133,25 @@ export function TagPicker({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "min-h-9 h-auto w-full justify-between font-normal",
+            "h-auto min-h-9 w-full justify-between font-normal",
             !selected.length && "text-muted-foreground",
             className
           )}
         >
-          <div className="flex flex-wrap gap-1 flex-1">
+          <div className="flex flex-1 flex-wrap gap-1">
             {selectedTags.length === 0 ? (
               <span>{placeholder}</span>
             ) : (
               <>
                 {selectedTags.slice(0, maxDisplay).map((tag) => (
-                  <Badge
-                    key={tag.id}
-                    variant="secondary"
-                    className="text-xs py-0 h-5 pr-1"
-                  >
+                  <Badge key={tag.id} variant="secondary" className="h-5 py-0 pr-1 text-xs">
                     {tag.name}
                     {tag.subtitle && (
-                      <span className="text-muted-foreground ml-1">
-                        {tag.subtitle}
-                      </span>
+                      <span className="text-muted-foreground ml-1">{tag.subtitle}</span>
                     )}
                     <button
                       type="button"
-                      className="ml-1 rounded-full outline-none hover:bg-secondary-foreground/20"
+                      className="hover:bg-secondary-foreground/20 ml-1 rounded-full outline-none"
                       onClick={(e) => handleRemove(tag.id, e)}
                     >
                       <X className="h-3 w-3" />
@@ -168,7 +159,7 @@ export function TagPicker({
                   </Badge>
                 ))}
                 {selectedTags.length > maxDisplay && (
-                  <Badge variant="secondary" className="text-xs py-0 h-5">
+                  <Badge variant="secondary" className="h-5 py-0 text-xs">
                     +{selectedTags.length - maxDisplay}
                   </Badge>
                 )}
@@ -202,16 +193,16 @@ export function TagPicker({
                         selected.includes(option.id) ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    <div className="flex flex-col flex-1 min-w-0">
+                    <div className="flex min-w-0 flex-1 flex-col">
                       <span className="truncate">{option.name}</span>
                       {option.subtitle && (
-                        <span className="text-xs text-muted-foreground truncate">
+                        <span className="text-muted-foreground truncate text-xs">
                           {option.subtitle}
                         </span>
                       )}
                     </div>
                     {option.group && (
-                      <span className="ml-2 text-xs text-muted-foreground shrink-0">
+                      <span className="text-muted-foreground ml-2 shrink-0 text-xs">
                         {option.group}
                       </span>
                     )}
@@ -234,10 +225,10 @@ export function TagPicker({
                           selected.includes(option.id) ? "opacity-100" : "opacity-0"
                         )}
                       />
-                      <div className="flex flex-col flex-1 min-w-0">
+                      <div className="flex min-w-0 flex-1 flex-col">
                         <span className="truncate">{option.name}</span>
                         {option.subtitle && (
-                          <span className="text-xs text-muted-foreground truncate">
+                          <span className="text-muted-foreground truncate text-xs">
                             {option.subtitle}
                           </span>
                         )}

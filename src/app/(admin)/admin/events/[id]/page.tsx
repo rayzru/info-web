@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
+
+import type { JSONContent } from "@tiptap/react";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -10,36 +10,31 @@ import {
   Clock,
   Eye,
   FileText,
+  Link as LinkIcon,
   Loader2,
   MapPin,
+  Phone,
   Repeat,
   Save,
   Send,
-  Users,
-  Link as LinkIcon,
-  Phone,
   User,
+  Users,
   UserX,
 } from "lucide-react";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { z } from "zod";
 
+import { ImageUploader } from "~/components/media/image-uploader";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
+import { DateTimePicker } from "~/components/ui/date-picker";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Separator } from "~/components/ui/separator";
-import { Textarea } from "~/components/ui/textarea";
-import { Switch } from "~/components/ui/switch";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -47,12 +42,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Separator } from "~/components/ui/separator";
+import { Switch } from "~/components/ui/switch";
+import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
-import { api } from "~/trpc/react";
-import { ImageUploader } from "~/components/media/image-uploader";
-import { DateTimePicker } from "~/components/ui/date-picker";
-import type { JSONContent } from "@tiptap/react";
 import { EVENT_RECURRENCE_TYPE_LABELS, type EventRecurrenceType } from "~/server/db/schema";
+import { api } from "~/trpc/react";
 
 // Zod validation schema for event form
 const eventFormSchema = z
@@ -66,10 +61,7 @@ const eventFormSchema = z
     publishAt: z.date().optional(),
     eventStartAt: z.date({ error: "Укажите дату и время начала" }),
     eventEndAt: z.date().optional(),
-    eventLocation: z
-      .string()
-      .max(500, "Адрес слишком длинный (макс. 500 символов)")
-      .optional(),
+    eventLocation: z.string().max(500, "Адрес слишком длинный (макс. 500 символов)").optional(),
     eventMaxAttendees: z
       .string()
       .optional()
@@ -82,21 +74,11 @@ const eventFormSchema = z
       .string()
       .max(500, "Ссылка слишком длинная")
       .optional()
-      .refine(
-        (val) =>
-          !val || val.startsWith("http://") || val.startsWith("https://"),
-        {
-          message: "Ссылка должна начинаться с http:// или https://",
-        },
-      ),
-    eventOrganizer: z
-      .string()
-      .max(255, "Имя организатора слишком длинное")
-      .optional(),
-    eventOrganizerPhone: z
-      .string()
-      .max(20, "Номер телефона слишком длинный")
-      .optional(),
+      .refine((val) => !val || val.startsWith("http://") || val.startsWith("https://"), {
+        message: "Ссылка должна начинаться с http:// или https://",
+      }),
+    eventOrganizer: z.string().max(255, "Имя организатора слишком длинное").optional(),
+    eventOrganizerPhone: z.string().max(20, "Номер телефона слишком длинный").optional(),
     buildingId: z.string().optional(),
     isUrgent: z.boolean().default(false),
     isAnonymous: z.boolean().default(false),
@@ -112,7 +94,7 @@ const eventFormSchema = z
     {
       message: "Время окончания должно быть позже времени начала",
       path: ["eventEndAt"],
-    },
+    }
   );
 
 type EventFormData = z.infer<typeof eventFormSchema>;
@@ -173,7 +155,7 @@ export default function EditEventPage() {
   // Check if user is admin
   const isAdmin =
     session?.user?.roles?.some((r) =>
-      ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"].includes(r),
+      ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"].includes(r)
     ) ?? false;
 
   // Get buildings for selector
@@ -187,19 +169,19 @@ export default function EditEventPage() {
   });
 
   // Fetch existing event data
-  const { data: event, isLoading: isLoadingEvent } =
-    api.publications.byId.useQuery({ id }, { enabled: !!id });
+  const { data: event, isLoading: isLoadingEvent } = api.publications.byId.useQuery(
+    { id },
+    { enabled: !!id }
+  );
 
   // Initialize form with event data
   useEffect(() => {
     if (event && !isInitialized) {
       setTitle(event.title);
-      setDescription(extractTextFromContent(event.content as JSONContent));
+      setDescription(extractTextFromContent(event.content));
       setCoverImage(event.coverImage ?? null);
       setPublishAt(event.publishAt ? new Date(event.publishAt) : undefined);
-      setEventStartAt(
-        event.eventStartAt ? new Date(event.eventStartAt) : undefined,
-      );
+      setEventStartAt(event.eventStartAt ? new Date(event.eventStartAt) : undefined);
       setEventEndAt(event.eventEndAt ? new Date(event.eventEndAt) : undefined);
       setEventLocation(event.eventLocation ?? "");
       setEventMaxAttendees(event.eventMaxAttendees?.toString() ?? "");
@@ -211,7 +193,7 @@ export default function EditEventPage() {
       setIsAnonymous(event.isAnonymous);
       setPublishToTelegram(event.publishToTelegram);
       // Recurrence fields
-      setEventRecurrenceType((event.eventRecurrenceType as EventRecurrenceType) ?? "none");
+      setEventRecurrenceType(event.eventRecurrenceType! ?? "none");
       setEventRecurrenceStartDay(event.eventRecurrenceStartDay?.toString() ?? "");
       setEventRecurrenceEndDay(event.eventRecurrenceEndDay?.toString() ?? "");
       setLinkedArticleId(event.linkedArticleId ?? "");
@@ -312,7 +294,9 @@ export default function EditEventPage() {
       eventOrganizerPhone: validData.eventOrganizerPhone,
       // Recurrence fields
       eventRecurrenceType: eventRecurrenceType !== "none" ? eventRecurrenceType : null,
-      eventRecurrenceStartDay: eventRecurrenceStartDay ? parseInt(eventRecurrenceStartDay, 10) : null,
+      eventRecurrenceStartDay: eventRecurrenceStartDay
+        ? parseInt(eventRecurrenceStartDay, 10)
+        : null,
       eventRecurrenceEndDay: eventRecurrenceEndDay ? parseInt(eventRecurrenceEndDay, 10) : null,
       linkedArticleId: linkedArticleId || null,
     });
@@ -345,8 +329,7 @@ export default function EditEventPage() {
   }
 
   // Check if event has already started
-  const eventHasStarted =
-    event.eventStartAt && new Date(event.eventStartAt) <= new Date();
+  const eventHasStarted = event.eventStartAt && new Date(event.eventStartAt) <= new Date();
 
   if (eventHasStarted) {
     return (
@@ -370,8 +353,8 @@ export default function EditEventPage() {
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Редактирование недоступно</AlertTitle>
           <AlertDescription>
-            Это мероприятие уже началось или прошло. Редактирование мероприятий
-            возможно только до их начала.
+            Это мероприятие уже началось или прошло. Редактирование мероприятий возможно только до
+            их начала.
           </AlertDescription>
         </Alert>
 
@@ -395,9 +378,7 @@ export default function EditEventPage() {
               </div>
               {event.eventEndAt && (
                 <div>
-                  <Label className="text-muted-foreground">
-                    Дата окончания
-                  </Label>
+                  <Label className="text-muted-foreground">Дата окончания</Label>
                   <p className="font-medium">
                     {new Date(event.eventEndAt).toLocaleString("ru-RU", {
                       day: "numeric",
@@ -446,9 +427,7 @@ export default function EditEventPage() {
             <Calendar className="h-6 w-6" />
             Редактирование мероприятия
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Изменение события для сообщества
-          </p>
+          <p className="text-muted-foreground mt-1">Изменение события для сообщества</p>
         </div>
       </div>
 
@@ -460,9 +439,7 @@ export default function EditEventPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Основная информация</CardTitle>
-                <CardDescription>
-                  Название и описание мероприятия
-                </CardDescription>
+                <CardDescription>Название и описание мероприятия</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -474,9 +451,7 @@ export default function EditEventPage() {
                     placeholder="Например: Субботник во дворе"
                     className={errors.title ? "border-destructive" : ""}
                   />
-                  {errors.title && (
-                    <p className="text-destructive text-sm">{errors.title}</p>
-                  )}
+                  {errors.title && <p className="text-destructive text-sm">{errors.title}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Описание</Label>
@@ -489,9 +464,7 @@ export default function EditEventPage() {
                     className={errors.description ? "border-destructive" : ""}
                   />
                   {errors.description && (
-                    <p className="text-destructive text-sm">
-                      {errors.description}
-                    </p>
+                    <p className="text-destructive text-sm">{errors.description}</p>
                   )}
                 </div>
               </CardContent>
@@ -516,9 +489,7 @@ export default function EditEventPage() {
                     className={errors.eventStartAt ? "border-destructive" : ""}
                   />
                   {errors.eventStartAt && (
-                    <p className="text-destructive text-sm">
-                      {errors.eventStartAt}
-                    </p>
+                    <p className="text-destructive text-sm">{errors.eventStartAt}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -531,9 +502,7 @@ export default function EditEventPage() {
                     className={errors.eventEndAt ? "border-destructive" : ""}
                   />
                   {errors.eventEndAt && (
-                    <p className="text-destructive text-sm">
-                      {errors.eventEndAt}
-                    </p>
+                    <p className="text-destructive text-sm">{errors.eventEndAt}</p>
                   )}
                 </div>
               </CardContent>
@@ -597,11 +566,14 @@ export default function EditEventPage() {
                   </div>
                 )}
 
-                {eventRecurrenceType !== "none" && eventRecurrenceStartDay && eventRecurrenceEndDay && (
-                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                    Событие будет повторяться ежемесячно с {eventRecurrenceStartDay} по {eventRecurrenceEndDay} число
-                  </p>
-                )}
+                {eventRecurrenceType !== "none" &&
+                  eventRecurrenceStartDay &&
+                  eventRecurrenceEndDay && (
+                    <p className="text-muted-foreground bg-muted rounded-md p-3 text-sm">
+                      Событие будет повторяться ежемесячно с {eventRecurrenceStartDay} по{" "}
+                      {eventRecurrenceEndDay} число
+                    </p>
+                  )}
               </CardContent>
             </Card>
 
@@ -631,7 +603,7 @@ export default function EditEventPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-muted-foreground mt-2 text-xs">
                   Подробная инструкция будет показана в карточке события
                 </p>
               </CardContent>
@@ -657,9 +629,7 @@ export default function EditEventPage() {
                     className={errors.eventLocation ? "border-destructive" : ""}
                   />
                   {errors.eventLocation && (
-                    <p className="text-destructive text-sm">
-                      {errors.eventLocation}
-                    </p>
+                    <p className="text-destructive text-sm">{errors.eventLocation}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -693,10 +663,7 @@ export default function EditEventPage() {
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="organizer"
-                      className="flex items-center gap-2"
-                    >
+                    <Label htmlFor="organizer" className="flex items-center gap-2">
                       <User className="h-4 w-4" />
                       Организатор
                     </Label>
@@ -705,21 +672,14 @@ export default function EditEventPage() {
                       value={eventOrganizer}
                       onChange={(e) => setEventOrganizer(e.target.value)}
                       placeholder="Имя организатора"
-                      className={
-                        errors.eventOrganizer ? "border-destructive" : ""
-                      }
+                      className={errors.eventOrganizer ? "border-destructive" : ""}
                     />
                     {errors.eventOrganizer && (
-                      <p className="text-destructive text-sm">
-                        {errors.eventOrganizer}
-                      </p>
+                      <p className="text-destructive text-sm">{errors.eventOrganizer}</p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="organizerPhone"
-                      className="flex items-center gap-2"
-                    >
+                    <Label htmlFor="organizerPhone" className="flex items-center gap-2">
                       <Phone className="h-4 w-4" />
                       Телефон организатора
                     </Label>
@@ -728,23 +688,16 @@ export default function EditEventPage() {
                       value={eventOrganizerPhone}
                       onChange={(e) => setEventOrganizerPhone(e.target.value)}
                       placeholder="+7 (999) 123-45-67"
-                      className={
-                        errors.eventOrganizerPhone ? "border-destructive" : ""
-                      }
+                      className={errors.eventOrganizerPhone ? "border-destructive" : ""}
                     />
                     {errors.eventOrganizerPhone && (
-                      <p className="text-destructive text-sm">
-                        {errors.eventOrganizerPhone}
-                      </p>
+                      <p className="text-destructive text-sm">{errors.eventOrganizerPhone}</p>
                     )}
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="maxAttendees"
-                      className="flex items-center gap-2"
-                    >
+                    <Label htmlFor="maxAttendees" className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
                       Макс. участников
                     </Label>
@@ -755,21 +708,14 @@ export default function EditEventPage() {
                       value={eventMaxAttendees}
                       onChange={(e) => setEventMaxAttendees(e.target.value)}
                       placeholder="Без ограничений"
-                      className={
-                        errors.eventMaxAttendees ? "border-destructive" : ""
-                      }
+                      className={errors.eventMaxAttendees ? "border-destructive" : ""}
                     />
                     {errors.eventMaxAttendees && (
-                      <p className="text-destructive text-sm">
-                        {errors.eventMaxAttendees}
-                      </p>
+                      <p className="text-destructive text-sm">{errors.eventMaxAttendees}</p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="externalUrl"
-                      className="flex items-center gap-2"
-                    >
+                    <Label htmlFor="externalUrl" className="flex items-center gap-2">
                       <LinkIcon className="h-4 w-4" />
                       Внешняя ссылка
                     </Label>
@@ -779,14 +725,10 @@ export default function EditEventPage() {
                       value={eventExternalUrl}
                       onChange={(e) => setEventExternalUrl(e.target.value)}
                       placeholder="https://zoom.us/..."
-                      className={
-                        errors.eventExternalUrl ? "border-destructive" : ""
-                      }
+                      className={errors.eventExternalUrl ? "border-destructive" : ""}
                     />
                     {errors.eventExternalUrl && (
-                      <p className="text-destructive text-sm">
-                        {errors.eventExternalUrl}
-                      </p>
+                      <p className="text-destructive text-sm">{errors.eventExternalUrl}</p>
                     )}
                   </div>
                 </div>
@@ -797,33 +739,18 @@ export default function EditEventPage() {
           {/* Sidebar - Right Side */}
           <div className="w-80 space-y-4">
             {/* Actions */}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={updateMutation.isPending}
-            >
-              {updateMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+            <Button type="submit" className="w-full" disabled={updateMutation.isPending}>
+              {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="mr-2 h-4 w-4" />
               Сохранить
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={handlePreview}
-            >
+            <Button type="button" variant="outline" className="w-full" onClick={handlePreview}>
               <Eye className="mr-2 h-4 w-4" />
               Превью
             </Button>
 
             <div className="my-6 flex items-center gap-3">
-              <Switch
-                id="urgent"
-                checked={isUrgent}
-                onCheckedChange={setIsUrgent}
-              />
+              <Switch id="urgent" checked={isUrgent} onCheckedChange={setIsUrgent} />
               <Label htmlFor="urgent">Срочное мероприятие</Label>
             </div>
 
@@ -834,15 +761,10 @@ export default function EditEventPage() {
                 onCheckedChange={(checked) => setIsAnonymous(checked === true)}
               />
               <div className="space-y-1">
-                <Label
-                  htmlFor="anonymous"
-                  className="cursor-pointer text-sm font-medium"
-                >
+                <Label htmlFor="anonymous" className="cursor-pointer text-sm font-medium">
                   Опубликовать анонимно
                 </Label>
-                <p className="text-muted-foreground text-xs">
-                  Имя и фото автора не будут показаны
-                </p>
+                <p className="text-muted-foreground text-xs">Имя и фото автора не будут показаны</p>
               </div>
             </div>
 
@@ -865,9 +787,7 @@ export default function EditEventPage() {
                   />
                 </div>
                 <p className="text-muted-foreground text-xs">
-                  {publishAt
-                    ? "Отложенная публикация"
-                    : "Публикация сразу после создания"}
+                  {publishAt ? "Отложенная публикация" : "Публикация сразу после создания"}
                 </p>
 
                 <Separator />
@@ -877,9 +797,7 @@ export default function EditEventPage() {
                   <Checkbox
                     id="telegram"
                     checked={publishToTelegram}
-                    onCheckedChange={(checked) =>
-                      setPublishToTelegram(checked === true)
-                    }
+                    onCheckedChange={(checked) => setPublishToTelegram(checked === true)}
                     disabled={!isAdmin}
                   />
                   <div className="space-y-1">
@@ -891,9 +809,7 @@ export default function EditEventPage() {
                       Опубликовать в Telegram
                     </Label>
                     <p className="text-muted-foreground text-xs">
-                      {isAdmin
-                        ? "Отправить в Telegram-канал"
-                        : "Только для администраторов"}
+                      {isAdmin ? "Отправить в Telegram-канал" : "Только для администраторов"}
                     </p>
                   </div>
                 </div>

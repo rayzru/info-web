@@ -61,14 +61,12 @@ export const listings = createTable(
     // Тип собственности
     propertyType: listingPropertyTypeEnum("property_type").notNull(),
     // Ссылки на объекты (одна будет заполнена)
-    apartmentId: varchar("apartment_id", { length: 255 }).references(
-      () => apartments.id,
-      { onDelete: "cascade" }
-    ),
-    parkingSpotId: varchar("parking_spot_id", { length: 255 }).references(
-      () => parkingSpots.id,
-      { onDelete: "cascade" }
-    ),
+    apartmentId: varchar("apartment_id", { length: 255 }).references(() => apartments.id, {
+      onDelete: "cascade",
+    }),
+    parkingSpotId: varchar("parking_spot_id", { length: 255 }).references(() => parkingSpots.id, {
+      onDelete: "cascade",
+    }),
     // Заголовок объявления
     title: varchar("title", { length: 255 }).notNull(),
     // Описание
@@ -85,9 +83,7 @@ export const listings = createTable(
     // Статус модерации
     status: listingStatusEnum("status").notNull().default("draft"),
     // Модератор, рассмотревший объявление
-    moderatedBy: varchar("moderated_by", { length: 255 }).references(
-      () => users.id
-    ),
+    moderatedBy: varchar("moderated_by", { length: 255 }).references(() => users.id),
     moderatedAt: timestamp("moderated_at", { mode: "date", withTimezone: true }),
     // Причина отклонения (если отклонено)
     rejectionReason: text("rejection_reason"),
@@ -100,9 +96,7 @@ export const listings = createTable(
     // Дополнительный комментарий к архивированию
     archivedComment: text("archived_comment"),
     // Кем архивировано (если архивировано администратором)
-    archivedBy: varchar("archived_by", { length: 255 }).references(
-      () => users.id
-    ),
+    archivedBy: varchar("archived_by", { length: 255 }).references(() => users.id),
     archivedAt: timestamp("archived_at", { mode: "date", withTimezone: true }),
     // Дата последнего продления объявления
     renewedAt: timestamp("renewed_at", { mode: "date", withTimezone: true }),

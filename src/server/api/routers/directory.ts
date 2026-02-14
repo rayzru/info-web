@@ -1,40 +1,31 @@
 import { and, count, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
+import { adminProcedure, createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import {
-  createTRPCRouter,
-  publicProcedure,
-  adminProcedure,
-} from "~/server/api/trpc";
-import {
-  directoryEntries,
+  apartments,
+  buildings,
+  directoryAnalytics,
   directoryContacts,
+  directoryContactTags,
+  directoryEntries,
+  directoryEntryStats,
+  directoryEntryTags,
   directorySchedules,
   directoryTags,
-  directoryEntryTags,
-  directoryContactTags,
-  directoryAnalytics,
   directoryTagStats,
-  directoryEntryStats,
-  buildings,
-  userApartments,
-  apartments,
-  floors,
   entrances,
-  userParkingSpots,
-  parkingSpots,
+  floors,
   parkingFloors,
   parkings,
+  parkingSpots,
+  userApartments,
+  userParkingSpots,
 } from "~/server/db/schema";
 
 // ============== SCHEMAS ==============
 
-const directoryEntryTypeSchema = z.enum([
-  "contact",
-  "organization",
-  "location",
-  "document",
-]);
+const directoryEntryTypeSchema = z.enum(["contact", "organization", "location", "document"]);
 
 const directoryContactTypeSchema = z.enum([
   "phone",
@@ -68,11 +59,39 @@ const directoryEventTypeSchema = z.enum([
  * Transliteration map for Cyrillic to Latin characters
  */
 const TRANSLITERATION_MAP: Record<string, string> = {
-  а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "yo",
-  ж: "zh", з: "z", и: "i", й: "y", к: "k", л: "l", м: "m",
-  н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u",
-  ф: "f", х: "h", ц: "ts", ч: "ch", ш: "sh", щ: "sch",
-  ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
+  а: "a",
+  б: "b",
+  в: "v",
+  г: "g",
+  д: "d",
+  е: "e",
+  ё: "yo",
+  ж: "zh",
+  з: "z",
+  и: "i",
+  й: "y",
+  к: "k",
+  л: "l",
+  м: "m",
+  н: "n",
+  о: "o",
+  п: "p",
+  р: "r",
+  с: "s",
+  т: "t",
+  у: "u",
+  ф: "f",
+  х: "h",
+  ц: "ts",
+  ч: "ch",
+  ш: "sh",
+  щ: "sch",
+  ъ: "",
+  ы: "y",
+  ь: "",
+  э: "e",
+  ю: "yu",
+  я: "ya",
 };
 
 /**
@@ -93,7 +112,6 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, "")
     .substring(0, 100);
 }
-
 
 // ============== ROUTER ==============
 
@@ -142,16 +160,8 @@ export const directoryRouter = createTRPCRouter({
           const [result] = await ctx.db
             .select({ count: count() })
             .from(directoryEntryTags)
-            .innerJoin(
-              directoryEntries,
-              eq(directoryEntryTags.entryId, directoryEntries.id)
-            )
-            .where(
-              and(
-                eq(directoryEntryTags.tagId, tag.id),
-                eq(directoryEntries.isActive, 1)
-              )
-            );
+            .innerJoin(directoryEntries, eq(directoryEntryTags.entryId, directoryEntries.id))
+            .where(and(eq(directoryEntryTags.tagId, tag.id), eq(directoryEntries.isActive, 1)));
 
           // Check if has children
           const [childCount] = await ctx.db
@@ -173,37 +183,35 @@ export const directoryRouter = createTRPCRouter({
     }),
 
   // Get tag by slug with breadcrumb path
-  getTag: publicProcedure
-    .input(z.object({ slug: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const tag = await ctx.db.query.directoryTags.findFirst({
-        where: eq(directoryTags.slug, input.slug),
+  getTag: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ ctx, input }) => {
+    const tag = await ctx.db.query.directoryTags.findFirst({
+      where: eq(directoryTags.slug, input.slug),
+    });
+
+    if (!tag) return null;
+
+    // Build breadcrumb path
+    const path: (typeof tag)[] = [tag];
+    let currentTag = tag;
+
+    while (currentTag.parentId) {
+      const parent = await ctx.db.query.directoryTags.findFirst({
+        where: eq(directoryTags.id, currentTag.parentId),
       });
-
-      if (!tag) return null;
-
-      // Build breadcrumb path
-      const path: typeof tag[] = [tag];
-      let currentTag = tag;
-
-      while (currentTag.parentId) {
-        const parent = await ctx.db.query.directoryTags.findFirst({
-          where: eq(directoryTags.id, currentTag.parentId),
-        });
-        if (parent) {
-          path.unshift(parent);
-          currentTag = parent;
-        } else {
-          break;
-        }
+      if (parent) {
+        path.unshift(parent);
+        currentTag = parent;
+      } else {
+        break;
       }
+    }
 
-      return {
-        ...tag,
-        synonyms: tag.synonyms ? JSON.parse(tag.synonyms) : [],
-        path,
-      };
-    }),
+    return {
+      ...tag,
+      synonyms: tag.synonyms ? JSON.parse(tag.synonyms) : [],
+      path,
+    };
+  }),
 
   // Search entries
   search: publicProcedure
@@ -283,10 +291,7 @@ export const directoryRouter = createTRPCRouter({
           const entryTags = await ctx.db
             .select({ tag: directoryTags })
             .from(directoryEntryTags)
-            .innerJoin(
-              directoryTags,
-              eq(directoryEntryTags.tagId, directoryTags.id)
-            )
+            .innerJoin(directoryTags, eq(directoryEntryTags.tagId, directoryTags.id))
             .where(eq(directoryEntryTags.entryId, entry.id));
 
           return {
@@ -345,16 +350,8 @@ export const directoryRouter = createTRPCRouter({
       const entryIdsWithTags = await ctx.db
         .selectDistinct({ entryId: directoryEntryTags.entryId })
         .from(directoryEntryTags)
-        .innerJoin(
-          directoryEntries,
-          eq(directoryEntryTags.entryId, directoryEntries.id)
-        )
-        .where(
-          and(
-            inArray(directoryEntryTags.tagId, tagIds),
-            eq(directoryEntries.isActive, 1)
-          )
-        );
+        .innerJoin(directoryEntries, eq(directoryEntryTags.entryId, directoryEntries.id))
+        .where(and(inArray(directoryEntryTags.tagId, tagIds), eq(directoryEntries.isActive, 1)));
 
       const entryIds = entryIdsWithTags.map((e) => e.entryId);
 
@@ -374,10 +371,7 @@ export const directoryRouter = createTRPCRouter({
 
       // Get entries
       const entries = await ctx.db.query.directoryEntries.findMany({
-        where: and(
-          inArray(directoryEntries.id, entryIds),
-          eq(directoryEntries.isActive, 1)
-        ),
+        where: and(inArray(directoryEntries.id, entryIds), eq(directoryEntries.isActive, 1)),
         orderBy: [directoryEntries.order, directoryEntries.title],
         limit,
         offset,
@@ -413,56 +407,48 @@ export const directoryRouter = createTRPCRouter({
     }),
 
   // Get single entry by slug
-  getEntry: publicProcedure
-    .input(z.object({ slug: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const entry = await ctx.db.query.directoryEntries.findFirst({
-        where: and(
-          eq(directoryEntries.slug, input.slug),
-          eq(directoryEntries.isActive, 1)
-        ),
+  getEntry: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ ctx, input }) => {
+    const entry = await ctx.db.query.directoryEntries.findFirst({
+      where: and(eq(directoryEntries.slug, input.slug), eq(directoryEntries.isActive, 1)),
+    });
+
+    if (!entry) return null;
+
+    // Get contacts
+    const contacts = await ctx.db.query.directoryContacts.findMany({
+      where: eq(directoryContacts.entryId, entry.id),
+      orderBy: [directoryContacts.isPrimary, directoryContacts.order],
+    });
+
+    // Get schedules
+    const schedules = await ctx.db.query.directorySchedules.findMany({
+      where: eq(directorySchedules.entryId, entry.id),
+      orderBy: directorySchedules.dayOfWeek,
+    });
+
+    // Get tags
+    const entryTags = await ctx.db
+      .select({ tag: directoryTags })
+      .from(directoryEntryTags)
+      .innerJoin(directoryTags, eq(directoryEntryTags.tagId, directoryTags.id))
+      .where(eq(directoryEntryTags.entryId, entry.id));
+
+    // Get building if linked
+    let building = null;
+    if (entry.buildingId) {
+      building = await ctx.db.query.buildings.findFirst({
+        where: eq(buildings.id, entry.buildingId),
       });
+    }
 
-      if (!entry) return null;
-
-      // Get contacts
-      const contacts = await ctx.db.query.directoryContacts.findMany({
-        where: eq(directoryContacts.entryId, entry.id),
-        orderBy: [directoryContacts.isPrimary, directoryContacts.order],
-      });
-
-      // Get schedules
-      const schedules = await ctx.db.query.directorySchedules.findMany({
-        where: eq(directorySchedules.entryId, entry.id),
-        orderBy: directorySchedules.dayOfWeek,
-      });
-
-      // Get tags
-      const entryTags = await ctx.db
-        .select({ tag: directoryTags })
-        .from(directoryEntryTags)
-        .innerJoin(
-          directoryTags,
-          eq(directoryEntryTags.tagId, directoryTags.id)
-        )
-        .where(eq(directoryEntryTags.entryId, entry.id));
-
-      // Get building if linked
-      let building = null;
-      if (entry.buildingId) {
-        building = await ctx.db.query.buildings.findFirst({
-          where: eq(buildings.id, entry.buildingId),
-        });
-      }
-
-      return {
-        ...entry,
-        contacts,
-        schedules,
-        tags: entryTags.map((et) => et.tag),
-        building,
-      };
-    }),
+    return {
+      ...entry,
+      contacts,
+      schedules,
+      tags: entryTags.map((et) => et.tag),
+      building,
+    };
+  }),
 
   // Quick search suggestions
   suggest: publicProcedure
@@ -484,12 +470,7 @@ export const directoryRouter = createTRPCRouter({
           type: directoryEntries.type,
         })
         .from(directoryEntries)
-        .where(
-          and(
-            eq(directoryEntries.isActive, 1),
-            ilike(directoryEntries.title, searchPattern)
-          )
-        )
+        .where(and(eq(directoryEntries.isActive, 1), ilike(directoryEntries.title, searchPattern)))
         .limit(limit);
 
       // Search in tags
@@ -552,10 +533,7 @@ export const directoryRouter = createTRPCRouter({
           const entryTags = await ctx.db
             .select({ tag: directoryTags })
             .from(directoryEntryTags)
-            .innerJoin(
-              directoryTags,
-              eq(directoryEntryTags.tagId, directoryTags.id)
-            )
+            .innerJoin(directoryTags, eq(directoryEntryTags.tagId, directoryTags.id))
             .where(eq(directoryEntryTags.entryId, entry.id));
 
           return {
@@ -590,7 +568,7 @@ export const directoryRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { query, limit } = input;
       const queryLower = query.toLowerCase();
-      const searchWords = queryLower.split(/\s+/).filter(w => w.length >= 1);
+      const searchWords = queryLower.split(/\s+/).filter((w) => w.length >= 1);
 
       if (searchWords.length === 0) {
         return { contacts: [], matchedTags: [], total: 0 };
@@ -645,7 +623,7 @@ export const directoryRouter = createTRPCRouter({
       const matchedTagIds = new Set<string>();
 
       for (const potentialQuery of potentialQueries) {
-        const numberedMatch = potentialQuery.match(numberedTagPattern);
+        const numberedMatch = numberedTagPattern.exec(potentialQuery);
 
         for (const tag of allTags) {
           if (matchedTagIds.has(tag.id)) continue; // Skip already matched tags
@@ -653,7 +631,7 @@ export const directoryRouter = createTRPCRouter({
           const tagNameLower = tag.name.toLowerCase();
           const tagSlugLower = tag.slug.toLowerCase();
           const synonyms: string[] = tag.synonyms ? JSON.parse(tag.synonyms) : [];
-          const synonymsLower = synonyms.map(s => s.toLowerCase());
+          const synonymsLower = synonyms.map((s) => s.toLowerCase());
 
           // If this potential query looks like a numbered tag, require exact match
           if (numberedMatch) {
@@ -663,11 +641,12 @@ export const directoryRouter = createTRPCRouter({
             // Check for exact match in name or synonyms
             const isExactMatch =
               tagNameLower === potentialQuery ||
-              synonymsLower.some(syn => syn === potentialQuery) ||
+              synonymsLower.some((syn) => syn === potentialQuery) ||
               // Also match slug patterns like "podezd-2" or "stroenie-1"
               // Note: литер/лит should NOT map to stroenie-X directly, they use synonyms
               (searchType?.match(/^(подъезд|п)$/i) && tagSlugLower === `podezd-${searchNum}`) ||
-              (searchType?.match(/^(строение|строен|стр)$/i) && tagSlugLower === `stroenie-${searchNum}`);
+              (searchType?.match(/^(строение|строен|стр)$/i) &&
+                tagSlugLower === `stroenie-${searchNum}`);
 
             if (isExactMatch) {
               matchedTags.push(tag);
@@ -679,14 +658,17 @@ export const directoryRouter = createTRPCRouter({
             const isBuildingOrEntranceTag = /^(stroenie|podezd)-\d+$/.test(tagSlugLower);
             if (isBuildingOrEntranceTag) {
               // For building/entrance tags, require exact name match, not partial
-              if (tagNameLower === potentialQuery || synonymsLower.some(syn => syn === potentialQuery)) {
+              if (
+                tagNameLower === potentialQuery ||
+                synonymsLower.some((syn) => syn === potentialQuery)
+              ) {
                 matchedTags.push(tag);
                 matchedTagIds.add(tag.id);
               }
             } else if (
               tagNameLower.includes(potentialQuery) ||
               tagSlugLower.includes(potentialQuery) ||
-              synonymsLower.some(syn => syn.includes(potentialQuery))
+              synonymsLower.some((syn) => syn.includes(potentialQuery))
             ) {
               matchedTags.push(tag);
               matchedTagIds.add(tag.id);
@@ -720,7 +702,7 @@ export const directoryRouter = createTRPCRouter({
           .limit(limit);
 
         return {
-          contacts: contactsByLabel.map(c => ({
+          contacts: contactsByLabel.map((c) => ({
             ...c.contact,
             entryTitle: c.entry.title,
             entrySlug: c.entry.slug,
@@ -732,7 +714,7 @@ export const directoryRouter = createTRPCRouter({
         };
       }
 
-      const matchedTagIdsArray = matchedTags.map(t => t.id);
+      const matchedTagIdsArray = matchedTags.map((t) => t.id);
       const useIntersection = matchedTags.length >= 2;
 
       // Strategy 1: Find contacts with direct contact-level tags
@@ -753,7 +735,7 @@ export const directoryRouter = createTRPCRouter({
           )
         );
 
-      const entryIds = entriesWithTags.map(e => e.entryId);
+      const entryIds = entriesWithTags.map((e) => e.entryId);
 
       // Get contacts from matched entries
       let contactsFromEntries: { contactId: string }[] = [];
@@ -766,8 +748,8 @@ export const directoryRouter = createTRPCRouter({
 
       // Combine both sources (union for candidates)
       const allContactIds = new Set<string>([
-        ...contactsWithDirectTags.map(c => c.contactId),
-        ...contactsFromEntries.map(c => c.contactId),
+        ...contactsWithDirectTags.map((c) => c.contactId),
+        ...contactsFromEntries.map((c) => c.contactId),
       ]);
 
       if (allContactIds.size === 0) {
@@ -793,14 +775,14 @@ export const directoryRouter = createTRPCRouter({
           .limit(limit);
 
         return {
-          contacts: contactsByLabel.map(c => ({
+          contacts: contactsByLabel.map((c) => ({
             ...c.contact,
             entryTitle: c.entry.title,
             entrySlug: c.entry.slug,
             entryIcon: c.entry.icon,
             tags: [] as { id: string; name: string; slug: string }[],
           })),
-          matchedTags: matchedTags.map(t => ({ id: t.id, name: t.name, slug: t.slug })),
+          matchedTags: matchedTags.map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
           total: contactsByLabel.length,
         };
       }
@@ -830,92 +812,94 @@ export const directoryRouter = createTRPCRouter({
       let priorityEntranceNum: number | null = null;
 
       for (const tag of matchedTags) {
-        const buildingMatch = tag.slug.match(buildingTagPattern);
+        const buildingMatch = buildingTagPattern.exec(tag.slug);
         if (buildingMatch?.[1]) {
           priorityBuildingNum = parseInt(buildingMatch[1], 10);
         }
-        const entranceMatch = tag.slug.match(entranceTagPattern);
+        const entranceMatch = entranceTagPattern.exec(tag.slug);
         if (entranceMatch?.[1]) {
           priorityEntranceNum = parseInt(entranceMatch[1], 10);
         }
       }
 
       // Get tags for each contact, filter by intersection if needed, and compute sort weight
-      const contactsWithTagInfo = (await Promise.all(
-        contacts.map(async (c) => {
-          // Get contact-level tags
-          const contactTags = await ctx.db
-            .select({ tag: directoryTags })
-            .from(directoryContactTags)
-            .innerJoin(directoryTags, eq(directoryContactTags.tagId, directoryTags.id))
-            .where(eq(directoryContactTags.contactId, c.contact.id));
+      const contactsWithTagInfo = (
+        await Promise.all(
+          contacts.map(async (c) => {
+            // Get contact-level tags
+            const contactTags = await ctx.db
+              .select({ tag: directoryTags })
+              .from(directoryContactTags)
+              .innerJoin(directoryTags, eq(directoryContactTags.tagId, directoryTags.id))
+              .where(eq(directoryContactTags.contactId, c.contact.id));
 
-          // Get entry-level tags
-          const entryTags = await ctx.db
-            .select({ tag: directoryTags })
-            .from(directoryEntryTags)
-            .innerJoin(directoryTags, eq(directoryEntryTags.tagId, directoryTags.id))
-            .where(eq(directoryEntryTags.entryId, c.entry.id));
+            // Get entry-level tags
+            const entryTags = await ctx.db
+              .select({ tag: directoryTags })
+              .from(directoryEntryTags)
+              .innerJoin(directoryTags, eq(directoryEntryTags.tagId, directoryTags.id))
+              .where(eq(directoryEntryTags.entryId, c.entry.id));
 
-          // Combine all tag IDs (contact + entry level)
-          const allTagIds = new Set([
-            ...contactTags.map(ct => ct.tag.id),
-            ...entryTags.map(et => et.tag.id),
-          ]);
+            // Combine all tag IDs (contact + entry level)
+            const allTagIds = new Set([
+              ...contactTags.map((ct) => ct.tag.id),
+              ...entryTags.map((et) => et.tag.id),
+            ]);
 
-          // If using intersection mode, check if contact has ALL matched tags
-          if (useIntersection) {
-            const hasAllTags = matchedTagIdsArray.every(tagId => allTagIds.has(tagId));
-            if (!hasAllTags) {
-              return null; // Exclude contacts that don't have all tags
+            // If using intersection mode, check if contact has ALL matched tags
+            if (useIntersection) {
+              const hasAllTags = matchedTagIdsArray.every((tagId) => allTagIds.has(tagId));
+              if (!hasAllTags) {
+                return null; // Exclude contacts that don't have all tags
+              }
             }
-          }
 
-          // Extract building and entrance numbers from tags
-          let buildingNum = 999;
-          let entranceNum = 999;
+            // Extract building and entrance numbers from tags
+            let buildingNum = 999;
+            let entranceNum = 999;
 
-          for (const ct of contactTags) {
-            const buildingMatch = ct.tag.slug.match(buildingTagPattern);
-            if (buildingMatch?.[1]) {
-              buildingNum = parseInt(buildingMatch[1], 10);
+            for (const ct of contactTags) {
+              const buildingMatch = buildingTagPattern.exec(ct.tag.slug);
+              if (buildingMatch?.[1]) {
+                buildingNum = parseInt(buildingMatch[1], 10);
+              }
+              const entranceMatch = entranceTagPattern.exec(ct.tag.slug);
+              if (entranceMatch?.[1]) {
+                entranceNum = parseInt(entranceMatch[1], 10);
+              }
             }
-            const entranceMatch = ct.tag.slug.match(entranceTagPattern);
-            if (entranceMatch?.[1]) {
-              entranceNum = parseInt(entranceMatch[1], 10);
+
+            // Compute weight: lower = higher priority
+            // If priority building matches, weight = 0, else weight = 100
+            // Then add building number and entrance number
+            let weight = 0;
+            if (priorityBuildingNum !== null && buildingNum !== priorityBuildingNum) {
+              weight = 1000; // Demote non-matching buildings
             }
-          }
+            if (priorityEntranceNum !== null && entranceNum !== priorityEntranceNum) {
+              weight += 100; // Demote non-matching entrances
+            }
+            weight += buildingNum * 10 + entranceNum;
 
-          // Compute weight: lower = higher priority
-          // If priority building matches, weight = 0, else weight = 100
-          // Then add building number and entrance number
-          let weight = 0;
-          if (priorityBuildingNum !== null && buildingNum !== priorityBuildingNum) {
-            weight = 1000; // Demote non-matching buildings
-          }
-          if (priorityEntranceNum !== null && entranceNum !== priorityEntranceNum) {
-            weight += 100; // Demote non-matching entrances
-          }
-          weight += buildingNum * 10 + entranceNum;
+            // Combine tags for display (deduplicated)
+            const combinedTags = new Map<string, { id: string; name: string; slug: string }>();
+            [...contactTags, ...entryTags].forEach((t) => {
+              combinedTags.set(t.tag.id, { id: t.tag.id, name: t.tag.name, slug: t.tag.slug });
+            });
 
-          // Combine tags for display (deduplicated)
-          const combinedTags = new Map<string, { id: string; name: string; slug: string }>();
-          [...contactTags, ...entryTags].forEach(t => {
-            combinedTags.set(t.tag.id, { id: t.tag.id, name: t.tag.name, slug: t.tag.slug });
-          });
-
-          return {
-            ...c.contact,
-            entryTitle: c.entry.title,
-            entrySlug: c.entry.slug,
-            entryIcon: c.entry.icon,
-            tags: Array.from(combinedTags.values()),
-            _buildingNum: buildingNum,
-            _entranceNum: entranceNum,
-            _weight: weight,
-          };
-        })
-      )).filter((c): c is NonNullable<typeof c> => c !== null);
+            return {
+              ...c.contact,
+              entryTitle: c.entry.title,
+              entrySlug: c.entry.slug,
+              entryIcon: c.entry.icon,
+              tags: Array.from(combinedTags.values()),
+              _buildingNum: buildingNum,
+              _entranceNum: entranceNum,
+              _weight: weight,
+            };
+          })
+        )
+      ).filter((c): c is NonNullable<typeof c> => c !== null);
 
       // Sort by weight (priority building first), then building num, then entrance num
       contactsWithTagInfo.sort((a, b) => {
@@ -925,14 +909,14 @@ export const directoryRouter = createTRPCRouter({
       });
 
       // Remove internal sorting fields and limit
-      const sortedContacts = contactsWithTagInfo.slice(0, limit).map(c => {
+      const sortedContacts = contactsWithTagInfo.slice(0, limit).map((c) => {
         const { _buildingNum, _entranceNum, _weight, ...contact } = c;
         return contact;
       });
 
       return {
         contacts: sortedContacts,
-        matchedTags: matchedTags.map(t => ({ id: t.id, name: t.name, slug: t.slug })),
+        matchedTags: matchedTags.map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
         total: sortedContacts.length,
       };
     }),
@@ -981,14 +965,9 @@ export const directoryRouter = createTRPCRouter({
         .selectDistinct({ entryId: directoryEntryTags.entryId })
         .from(directoryEntryTags)
         .innerJoin(directoryEntries, eq(directoryEntryTags.entryId, directoryEntries.id))
-        .where(
-          and(
-            inArray(directoryEntryTags.tagId, tagIds),
-            eq(directoryEntries.isActive, 1)
-          )
-        );
+        .where(and(inArray(directoryEntryTags.tagId, tagIds), eq(directoryEntries.isActive, 1)));
 
-      const entryIds = entriesWithTags.map(e => e.entryId);
+      const entryIds = entriesWithTags.map((e) => e.entryId);
 
       // Get contacts from matched entries
       let contactsFromEntries: { contactId: string }[] = [];
@@ -1001,8 +980,8 @@ export const directoryRouter = createTRPCRouter({
 
       // Combine both sources
       const allContactIds = new Set<string>([
-        ...contactsWithDirectTags.map(c => c.contactId),
-        ...contactsFromEntries.map(c => c.contactId),
+        ...contactsWithDirectTags.map((c) => c.contactId),
+        ...contactsFromEntries.map((c) => c.contactId),
       ]);
 
       if (allContactIds.size === 0) {
@@ -1030,8 +1009,10 @@ export const directoryRouter = createTRPCRouter({
       const entranceTagPattern = /^podezd-(\d+)$/;
 
       // Check if the requested tag is a building tag
-      const requestedBuildingMatch = tag.slug.match(buildingTagPattern);
-      const priorityBuildingNum = requestedBuildingMatch?.[1] ? parseInt(requestedBuildingMatch[1], 10) : null;
+      const requestedBuildingMatch = buildingTagPattern.exec(tag.slug);
+      const priorityBuildingNum = requestedBuildingMatch?.[1]
+        ? parseInt(requestedBuildingMatch[1], 10)
+        : null;
 
       // Get tags for each contact (both contact-level and entry-level)
       const contactsWithTagInfo = await Promise.all(
@@ -1052,7 +1033,7 @@ export const directoryRouter = createTRPCRouter({
 
           // Combine and deduplicate
           const allTags = new Map<string, { id: string; name: string; slug: string }>();
-          [...contactTags, ...entryTags].forEach(t => {
+          [...contactTags, ...entryTags].forEach((t) => {
             allTags.set(t.tag.id, { id: t.tag.id, name: t.tag.name, slug: t.tag.slug });
           });
 
@@ -1061,11 +1042,11 @@ export const directoryRouter = createTRPCRouter({
           let entranceNum = 999;
 
           for (const ct of contactTags) {
-            const buildingMatch = ct.tag.slug.match(buildingTagPattern);
+            const buildingMatch = buildingTagPattern.exec(ct.tag.slug);
             if (buildingMatch?.[1]) {
               buildingNum = parseInt(buildingMatch[1], 10);
             }
-            const entranceMatch = ct.tag.slug.match(entranceTagPattern);
+            const entranceMatch = entranceTagPattern.exec(ct.tag.slug);
             if (entranceMatch?.[1]) {
               entranceNum = parseInt(entranceMatch[1], 10);
             }
@@ -1099,7 +1080,7 @@ export const directoryRouter = createTRPCRouter({
       });
 
       // Remove internal sorting fields and limit
-      const sortedContacts = contactsWithTagInfo.slice(0, limit).map(c => {
+      const sortedContacts = contactsWithTagInfo.slice(0, limit).map((c) => {
         const { _buildingNum, _entranceNum, _weight, ...contact } = c;
         return contact;
       });
@@ -1135,11 +1116,8 @@ export const directoryRouter = createTRPCRouter({
       // Collect all tag IDs (including children)
       const allTags = await ctx.db.query.directoryTags.findMany();
       const collectDescendantIds = (parentId: string): string[] => {
-        const children = allTags.filter(t => t.parentId === parentId);
-        return [
-          parentId,
-          ...children.flatMap(child => collectDescendantIds(child.id)),
-        ];
+        const children = allTags.filter((t) => t.parentId === parentId);
+        return [parentId, ...children.flatMap((child) => collectDescendantIds(child.id))];
       };
       const tagIds = collectDescendantIds(tag.id);
 
@@ -1154,14 +1132,9 @@ export const directoryRouter = createTRPCRouter({
         .selectDistinct({ entryId: directoryEntryTags.entryId })
         .from(directoryEntryTags)
         .innerJoin(directoryEntries, eq(directoryEntryTags.entryId, directoryEntries.id))
-        .where(
-          and(
-            inArray(directoryEntryTags.tagId, tagIds),
-            eq(directoryEntries.isActive, 1)
-          )
-        );
+        .where(and(inArray(directoryEntryTags.tagId, tagIds), eq(directoryEntries.isActive, 1)));
 
-      const entryIdsFromTags = entriesWithTags.map(e => e.entryId);
+      const entryIdsFromTags = entriesWithTags.map((e) => e.entryId);
 
       // Get contacts from matched entries
       let contactsFromEntries: { contactId: string }[] = [];
@@ -1174,8 +1147,8 @@ export const directoryRouter = createTRPCRouter({
 
       // Combine both sources
       const allContactIds = new Set<string>([
-        ...contactsWithDirectTags.map(c => c.contactId),
-        ...contactsFromEntries.map(c => c.contactId),
+        ...contactsWithDirectTags.map((c) => c.contactId),
+        ...contactsFromEntries.map((c) => c.contactId),
       ]);
 
       if (allContactIds.size === 0) {
@@ -1200,19 +1173,27 @@ export const directoryRouter = createTRPCRouter({
             eq(directoryEntries.isActive, 1)
           )
         )
-        .orderBy(directoryEntries.order, directoryEntries.title, desc(directoryContacts.isPrimary), directoryContacts.order)
+        .orderBy(
+          directoryEntries.order,
+          directoryEntries.title,
+          desc(directoryContacts.isPrimary),
+          directoryContacts.order
+        )
         .limit(limit);
 
       // Group contacts by entry
-      const entriesMap = new Map<string, {
-        id: string;
-        slug: string;
-        title: string;
-        subtitle: string | null;
-        icon: string | null;
-        order: number | null;
-        contacts: typeof contacts[0]["contact"][];
-      }>();
+      const entriesMap = new Map<
+        string,
+        {
+          id: string;
+          slug: string;
+          title: string;
+          subtitle: string | null;
+          icon: string | null;
+          order: number | null;
+          contacts: (typeof contacts)[0]["contact"][];
+        }
+      >();
 
       for (const row of contacts) {
         const existing = entriesMap.get(row.entry.id);
@@ -1242,24 +1223,26 @@ export const directoryRouter = createTRPCRouter({
       // Return as a single group with the tag name
       return {
         tag: { id: tag.id, name: tag.name, slug: tag.slug },
-        groups: [{
-          tag: { id: tag.id, name: tag.name, slug: tag.slug, order: tag.order },
-          entries: entries.map(e => ({
-            ...e,
-            contacts: e.contacts.map(c => ({
-              id: c.id,
-              type: c.type,
-              value: c.value,
-              label: c.label,
-              subtitle: c.subtitle,
-              isPrimary: c.isPrimary,
-              hasWhatsApp: c.hasWhatsApp,
-              hasTelegram: c.hasTelegram,
-              is24h: c.is24h,
-              order: c.order,
+        groups: [
+          {
+            tag: { id: tag.id, name: tag.name, slug: tag.slug, order: tag.order },
+            entries: entries.map((e) => ({
+              ...e,
+              contacts: e.contacts.map((c) => ({
+                id: c.id,
+                type: c.type,
+                value: c.value,
+                label: c.label,
+                subtitle: c.subtitle,
+                isPrimary: c.isPrimary,
+                hasWhatsApp: c.hasWhatsApp,
+                hasTelegram: c.hasTelegram,
+                is24h: c.is24h,
+                order: c.order,
+              })),
             })),
-          })),
-        }],
+          },
+        ],
         total: entries.length,
       };
     }),
@@ -1430,10 +1413,7 @@ export const directoryRouter = createTRPCRouter({
           lastViewedAt: directoryEntryStats.lastViewedAt,
         })
         .from(directoryEntryStats)
-        .innerJoin(
-          directoryEntries,
-          eq(directoryEntryStats.entryId, directoryEntries.id)
-        )
+        .innerJoin(directoryEntries, eq(directoryEntryStats.entryId, directoryEntries.id))
         .where(and(...conditions))
         .orderBy(sql`${directoryEntryStats.viewCount} DESC`)
         .limit(limit);
@@ -1646,19 +1626,14 @@ export const directoryRouter = createTRPCRouter({
           const entryTags = await ctx.db
             .select({ tag: directoryTags })
             .from(directoryEntryTags)
-            .innerJoin(
-              directoryTags,
-              eq(directoryEntryTags.tagId, directoryTags.id)
-            )
+            .innerJoin(directoryTags, eq(directoryEntryTags.tagId, directoryTags.id))
             .where(eq(directoryEntryTags.entryId, entry.id));
 
           return {
             ...entry,
             contacts,
             tags: entryTags.map((et) => et.tag),
-            isUserBuilding: entry.buildingId
-              ? userBuildingIds.includes(entry.buildingId)
-              : false,
+            isUserBuilding: entry.buildingId ? userBuildingIds.includes(entry.buildingId) : false,
           };
         })
       );
@@ -1757,16 +1732,8 @@ export const directoryRouter = createTRPCRouter({
       const entryIdsWithTags = await ctx.db
         .selectDistinct({ entryId: directoryEntryTags.entryId })
         .from(directoryEntryTags)
-        .innerJoin(
-          directoryEntries,
-          eq(directoryEntryTags.entryId, directoryEntries.id)
-        )
-        .where(
-          and(
-            inArray(directoryEntryTags.tagId, tagIds),
-            eq(directoryEntries.isActive, 1)
-          )
-        );
+        .innerJoin(directoryEntries, eq(directoryEntryTags.entryId, directoryEntries.id))
+        .where(and(inArray(directoryEntryTags.tagId, tagIds), eq(directoryEntries.isActive, 1)));
 
       const entryIds = entryIdsWithTags.map((e) => e.entryId);
 
@@ -1787,10 +1754,7 @@ export const directoryRouter = createTRPCRouter({
 
       // Get all entries
       const allEntries = await ctx.db.query.directoryEntries.findMany({
-        where: and(
-          inArray(directoryEntries.id, entryIds),
-          eq(directoryEntries.isActive, 1)
-        ),
+        where: and(inArray(directoryEntries.id, entryIds), eq(directoryEntries.isActive, 1)),
         orderBy: [directoryEntries.order, directoryEntries.title],
       });
 
@@ -1818,9 +1782,7 @@ export const directoryRouter = createTRPCRouter({
           return {
             ...entry,
             contacts,
-            isUserBuilding: entry.buildingId
-              ? userBuildingIds.includes(entry.buildingId)
-              : false,
+            isUserBuilding: entry.buildingId ? userBuildingIds.includes(entry.buildingId) : false,
           };
         })
       );
@@ -1890,10 +1852,7 @@ export const directoryRouter = createTRPCRouter({
             const entryTags = await ctx.db
               .select({ tag: directoryTags })
               .from(directoryEntryTags)
-              .innerJoin(
-                directoryTags,
-                eq(directoryEntryTags.tagId, directoryTags.id)
-              )
+              .innerJoin(directoryTags, eq(directoryEntryTags.tagId, directoryTags.id))
               .where(eq(directoryEntryTags.entryId, entry.id));
 
             return {
@@ -1921,262 +1880,121 @@ export const directoryRouter = createTRPCRouter({
       }),
 
     // Get entry by ID for admin
-    get: adminProcedure
-      .input(z.object({ id: z.string() }))
-      .query(async ({ ctx, input }) => {
-        const entry = await ctx.db.query.directoryEntries.findFirst({
-          where: eq(directoryEntries.id, input.id),
-        });
+    get: adminProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+      const entry = await ctx.db.query.directoryEntries.findFirst({
+        where: eq(directoryEntries.id, input.id),
+      });
 
-        if (!entry) return null;
+      if (!entry) return null;
 
-        const contacts = await ctx.db.query.directoryContacts.findMany({
-          where: eq(directoryContacts.entryId, entry.id),
-          orderBy: [directoryContacts.isPrimary, directoryContacts.order],
-        });
+      const contacts = await ctx.db.query.directoryContacts.findMany({
+        where: eq(directoryContacts.entryId, entry.id),
+        orderBy: [directoryContacts.isPrimary, directoryContacts.order],
+      });
 
-        // Get tags for each contact
-        const contactsWithTags = await Promise.all(
-          contacts.map(async (contact) => {
-            const contactTags = await ctx.db
-              .select({ tag: directoryTags })
-              .from(directoryContactTags)
-              .innerJoin(directoryTags, eq(directoryContactTags.tagId, directoryTags.id))
-              .where(eq(directoryContactTags.contactId, contact.id));
+      // Get tags for each contact
+      const contactsWithTags = await Promise.all(
+        contacts.map(async (contact) => {
+          const contactTags = await ctx.db
+            .select({ tag: directoryTags })
+            .from(directoryContactTags)
+            .innerJoin(directoryTags, eq(directoryContactTags.tagId, directoryTags.id))
+            .where(eq(directoryContactTags.contactId, contact.id));
 
-            return {
-              ...contact,
-              tags: contactTags.map((ct) => ct.tag),
-            };
-          })
-        );
+          return {
+            ...contact,
+            tags: contactTags.map((ct) => ct.tag),
+          };
+        })
+      );
 
-        const schedules = await ctx.db.query.directorySchedules.findMany({
-          where: eq(directorySchedules.entryId, entry.id),
-          orderBy: directorySchedules.dayOfWeek,
-        });
+      const schedules = await ctx.db.query.directorySchedules.findMany({
+        where: eq(directorySchedules.entryId, entry.id),
+        orderBy: directorySchedules.dayOfWeek,
+      });
 
-        const entryTags = await ctx.db
-          .select({ tag: directoryTags })
-          .from(directoryEntryTags)
-          .innerJoin(
-            directoryTags,
-            eq(directoryEntryTags.tagId, directoryTags.id)
-          )
-          .where(eq(directoryEntryTags.entryId, entry.id));
+      const entryTags = await ctx.db
+        .select({ tag: directoryTags })
+        .from(directoryEntryTags)
+        .innerJoin(directoryTags, eq(directoryEntryTags.tagId, directoryTags.id))
+        .where(eq(directoryEntryTags.entryId, entry.id));
 
-        return {
-          ...entry,
-          contacts: contactsWithTags,
-          schedules,
-          tags: entryTags.map((et) => et.tag),
-        };
-      }),
+      return {
+        ...entry,
+        contacts: contactsWithTags,
+        schedules,
+        tags: entryTags.map((et) => et.tag),
+      };
+    }),
 
     // Create entry
     create: adminProcedure
-    .input(
-      z.object({
-        type: directoryEntryTypeSchema,
-        title: z.string().min(1).max(255),
-        description: z.string().max(500).optional(),
-        content: z.string().optional(),
-        buildingId: z.string().optional(),
-        floorNumber: z.number().optional(),
-        icon: z.string().max(50).optional(),
-        order: z.number().default(0),
-        contacts: z
-          .array(
-            z.object({
-              type: directoryContactTypeSchema,
-              value: z.string().max(500),
-              label: z.string().max(100).optional(),
-              subtitle: z.string().max(255).optional(),
-              isPrimary: z.boolean().default(false),
-              order: z.number().default(0),
-              tagIds: z.array(z.string()).optional(),
-            })
-          )
-          .optional(),
-        schedules: z
-          .array(
-            z.object({
-              dayOfWeek: z.number().min(0).max(6),
-              openTime: z.string().optional(),
-              closeTime: z.string().optional(),
-              note: z.string().max(255).optional(),
-            })
-          )
-          .optional(),
-        tagIds: z.array(z.string()).optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const {
-        contacts,
-        schedules,
-        tagIds,
-        ...entryData
-      } = input;
-
-      // Generate slug
-      let slug = slugify(input.title);
-      let counter = 1;
-
-      // Check for existing slug
-      while (true) {
-        const existing = await ctx.db.query.directoryEntries.findFirst({
-          where: eq(directoryEntries.slug, slug),
-        });
-        if (!existing) break;
-        slug = `${slugify(input.title)}-${counter}`;
-        counter++;
-      }
-
-      // Create entry
-      const entryId = crypto.randomUUID();
-      await ctx.db.insert(directoryEntries).values({
-        id: entryId,
-        slug,
-        ...entryData,
-      });
-
-      // Create contacts
-      if (contacts && contacts.length > 0) {
-        const contactsWithIds = contacts.map((c, i) => ({
-          id: crypto.randomUUID(),
-          entryId,
-          type: c.type,
-          value: c.value,
-          label: c.label,
-          subtitle: c.subtitle,
-          isPrimary: c.isPrimary ? 1 : 0,
-          order: c.order ?? i,
-          tagIds: c.tagIds,
-        }));
-
-        await ctx.db.insert(directoryContacts).values(
-          contactsWithIds.map(({ tagIds, ...contact }) => contact)
-        );
-
-        // Create contact-level tags
-        const contactTagLinks = contactsWithIds.flatMap((c) =>
-          (c.tagIds ?? []).map((tagId) => ({
-            contactId: c.id,
-            tagId,
-          }))
-        );
-
-        if (contactTagLinks.length > 0) {
-          await ctx.db.insert(directoryContactTags).values(contactTagLinks);
-        }
-      }
-
-      // Create schedules
-      if (schedules && schedules.length > 0) {
-        await ctx.db.insert(directorySchedules).values(
-          schedules.map((s) => ({
-            id: crypto.randomUUID(),
-            entryId,
-            dayOfWeek: s.dayOfWeek,
-            openTime: s.openTime,
-            closeTime: s.closeTime,
-            note: s.note,
-          }))
-        );
-      }
-
-      // Link tags
-      if (tagIds && tagIds.length > 0) {
-        await ctx.db.insert(directoryEntryTags).values(
-          tagIds.map((tagId) => ({
-            entryId,
-            tagId,
-          }))
-        );
-      }
-
-      return { id: entryId, slug };
-    }),
-
-    // Update entry
-    update: adminProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        type: directoryEntryTypeSchema.optional(),
-        title: z.string().min(1).max(255).optional(),
-        subtitle: z.string().max(255).optional(),
-        description: z.string().max(500).optional(),
-        content: z.string().optional(),
-        buildingId: z.string().nullish(),
-        floorNumber: z.number().nullish(),
-        icon: z.string().max(50).nullish(),
-        order: z.number().optional(),
-        isActive: z.boolean().optional(),
-        contacts: z
-          .array(
-            z.object({
-              type: directoryContactTypeSchema,
-              value: z.string().max(500),
-              label: z.string().max(100).optional(),
-              subtitle: z.string().max(255).optional(),
-              isPrimary: z.boolean().default(false),
-              order: z.number().default(0),
-              tagIds: z.array(z.string()).optional(),
-            })
-          )
-          .optional(),
-        schedules: z
-          .array(
-            z.object({
-              dayOfWeek: z.number().min(0).max(6),
-              openTime: z.string().optional(),
-              closeTime: z.string().optional(),
-              note: z.string().max(255).optional(),
-            })
-          )
-          .optional(),
-        tagIds: z.array(z.string()).optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { id, isActive, contacts, schedules, tagIds, ...updateData } = input;
-
-      // Update entry
-      await ctx.db
-        .update(directoryEntries)
-        .set({
-          ...updateData,
-          isActive: isActive === undefined ? undefined : isActive ? 1 : 0,
-          updatedAt: new Date(),
+      .input(
+        z.object({
+          type: directoryEntryTypeSchema,
+          title: z.string().min(1).max(255),
+          description: z.string().max(500).optional(),
+          content: z.string().optional(),
+          buildingId: z.string().optional(),
+          floorNumber: z.number().optional(),
+          icon: z.string().max(50).optional(),
+          order: z.number().default(0),
+          contacts: z
+            .array(
+              z.object({
+                type: directoryContactTypeSchema,
+                value: z.string().max(500),
+                label: z.string().max(100).optional(),
+                subtitle: z.string().max(255).optional(),
+                isPrimary: z.boolean().default(false),
+                order: z.number().default(0),
+                tagIds: z.array(z.string()).optional(),
+              })
+            )
+            .optional(),
+          schedules: z
+            .array(
+              z.object({
+                dayOfWeek: z.number().min(0).max(6),
+                openTime: z.string().optional(),
+                closeTime: z.string().optional(),
+                note: z.string().max(255).optional(),
+              })
+            )
+            .optional(),
+          tagIds: z.array(z.string()).optional(),
         })
-        .where(eq(directoryEntries.id, id));
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { contacts, schedules, tagIds, ...entryData } = input;
 
-      // Update contacts if provided
-      if (contacts !== undefined) {
-        // Get existing contact IDs to delete their tags
-        const existingContacts = await ctx.db.query.directoryContacts.findMany({
-          where: eq(directoryContacts.entryId, id),
-        });
+        // Generate slug
+        let slug = slugify(input.title);
+        let counter = 1;
 
-        // Delete existing contact tags
-        if (existingContacts.length > 0) {
-          await ctx.db
-            .delete(directoryContactTags)
-            .where(inArray(directoryContactTags.contactId, existingContacts.map(c => c.id)));
+        // Check for existing slug
+        while (true) {
+          const existing = await ctx.db.query.directoryEntries.findFirst({
+            where: eq(directoryEntries.slug, slug),
+          });
+          if (!existing) break;
+          slug = `${slugify(input.title)}-${counter}`;
+          counter++;
         }
 
-        // Delete existing contacts
-        await ctx.db
-          .delete(directoryContacts)
-          .where(eq(directoryContacts.entryId, id));
+        // Create entry
+        const entryId = crypto.randomUUID();
+        await ctx.db.insert(directoryEntries).values({
+          id: entryId,
+          slug,
+          ...entryData,
+        });
 
-        // Insert new contacts with tags
-        if (contacts.length > 0) {
+        // Create contacts
+        if (contacts && contacts.length > 0) {
           const contactsWithIds = contacts.map((c, i) => ({
             id: crypto.randomUUID(),
-            entryId: id,
+            entryId,
             type: c.type,
             value: c.value,
             label: c.label,
@@ -2186,9 +2004,9 @@ export const directoryRouter = createTRPCRouter({
             tagIds: c.tagIds,
           }));
 
-          await ctx.db.insert(directoryContacts).values(
-            contactsWithIds.map(({ tagIds, ...contact }) => contact)
-          );
+          await ctx.db
+            .insert(directoryContacts)
+            .values(contactsWithIds.map(({ tagIds, ...contact }) => contact));
 
           // Create contact-level tags
           const contactTagLinks = contactsWithIds.flatMap((c) =>
@@ -2202,21 +2020,13 @@ export const directoryRouter = createTRPCRouter({
             await ctx.db.insert(directoryContactTags).values(contactTagLinks);
           }
         }
-      }
 
-      // Update schedules if provided
-      if (schedules !== undefined) {
-        // Delete existing schedules
-        await ctx.db
-          .delete(directorySchedules)
-          .where(eq(directorySchedules.entryId, id));
-
-        // Insert new schedules
-        if (schedules.length > 0) {
+        // Create schedules
+        if (schedules && schedules.length > 0) {
           await ctx.db.insert(directorySchedules).values(
             schedules.map((s) => ({
               id: crypto.randomUUID(),
-              entryId: id,
+              entryId,
               dayOfWeek: s.dayOfWeek,
               openTime: s.openTime,
               closeTime: s.closeTime,
@@ -2224,33 +2034,167 @@ export const directoryRouter = createTRPCRouter({
             }))
           );
         }
-      }
 
-      // Update tags if provided
-      if (tagIds !== undefined) {
-        // Delete existing tag links
-        await ctx.db
-          .delete(directoryEntryTags)
-          .where(eq(directoryEntryTags.entryId, id));
-
-        // Insert new tag links
-        if (tagIds.length > 0) {
+        // Link tags
+        if (tagIds && tagIds.length > 0) {
           await ctx.db.insert(directoryEntryTags).values(
             tagIds.map((tagId) => ({
-              entryId: id,
+              entryId,
               tagId,
             }))
           );
         }
-      }
 
-      return { success: true };
-    }),
+        return { id: entryId, slug };
+      }),
+
+    // Update entry
+    update: adminProcedure
+      .input(
+        z.object({
+          id: z.string(),
+          type: directoryEntryTypeSchema.optional(),
+          title: z.string().min(1).max(255).optional(),
+          subtitle: z.string().max(255).optional(),
+          description: z.string().max(500).optional(),
+          content: z.string().optional(),
+          buildingId: z.string().nullish(),
+          floorNumber: z.number().nullish(),
+          icon: z.string().max(50).nullish(),
+          order: z.number().optional(),
+          isActive: z.boolean().optional(),
+          contacts: z
+            .array(
+              z.object({
+                type: directoryContactTypeSchema,
+                value: z.string().max(500),
+                label: z.string().max(100).optional(),
+                subtitle: z.string().max(255).optional(),
+                isPrimary: z.boolean().default(false),
+                order: z.number().default(0),
+                tagIds: z.array(z.string()).optional(),
+              })
+            )
+            .optional(),
+          schedules: z
+            .array(
+              z.object({
+                dayOfWeek: z.number().min(0).max(6),
+                openTime: z.string().optional(),
+                closeTime: z.string().optional(),
+                note: z.string().max(255).optional(),
+              })
+            )
+            .optional(),
+          tagIds: z.array(z.string()).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { id, isActive, contacts, schedules, tagIds, ...updateData } = input;
+
+        // Update entry
+        await ctx.db
+          .update(directoryEntries)
+          .set({
+            ...updateData,
+            isActive: isActive === undefined ? undefined : isActive ? 1 : 0,
+            updatedAt: new Date(),
+          })
+          .where(eq(directoryEntries.id, id));
+
+        // Update contacts if provided
+        if (contacts !== undefined) {
+          // Get existing contact IDs to delete their tags
+          const existingContacts = await ctx.db.query.directoryContacts.findMany({
+            where: eq(directoryContacts.entryId, id),
+          });
+
+          // Delete existing contact tags
+          if (existingContacts.length > 0) {
+            await ctx.db.delete(directoryContactTags).where(
+              inArray(
+                directoryContactTags.contactId,
+                existingContacts.map((c) => c.id)
+              )
+            );
+          }
+
+          // Delete existing contacts
+          await ctx.db.delete(directoryContacts).where(eq(directoryContacts.entryId, id));
+
+          // Insert new contacts with tags
+          if (contacts.length > 0) {
+            const contactsWithIds = contacts.map((c, i) => ({
+              id: crypto.randomUUID(),
+              entryId: id,
+              type: c.type,
+              value: c.value,
+              label: c.label,
+              subtitle: c.subtitle,
+              isPrimary: c.isPrimary ? 1 : 0,
+              order: c.order ?? i,
+              tagIds: c.tagIds,
+            }));
+
+            await ctx.db
+              .insert(directoryContacts)
+              .values(contactsWithIds.map(({ tagIds, ...contact }) => contact));
+
+            // Create contact-level tags
+            const contactTagLinks = contactsWithIds.flatMap((c) =>
+              (c.tagIds ?? []).map((tagId) => ({
+                contactId: c.id,
+                tagId,
+              }))
+            );
+
+            if (contactTagLinks.length > 0) {
+              await ctx.db.insert(directoryContactTags).values(contactTagLinks);
+            }
+          }
+        }
+
+        // Update schedules if provided
+        if (schedules !== undefined) {
+          // Delete existing schedules
+          await ctx.db.delete(directorySchedules).where(eq(directorySchedules.entryId, id));
+
+          // Insert new schedules
+          if (schedules.length > 0) {
+            await ctx.db.insert(directorySchedules).values(
+              schedules.map((s) => ({
+                id: crypto.randomUUID(),
+                entryId: id,
+                dayOfWeek: s.dayOfWeek,
+                openTime: s.openTime,
+                closeTime: s.closeTime,
+                note: s.note,
+              }))
+            );
+          }
+        }
+
+        // Update tags if provided
+        if (tagIds !== undefined) {
+          // Delete existing tag links
+          await ctx.db.delete(directoryEntryTags).where(eq(directoryEntryTags.entryId, id));
+
+          // Insert new tag links
+          if (tagIds.length > 0) {
+            await ctx.db.insert(directoryEntryTags).values(
+              tagIds.map((tagId) => ({
+                entryId: id,
+                tagId,
+              }))
+            );
+          }
+        }
+
+        return { success: true };
+      }),
 
     // Delete entry (soft delete)
-    delete: adminProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
+    delete: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
       await ctx.db
         .update(directoryEntries)
         .set({ isActive: 0, updatedAt: new Date() })
@@ -2261,145 +2205,140 @@ export const directoryRouter = createTRPCRouter({
 
     // Create tag
     createTag: adminProcedure
-    .input(
-      z.object({
-        name: z.string().min(1).max(100),
-        description: z.string().max(500).optional(),
-        parentId: z.string().optional(),
-        scope: directoryScopeSchema.default("core"),
-        synonyms: z.array(z.string()).optional(),
-        icon: z.string().max(50).optional(),
-        order: z.number().default(0),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { synonyms, ...tagData } = input;
-      const slug = slugify(input.name);
+      .input(
+        z.object({
+          name: z.string().min(1).max(100),
+          description: z.string().max(500).optional(),
+          parentId: z.string().optional(),
+          scope: directoryScopeSchema.default("core"),
+          synonyms: z.array(z.string()).optional(),
+          icon: z.string().max(50).optional(),
+          order: z.number().default(0),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { synonyms, ...tagData } = input;
+        const slug = slugify(input.name);
 
-      // Generate tag ID in format: tag-{slug}
-      const tagId = `tag-${slug}`;
+        // Generate tag ID in format: tag-{slug}
+        const tagId = `tag-${slug}`;
 
-      await ctx.db.insert(directoryTags).values({
-        id: tagId,
-        slug,
-        ...tagData,
-        synonyms: synonyms ? JSON.stringify(synonyms) : null,
-      });
+        await ctx.db.insert(directoryTags).values({
+          id: tagId,
+          slug,
+          ...tagData,
+          synonyms: synonyms ? JSON.stringify(synonyms) : null,
+        });
 
-      return { id: tagId, slug };
-    }),
+        return { id: tagId, slug };
+      }),
 
     // Update tag
     updateTag: adminProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        name: z.string().min(1).max(100).optional(),
-        description: z.string().max(500).optional(),
-        parentId: z.string().nullish(),
-        scope: directoryScopeSchema.optional(),
-        synonyms: z.array(z.string()).optional(),
-        icon: z.string().max(50).nullish(),
-        order: z.number().optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { id, synonyms, name, ...updateData } = input;
-
-      // If name is updated, regenerate slug
-      const slug = name ? slugify(name) : undefined;
-
-      await ctx.db
-        .update(directoryTags)
-        .set({
-          ...updateData,
-          ...(name && { name, slug }),
-          synonyms: synonyms ? JSON.stringify(synonyms) : undefined,
+      .input(
+        z.object({
+          id: z.string(),
+          name: z.string().min(1).max(100).optional(),
+          description: z.string().max(500).optional(),
+          parentId: z.string().nullish(),
+          scope: directoryScopeSchema.optional(),
+          synonyms: z.array(z.string()).optional(),
+          icon: z.string().max(50).nullish(),
+          order: z.number().optional(),
         })
-        .where(eq(directoryTags.id, id));
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { id, synonyms, name, ...updateData } = input;
 
-      return { success: true };
-    }),
+        // If name is updated, regenerate slug
+        const slug = name ? slugify(name) : undefined;
+
+        await ctx.db
+          .update(directoryTags)
+          .set({
+            ...updateData,
+            ...(name && { name, slug }),
+            synonyms: synonyms ? JSON.stringify(synonyms) : undefined,
+          })
+          .where(eq(directoryTags.id, id));
+
+        return { success: true };
+      }),
 
     // Delete tag
     deleteTag: adminProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      // Delete tag (cascade will remove entry links)
-      await ctx.db
-        .delete(directoryTags)
-        .where(eq(directoryTags.id, input.id));
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        // Delete tag (cascade will remove entry links)
+        await ctx.db.delete(directoryTags).where(eq(directoryTags.id, input.id));
 
-      return { success: true };
-    }),
+        return { success: true };
+      }),
 
     // Get tag by ID for admin
-    getTag: adminProcedure
-      .input(z.object({ id: z.string() }))
-      .query(async ({ ctx, input }) => {
-        const tag = await ctx.db.query.directoryTags.findFirst({
-          where: eq(directoryTags.id, input.id),
-        });
+    getTag: adminProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+      const tag = await ctx.db.query.directoryTags.findFirst({
+        where: eq(directoryTags.id, input.id),
+      });
 
-        if (!tag) return null;
+      if (!tag) return null;
 
-        return {
-          id: tag.id,
-          name: tag.name,
-          slug: tag.slug,
-          description: tag.description,
-          parentId: tag.parentId,
-          scope: tag.scope,
-          icon: tag.icon,
-          order: tag.order,
-          synonyms: tag.synonyms ? JSON.parse(tag.synonyms) as string[] : [],
-        };
-      }),
+      return {
+        id: tag.id,
+        name: tag.name,
+        slug: tag.slug,
+        description: tag.description,
+        parentId: tag.parentId,
+        scope: tag.scope,
+        icon: tag.icon,
+        order: tag.order,
+        synonyms: tag.synonyms ? (JSON.parse(tag.synonyms) as string[]) : [],
+      };
+    }),
 
     // Get full tag tree for admin (with counts)
-    getTagTree: adminProcedure
-      .query(async ({ ctx }) => {
-        // Get all tags
-        const allTags = await ctx.db.query.directoryTags.findMany({
-          orderBy: [directoryTags.scope, directoryTags.order, directoryTags.name],
-        });
+    getTagTree: adminProcedure.query(async ({ ctx }) => {
+      // Get all tags
+      const allTags = await ctx.db.query.directoryTags.findMany({
+        orderBy: [directoryTags.scope, directoryTags.order, directoryTags.name],
+      });
 
-        // Get entry counts for each tag
-        const entryCounts = await ctx.db
-          .select({
-            tagId: directoryEntryTags.tagId,
-            count: count(),
-          })
-          .from(directoryEntryTags)
-          .innerJoin(directoryEntries, eq(directoryEntryTags.entryId, directoryEntries.id))
-          .where(eq(directoryEntries.isActive, 1))
-          .groupBy(directoryEntryTags.tagId);
+      // Get entry counts for each tag
+      const entryCounts = await ctx.db
+        .select({
+          tagId: directoryEntryTags.tagId,
+          count: count(),
+        })
+        .from(directoryEntryTags)
+        .innerJoin(directoryEntries, eq(directoryEntryTags.entryId, directoryEntries.id))
+        .where(eq(directoryEntries.isActive, 1))
+        .groupBy(directoryEntryTags.tagId);
 
-        // Get contact counts for each tag
-        const contactCounts = await ctx.db
-          .select({
-            tagId: directoryContactTags.tagId,
-            count: count(),
-          })
-          .from(directoryContactTags)
-          .groupBy(directoryContactTags.tagId);
+      // Get contact counts for each tag
+      const contactCounts = await ctx.db
+        .select({
+          tagId: directoryContactTags.tagId,
+          count: count(),
+        })
+        .from(directoryContactTags)
+        .groupBy(directoryContactTags.tagId);
 
-        const entryCountMap = new Map(entryCounts.map((c) => [c.tagId, c.count]));
-        const contactCountMap = new Map(contactCounts.map((c) => [c.tagId, c.count]));
+      const entryCountMap = new Map(entryCounts.map((c) => [c.tagId, c.count]));
+      const contactCountMap = new Map(contactCounts.map((c) => [c.tagId, c.count]));
 
-        return allTags.map((tag) => ({
-          id: tag.id,
-          name: tag.name,
-          slug: tag.slug,
-          description: tag.description,
-          parentId: tag.parentId,
-          scope: tag.scope,
-          icon: tag.icon,
-          order: tag.order,
-          entryCount: entryCountMap.get(tag.id) ?? 0,
-          contactCount: contactCountMap.get(tag.id) ?? 0,
-        }));
-      }),
+      return allTags.map((tag) => ({
+        id: tag.id,
+        name: tag.name,
+        slug: tag.slug,
+        description: tag.description,
+        parentId: tag.parentId,
+        scope: tag.scope,
+        icon: tag.icon,
+        order: tag.order,
+        entryCount: entryCountMap.get(tag.id) ?? 0,
+        contactCount: contactCountMap.get(tag.id) ?? 0,
+      }));
+    }),
 
     // List entries with extended filtering and stats
     listWithStats: adminProcedure
@@ -2629,46 +2568,34 @@ export const directoryRouter = createTRPCRouter({
     // Dashboard statistics
     getDashboardStats: adminProcedure.query(async ({ ctx }) => {
       // Total counts
-      const [allEntries] = await ctx.db
-        .select({ count: count() })
-        .from(directoryEntries);
+      const [allEntries] = await ctx.db.select({ count: count() }).from(directoryEntries);
 
       const [activeEntries] = await ctx.db
         .select({ count: count() })
         .from(directoryEntries)
         .where(eq(directoryEntries.isActive, 1));
 
-      const [totalTags] = await ctx.db
-        .select({ count: count() })
-        .from(directoryTags);
+      const [totalTags] = await ctx.db.select({ count: count() }).from(directoryTags);
 
       const [rootTags] = await ctx.db
         .select({ count: count() })
         .from(directoryTags)
         .where(isNull(directoryTags.parentId));
 
-      const [totalContacts] = await ctx.db
-        .select({ count: count() })
-        .from(directoryContacts);
+      const [totalContacts] = await ctx.db.select({ count: count() }).from(directoryContacts);
 
       // Problem counts
       const entriesWithoutTags = await ctx.db
         .select({ id: directoryEntries.id })
         .from(directoryEntries)
         .leftJoin(directoryEntryTags, eq(directoryEntries.id, directoryEntryTags.entryId))
-        .where(and(
-          eq(directoryEntries.isActive, 1),
-          isNull(directoryEntryTags.tagId)
-        ));
+        .where(and(eq(directoryEntries.isActive, 1), isNull(directoryEntryTags.tagId)));
 
       const entriesWithoutContacts = await ctx.db
         .select({ id: directoryEntries.id })
         .from(directoryEntries)
         .leftJoin(directoryContacts, eq(directoryEntries.id, directoryContacts.entryId))
-        .where(and(
-          eq(directoryEntries.isActive, 1),
-          isNull(directoryContacts.id)
-        ));
+        .where(and(eq(directoryEntries.isActive, 1), isNull(directoryContacts.id)));
 
       // Popular entries (by views)
       const popularEntries = await ctx.db

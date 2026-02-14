@@ -1,17 +1,10 @@
 "use client";
 
+import { AlertTriangle, Calendar, Megaphone, Sparkles, Users, Wrench } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Megaphone,
-  Calendar,
-  Wrench,
-  Users,
-  AlertTriangle,
-  Sparkles,
-} from "lucide-react";
 
-import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
+import { cn } from "~/lib/utils";
 import type { NewsType } from "~/server/db/schema";
 
 const NEWS_TYPE_FILTERS: Array<{
@@ -49,7 +42,7 @@ export function NewsFilters({ currentType }: NewsFiltersProps) {
   };
 
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div className="mb-6 flex flex-wrap gap-2">
       {NEWS_TYPE_FILTERS.map(({ value, label, icon: Icon }) => {
         const isActive = value === (currentType ?? null);
 

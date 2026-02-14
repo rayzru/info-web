@@ -14,13 +14,7 @@ interface ChatButtonProps {
   className?: string;
 }
 
-export async function ChatButton({
-  className,
-  title,
-  description,
-  url,
-  type,
-}: ChatButtonProps) {
+export async function ChatButton({ className, title, description, url, type }: ChatButtonProps) {
   return (
     <Link href={url} target="blank" passHref>
       <Button

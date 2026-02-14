@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+
 import {
   AlertTriangle,
+  ArrowRight,
+  CheckCircle,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -15,20 +18,15 @@ import {
   MessageSquare,
   Send,
   User,
-  CheckCircle,
   XCircle,
-  ArrowRight,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +35,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
   Select,
@@ -45,12 +44,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Textarea } from "~/components/ui/textarea";
-import { Input } from "~/components/ui/input";
 import { Separator } from "~/components/ui/separator";
+import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
+import type { FeedbackPriority, FeedbackStatus, FeedbackType } from "~/server/db/schema";
 import { api } from "~/trpc/react";
-import type { FeedbackStatus, FeedbackType, FeedbackPriority } from "~/server/db/schema";
 
 // ============================================================================
 // Labels
@@ -199,7 +197,7 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Eye className="h-5 w-5" />
@@ -219,7 +217,7 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
                 {(() => {
                   const TypeIcon = TYPE_ICONS[feedback.type];
                   return (
-                    <div className={`p-2 rounded-full bg-muted ${TYPE_COLORS[feedback.type]}`}>
+                    <div className={`bg-muted rounded-full p-2 ${TYPE_COLORS[feedback.type]}`}>
                       <TypeIcon className="h-5 w-5" />
                     </div>
                   );
@@ -234,7 +232,7 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
                       {PRIORITY_LABELS[feedback.priority]}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {new Date(feedback.createdAt).toLocaleString("ru-RU")}
                   </p>
                 </div>
@@ -254,7 +252,7 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
 
               <div>
                 <Label className="text-muted-foreground">Текст обращения</Label>
-                <p className="mt-1 whitespace-pre-wrap bg-muted p-3 rounded-lg">
+                <p className="bg-muted mt-1 whitespace-pre-wrap rounded-lg p-3">
                   {feedback.content}
                 </p>
               </div>
@@ -263,9 +261,12 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
               {feedback.photos && feedback.photos.length > 0 && (
                 <div>
                   <Label className="text-muted-foreground">Фотографии</Label>
-                  <div className="grid grid-cols-4 gap-2 mt-2">
+                  <div className="mt-2 grid grid-cols-4 gap-2">
                     {feedback.photos.map((photo, idx) => (
-                      <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border">
+                      <div
+                        key={idx}
+                        className="relative aspect-square overflow-hidden rounded-lg border"
+                      >
                         <Image
                           src={photo}
                           alt={`Фото ${idx + 1}`}
@@ -303,11 +304,12 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
 
               {/* Previous response */}
               {feedback.response && (
-                <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
+                <div className="rounded-lg bg-green-50 p-4 dark:bg-green-950">
                   <Label className="text-green-700 dark:text-green-300">Ответ</Label>
                   <p className="mt-1 whitespace-pre-wrap">{feedback.response}</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {feedback.respondedBy?.name} · {feedback.respondedAt && new Date(feedback.respondedAt).toLocaleString("ru-RU")}
+                  <p className="text-muted-foreground mt-2 text-xs">
+                    {feedback.respondedBy?.name} ·{" "}
+                    {feedback.respondedAt && new Date(feedback.respondedAt).toLocaleString("ru-RU")}
                   </p>
                 </div>
               )}
@@ -322,7 +324,7 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
 
               {/* Internal note */}
               {feedback.internalNote && (
-                <div className="bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg">
+                <div className="rounded-lg bg-yellow-50 p-4 dark:bg-yellow-950">
                   <Label className="text-yellow-700 dark:text-yellow-300">Внутренняя заметка</Label>
                   <p className="mt-1 whitespace-pre-wrap">{feedback.internalNote}</p>
                 </div>
@@ -339,7 +341,10 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Изменить статус</Label>
-                    <Select value={newStatus} onValueChange={(v) => setNewStatus(v as FeedbackStatus)}>
+                    <Select
+                      value={newStatus}
+                      onValueChange={(v) => setNewStatus(v as FeedbackStatus)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите статус" />
                       </SelectTrigger>
@@ -353,7 +358,10 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
 
                   <div className="space-y-2">
                     <Label>Изменить приоритет</Label>
-                    <Select value={newPriority} onValueChange={(v) => setNewPriority(v as FeedbackPriority)}>
+                    <Select
+                      value={newPriority}
+                      onValueChange={(v) => setNewPriority(v as FeedbackPriority)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите приоритет" />
                       </SelectTrigger>
@@ -388,7 +396,10 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
 
                 <Button
                   onClick={handleUpdate}
-                  disabled={updateMutation.isPending || (!newStatus && !newPriority && !internalNote && !forwardedTo)}
+                  disabled={
+                    updateMutation.isPending ||
+                    (!newStatus && !newPriority && !internalNote && !forwardedTo)
+                  }
                 >
                   {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Сохранить изменения
@@ -404,7 +415,7 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
                     placeholder="Текст ответа..."
                     rows={4}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Ответ будет отправлен на email заявителя (если указан)
                   </p>
                 </div>
@@ -422,9 +433,7 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
             )}
           </div>
         ) : (
-          <p className="text-center py-8 text-muted-foreground">
-            Обращение не найдено
-          </p>
+          <p className="text-muted-foreground py-8 text-center">Обращение не найдено</p>
         )}
       </DialogContent>
     </Dialog>
@@ -485,23 +494,20 @@ export default function AdminFeedbackPage() {
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title="Обратная связь"
-        description="Обращения пользователей"
-      />
+      <AdminPageHeader title="Обратная связь" description="Обращения пользователей" />
 
       {/* Stats */}
       {stats && (
-        <div className="grid gap-4 grid-cols-2 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
           <Card
             className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "all" ? "ring-2 ring-primary ring-offset-2" : ""
+              statusFilter === "all" ? "ring-primary ring-2 ring-offset-2" : ""
             }`}
             onClick={() => updateParams("status", "all")}
           >
             <CardContent className="pt-4">
               <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-sm text-muted-foreground">Всего</p>
+              <p className="text-muted-foreground text-sm">Всего</p>
             </CardContent>
           </Card>
           <Card
@@ -512,7 +518,7 @@ export default function AdminFeedbackPage() {
           >
             <CardContent className="pt-4">
               <div className="text-2xl font-bold text-yellow-600">{stats.new}</div>
-              <p className="text-sm text-muted-foreground">Новых</p>
+              <p className="text-muted-foreground text-sm">Новых</p>
             </CardContent>
           </Card>
           <Card
@@ -523,7 +529,7 @@ export default function AdminFeedbackPage() {
           >
             <CardContent className="pt-4">
               <div className="text-2xl font-bold text-blue-600">{stats.inProgress}</div>
-              <p className="text-sm text-muted-foreground">В работе</p>
+              <p className="text-muted-foreground text-sm">В работе</p>
             </CardContent>
           </Card>
           <Card
@@ -534,17 +540,17 @@ export default function AdminFeedbackPage() {
           >
             <CardContent className="pt-4">
               <div className="text-2xl font-bold text-green-600">{stats.resolved}</div>
-              <p className="text-sm text-muted-foreground">Решено</p>
+              <p className="text-muted-foreground text-sm">Решено</p>
             </CardContent>
           </Card>
           <Card className="cursor-default">
             <CardContent className="pt-4">
               <div className="text-2xl font-bold text-purple-600">
                 {Object.values(stats.byType).reduce((a, b) => a + b, 0) - stats.total === 0
-                  ? stats.byType.complaint ?? 0
+                  ? (stats.byType.complaint ?? 0)
                   : 0}
               </div>
-              <p className="text-sm text-muted-foreground">Жалоб</p>
+              <p className="text-muted-foreground text-sm">Жалоб</p>
             </CardContent>
           </Card>
         </div>
@@ -607,19 +613,19 @@ export default function AdminFeedbackPage() {
             return (
               <Card
                 key={item.id}
-                className="cursor-pointer hover:shadow-md transition-all"
+                className="cursor-pointer transition-all hover:shadow-md"
                 onClick={() => openViewDialog(item.id)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">
                     {/* Type Icon */}
-                    <div className={`p-2 rounded-full bg-muted ${TYPE_COLORS[item.type]}`}>
+                    <div className={`bg-muted rounded-full p-2 ${TYPE_COLORS[item.type]}`}>
                       <TypeIcon className="h-5 w-5" />
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium">{TYPE_LABELS[item.type]}</span>
                         <Badge className={STATUS_COLORS[item.status]}>
                           {STATUS_LABELS[item.status]}
@@ -631,15 +637,13 @@ export default function AdminFeedbackPage() {
                         )}
                       </div>
 
-                      {item.title && (
-                        <p className="font-medium mt-1 truncate">{item.title}</p>
-                      )}
+                      {item.title && <p className="mt-1 truncate font-medium">{item.title}</p>}
 
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
                         {item.content}
                       </p>
 
-                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                      <div className="text-muted-foreground mt-2 flex items-center gap-4 text-xs">
                         {item.contactName && (
                           <span className="flex items-center gap-1">
                             <User className="h-3 w-3" />
@@ -650,11 +654,7 @@ export default function AdminFeedbackPage() {
                           <Clock className="h-3 w-3" />
                           {new Date(item.createdAt).toLocaleDateString("ru-RU")}
                         </span>
-                        {item.assignedTo && (
-                          <span>
-                            Ответственный: {item.assignedTo.name}
-                          </span>
-                        )}
+                        {item.assignedTo && <span>Ответственный: {item.assignedTo.name}</span>}
                       </div>
                     </div>
 
@@ -663,9 +663,7 @@ export default function AdminFeedbackPage() {
                       {item.status === "resolved" && (
                         <CheckCircle className="h-5 w-5 text-green-500" />
                       )}
-                      {item.status === "closed" && (
-                        <XCircle className="h-5 w-5 text-gray-500" />
-                      )}
+                      {item.status === "closed" && <XCircle className="h-5 w-5 text-gray-500" />}
                       {(item.status === "new" || item.status === "in_progress") && (
                         <Button variant="outline" size="sm">
                           Открыть
@@ -705,7 +703,7 @@ export default function AdminFeedbackPage() {
         </div>
       ) : (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
+          <CardContent className="text-muted-foreground py-12 text-center">
             Обращений не найдено
           </CardContent>
         </Card>

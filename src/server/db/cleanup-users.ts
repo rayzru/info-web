@@ -26,6 +26,7 @@
  */
 
 import { sql } from "drizzle-orm";
+
 import { db } from "./index";
 
 // Helper to truncate table if it exists
@@ -52,9 +53,7 @@ async function truncateIfExists(tableName: string): Promise<void> {
 
 async function cleanupDatabase() {
   console.log("🧹 Starting database cleanup...");
-  console.log(
-    "⚠️  This will DELETE all user content while preserving structural data!\n"
-  );
+  console.log("⚠️  This will DELETE all user content while preserving structural data!\n");
 
   try {
     // 1. Delete messages and related tables

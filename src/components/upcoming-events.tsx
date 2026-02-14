@@ -1,12 +1,12 @@
-import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, Calendar, Clock, MapPin, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { api } from "~/trpc/server";
 import { cn } from "~/lib/utils";
+import { api } from "~/trpc/server";
 
 // ============================================================================
 // Component
@@ -27,12 +27,12 @@ export async function UpcomingEvents({ variant = "grid" }: UpcomingEventsProps) 
     return (
       <section>
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-muted-foreground" />
+            <Calendar className="text-muted-foreground h-5 w-5" />
             <h2 className="text-lg font-semibold">Мероприятия</h2>
           </div>
-          <Button variant="ghost" size="sm" className="h-auto py-1 px-2 text-xs" asChild>
+          <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs" asChild>
             <Link href="/events" className="gap-1">
               Все
               <ArrowRight className="h-3 w-3" />
@@ -43,26 +43,23 @@ export async function UpcomingEvents({ variant = "grid" }: UpcomingEventsProps) 
         {/* Events List */}
         <div className="space-y-3">
           {events.map((event) => {
-            const startAt = event.eventStartAt
-              ? new Date(event.eventStartAt)
-              : null;
+            const startAt = event.eventStartAt ? new Date(event.eventStartAt) : null;
             const isToday = startAt && isSameDay(startAt, new Date());
             const isTomorrow =
-              startAt &&
-              isSameDay(startAt, new Date(Date.now() + 24 * 60 * 60 * 1000));
+              startAt && isSameDay(startAt, new Date(Date.now() + 24 * 60 * 60 * 1000));
 
             return (
               <Link
                 key={event.id}
                 href={`/events/${event.id}`}
-                className="group block rounded-lg border bg-card hover:shadow-sm transition-shadow overflow-hidden"
+                className="bg-card group block overflow-hidden rounded-lg border transition-shadow hover:shadow-sm"
               >
                 <div className="flex gap-3 p-3">
                   {/* Date badge */}
                   {startAt && (
                     <div
                       className={cn(
-                        "w-12 h-12 rounded-lg overflow-hidden text-center shrink-0",
+                        "h-12 w-12 shrink-0 overflow-hidden rounded-lg text-center",
                         isToday
                           ? "bg-red-500 text-white"
                           : isTomorrow
@@ -72,7 +69,7 @@ export async function UpcomingEvents({ variant = "grid" }: UpcomingEventsProps) 
                     >
                       <div
                         className={cn(
-                          "text-[9px] font-medium uppercase py-0.5",
+                          "py-0.5 text-[9px] font-medium uppercase",
                           isToday || isTomorrow
                             ? "bg-black/10"
                             : "bg-primary text-primary-foreground"
@@ -80,19 +77,18 @@ export async function UpcomingEvents({ variant = "grid" }: UpcomingEventsProps) 
                       >
                         {formatMonth(startAt)}
                       </div>
-                      <div className="text-lg font-bold">
-                        {startAt.getDate()}
-                      </div>
+                      <div className="text-lg font-bold">{startAt.getDate()}</div>
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="group-hover:text-primary line-clamp-2 text-sm font-medium transition-colors">
                       {event.title}
                     </h3>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                    <div className="text-muted-foreground mt-1 flex items-center gap-2 text-xs">
                       {startAt && (
                         <span>
-                          {isToday ? "Сегодня" : isTomorrow ? "Завтра" : formatDate(startAt)}, {formatTime(startAt)}
+                          {isToday ? "Сегодня" : isTomorrow ? "Завтра" : formatDate(startAt)},{" "}
+                          {formatTime(startAt)}
                         </span>
                       )}
                     </div>
@@ -109,9 +105,9 @@ export async function UpcomingEvents({ variant = "grid" }: UpcomingEventsProps) 
   return (
     <section className="py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-muted-foreground" />
+          <Calendar className="text-muted-foreground h-5 w-5" />
           <h2 className="text-xl font-semibold">Мероприятия</h2>
         </div>
         <Button variant="ghost" size="sm" asChild>
@@ -125,21 +121,18 @@ export async function UpcomingEvents({ variant = "grid" }: UpcomingEventsProps) 
       {/* Events Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {events.map((event) => {
-          const startAt = event.eventStartAt
-            ? new Date(event.eventStartAt)
-            : null;
+          const startAt = event.eventStartAt ? new Date(event.eventStartAt) : null;
           const isToday = startAt && isSameDay(startAt, new Date());
           const isTomorrow =
-            startAt &&
-            isSameDay(startAt, new Date(Date.now() + 24 * 60 * 60 * 1000));
+            startAt && isSameDay(startAt, new Date(Date.now() + 24 * 60 * 60 * 1000));
 
           return (
             <Card
               key={event.id}
-              className="group overflow-hidden hover:shadow-md transition-shadow"
+              className="group overflow-hidden transition-shadow hover:shadow-md"
             >
               {/* Cover Image or Date Badge */}
-              <div className="relative aspect-video overflow-hidden bg-muted">
+              <div className="bg-muted relative aspect-video overflow-hidden">
                 {event.coverImage ? (
                   <Image
                     src={event.coverImage}
@@ -149,17 +142,17 @@ export async function UpcomingEvents({ variant = "grid" }: UpcomingEventsProps) 
                     unoptimized={event.coverImage.includes("/uploads/")}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Calendar className="h-12 w-12 text-muted-foreground/30" />
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Calendar className="text-muted-foreground/30 h-12 w-12" />
                   </div>
                 )}
 
                 {/* Date overlay */}
                 {startAt && (
-                  <div className="absolute top-2 left-2">
+                  <div className="absolute left-2 top-2">
                     <div
                       className={cn(
-                        "rounded-lg overflow-hidden shadow-md text-center",
+                        "overflow-hidden rounded-lg text-center shadow-md",
                         isToday
                           ? "bg-red-500 text-white"
                           : isTomorrow
@@ -177,19 +170,14 @@ export async function UpcomingEvents({ variant = "grid" }: UpcomingEventsProps) 
                       >
                         {formatMonth(startAt)}
                       </div>
-                      <div className="px-3 py-1 text-xl font-bold">
-                        {startAt.getDate()}
-                      </div>
+                      <div className="px-3 py-1 text-xl font-bold">{startAt.getDate()}</div>
                     </div>
                   </div>
                 )}
 
                 {/* Urgent badge */}
                 {event.isUrgent && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute top-2 right-2"
-                  >
+                  <Badge variant="destructive" className="absolute right-2 top-2">
                     Срочно
                   </Badge>
                 )}
@@ -197,22 +185,18 @@ export async function UpcomingEvents({ variant = "grid" }: UpcomingEventsProps) 
 
               <CardContent className="p-4">
                 {/* Title */}
-                <h3 className="font-medium line-clamp-2 group-hover:text-primary transition-colors mb-2">
+                <h3 className="group-hover:text-primary mb-2 line-clamp-2 font-medium transition-colors">
                   <Link href={`/events/${event.id}`}>{event.title}</Link>
                 </h3>
 
                 {/* Time & Location */}
-                <div className="space-y-1 text-xs text-muted-foreground">
+                <div className="text-muted-foreground space-y-1 text-xs">
                   {startAt && (
                     <div className="flex items-center gap-1.5">
                       <Clock className="h-3 w-3" />
                       <span>
-                        {isToday
-                          ? "Сегодня"
-                          : isTomorrow
-                            ? "Завтра"
-                            : formatDate(startAt)}
-                        , {formatTime(startAt)}
+                        {isToday ? "Сегодня" : isTomorrow ? "Завтра" : formatDate(startAt)},{" "}
+                        {formatTime(startAt)}
                       </span>
                     </div>
                   )}
@@ -227,7 +211,7 @@ export async function UpcomingEvents({ variant = "grid" }: UpcomingEventsProps) 
 
               <CardFooter className="px-4 pb-4 pt-0">
                 {/* Building & Max Attendees */}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="text-muted-foreground flex items-center gap-2 text-xs">
                   {event.building && (
                     <>
                       <span>Строение {event.building.number}</span>

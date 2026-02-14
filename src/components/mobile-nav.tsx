@@ -1,42 +1,38 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { type MouseEvent, useState } from "react";
+
 import {
-  Menu,
+  Bell,
+  BookOpen,
+  Building2,
   Info,
+  KeyRound,
+  LayoutDashboard,
+  LogOut,
+  Megaphone,
+  Menu,
+  MessageSquare,
   Monitor,
   Moon,
+  Shield,
   Sun,
   Tag,
-  Users,
-  LogOut,
   User,
-  Shield,
-  LayoutDashboard,
-  KeyRound,
-  Bell,
-  Building2,
-  Megaphone,
-  MessageSquare,
-  BookOpen,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-
-import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Separator } from "./ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet";
-import { cn } from "~/lib/utils";
-import { useThemeStore, type Theme } from "~/stores/theme-store";
 import { useTheme } from "next-themes";
+
+import { cn } from "~/lib/utils";
+import { type Theme, useThemeStore } from "~/stores/theme-store";
+
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Button } from "./ui/button";
+import { Separator } from "./ui/separator";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { useThemeTransition } from "./theme-transition";
 
 const navigation = [
@@ -116,12 +112,9 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
           <span className="sr-only">Меню</span>
         </Button>
       </SheetTrigger>
-      <SheetContent
-        side="right"
-        className="w-full sm:w-[320px] p-0 gap-0! overflow-hidden"
-      >
-        <div className="flex flex-col h-dvh max-h-full overflow-hidden">
-          <SheetHeader className="p-4 pb-2 shrink-0">
+      <SheetContent side="right" className="gap-0! w-full overflow-hidden p-0 sm:w-[320px]">
+        <div className="flex h-dvh max-h-full flex-col overflow-hidden">
+          <SheetHeader className="shrink-0 p-4 pb-2">
             <SheetTitle>Меню</SheetTitle>
           </SheetHeader>
 
@@ -132,14 +125,12 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={user.image ?? undefined} />
-                    <AvatarFallback>
-                      {user.name?.slice(0, 2) ?? "U"}
-                    </AvatarFallback>
+                    <AvatarFallback>{user.name?.slice(0, 2) ?? "U"}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
                     <span className="font-medium">{user.name ?? "Пользователь"}</span>
                     {isAdmin && (
-                      <span className="text-xs text-muted-foreground">Администратор</span>
+                      <span className="text-muted-foreground text-xs">Администратор</span>
                     )}
                   </div>
                 </div>
@@ -149,7 +140,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
           )}
 
           {/* Main navigation - scrollable area */}
-          <nav className="flex-1 min-h-0 overflow-y-auto p-2">
+          <nav className="min-h-0 flex-1 overflow-y-auto p-2">
             <div className="flex flex-col gap-1">
               {navigation.map((item) => {
                 const Icon = item.icon;
@@ -164,7 +155,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                     <Button
                       variant={active ? "secondary" : "ghost"}
                       className={cn(
-                        "w-full justify-start gap-3 h-12",
+                        "h-12 w-full justify-start gap-3",
                         active && "bg-primary/10 text-primary font-medium"
                       )}
                     >
@@ -188,7 +179,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                         <Button
                           variant={pathname === "/my" ? "secondary" : "ghost"}
                           className={cn(
-                            "w-full justify-start gap-3 h-12",
+                            "h-12 w-full justify-start gap-3",
                             pathname === "/my" && "bg-primary/10 text-primary font-medium"
                           )}
                         >
@@ -200,7 +191,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                         <Button
                           variant={pathname === "/my/profile" ? "secondary" : "ghost"}
                           className={cn(
-                            "w-full justify-start gap-3 h-12",
+                            "h-12 w-full justify-start gap-3",
                             pathname === "/my/profile" && "bg-primary/10 text-primary font-medium"
                           )}
                         >
@@ -212,7 +203,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                         <Button
                           variant={pathname === "/my/security" ? "secondary" : "ghost"}
                           className={cn(
-                            "w-full justify-start gap-3 h-12",
+                            "h-12 w-full justify-start gap-3",
                             pathname === "/my/security" && "bg-primary/10 text-primary font-medium"
                           )}
                         >
@@ -224,8 +215,9 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                         <Button
                           variant={pathname === "/my/notifications" ? "secondary" : "ghost"}
                           className={cn(
-                            "w-full justify-start gap-3 h-12",
-                            pathname === "/my/notifications" && "bg-primary/10 text-primary font-medium"
+                            "h-12 w-full justify-start gap-3",
+                            pathname === "/my/notifications" &&
+                              "bg-primary/10 text-primary font-medium"
                           )}
                         >
                           <Bell className="h-5 w-5" />
@@ -239,7 +231,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                         <Button
                           variant={pathname === "/my/property" ? "secondary" : "ghost"}
                           className={cn(
-                            "w-full justify-start gap-3 h-12",
+                            "h-12 w-full justify-start gap-3",
                             pathname === "/my/property" && "bg-primary/10 text-primary font-medium"
                           )}
                         >
@@ -251,7 +243,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                         <Button
                           variant={pathname === "/my/ads" ? "secondary" : "ghost"}
                           className={cn(
-                            "w-full justify-start gap-3 h-12",
+                            "h-12 w-full justify-start gap-3",
                             pathname === "/my/ads" && "bg-primary/10 text-primary font-medium"
                           )}
                         >
@@ -264,10 +256,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                 ) : (
                   <div className="flex flex-col gap-1">
                     <Link href="/my" onClick={() => setOpen(false)}>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12"
-                      >
+                      <Button variant="ghost" className="h-12 w-full justify-start gap-3">
                         <User className="h-5 w-5" />
                         Мой кабинет
                       </Button>
@@ -286,7 +275,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                     <Button
                       variant={isActive("/admin") ? "secondary" : "ghost"}
                       className={cn(
-                        "w-full justify-start gap-3 h-12",
+                        "h-12 w-full justify-start gap-3",
                         isActive("/admin") && "bg-primary/10 text-primary font-medium"
                       )}
                     >
@@ -303,7 +292,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
           <div className="shrink-0">
             <Separator />
             <div className="p-2">
-              <div className="text-xs text-muted-foreground px-3 py-2">Тема</div>
+              <div className="text-muted-foreground px-3 py-2 text-xs">Тема</div>
               <div className="flex gap-1">
                 {themeOptions.map((option) => {
                   const Icon = option.icon;
@@ -313,10 +302,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
                       key={option.value}
                       variant={isSelected ? "secondary" : "ghost"}
                       size="sm"
-                      className={cn(
-                        "flex-1 gap-2",
-                        isSelected && "bg-primary/10 text-primary"
-                      )}
+                      className={cn("flex-1 gap-2", isSelected && "bg-primary/10 text-primary")}
                       onClick={(e) => handleThemeChange(option.value, e)}
                     >
                       <Icon className="h-4 w-4" />
@@ -335,7 +321,7 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
               <div className="p-2">
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-3 h-12 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 h-12 w-full justify-start gap-3"
                   onClick={() => signOut()}
                 >
                   <LogOut className="h-5 w-5" />
@@ -346,18 +332,20 @@ export function MobileNav({ user, isAdmin }: MobileNavProps) {
           )}
 
           {/* Login button for non-authenticated users (hidden on auth pages) */}
-          {!user && !pathname.startsWith("/login") && !pathname.startsWith("/register") && !pathname.startsWith("/forgot-password") && !pathname.startsWith("/reset-password") && (
-            <div className="shrink-0">
-              <Separator />
-              <div className="p-2">
-                <Link href="/login" onClick={() => setOpen(false)}>
-                  <Button className="w-full h-12">
-                    Войти
-                  </Button>
-                </Link>
+          {!user &&
+            !pathname.startsWith("/login") &&
+            !pathname.startsWith("/register") &&
+            !pathname.startsWith("/forgot-password") &&
+            !pathname.startsWith("/reset-password") && (
+              <div className="shrink-0">
+                <Separator />
+                <div className="p-2">
+                  <Link href="/login" onClick={() => setOpen(false)}>
+                    <Button className="h-12 w-full">Войти</Button>
+                  </Link>
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </SheetContent>
     </Sheet>

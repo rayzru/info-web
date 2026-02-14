@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
+import { Check, MessageSquarePlus, ThumbsDown, ThumbsUp } from "lucide-react";
 import Link from "next/link";
-import { ThumbsUp, ThumbsDown, Check, MessageSquarePlus } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
@@ -46,9 +47,7 @@ export function ArticleFeedback({
 
   return (
     <div className="flex flex-col items-center py-4">
-      <p className="text-sm text-muted-foreground mb-3">
-        Была ли эта статья полезной?
-      </p>
+      <p className="text-muted-foreground mb-3 text-sm">Была ли эта статья полезной?</p>
       <div className="flex items-center gap-3">
         <Button
           variant={voted === "helpful" ? "default" : "outline"}
@@ -57,15 +56,9 @@ export function ArticleFeedback({
           disabled={voted !== null || rateMutation.isPending}
           className="gap-2"
         >
-          {voted === "helpful" ? (
-            <Check className="h-4 w-4" />
-          ) : (
-            <ThumbsUp className="h-4 w-4" />
-          )}
+          {voted === "helpful" ? <Check className="h-4 w-4" /> : <ThumbsUp className="h-4 w-4" />}
           Да
-          {counts.helpful > 0 && (
-            <span className="text-xs opacity-70">({counts.helpful})</span>
-          )}
+          {counts.helpful > 0 && <span className="text-xs opacity-70">({counts.helpful})</span>}
         </Button>
         <Button
           variant={voted === "not_helpful" ? "default" : "outline"}
@@ -85,15 +78,16 @@ export function ArticleFeedback({
           )}
         </Button>
       </div>
-      {voted && (
-        <p className="mt-3 text-sm text-muted-foreground">
-          Спасибо за отзыв!
-        </p>
-      )}
+      {voted && <p className="text-muted-foreground mt-3 text-sm">Спасибо за отзыв!</p>}
 
       {/* Кнопка предложения изменений */}
-      <div className="mt-4 pt-4 border-t border-border/50">
-        <Button variant="ghost" size="sm" asChild className="gap-2 text-muted-foreground hover:text-foreground">
+      <div className="border-border/50 mt-4 border-t pt-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className="text-muted-foreground hover:text-foreground gap-2"
+        >
           <Link href={feedbackUrl}>
             <MessageSquarePlus className="h-4 w-4" />
             Предложить изменения

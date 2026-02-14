@@ -17,12 +17,7 @@ import { users } from "./users";
 // Enums
 // ============================================================================
 
-export const mediaTypeEnum = pgEnum("media_type_enum", [
-  "image",
-  "document",
-  "video",
-  "other",
-]);
+export const mediaTypeEnum = pgEnum("media_type_enum", ["image", "document", "video", "other"]);
 
 // ============================================================================
 // Media Table
@@ -78,7 +73,7 @@ export const media = createTable(
 // ============================================================================
 
 export const mediaTags = createTable(
-  "media_tag",
+  "info_media_tag",
   {
     id: uuid("id").defaultRandom().primaryKey(),
     name: varchar("name", { length: 50 }).notNull().unique(),
@@ -90,9 +85,7 @@ export const mediaTags = createTable(
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
-  (table) => [
-    index("media_tag_slug_idx").on(table.slug),
-  ]
+  (table) => [index("media_tag_slug_idx").on(table.slug)]
 );
 
 // ============================================================================
@@ -100,7 +93,7 @@ export const mediaTags = createTable(
 // ============================================================================
 
 export const mediaToTags = createTable(
-  "media_to_tag",
+  "info_media_to_tag",
   {
     mediaId: uuid("media_id")
       .notNull()

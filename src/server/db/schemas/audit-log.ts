@@ -1,13 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  index,
-  jsonb,
-  pgEnum,
-  text,
-  timestamp,
-  uuid,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { index, jsonb, pgEnum, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 import { createTable } from "./create-table";
 import { users } from "./users";
@@ -158,8 +150,9 @@ export const auditLogs = createTable(
     action: auditActionEnum("action").notNull(),
 
     // Кто выполнил действие (null для системных действий)
-    actorId: varchar("actor_id", { length: 255 })
-      .references(() => users.id, { onDelete: "set null" }),
+    actorId: varchar("actor_id", { length: 255 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
 
     // Предыдущее состояние (для обновлений)
     previousState: jsonb("previous_state").$type<Record<string, unknown>>(),
@@ -195,11 +188,7 @@ export const auditLogs = createTable(
     index("audit_log_actor_idx").on(table.actorId),
     index("audit_log_created_at_idx").on(table.createdAt),
     // Составной индекс для "показать все действия с этой сущностью"
-    index("audit_log_entity_created_idx").on(
-      table.entityType,
-      table.entityId,
-      table.createdAt
-    ),
+    index("audit_log_entity_created_idx").on(table.entityType, table.entityId, table.createdAt),
   ]
 );
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 
 // ============================================================================
 // Types
@@ -61,88 +61,88 @@ export function useImageUpload(): UseImageUploadResult {
     setError(null);
   }, []);
 
-  const upload = useCallback(async (
-    file: File,
-    options: UploadOptions = {}
-  ): Promise<UploadedImage> => {
-    setIsUploading(true);
-    setError(null);
+  const upload = useCallback(
+    async (file: File, options: UploadOptions = {}): Promise<UploadedImage> => {
+      setIsUploading(true);
+      setError(null);
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      if (options.keepOriginal) {
-        formData.append("keepOriginal", "true");
-      }
-      if (options.maxWidth) {
-        formData.append("maxWidth", String(options.maxWidth));
-      }
-      if (options.maxHeight) {
-        formData.append("maxHeight", String(options.maxHeight));
-      }
-      if (options.quality) {
-        formData.append("quality", String(options.quality));
-      }
-      if (options.addWatermark === false) {
-        formData.append("addWatermark", "false");
-      }
-      if (options.outputFormat) {
-        formData.append("outputFormat", options.outputFormat);
-      }
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Upload failed");
-      }
-
-      return data.image;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Upload failed";
-      setError(message);
-      throw err;
-    } finally {
-      setIsUploading(false);
-    }
-  }, []);
-
-  const uploadMultiple = useCallback(async (
-    files: File[],
-    options: UploadOptions = {}
-  ): Promise<UploadedImage[]> => {
-    setIsUploading(true);
-    setProgress(0);
-    setError(null);
-
-    const results: UploadedImage[] = [];
-    const errors: string[] = [];
-
-    try {
-      for (let i = 0; i < files.length; i++) {
-        try {
-          const result = await upload(files[i]!, options);
-          results.push(result);
-        } catch (err) {
-          errors.push(`${files[i]!.name}: ${err instanceof Error ? err.message : "Failed"}`);
+        if (options.keepOriginal) {
+          formData.append("keepOriginal", "true");
         }
-        setProgress(Math.round(((i + 1) / files.length) * 100));
-      }
+        if (options.maxWidth) {
+          formData.append("maxWidth", String(options.maxWidth));
+        }
+        if (options.maxHeight) {
+          formData.append("maxHeight", String(options.maxHeight));
+        }
+        if (options.quality) {
+          formData.append("quality", String(options.quality));
+        }
+        if (options.addWatermark === false) {
+          formData.append("addWatermark", "false");
+        }
+        if (options.outputFormat) {
+          formData.append("outputFormat", options.outputFormat);
+        }
 
-      if (errors.length > 0) {
-        setError(`Some uploads failed: ${errors.join(", ")}`);
-      }
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-      return results;
-    } finally {
-      setIsUploading(false);
-    }
-  }, [upload]);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Upload failed");
+        }
+
+        return data.image;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Upload failed";
+        setError(message);
+        throw err;
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    []
+  );
+
+  const uploadMultiple = useCallback(
+    async (files: File[], options: UploadOptions = {}): Promise<UploadedImage[]> => {
+      setIsUploading(true);
+      setProgress(0);
+      setError(null);
+
+      const results: UploadedImage[] = [];
+      const errors: string[] = [];
+
+      try {
+        for (let i = 0; i < files.length; i++) {
+          try {
+            const result = await upload(files[i]!, options);
+            results.push(result);
+          } catch (err) {
+            errors.push(`${files[i]!.name}: ${err instanceof Error ? err.message : "Failed"}`);
+          }
+          setProgress(Math.round(((i + 1) / files.length) * 100));
+        }
+
+        if (errors.length > 0) {
+          setError(`Some uploads failed: ${errors.join(", ")}`);
+        }
+
+        return results;
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [upload]
+  );
 
   return {
     upload,

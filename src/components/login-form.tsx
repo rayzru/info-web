@@ -1,12 +1,13 @@
 "use client";
 
+import { useState } from "react";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -18,14 +19,9 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
-import { loginFormSchema, type LoginFormData } from "~/lib/validations/auth";
+import { type LoginFormData, loginFormSchema } from "~/lib/validations/auth";
 
 import { VkIdStack } from "./auth/vk-id-stack";
 
@@ -58,11 +54,9 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
 
   const isBlocked = (codeParam ?? errorParam) === "USER_BLOCKED";
 
-  const [serverError, setServerError] = useState<string | null>(
-    getInitialServerError(),
-  );
+  const [serverError, setServerError] = useState<string | null>(getInitialServerError());
   const [showResendLink, setShowResendLink] = useState(
-    codeParam === "EMAIL_NOT_VERIFIED" || errorParam === "EMAIL_NOT_VERIFIED",
+    codeParam === "EMAIL_NOT_VERIFIED" || errorParam === "EMAIL_NOT_VERIFIED"
   );
 
   const form = useForm<LoginFormData>({
@@ -95,17 +89,12 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
         const errorCode = result.code ?? result.error;
 
         if (errorCode === "EMAIL_NOT_VERIFIED") {
-          setServerError(
-            "Email не подтверждён. Проверьте почту или запросите повторную отправку.",
-          );
+          setServerError("Email не подтверждён. Проверьте почту или запросите повторную отправку.");
           setShowResendLink(true);
         } else if (errorCode === "USER_BLOCKED") {
           setServerError("blocked");
           setShowResendLink(false);
-        } else if (
-          errorCode === "CredentialsSignin" ||
-          result.error === "CredentialsSignin"
-        ) {
+        } else if (errorCode === "CredentialsSignin" || result.error === "CredentialsSignin") {
           setServerError("Неверный email или пароль");
           setShowResendLink(false);
         } else {
@@ -125,36 +114,31 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
   // Block message component
   const BlockedMessage = () => (
     <div className="border-destructive/20 bg-destructive/5 rounded-lg border p-4 text-sm">
-      <h3 className="text-destructive mb-2 font-semibold">
-        Аккаунт заблокирован
-      </h3>
+      <h3 className="text-destructive mb-2 font-semibold">Аккаунт заблокирован</h3>
       <p className="text-muted-foreground mb-3">
         Ваш аккаунт заблокирован за нарушение Правил пользования ресурсом.
       </p>
       <p className="text-muted-foreground mb-3">
-        Если вы считаете, что блокировка применена ошибочно, вы можете
-        обратиться к администрации для разъяснения обстоятельств дела.
+        Если вы считаете, что блокировка применена ошибочно, вы можете обратиться к администрации
+        для разъяснения обстоятельств дела.
       </p>
       <p className="text-muted-foreground/70 text-xs">
-        Для обжалования решения или получения дополнительной информации
-        направьте обращение на адрес электронной почты администрации ресурса.
+        Для обжалования решения или получения дополнительной информации направьте обращение на адрес
+        электронной почты администрации ресурса.
       </p>
     </div>
   );
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <h1 className="text-foreground/90 text-center text-lg font-bold tracking-[0.2em] uppercase [text-shadow:inset_0_1px_2px_rgba(0,0,0,0.1)]">
+      <h1 className="text-foreground/90 text-center text-lg font-bold uppercase tracking-[0.2em] [text-shadow:inset_0_1px_2px_rgba(0,0,0,0.1)]">
         ПОДЪЕЗД
       </h1>
 
       {(isBlocked || serverError === "blocked") && <BlockedMessage />}
 
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <FormField
             control={form.control}
             name="email"
@@ -235,9 +219,7 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background text-muted-foreground px-2">
-            Или войти через
-          </span>
+          <span className="bg-background text-muted-foreground px-2">Или войти через</span>
         </div>
       </div>
 
@@ -307,9 +289,7 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
       </TooltipProvider>
 
       <div className="mt-4 text-center text-sm">
-        <span className="text-muted-foreground/70">
-          Еще не регистрировались?
-        </span>{" "}
+        <span className="text-muted-foreground/70">Еще не регистрировались?</span>{" "}
         <Link
           href="/register"
           className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"

@@ -1,33 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
-import type { JSONContent } from "@tiptap/react";
-import {
-  ArrowLeft,
-  ExternalLink,
-  Loader2,
-  Save,
-  Send,
-  Trash2,
-  User,
-} from "lucide-react";
 
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { Switch } from "~/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
+import type { JSONContent } from "@tiptap/react";
+import { ArrowLeft, ExternalLink, Loader2, Save, Send, Trash2, User } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+
+import { TelegramPreviewDialog } from "~/components/admin/telegram-preview-dialog";
+import { StandardEditor } from "~/components/editor/rich-editor";
+import { ImageUploader } from "~/components/media";
+import { TagSelector } from "~/components/tag-selector";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -36,13 +22,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { StandardEditor } from "~/components/editor/rich-editor";
-import { TelegramPreviewDialog } from "~/components/admin/telegram-preview-dialog";
-import { ImageUploader } from "~/components/media";
-import { TagSelector } from "~/components/tag-selector";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Switch } from "~/components/ui/switch";
+import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
-import { api } from "~/trpc/react";
+import { NEWS_TYPE_LABELS, NEWS_TYPES } from "~/lib/constants/news-types";
 import type { NewsStatus, NewsType } from "~/server/db/schema";
+import { api } from "~/trpc/react";
 
 export default function EditNewsPage() {
   const router = useRouter();
@@ -119,14 +113,10 @@ export default function EditNewsPage() {
       setSlug(news.slug);
       setExcerpt(news.excerpt ?? "");
       setCoverImage(news.coverImage ?? "");
-      setContent(news.content as JSONContent);
+      setContent(news.content);
       setType(news.type);
       setStatus(news.status);
-      setPublishAt(
-        news.publishAt
-          ? new Date(news.publishAt).toISOString().slice(0, 16)
-          : ""
-      );
+      setPublishAt(news.publishAt ? new Date(news.publishAt).toISOString().slice(0, 16) : "");
       setIsPinned(news.isPinned);
       setIsHighlighted(news.isHighlighted);
       setIsAnonymous(news.isAnonymous);
@@ -149,9 +139,7 @@ export default function EditNewsPage() {
 
     // Validate status is one of allowed values
     const validStatuses = ["draft", "scheduled", "published", "archived"] as const;
-    const validStatus = validStatuses.includes(status as typeof validStatuses[number])
-      ? status
-      : undefined;
+    const validStatus = validStatuses.includes(status) ? status : undefined;
 
     updateMutation.mutate({
       id,
@@ -180,9 +168,9 @@ export default function EditNewsPage() {
 
   if (!news) {
     return (
-      <div className="text-center py-12">
+      <div className="py-12 text-center">
         <h2 className="text-xl font-semibold">Новость не найдена</h2>
-        <Link href="/admin/news" className="text-primary hover:underline mt-2 inline-block">
+        <Link href="/admin/news" className="text-primary mt-2 inline-block hover:underline">
           Вернуться к списку
         </Link>
       </div>
@@ -201,9 +189,7 @@ export default function EditNewsPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-semibold">Редактирование</h1>
-            <p className="text-muted-foreground mt-1 truncate max-w-md">
-              {news.title}
-            </p>
+            <p className="text-muted-foreground mt-1 max-w-md truncate">{news.title}</p>
           </div>
         </div>
 
@@ -216,11 +202,7 @@ export default function EditNewsPage() {
               </Button>
             </Link>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setDeleteDialogOpen(true)}>
             <Trash2 className="mr-2 h-4 w-4" />
             Удалить
           </Button>
@@ -230,7 +212,7 @@ export default function EditNewsPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6 lg:col-span-2">
             <Card>
               <CardHeader>
                 <CardTitle>Основная информация</CardTitle>
@@ -248,11 +230,7 @@ export default function EditNewsPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="slug">Slug (URL)</Label>
-                  <Input
-                    id="slug"
-                    value={slug}
-                    onChange={(e) => setSlug(e.target.value)}
-                  />
+                  <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
                 </div>
 
                 <div className="space-y-2">
@@ -335,9 +313,7 @@ export default function EditNewsPage() {
                     onClick={() => publishMutation.mutate({ id })}
                     disabled={publishMutation.isPending}
                   >
-                    {publishMutation.isPending && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
+                    {publishMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Опубликовать сейчас
                   </Button>
                 )}
@@ -366,32 +342,23 @@ export default function EditNewsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="announcement">Объявление</SelectItem>
-                      <SelectItem value="event">Мероприятие</SelectItem>
-                      <SelectItem value="maintenance">Тех. работы</SelectItem>
-                      <SelectItem value="update">Обновление</SelectItem>
-                      <SelectItem value="community">Сообщество</SelectItem>
-                      <SelectItem value="urgent">Срочное</SelectItem>
+                      {Object.values(NEWS_TYPES).map((newsType) => (
+                        <SelectItem key={newsType} value={newsType}>
+                          {NEWS_TYPE_LABELS[newsType]}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Теги</Label>
-                  <TagSelector
-                    value={tagIds}
-                    onChange={setTagIds}
-                    placeholder="Выберите теги..."
-                  />
+                  <TagSelector value={tagIds} onChange={setTagIds} placeholder="Выберите теги..." />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <Label htmlFor="isPinned">Закрепить</Label>
-                  <Switch
-                    id="isPinned"
-                    checked={isPinned}
-                    onCheckedChange={setIsPinned}
-                  />
+                  <Switch id="isPinned" checked={isPinned} onCheckedChange={setIsPinned} />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -402,32 +369,18 @@ export default function EditNewsPage() {
                     onCheckedChange={setIsHighlighted}
                   />
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="isAnonymous">Анонимно</Label>
-                    <p className="text-muted-foreground text-xs">
-                      От имени ресурса
-                    </p>
-                  </div>
-                  <Switch
-                    id="isAnonymous"
-                    checked={isAnonymous}
-                    onCheckedChange={setIsAnonymous}
-                  />
-                </div>
               </CardContent>
             </Card>
 
             {/* Author Card */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-sm font-medium">
                   <User className="h-4 w-4" />
                   Автор
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={news.author?.image ?? undefined} />
@@ -435,11 +388,11 @@ export default function EditNewsPage() {
                       {news.author?.name?.slice(0, 2).toUpperCase() ?? "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
                       {news.author?.name ?? "Неизвестен"}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {new Date(news.createdAt).toLocaleDateString("ru-RU", {
                         day: "numeric",
                         month: "short",
@@ -448,14 +401,20 @@ export default function EditNewsPage() {
                     </p>
                   </div>
                 </div>
+
+                <div className="flex items-center justify-between border-t pt-2">
+                  <div>
+                    <Label htmlFor="isAnonymous" className="cursor-pointer">
+                      Анонимно
+                    </Label>
+                    <p className="text-muted-foreground text-xs">От имени ресурса</p>
+                  </div>
+                  <Switch id="isAnonymous" checked={isAnonymous} onCheckedChange={setIsAnonymous} />
+                </div>
               </CardContent>
             </Card>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={updateMutation.isPending}
-            >
+            <Button type="submit" className="w-full" disabled={updateMutation.isPending}>
               {updateMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -473,8 +432,7 @@ export default function EditNewsPage() {
           <DialogHeader>
             <DialogTitle>Удалить новость?</DialogTitle>
             <DialogDescription>
-              Вы уверены, что хотите удалить &quot;{news.title}&quot;? Это действие
-              нельзя отменить.
+              Вы уверены, что хотите удалить &quot;{news.title}&quot;? Это действие нельзя отменить.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -69,10 +69,7 @@ export function BuildingsMap() {
   const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
 
   const hasSizes =
-    imageSize.width > 0 &&
-    imageSize.height > 0 &&
-    svgSize.width > 0 &&
-    svgSize.height > 0;
+    imageSize.width > 0 && imageSize.height > 0 && svgSize.width > 0 && svgSize.height > 0;
 
   React.useEffect(() => {
     const handleResize = () => {
@@ -119,19 +116,19 @@ export function BuildingsMap() {
             imageSize.width,
             imageSize.height,
             xPos,
-            yPos,
+            yPos
           ),
           order: 0,
           title: "",
         },
-        0,
+        0
       );
       setComposition([...composition, newPath]);
     });
   }, [hasSizes]);
 
   return (
-    <div className="relative mx-auto mt-8 min-h-[250px] w-full bg-radial from-gray-200 to-white py-8 dark:from-gray-800 dark:to-black">
+    <div className="bg-radial relative mx-auto mt-8 min-h-[250px] w-full from-gray-200 to-white py-8 dark:from-gray-800 dark:to-black">
       <Image
         ref={imageRef}
         width={800}
@@ -140,10 +137,8 @@ export function BuildingsMap() {
         alt="Cхема"
         className="z-10 mx-auto my-8 max-h-[650px]"
       />
-      <div className="h-ful pointer-events-none absolute top-[40px] left-0 flex w-[120px] flex-col gap-[8px]">
-        {buildings.map((b: Building, index: number) =>
-          createBuildingLabel(b, index),
-        )}
+      <div className="h-ful pointer-events-none absolute left-0 top-[40px] flex w-[120px] flex-col gap-[8px]">
+        {buildings.map((b: Building, index: number) => createBuildingLabel(b, index))}
       </div>
       <svg
         ref={svgRef as unknown as React.RefObject<SVGSVGElement>}
@@ -152,7 +147,7 @@ export function BuildingsMap() {
         height={svgSize.height}
         preserveAspectRatio={"none"}
         fill="none"
-        className="pointer-events-none absolute right-0 bottom-0 h-full w-full text-red-600 dark:text-red-400"
+        className="pointer-events-none absolute bottom-0 right-0 h-full w-full text-red-600 dark:text-red-400"
       >
         <g stroke="currentColor" strokeWidth="2">
           {hasSizes &&
@@ -165,7 +160,7 @@ export function BuildingsMap() {
                   imageSize.width,
                   imageSize.height,
                   b.x,
-                  b.y,
+                  b.y
                 ),
               }))
               .map(createBezierPath)}
@@ -181,7 +176,7 @@ function convertCoords(
   imgWidth: number,
   imgHeight: number,
   xPercent: number,
-  yPercent: number,
+  yPercent: number
 ) {
   const offsetX = (divWidth - imgWidth) / 2;
   const offsetY = (divHeight - imgHeight) / 2;
@@ -202,10 +197,7 @@ function createBuildingLabel(building: Building, index: number) {
   );
 }
 
-function createBezierPath(
-  building: Building,
-  index: number,
-): React.ReactElement<SVGElement[]> {
+function createBezierPath(building: Building, index: number): React.ReactElement<SVGElement[]> {
   const yDelta = index * 30 + 50;
   return (
     <g key={"group-" + building.title}>

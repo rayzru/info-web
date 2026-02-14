@@ -1,11 +1,11 @@
 // Editor components
 export {
-  RichEditor,
-  MinimalEditor,
-  StandardEditor,
   FullEditor,
-  useEditor,
   type JSONContent,
+  MinimalEditor,
+  RichEditor,
+  StandardEditor,
+  useEditor,
 } from "./rich-editor";
 
 // Toolbar
@@ -15,16 +15,12 @@ export { Toolbar } from "./toolbar";
 export { EditorImageDialog } from "./editor-image-dialog";
 
 // SSR Renderers
-export {
-  RichRenderer,
-  RichInlineRenderer,
-  RichPreviewRenderer,
-} from "./renderer";
+export { RichInlineRenderer, RichPreviewRenderer, RichRenderer } from "./renderer";
 
 // Custom Extensions
 export {
-  ReferenceCard,
   createMention,
-  type MentionSuggestion,
   type CreateMentionOptions,
+  type MentionSuggestion,
+  ReferenceCard,
 } from "./extensions";

@@ -1,23 +1,18 @@
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 import { Navigation } from "~/components/navigation";
 import { SiteFooter } from "~/components/site-footer";
-import { db } from "~/server/db";
-import { systemSettings, SETTING_KEYS, type MaintenanceSettings } from "~/server/db/schema";
 import { auth } from "~/server/auth";
+import { db } from "~/server/db";
+import { type MaintenanceSettings, SETTING_KEYS, systemSettings } from "~/server/db/schema";
 
 // Force dynamic rendering (layout uses auth and database queries)
 export const dynamic = "force-dynamic";
 
 // Paths that should be accessible during maintenance (for admin login flow)
-const MAINTENANCE_BYPASS_PATHS = [
-  "/login",
-  "/register",
-  "/forgot-password",
-  "/reset-password",
-];
+const MAINTENANCE_BYPASS_PATHS = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 async function checkMaintenance() {
   // Check if current path should bypass maintenance
@@ -48,11 +43,7 @@ async function checkMaintenance() {
   redirect("/maintenance");
 }
 
-export default async function MainLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function MainLayout({ children }: { children: React.ReactNode }) {
   await checkMaintenance();
 
   // Get current pathname to pass to Navigation
@@ -63,7 +54,7 @@ export default async function MainLayout({
     <div className="flex min-h-screen flex-col">
       <div
         data-wrapper=""
-        className="container m-auto flex-1 grid max-w-7xl min-w-xs grid-cols-12 gap-4 px-[20px]"
+        className="min-w-xs container m-auto grid max-w-7xl flex-1 grid-cols-12 gap-4 px-[20px]"
       >
         <main className="col-span-full">
           <Navigation pathname={pathname} />

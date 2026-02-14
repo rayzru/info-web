@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   BookOpen,
   Building2,
@@ -19,6 +17,8 @@ import {
   Users,
   UserX,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -58,21 +58,17 @@ export function AdminNavigation({ user, navGroups }: AdminNavigationProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-4 flex h-[calc(100vh-2rem)] w-full flex-col rounded-lg border bg-card">
+    <aside className="bg-card sticky top-4 flex h-[calc(100vh-2rem)] w-full flex-col rounded-lg border">
       {/* User Profile Section */}
       <div className="p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
             <AvatarImage src={user.image ?? undefined} />
-            <AvatarFallback>
-              {user.name?.slice(0, 2).toUpperCase() ?? "AD"}
-            </AvatarFallback>
+            <AvatarFallback>{user.name?.slice(0, 2).toUpperCase() ?? "AD"}</AvatarFallback>
           </Avatar>
           <div className="flex-1 overflow-hidden">
             <p className="truncate text-sm font-medium">{user.name}</p>
-            <p className="truncate text-xs text-muted-foreground">
-              {user.email}
-            </p>
+            <p className="text-muted-foreground truncate text-xs">{user.email}</p>
           </div>
         </div>
 
@@ -91,7 +87,7 @@ export function AdminNavigation({ user, navGroups }: AdminNavigationProps) {
         <div className="space-y-4">
           {navGroups.map((group) => (
             <div key={group.title}>
-              <h3 className="mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+              <h3 className="text-muted-foreground/70 mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider">
                 {group.title}
               </h3>
               <ul className="space-y-0.5">
@@ -110,7 +106,7 @@ export function AdminNavigation({ user, navGroups }: AdminNavigationProps) {
                           "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                           isActive
                             ? "bg-accent text-accent-foreground"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
                         )}
                         data-testid={testId}
                       >
@@ -133,7 +129,7 @@ export function AdminNavigation({ user, navGroups }: AdminNavigationProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground w-full justify-start"
           onClick={() => signOut({ callbackUrl: "/" })}
           data-testid="admin-nav-logout"
         >

@@ -6,43 +6,40 @@ export default function LogoDemoPage() {
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Animated Logo Demo</h1>
         <p className="text-muted-foreground">
-          Демонстрация hover анимации логотипа от СР2 до полной версии СЕРДЦЕ
-          РОСТОВА 2
+          Демонстрация hover анимации логотипа от СР2 до полной версии СЕРДЦЕ РОСТОВА 2
         </p>
       </div>
 
       <div className="space-y-8">
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Default Speed (400ms)</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Hover to expand from СР2 to full logo with sequential letter reveal
           </p>
-          <div className="flex items-center justify-center rounded-lg border bg-background p-8">
+          <div className="bg-background flex items-center justify-center rounded-lg border p-8">
             <AnimatedLogo className="w-full max-w-md" />
           </div>
         </section>
 
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Fast Animation (300ms)</h2>
-          <p className="text-sm text-muted-foreground">Quick expansion</p>
-          <div className="flex items-center justify-center rounded-lg border bg-background p-8">
+          <p className="text-muted-foreground text-sm">Quick expansion</p>
+          <div className="bg-background flex items-center justify-center rounded-lg border p-8">
             <AnimatedLogo duration={300} className="w-full max-w-md" />
           </div>
         </section>
 
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Slow Animation (1000ms)</h2>
-          <p className="text-sm text-muted-foreground">Smooth expansion</p>
-          <div className="flex items-center justify-center rounded-lg border bg-background p-8">
+          <p className="text-muted-foreground text-sm">Smooth expansion</p>
+          <div className="bg-background flex items-center justify-center rounded-lg border p-8">
             <AnimatedLogo duration={1000} className="w-full max-w-md" />
           </div>
         </section>
 
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Dark Background</h2>
-          <p className="text-sm text-muted-foreground">
-            Shows color adaptation on hover
-          </p>
+          <p className="text-muted-foreground text-sm">Shows color adaptation on hover</p>
           <div className="flex items-center justify-center rounded-lg border bg-slate-900 p-8">
             <AnimatedLogo duration={600} className="w-full max-w-md" />
           </div>
@@ -50,16 +47,16 @@ export default function LogoDemoPage() {
 
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Small Size</h2>
-          <p className="text-sm text-muted-foreground">Responsive sizing</p>
-          <div className="flex items-center justify-center rounded-lg border bg-background p-8">
+          <p className="text-muted-foreground text-sm">Responsive sizing</p>
+          <div className="bg-background flex items-center justify-center rounded-lg border p-8">
             <AnimatedLogo duration={600} className="w-48" />
           </div>
         </section>
 
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Large Size</h2>
-          <p className="text-sm text-muted-foreground">Works at any size</p>
-          <div className="flex items-center justify-center rounded-lg border bg-background p-8">
+          <p className="text-muted-foreground text-sm">Works at any size</p>
+          <div className="bg-background flex items-center justify-center rounded-lg border p-8">
             <AnimatedLogo duration={600} className="w-full" />
           </div>
         </section>

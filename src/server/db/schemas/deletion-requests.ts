@@ -24,9 +24,7 @@ export const deletionRequests = createTable(
     status: deletionRequestStatusEnum("status").notNull().default("pending"),
     reason: text("reason"),
     adminNotes: text("admin_notes"),
-    processedBy: varchar("processed_by", { length: 255 }).references(
-      () => users.id
-    ),
+    processedBy: varchar("processed_by", { length: 255 }).references(() => users.id),
     createdAt: timestamp("created_at", {
       mode: "date",
       withTimezone: true,
@@ -44,16 +42,13 @@ export const deletionRequests = createTable(
   ]
 );
 
-export const deletionRequestsRelations = relations(
-  deletionRequests,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [deletionRequests.userId],
-      references: [users.id],
-    }),
-    processedByUser: one(users, {
-      fields: [deletionRequests.processedBy],
-      references: [users.id],
-    }),
-  })
-);
+export const deletionRequestsRelations = relations(deletionRequests, ({ one }) => ({
+  user: one(users, {
+    fields: [deletionRequests.userId],
+    references: [users.id],
+  }),
+  processedByUser: one(users, {
+    fields: [deletionRequests.processedBy],
+    references: [users.id],
+  }),
+}));

@@ -1,10 +1,10 @@
-import Link from "next/link";
+import { AlertTriangle, Calendar, Megaphone, Pin, Sparkles, Users, Wrench } from "lucide-react";
 import Image from "next/image";
-import { Calendar, Megaphone, Wrench, Users, AlertTriangle, Sparkles, Pin } from "lucide-react";
+import Link from "next/link";
 
-import { cn } from "~/lib/utils";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
+import { cn } from "~/lib/utils";
 import type { NewsType } from "~/server/db/schema";
 
 // ============================================================================
@@ -29,41 +29,39 @@ interface NewsCardProps {
 // Constants
 // ============================================================================
 
-const NEWS_TYPE_CONFIG: Record<
-  NewsType,
-  { label: string; icon: typeof Megaphone; color: string }
-> = {
-  announcement: {
-    label: "Объявление",
-    icon: Megaphone,
-    color: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  },
-  event: {
-    label: "Мероприятие",
-    icon: Calendar,
-    color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-  },
-  maintenance: {
-    label: "Тех. работы",
-    icon: Wrench,
-    color: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
-  },
-  update: {
-    label: "Обновление",
-    icon: Sparkles,
-    color: "bg-green-500/10 text-green-600 dark:text-green-400",
-  },
-  community: {
-    label: "Сообщество",
-    icon: Users,
-    color: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
-  },
-  urgent: {
-    label: "Срочное",
-    icon: AlertTriangle,
-    color: "bg-red-500/10 text-red-600 dark:text-red-400",
-  },
-};
+const NEWS_TYPE_CONFIG: Record<NewsType, { label: string; icon: typeof Megaphone; color: string }> =
+  {
+    announcement: {
+      label: "Объявление",
+      icon: Megaphone,
+      color: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    },
+    event: {
+      label: "Мероприятие",
+      icon: Calendar,
+      color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    },
+    maintenance: {
+      label: "Тех. работы",
+      icon: Wrench,
+      color: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+    },
+    update: {
+      label: "Обновление",
+      icon: Sparkles,
+      color: "bg-green-500/10 text-green-600 dark:text-green-400",
+    },
+    community: {
+      label: "Сообщество",
+      icon: Users,
+      color: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
+    },
+    urgent: {
+      label: "Срочное",
+      icon: AlertTriangle,
+      color: "bg-red-500/10 text-red-600 dark:text-red-400",
+    },
+  };
 
 // ============================================================================
 // Utility Functions
@@ -102,7 +100,7 @@ export function NewsCard({
       <Card
         className={cn(
           "group overflow-hidden transition-all hover:shadow-lg",
-          isHighlighted && "ring-2 ring-primary ring-offset-2",
+          isHighlighted && "ring-primary ring-2 ring-offset-2",
           className
         )}
       >
@@ -117,8 +115,8 @@ export function NewsCard({
               unoptimized={coverImage.includes("/uploads/")}
             />
             {isPinned && (
-              <div className="absolute top-2 right-2">
-                <Badge variant="secondary" className="gap-1 bg-background/80 backdrop-blur">
+              <div className="absolute right-2 top-2">
+                <Badge variant="secondary" className="bg-background/80 gap-1 backdrop-blur">
                   <Pin className="h-3 w-3" />
                   Закреплено
                 </Badge>
@@ -126,10 +124,10 @@ export function NewsCard({
             )}
           </div>
         ) : (
-          <div className="relative aspect-[16/9] bg-muted flex items-center justify-center">
-            <Icon className="h-12 w-12 text-muted-foreground/30" />
+          <div className="bg-muted relative flex aspect-[16/9] items-center justify-center">
+            <Icon className="text-muted-foreground/30 h-12 w-12" />
             {isPinned && (
-              <div className="absolute top-2 right-2">
+              <div className="absolute right-2 top-2">
                 <Badge variant="secondary" className="gap-1">
                   <Pin className="h-3 w-3" />
                   Закреплено
@@ -141,27 +139,21 @@ export function NewsCard({
 
         <CardContent className="p-4">
           {/* Type Badge & Date */}
-          <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="mb-2 flex items-center justify-between gap-2">
             <Badge variant="secondary" className={cn("gap-1", typeConfig.color)}>
               <Icon className="h-3 w-3" />
               {typeConfig.label}
             </Badge>
-            <span className="text-xs text-muted-foreground">
-              {formatDate(displayDate)}
-            </span>
+            <span className="text-muted-foreground text-xs">{formatDate(displayDate)}</span>
           </div>
 
           {/* Title */}
-          <h3 className="font-semibold line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="group-hover:text-primary line-clamp-2 font-semibold transition-colors">
             {title}
           </h3>
 
           {/* Excerpt */}
-          {excerpt && (
-            <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-              {excerpt}
-            </p>
-          )}
+          {excerpt && <p className="text-muted-foreground mt-2 line-clamp-2 text-sm">{excerpt}</p>}
         </CardContent>
       </Card>
     </Link>
@@ -207,16 +199,16 @@ export function NewsCardCompact({
     <Link
       href={`/news/${slug}`}
       className={cn(
-        "flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted",
+        "hover:bg-muted flex items-center gap-3 rounded-lg border p-3 transition-colors",
         className
       )}
     >
       <div className={cn("rounded-lg p-2", typeConfig.color)}>
         <Icon className="h-4 w-4" />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium truncate">{title}</p>
-        <p className="text-xs text-muted-foreground">{formatDate(displayDate)}</p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-medium">{title}</p>
+        <p className="text-muted-foreground text-xs">{formatDate(displayDate)}</p>
       </div>
     </Link>
   );

@@ -18,9 +18,7 @@ export default function ArticleLayout({
       <article className="max-w-prose">
         <header className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-          {description && (
-            <p className="text-muted-foreground mt-1">{description}</p>
-          )}
+          {description && <p className="text-muted-foreground mt-1">{description}</p>}
         </header>
         <main className="prose prose-slate dark:prose-invert prose-p:text-foreground prose-p:leading-relaxed prose-li:text-foreground">
           {children}
