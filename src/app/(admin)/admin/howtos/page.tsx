@@ -13,16 +13,15 @@ import {
   Loader2,
   MoreHorizontal,
   Plus,
-  Search,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { useMobile } from "~/hooks/use-mobile";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 
@@ -55,16 +55,17 @@ const STATUS_LABELS: Record<string, string> = {
   archived: "В архиве",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-  published: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-  archived: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400",
+const STATUS_COLORS: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+  draft: "secondary",
+  published: "default",
+  archived: "destructive",
 };
 
 export default function AdminHowtosPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const isMobile = useMobile();
 
   const pageParam = searchParams.get("page");
   const page = pageParam ? parseInt(pageParam, 10) : 1;
@@ -85,8 +86,6 @@ export default function AdminHowtosPage() {
       statusFilter !== "all" ? (statusFilter as "draft" | "published" | "archived") : undefined,
     search: searchQuery || undefined,
   });
-
-  const { data: stats } = api.knowledge.admin.getStats.useQuery();
 
   // Mutations
   const deleteMutation = api.knowledge.admin.delete.useMutation({
@@ -123,11 +122,6 @@ export default function AdminHowtosPage() {
     router.push(`/admin/howtos?${params.toString()}`);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFilter("q", localSearch);
-  };
-
   const setPage = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
     if (newPage === 1) {
@@ -153,6 +147,14 @@ export default function AdminHowtosPage() {
     updateMutation.mutate({ id, status });
   };
 
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <AdminPageHeader title="База знаний" description="Инструкции и полезные статьи для жителей">
@@ -164,75 +166,17 @@ export default function AdminHowtosPage() {
         </Link>
       </AdminPageHeader>
 
-      {/* Stats */}
-      {stats && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "all" ? "ring-primary ring-2 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("status", "all")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold">
-                {stats.draft + stats.published + stats.archived}
-              </div>
-              <p className="text-muted-foreground text-sm">Всего статей</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "draft" ? "ring-2 ring-yellow-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("status", "draft")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-yellow-600">{stats.draft}</div>
-              <p className="text-muted-foreground text-sm">Черновики</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "published" ? "ring-2 ring-green-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("status", "published")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-600">{stats.published}</div>
-              <p className="text-muted-foreground text-sm">Опубликовано</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{stats.totalViews}</div>
-              <p className="text-muted-foreground text-sm">Просмотров</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
-        <form onSubmit={handleSearch} className="relative max-w-md flex-1">
-          <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
-          <Input
-            placeholder="Поиск по заголовку..."
-            value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
-            className="pl-9 pr-20"
-          />
-          <Button
-            type="submit"
-            size="sm"
-            variant="ghost"
-            className="absolute right-1 top-1/2 h-7 -translate-y-1/2"
-          >
-            Найти
-          </Button>
-        </form>
+        <Input
+          placeholder="Поиск по заголовку..."
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
+          className="w-full sm:w-64"
+        />
 
         <Select value={statusFilter} onValueChange={(v) => setFilter("status", v)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Статус" />
           </SelectTrigger>
           <SelectContent>
@@ -244,83 +188,186 @@ export default function AdminHowtosPage() {
         </Select>
       </div>
 
-      {/* Articles list */}
+      {/* Articles Table/Cards */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : !data?.articles.length ? (
-        <Card>
-          <CardContent className="text-muted-foreground flex flex-col items-center justify-center py-12">
-            <BookOpen className="mb-4 h-12 w-12 opacity-50" />
-            <p>Статьи не найдены</p>
-            <Link href="/admin/howtos/new" className="mt-4">
-              <Button variant="outline">
-                <Plus className="mr-2 h-4 w-4" />
-                Создать первую статью
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <div className="text-muted-foreground rounded-lg border py-12 text-center">
+          <BookOpen className="mx-auto mb-4 h-12 w-12 opacity-50" />
+          <p>Статьи не найдены</p>
+          <Link href="/admin/howtos/new" className="mt-4 inline-block">
+            <Button variant="outline">
+              <Plus className="mr-2 h-4 w-4" />
+              Создать первую статью
+            </Button>
+          </Link>
+        </div>
       ) : (
-        <div className="space-y-3">
-          {data.articles.map((article) => (
-            <Card key={article.id} className="transition-shadow hover:shadow-md">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex min-w-0 flex-1 items-start gap-3">
-                    <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-                      <FileText className="text-primary h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-1 flex items-center gap-2">
-                        <Link
-                          href={`/admin/howtos/${article.id}`}
-                          className="truncate font-medium hover:underline"
-                        >
-                          {article.title}
-                        </Link>
-                        <Badge className={STATUS_COLORS[article.status]}>
-                          {STATUS_LABELS[article.status]}
-                        </Badge>
-                      </div>
-                      {article.excerpt && (
-                        <p className="text-muted-foreground mb-2 line-clamp-1 text-sm">
-                          {article.excerpt}
-                        </p>
-                      )}
-                      <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" />
-                          {article.viewCount}
-                        </span>
-                        {article.tags.length > 0 && (
-                          <>
-                            <span>•</span>
-                            <div className="flex flex-wrap gap-1">
-                              {article.tags.slice(0, 3).map((tag) => (
-                                <Badge key={tag.id} variant="outline" className="text-xs">
-                                  {tag.name}
-                                </Badge>
-                              ))}
-                              {article.tags.length > 3 && (
-                                <Badge variant="outline" className="text-xs">
-                                  +{article.tags.length - 3}
-                                </Badge>
-                              )}
-                            </div>
-                          </>
-                        )}
-                        {article.author && (
-                          <>
-                            <span>•</span>
-                            <span>{article.author.name}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden rounded-lg border md:block">
+            <div className="bg-muted/50 text-muted-foreground flex items-center gap-4 border-b px-4 py-3 text-sm font-medium">
+              <div className="min-w-0 flex-1">Заголовок</div>
+              <div className="hidden w-32 sm:block">Просмотры</div>
+              <div className="hidden w-40 md:block">Автор</div>
+              <div className="w-28">Статус</div>
+              <div className="w-10"></div>
+            </div>
 
+            {data.articles.map((article) => (
+              <div
+                key={article.id}
+                className="hover:bg-muted/30 flex items-center gap-4 border-b px-4 py-3 last:border-b-0"
+              >
+                {/* Title + Tags */}
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/admin/howtos/${article.id}`}
+                    className="truncate font-medium hover:underline"
+                  >
+                    {article.title}
+                  </Link>
+                  {article.tags.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {article.tags.slice(0, 2).map((tag) => (
+                        <Badge key={tag.id} variant="outline" className="text-xs">
+                          {tag.name}
+                        </Badge>
+                      ))}
+                      {article.tags.length > 2 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{article.tags.length - 2}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* View Count */}
+                <div className="hidden w-32 sm:block">
+                  <div className="flex items-center gap-1.5">
+                    <Eye className="text-muted-foreground h-4 w-4" />
+                    <span className="text-sm">{article.viewCount}</span>
+                  </div>
+                </div>
+
+                {/* Author */}
+                <div className="hidden w-40 md:flex md:items-center md:gap-2">
+                  {article.author ? (
+                    <>
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={article.author.image ?? undefined} />
+                        <AvatarFallback className="text-xs">
+                          {article.author.name?.slice(0, 2).toUpperCase() ?? "??"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-muted-foreground truncate text-sm">
+                        {article.author.name}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">—</span>
+                  )}
+                </div>
+
+                {/* Status */}
+                <div className="w-28">
+                  <Badge variant={STATUS_COLORS[article.status]}>
+                    {STATUS_LABELS[article.status]}
+                  </Badge>
+                </div>
+
+                {/* Actions */}
+                <div className="w-10">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link href={`/admin/howtos/${article.id}`}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Редактировать
+                        </Link>
+                      </DropdownMenuItem>
+                      {article.status === "published" && (
+                        <DropdownMenuItem asChild>
+                          <Link href={`/howtos/${article.slug}`} target="_blank">
+                            <Eye className="mr-2 h-4 w-4" />
+                            Просмотреть
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      {article.status === "draft" && (
+                        <DropdownMenuItem
+                          onClick={() => handleStatusChange(article.id, "published")}
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          Опубликовать
+                        </DropdownMenuItem>
+                      )}
+                      {article.status === "published" && (
+                        <DropdownMenuItem
+                          onClick={() => handleStatusChange(article.id, "archived")}
+                        >
+                          <Archive className="mr-2 h-4 w-4" />В архив
+                        </DropdownMenuItem>
+                      )}
+                      {article.status === "archived" && (
+                        <DropdownMenuItem
+                          onClick={() => handleStatusChange(article.id, "published")}
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          Восстановить
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => handleDelete({ id: article.id, title: article.title })}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Удалить
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="space-y-3 md:hidden">
+            {data.articles.map((article) => (
+              <div key={article.id} className="bg-card rounded-lg border p-4">
+                <div className="mb-3 flex items-start justify-between">
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      href={`/admin/howtos/${article.id}`}
+                      className="line-clamp-2 font-medium hover:underline"
+                    >
+                      {article.title}
+                    </Link>
+                    {article.tags.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {article.tags.slice(0, 3).map((tag) => (
+                          <Badge key={tag.id} variant="outline" className="text-xs">
+                            {tag.name}
+                          </Badge>
+                        ))}
+                        {article.tags.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{article.tags.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
@@ -377,39 +424,59 @@ export default function AdminHowtosPage() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
 
-      {/* Pagination */}
-      {data && data.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <span className="text-muted-foreground text-sm">
-            Страница {page} из {data.totalPages} (всего {data.total})
-          </span>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setPage(page - 1)}
-              disabled={page === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setPage(page + 1)}
-              disabled={page === data.totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+                <div className="mb-3 flex flex-wrap gap-2">
+                  <Badge variant={STATUS_COLORS[article.status]}>
+                    {STATUS_LABELS[article.status]}
+                  </Badge>
+                </div>
+
+                <div className="text-muted-foreground space-y-1 text-sm">
+                  <div className="flex items-center gap-1.5">
+                    <Eye className="h-4 w-4" />
+                    <span>{article.viewCount} просмотров</span>
+                  </div>
+                  {article.author && (
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={article.author.image ?? undefined} />
+                        <AvatarFallback className="text-xs">
+                          {article.author.name?.slice(0, 2).toUpperCase() ?? "??"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs">{article.author.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+
+          {/* Pagination */}
+          {data && data.totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setPage(page - 1)}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm">
+                {page} из {data.totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setPage(page + 1)}
+                disabled={page === data.totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Delete Dialog */}

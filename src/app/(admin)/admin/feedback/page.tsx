@@ -5,28 +5,24 @@ import { useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
-  CheckCircle,
   ChevronLeft,
   ChevronRight,
-  Clock,
   Eye,
   FileText,
   HelpCircle,
-  History,
   Lightbulb,
   Loader2,
   MessageSquare,
+  MoreHorizontal,
   Send,
-  User,
-  XCircle,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +31,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -46,6 +49,7 @@ import {
 } from "~/components/ui/select";
 import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
+import { useMobile } from "~/hooks/use-mobile";
 import { useToast } from "~/hooks/use-toast";
 import type { FeedbackPriority, FeedbackStatus, FeedbackType } from "~/server/db/schema";
 import { api } from "~/trpc/react";
@@ -62,12 +66,12 @@ const STATUS_LABELS: Record<FeedbackStatus, string> = {
   closed: "Закрыто",
 };
 
-const STATUS_COLORS: Record<FeedbackStatus, string> = {
-  new: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  in_progress: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  forwarded: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  resolved: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  closed: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
+const STATUS_COLORS: Record<FeedbackStatus, "default" | "secondary" | "outline" | "destructive"> = {
+  new: "secondary",
+  in_progress: "default",
+  forwarded: "outline",
+  resolved: "outline",
+  closed: "destructive",
 };
 
 const TYPE_LABELS: Record<FeedbackType, string> = {
@@ -99,13 +103,6 @@ const PRIORITY_LABELS: Record<FeedbackPriority, string> = {
   normal: "Обычный",
   high: "Высокий",
   urgent: "Срочный",
-};
-
-const PRIORITY_COLORS: Record<FeedbackPriority, string> = {
-  low: "bg-gray-100 text-gray-700",
-  normal: "bg-blue-100 text-blue-700",
-  high: "bg-orange-100 text-orange-700",
-  urgent: "bg-red-100 text-red-700",
 };
 
 // ============================================================================
@@ -225,11 +222,8 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{TYPE_LABELS[feedback.type]}</span>
-                    <Badge className={STATUS_COLORS[feedback.status]}>
+                    <Badge variant={STATUS_COLORS[feedback.status]}>
                       {STATUS_LABELS[feedback.status]}
-                    </Badge>
-                    <Badge className={PRIORITY_COLORS[feedback.priority]}>
-                      {PRIORITY_LABELS[feedback.priority]}
                     </Badge>
                   </div>
                   <p className="text-muted-foreground text-sm">
@@ -447,6 +441,7 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
 export default function AdminFeedbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isMobile = useMobile();
 
   const statusFilter = (searchParams.get("status") ?? "all") as FeedbackStatus | "all";
   const typeFilter = (searchParams.get("type") ?? "all") as FeedbackType | "all";
@@ -456,8 +451,8 @@ export default function AdminFeedbackPage() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [localSearch, setLocalSearch] = useState("");
 
-  const { data: stats } = api.feedback.admin.stats.useQuery();
   const { data, isLoading, refetch } = api.feedback.admin.list.useQuery({
     page,
     limit: 20,
@@ -492,74 +487,29 @@ export default function AdminFeedbackPage() {
     setViewDialogOpen(true);
   };
 
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <AdminPageHeader title="Обратная связь" description="Обращения пользователей" />
 
-      {/* Stats */}
-      {stats && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "all" ? "ring-primary ring-2 ring-offset-2" : ""
-            }`}
-            onClick={() => updateParams("status", "all")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-muted-foreground text-sm">Всего</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "new" ? "ring-2 ring-yellow-500 ring-offset-2" : ""
-            }`}
-            onClick={() => updateParams("status", "new")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-yellow-600">{stats.new}</div>
-              <p className="text-muted-foreground text-sm">Новых</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "in_progress" ? "ring-2 ring-blue-500 ring-offset-2" : ""
-            }`}
-            onClick={() => updateParams("status", "in_progress")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-blue-600">{stats.inProgress}</div>
-              <p className="text-muted-foreground text-sm">В работе</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "resolved" ? "ring-2 ring-green-500 ring-offset-2" : ""
-            }`}
-            onClick={() => updateParams("status", "resolved")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-600">{stats.resolved}</div>
-              <p className="text-muted-foreground text-sm">Решено</p>
-            </CardContent>
-          </Card>
-          <Card className="cursor-default">
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-purple-600">
-                {Object.values(stats.byType).reduce((a, b) => a + b, 0) - stats.total === 0
-                  ? (stats.byType.complaint ?? 0)
-                  : 0}
-              </div>
-              <p className="text-muted-foreground text-sm">Жалоб</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
+        <Input
+          placeholder="Поиск по имени или тексту..."
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
+          className="w-full sm:w-64"
+        />
+
         <Select value={statusFilter} onValueChange={(v) => updateParams("status", v)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Все статусы" />
           </SelectTrigger>
           <SelectContent>
@@ -573,7 +523,7 @@ export default function AdminFeedbackPage() {
         </Select>
 
         <Select value={typeFilter} onValueChange={(v) => updateParams("type", v)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Все типы" />
           </SelectTrigger>
           <SelectContent>
@@ -587,7 +537,7 @@ export default function AdminFeedbackPage() {
         </Select>
 
         <Select value={priorityFilter} onValueChange={(v) => updateParams("priority", v)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Все приоритеты" />
           </SelectTrigger>
           <SelectContent>
@@ -600,85 +550,158 @@ export default function AdminFeedbackPage() {
         </Select>
       </div>
 
-      {/* List */}
+      {/* Feedback Table/Cards */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : data?.items && data.items.length > 0 ? (
-        <div className="space-y-3">
-          {data.items.map((item) => {
-            const TypeIcon = TYPE_ICONS[item.type];
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden rounded-lg border md:block">
+            <div className="bg-muted/50 text-muted-foreground flex items-center gap-4 border-b px-4 py-3 text-sm font-medium">
+              <div className="w-24">Дата</div>
+              <div className="w-32">Тип</div>
+              <div className="min-w-0 flex-1">Содержание</div>
+              <div className="hidden w-40 lg:block">Контакт</div>
+              <div className="w-28">Статус</div>
+              <div className="w-10"></div>
+            </div>
 
-            return (
-              <Card
-                key={item.id}
-                className="cursor-pointer transition-all hover:shadow-md"
-                onClick={() => openViewDialog(item.id)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    {/* Type Icon */}
-                    <div className={`bg-muted rounded-full p-2 ${TYPE_COLORS[item.type]}`}>
-                      <TypeIcon className="h-5 w-5" />
-                    </div>
+            {data.items.map((item) => {
+              const TypeIcon = TYPE_ICONS[item.type];
 
-                    {/* Content */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium">{TYPE_LABELS[item.type]}</span>
-                        <Badge className={STATUS_COLORS[item.status]}>
-                          {STATUS_LABELS[item.status]}
-                        </Badge>
-                        {item.priority !== "normal" && (
-                          <Badge className={PRIORITY_COLORS[item.priority]}>
-                            {PRIORITY_LABELS[item.priority]}
-                          </Badge>
-                        )}
-                      </div>
+              return (
+                <div
+                  key={item.id}
+                  className="hover:bg-muted/30 flex items-center gap-4 border-b px-4 py-3 last:border-b-0"
+                >
+                  {/* Date */}
+                  <div className="text-muted-foreground w-24 text-sm">
+                    {formatDate(item.createdAt)}
+                  </div>
 
-                      {item.title && <p className="mt-1 truncate font-medium">{item.title}</p>}
+                  {/* Type */}
+                  <div className="flex w-32 items-center gap-2">
+                    <TypeIcon className={`h-4 w-4 ${TYPE_COLORS[item.type]}`} />
+                    <span className="text-sm">{TYPE_LABELS[item.type]}</span>
+                  </div>
 
-                      <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
-                        {item.content}
-                      </p>
+                  {/* Content */}
+                  <div className="min-w-0 flex-1">
+                    {item.title && (
+                      <div className="truncate font-medium">{item.title}</div>
+                    )}
+                    <p className="text-muted-foreground line-clamp-1 text-sm">
+                      {item.content}
+                    </p>
+                  </div>
 
-                      <div className="text-muted-foreground mt-2 flex items-center gap-4 text-xs">
-                        {item.contactName && (
-                          <span className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {item.contactName}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {new Date(item.createdAt).toLocaleDateString("ru-RU")}
+                  {/* Contact */}
+                  <div className="hidden w-40 lg:block">
+                    {item.contactName ? (
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs">
+                            {item.contactName.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-muted-foreground truncate text-sm">
+                          {item.contactName}
                         </span>
-                        {item.assignedTo && <span>Ответственный: {item.assignedTo.name}</span>}
                       </div>
-                    </div>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">—</span>
+                    )}
+                  </div>
 
-                    {/* Status Icon */}
-                    <div className="flex items-center">
-                      {item.status === "resolved" && (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                      )}
-                      {item.status === "closed" && <XCircle className="h-5 w-5 text-gray-500" />}
-                      {(item.status === "new" || item.status === "in_progress") && (
-                        <Button variant="outline" size="sm">
-                          Открыть
+                  {/* Status */}
+                  <div className="w-28">
+                    <Badge variant={STATUS_COLORS[item.status]}>
+                      {STATUS_LABELS[item.status]}
+                    </Badge>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="w-10">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
                         </Button>
-                      )}
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openViewDialog(item.id)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Открыть
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="space-y-3 md:hidden">
+            {data.items.map((item) => {
+              const TypeIcon = TYPE_ICONS[item.type];
+
+              return (
+                <div
+                  key={item.id}
+                  className="bg-card cursor-pointer rounded-lg border p-4"
+                  onClick={() => openViewDialog(item.id)}
+                >
+                  <div className="mb-3 flex items-start justify-between">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <div className={`bg-muted rounded-full p-2 ${TYPE_COLORS[item.type]}`}>
+                        <TypeIcon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium">{TYPE_LABELS[item.type]}</div>
+                        {item.title && (
+                          <div className="text-muted-foreground truncate text-xs">
+                            {item.title}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <Badge variant={STATUS_COLORS[item.status]}>
+                      {STATUS_LABELS[item.status]}
+                    </Badge>
+                  </div>
+
+                  <p className="text-muted-foreground mb-2 line-clamp-2 text-sm">
+                    {item.content}
+                  </p>
+
+                  <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                    {item.contactName && (
+                      <div className="flex items-center gap-1">
+                        <Avatar className="h-4 w-4">
+                          <AvatarFallback className="text-[8px]">
+                            {item.contactName.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{item.contactName}</span>
+                      </div>
+                    )}
+                    <span>·</span>
+                    <span>{formatDate(item.createdAt)}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
           {/* Pagination */}
           {data.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
+            <div className="flex items-center justify-center gap-2">
               <Button
                 variant="outline"
                 size="icon"
@@ -700,13 +723,11 @@ export default function AdminFeedbackPage() {
               </Button>
             </div>
           )}
-        </div>
+        </>
       ) : (
-        <Card>
-          <CardContent className="text-muted-foreground py-12 text-center">
-            Обращений не найдено
-          </CardContent>
-        </Card>
+        <div className="text-muted-foreground rounded-lg border py-12 text-center">
+          Обращений не найдено
+        </div>
       )}
 
       {/* View Dialog */}

@@ -10,6 +10,7 @@ import {
   Home,
   ImageIcon,
   Loader2,
+  MoreHorizontal,
   ParkingCircle,
   X,
 } from "lucide-react";
@@ -19,7 +20,6 @@ import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import {
@@ -38,6 +45,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import { useMobile } from "~/hooks/use-mobile";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 
@@ -49,7 +57,7 @@ const STATUS_LABELS: Record<string, string> = {
   archived: "В архиве",
 };
 
-const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
   draft: "secondary",
   pending_moderation: "outline",
   approved: "default",
@@ -248,20 +256,20 @@ function ModerationDialog({ listing, open, onOpenChange, onSuccess }: Moderation
 export default function AdminListingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isMobile = useMobile();
 
   // Get filters from URL params
   const statusFilter = searchParams.get("status") ?? "pending_moderation";
   const typeFilter = searchParams.get("type") ?? "all";
   const pageParam = searchParams.get("page");
   const page = pageParam ? parseInt(pageParam, 10) : 1;
+  const searchQuery = searchParams.get("q") ?? "";
 
+  const [localSearch, setLocalSearch] = useState(searchQuery);
   const [selectedListing, setSelectedListing] = useState<any>(null);
   const [moderationDialogOpen, setModerationDialogOpen] = useState(false);
 
   const utils = api.useUtils();
-  const { data: stats } = api.listings.admin.stats.useQuery(undefined, {
-    staleTime: 30000, // Cache for 30 seconds
-  });
   const { data, isLoading, refetch } = api.listings.admin.list.useQuery({
     page,
     limit: 20,
@@ -322,6 +330,14 @@ export default function AdminListingsPage() {
     };
   };
 
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <AdminPageHeader
@@ -329,67 +345,25 @@ export default function AdminListingsPage() {
         description="Рассмотрение объявлений пользователей"
       />
 
-      {/* Stats */}
-      {stats && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "pending_moderation" ? "ring-2 ring-yellow-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("status", "pending_moderation")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-yellow-600">{stats.pendingModeration}</div>
-              <p className="text-muted-foreground text-sm">На модерации</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "approved" ? "ring-2 ring-green-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("status", "approved")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
-              <p className="text-muted-foreground text-sm">Активные</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "rejected" ? "ring-2 ring-red-500 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("status", "rejected")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
-              <p className="text-muted-foreground text-sm">Отклонено</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              statusFilter === "all" ? "ring-primary ring-2 ring-offset-2" : ""
-            }`}
-            onClick={() => setFilter("status", "all")}
-          >
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-muted-foreground text-sm">Всего</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       {/* Filters */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
+        <Input
+          placeholder="Поиск по названию..."
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
+          className="w-full sm:w-64"
+        />
+
         <Select value={statusFilter} onValueChange={(v) => setFilter("status", v)}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Статус" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="all">Все статусы</SelectItem>
             <SelectItem value="pending_moderation">На модерации</SelectItem>
             <SelectItem value="approved">Активные</SelectItem>
             <SelectItem value="rejected">Отклоненные</SelectItem>
-            <SelectItem value="all">Все</SelectItem>
+            <SelectItem value="archived">В архиве</SelectItem>
           </SelectContent>
         </Select>
 
@@ -405,103 +379,193 @@ export default function AdminListingsPage() {
         </Select>
       </div>
 
-      {/* Listings List */}
+      {/* Listings Table/Cards */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : data?.listings && data.listings.length > 0 ? (
-        <div className="space-y-4">
-          {data.listings.map((listing) => {
-            const propertyInfo = getPropertyInfo(listing);
-            const PropertyIcon = propertyInfo.icon;
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden rounded-lg border md:block">
+            <div className="bg-muted/50 text-muted-foreground flex items-center gap-4 border-b px-4 py-3 text-sm font-medium">
+              <div className="w-24">Дата</div>
+              <div className="min-w-0 flex-1">Объявление</div>
+              <div className="w-28">Тип</div>
+              <div className="w-32">Цена</div>
+              <div className="w-40">Автор</div>
+              <div className="w-28">Статус</div>
+              <div className="w-10"></div>
+            </div>
 
-            return (
-              <Card key={listing.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    {/* User Avatar */}
-                    <Avatar className="h-10 w-10">
+            {data.listings.map((listing) => {
+              const propertyInfo = getPropertyInfo(listing);
+              const PropertyIcon = propertyInfo.icon;
+
+              return (
+                <div
+                  key={listing.id}
+                  className="hover:bg-muted/30 flex items-center gap-4 border-b px-4 py-3 last:border-b-0"
+                >
+                  {/* Date */}
+                  <div className="text-muted-foreground w-24 text-sm">
+                    {formatDate(listing.createdAt)}
+                  </div>
+
+                  {/* Title + Property */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <PropertyIcon className="text-muted-foreground h-4 w-4 shrink-0" />
+                      <span className="truncate font-medium">{listing.title}</span>
+                    </div>
+                    <div className="text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs">
+                      <span className="truncate">{propertyInfo.title}</span>
+                      {propertyInfo.subtitle && (
+                        <>
+                          <span>·</span>
+                          <span className="truncate">{propertyInfo.subtitle}</span>
+                        </>
+                      )}
+                    </div>
+                    {listing.photos && listing.photos.length > 0 && (
+                      <div className="mt-1 flex items-center gap-1">
+                        <ImageIcon className="h-3 w-3" />
+                        <span className="text-muted-foreground text-xs">{listing.photos.length}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Listing Type */}
+                  <div className="w-28">
+                    <Badge variant={listing.listingType === "rent" ? "default" : "secondary"}>
+                      {LISTING_TYPE_LABELS[listing.listingType]}
+                    </Badge>
+                  </div>
+
+                  {/* Price */}
+                  <div className="w-32 text-sm font-medium">
+                    {listing.price.toLocaleString("ru-RU")} ₽
+                    {listing.listingType === "rent" && <span className="text-muted-foreground">/мес</span>}
+                  </div>
+
+                  {/* Author */}
+                  <div className="flex w-40 items-center gap-2">
+                    <Avatar className="h-6 w-6">
                       <AvatarImage src={listing.user?.image ?? undefined} />
-                      <AvatarFallback>
+                      <AvatarFallback className="text-xs">
                         {listing.user?.name?.slice(0, 2).toUpperCase() ?? "??"}
                       </AvatarFallback>
                     </Avatar>
-
-                    {/* Listing Info */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="max-w-[300px] truncate font-medium">{listing.title}</span>
-                        <Badge variant={STATUS_COLORS[listing.status] as any}>
-                          {STATUS_LABELS[listing.status]}
-                        </Badge>
-                        <Badge variant={listing.listingType === "rent" ? "default" : "secondary"}>
-                          {LISTING_TYPE_LABELS[listing.listingType]}
-                        </Badge>
-                      </div>
-
-                      <div className="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
-                        <PropertyIcon className="h-4 w-4" />
-                        <span>{propertyInfo.title}</span>
-                        <span>·</span>
-                        <span>{propertyInfo.subtitle}</span>
-                      </div>
-
-                      <div className="text-muted-foreground mt-1 flex items-center gap-4 text-xs">
-                        <span className="text-foreground font-medium">
-                          {listing.price.toLocaleString("ru-RU")} ₽
-                          {listing.listingType === "rent" && "/мес"}
-                        </span>
-                        <span>·</span>
-                        <span>{listing.user?.name ?? listing.user?.email}</span>
-                        <span>·</span>
-                        <span>{new Date(listing.createdAt).toLocaleDateString("ru-RU")}</span>
-                        {listing.photos && listing.photos.length > 0 && (
-                          <>
-                            <span>·</span>
-                            <span className="flex items-center gap-1">
-                              <ImageIcon className="h-3 w-3" />
-                              {listing.photos.length}
-                            </span>
-                          </>
-                        )}
-                      </div>
-
-                      {listing.description && (
-                        <p className="text-muted-foreground mt-2 line-clamp-2 text-sm">
-                          {listing.description}
-                        </p>
-                      )}
-
-                      {listing.rejectionReason && (
-                        <p className="mt-2 text-sm italic text-red-600">
-                          Причина отклонения: {listing.rejectionReason}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      {listing.status === "pending_moderation" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openModerationDialog(listing)}
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          Рассмотреть
-                        </Button>
-                      )}
-                    </div>
+                    <span className="text-muted-foreground truncate text-sm">
+                      {listing.user?.name ?? listing.user?.email}
+                    </span>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+
+                  {/* Status */}
+                  <div className="w-28">
+                    <Badge variant={STATUS_COLORS[listing.status]}>
+                      {STATUS_LABELS[listing.status]}
+                    </Badge>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="w-10">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {listing.status === "pending_moderation" && (
+                          <DropdownMenuItem onClick={() => openModerationDialog(listing)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Рассмотреть
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="space-y-3 md:hidden">
+            {data.listings.map((listing) => {
+              const propertyInfo = getPropertyInfo(listing);
+              const PropertyIcon = propertyInfo.icon;
+
+              return (
+                <div key={listing.id} className="bg-card rounded-lg border p-4">
+                  <div className="mb-3 flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center gap-2">
+                        <PropertyIcon className="text-muted-foreground h-4 w-4 shrink-0" />
+                        <h3 className="truncate font-medium">{listing.title}</h3>
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        {propertyInfo.title} · {propertyInfo.subtitle}
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {listing.status === "pending_moderation" && (
+                          <DropdownMenuItem onClick={() => openModerationDialog(listing)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Рассмотреть
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <Badge variant={STATUS_COLORS[listing.status]}>
+                      {STATUS_LABELS[listing.status]}
+                    </Badge>
+                    <Badge variant={listing.listingType === "rent" ? "default" : "secondary"}>
+                      {LISTING_TYPE_LABELS[listing.listingType]}
+                    </Badge>
+                  </div>
+
+                  <div className="text-muted-foreground space-y-1 text-sm">
+                    <div className="font-medium">
+                      {listing.price.toLocaleString("ru-RU")} ₽
+                      {listing.listingType === "rent" && "/мес"}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={listing.user?.image ?? undefined} />
+                        <AvatarFallback className="text-xs">
+                          {listing.user?.name?.slice(0, 2).toUpperCase() ?? "??"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs">{listing.user?.name ?? listing.user?.email}</span>
+                      <span>·</span>
+                      <span className="text-xs">{formatDate(listing.createdAt)}</span>
+                    </div>
+                    {listing.photos && listing.photos.length > 0 && (
+                      <div className="flex items-center gap-1">
+                        <ImageIcon className="h-3 w-3" />
+                        <span className="text-xs">{listing.photos.length} фото</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
           {/* Pagination */}
           {data.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
+            <div className="flex items-center justify-center gap-2">
               <Button
                 variant="outline"
                 size="icon"
@@ -523,15 +587,13 @@ export default function AdminListingsPage() {
               </Button>
             </div>
           )}
-        </div>
+        </>
       ) : (
-        <Card>
-          <CardContent className="text-muted-foreground py-12 text-center">
-            {statusFilter === "pending_moderation"
-              ? "Нет объявлений на модерации"
-              : "Объявлений не найдено"}
-          </CardContent>
-        </Card>
+        <div className="text-muted-foreground rounded-lg border py-12 text-center">
+          {statusFilter === "pending_moderation"
+            ? "Нет объявлений на модерации"
+            : "Объявлений не найдено"}
+        </div>
       )}
 
       {/* Moderation Dialog */}
