@@ -159,6 +159,24 @@ jobs:
           DATABASE_URL="$DATABASE_URL"
           DATABASE_NAME="$DATABASE_NAME"
 
+          # S3 Storage
+          S3_URL="$S3_URL"
+          S3_ACCESS_KEY="$S3_ACCESS_KEY"
+          S3_SECRET_KEY="$S3_SECRET_KEY"
+          S3_BUCKET="$S3_BUCKET"
+          S3_REGION="$S3_REGION"
+          S3_PUBLIC_URL="$S3_PUBLIC_URL"
+
+          # SMTP Configuration
+          SMTP_HOST="$SMTP_HOST"
+          SMTP_PORT="$SMTP_PORT"
+          SMTP_SECURE="$SMTP_SECURE"
+          SMTP_USER="$SMTP_USER"
+          SMTP_PASSWORD="$SMTP_PASSWORD"
+          SMTP_FROM_NAME="$SMTP_FROM_NAME"
+          SMTP_FROM_EMAIL="$SMTP_FROM_EMAIL"
+          SMTP_REPLY_TO="$SMTP_REPLY_TO"
+
           # Trust host for auth
           AUTH_TRUST_HOST=true
           EOF
@@ -207,6 +225,20 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+          S3_URL: ${{ secrets.S3_URL }}
+          S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+          S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+          S3_PUBLIC_URL: ${{ secrets.S3_PUBLIC_URL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM_NAME: ${{ secrets.SMTP_FROM_NAME }}
+          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
+          SMTP_REPLY_TO: ${{ secrets.SMTP_REPLY_TO }}
 
       - name: Prune old releases (keep 5)
         run: |

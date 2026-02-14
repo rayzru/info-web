@@ -61,8 +61,10 @@ yarn-error.log*
 # PWA service worker (generated during build)
 /public/sw.js
 
-.playwright-mcp
 # Release analysis files (temporary, not committed)
 RELEASE_CHANGES_*.md
 RELEASE_SUMMARY_*.md
 RELEASE_SUMMARY.md
+
+# Playwright MCP
+.playwright-mcp/
