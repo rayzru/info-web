@@ -20,6 +20,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
+import { DocumentViewerDialog } from "~/components/admin/document-viewer-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -87,9 +88,10 @@ type ReviewDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  onViewDocument: (doc: any) => void;
 };
 
-function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProps) {
+function ReviewDialog({ claim, open, onOpenChange, onSuccess, onViewDocument }: ReviewDialogProps) {
   const { toast } = useToast();
   const [action, setAction] = useState<"approve" | "reject">("approve");
   const [template, setTemplate] = useState<string>("");
@@ -159,11 +161,9 @@ function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProp
                   const isImage = doc.mimeType?.startsWith("image/");
 
                   return (
-                    <a
+                    <button
                       key={doc.id}
-                      href={doc.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      onClick={() => onViewDocument(doc)}
                       className="bg-muted/30 hover:bg-muted group flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs transition-colors"
                     >
                       {isImage ? (
@@ -175,7 +175,7 @@ function ReviewDialog({ claim, open, onOpenChange, onSuccess }: ReviewDialogProp
                       )}
                       <span className="max-w-32 truncate">{doc.fileName}</span>
                       <ExternalLink className="text-muted-foreground h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </a>
+                    </button>
                   );
                 })}
               </div>
@@ -359,6 +359,8 @@ export default function AdminClaimsPage() {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [historyClaimId, setHistoryClaimId] = useState<string>("");
+  const [viewerDocument, setViewerDocument] = useState<any>(null);
+  const [viewerDialogOpen, setViewerDialogOpen] = useState(false);
 
   const { data: stats } = api.claims.admin.stats.useQuery();
   const { data, isLoading, refetch } = api.claims.admin.list.useQuery({
@@ -403,6 +405,11 @@ export default function AdminClaimsPage() {
   const openHistoryDialog = (claimId: string) => {
     setHistoryClaimId(claimId);
     setHistoryDialogOpen(true);
+  };
+
+  const openDocumentViewer = (doc: any) => {
+    setViewerDocument(doc);
+    setViewerDialogOpen(true);
   };
 
   const getPropertyInfo = (claim: any) => {
@@ -584,11 +591,9 @@ export default function AdminClaimsPage() {
                               const isImage = doc.mimeType?.startsWith("image/");
 
                               return (
-                                <a
+                                <button
                                   key={doc.id}
-                                  href={doc.fileUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
+                                  onClick={() => openDocumentViewer(doc)}
                                   className="bg-muted/30 hover:bg-muted group flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs transition-colors"
                                 >
                                   {isImage ? (
@@ -600,7 +605,7 @@ export default function AdminClaimsPage() {
                                   )}
                                   <span className="max-w-40 truncate">{doc.fileName}</span>
                                   <ExternalLink className="text-muted-foreground h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
-                                </a>
+                                </button>
                               );
                             })}
                           </div>
@@ -676,6 +681,7 @@ export default function AdminClaimsPage() {
           open={reviewDialogOpen}
           onOpenChange={setReviewDialogOpen}
           onSuccess={() => refetch()}
+          onViewDocument={openDocumentViewer}
         />
       )}
 
@@ -684,6 +690,13 @@ export default function AdminClaimsPage() {
         claimId={historyClaimId}
         open={historyDialogOpen}
         onOpenChange={setHistoryDialogOpen}
+      />
+
+      {/* Document Viewer Dialog */}
+      <DocumentViewerDialog
+        document={viewerDocument}
+        open={viewerDialogOpen}
+        onOpenChange={setViewerDialogOpen}
       />
     </div>
   );

@@ -1086,6 +1086,17 @@ export const claimsRouter = createTRPCRouter({
           changedBy: ctx.session.user.id,
         });
 
+        // Mark documents for deletion after approved/rejected
+        if (input.status === "approved" || input.status === "rejected") {
+          const scheduledDate = new Date();
+          scheduledDate.setDate(scheduledDate.getDate() + 60); // 60 days from now
+
+          await ctx.db
+            .update(claimDocuments)
+            .set({ scheduledForDeletion: scheduledDate })
+            .where(eq(claimDocuments.claimId, input.claimId));
+        }
+
         // If approved, create user-property relationship and assign role
         if (input.status === "approved") {
           let buildingId: string | null = null;

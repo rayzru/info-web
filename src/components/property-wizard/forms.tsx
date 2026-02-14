@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { Search, X } from "lucide-react";
+
 import { cn } from "~/lib/utils";
 
 // ============ Form Wrapper ============
@@ -33,7 +36,7 @@ interface TypeFormProps {
 
 export function TypeForm({ value, onChange }: TypeFormProps) {
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-4 gap-2">
       <button
         type="button"
         onClick={() => onChange("apartment")}
@@ -89,7 +92,7 @@ interface BuildingFormProps {
 
 export function BuildingForm({ buildings, value, onChange }: BuildingFormProps) {
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-4 gap-2">
       {buildings.map((building) => {
         const isSelected = value === building.id;
 
@@ -131,6 +134,8 @@ export function PropertyForm({
   onChange,
   existingClaims,
 }: PropertyFormProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+
   const hasExistingClaim = (propertyId: string) => {
     if (type === "apartment") {
       return existingClaims.some((c) => c.apartmentId === propertyId);
@@ -139,43 +144,8 @@ export function PropertyForm({
   };
 
   if (type === "apartment") {
-    // Check if building has any entrances with apartments
-    const hasApartments =
-      building.entrances?.length > 0 &&
-      building.entrances.some((entrance: any) =>
-        entrance.floors?.some((floor: any) => floor.apartments?.length > 0)
-      );
-
-    // Show placeholder if no apartments available
-    if (!hasApartments) {
-      return (
-        <div className="border-muted-foreground/20 bg-muted/30 space-y-3 rounded-lg border-2 border-dashed p-6 text-center">
-          <div className="text-muted-foreground">
-            <svg
-              className="mx-auto mb-3 h-12 w-12 opacity-40"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
-            </svg>
-            <p className="text-sm font-medium">Данные по квартирам недоступны</p>
-            <p className="mx-auto mt-2 max-w-md text-xs">
-              В системе пока нет точных данных о квартирах в этом строении. Регистрация квартир для
-              данного строения временно недоступна.
-            </p>
-          </div>
-        </div>
-      );
-    }
-
     // Flatten all apartments with their metadata
-    const apartments = building.entrances
+    const allApartments = building.entrances
       .sort((a: any, b: any) => a.entranceNumber - b.entranceNumber)
       .flatMap((entrance: any) =>
         entrance.floors
@@ -197,6 +167,11 @@ export function PropertyForm({
         return parseInt(a.number) - parseInt(b.number);
       });
 
+    // Filter apartments by search query
+    const apartments = searchQuery
+      ? allApartments.filter((apt: any) => apt.number.includes(searchQuery))
+      : allApartments;
+
     // Group by entrance and floor for display
     const groups: Array<{ label: string; items: any[] }> = [];
     apartments.forEach((apt: any) => {
@@ -210,81 +185,79 @@ export function PropertyForm({
     });
 
     return (
-      <div className="h-50 overflow-y-auto p-3">
-        <div className="space-y-4">
-          {groups.map((group, idx) => (
-            <div key={idx}>
-              <div className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
-                {group.label}
-              </div>
-              <div className="grid grid-cols-5 gap-2">
-                {group.items.map((apt: any) => {
-                  const isSelected = value === apt.id;
-                  const isDisabled = apt.disabled;
+      <div className="flex flex-col">
+        {/* Search Input - sticky at the top */}
+        <div className="border-primary relative mb-3 border-b-2 pb-3">
+          <div className="relative flex items-center">
+            <Search className="text-muted-foreground absolute left-3 h-4 w-4" />
+            <input
+              type="search"
+              placeholder="Быстрый поиск..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={cn(
+                "h-10 w-full border-0 bg-transparent py-2 pl-10 pr-10 text-center text-sm",
+                "placeholder:text-muted-foreground/60",
+                "focus-visible:outline-none",
+                "disabled:cursor-not-allowed disabled:opacity-50"
+              )}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="text-muted-foreground hover:text-foreground absolute right-3 transition-colors"
+                aria-label="Очистить поиск"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
 
-                  return (
-                    <button
-                      key={apt.id}
-                      type="button"
-                      onClick={() => !isDisabled && onChange(apt.id)}
-                      disabled={isDisabled}
-                      className={cn(
-                        "h-10 rounded-md px-2 text-sm font-medium transition-colors",
-                        !isDisabled && "hover:bg-accent hover:text-accent-foreground",
-                        "focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2",
-                        isSelected && "bg-primary text-primary-foreground",
-                        isDisabled && "cursor-not-allowed opacity-40"
-                      )}
-                    >
-                      {apt.number}
-                    </button>
-                  );
-                })}
+        {/* Scrollable apartment list */}
+        <div className="h-50 overflow-y-auto pr-1">
+          <div className="space-y-4">
+            {groups.map((group, idx) => (
+              <div key={idx}>
+                <div className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
+                  {group.label}
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {group.items.map((apt: any) => {
+                    const isSelected = value === apt.id;
+                    const isDisabled = apt.disabled;
+
+                    return (
+                      <button
+                        key={apt.id}
+                        type="button"
+                        onClick={() => !isDisabled && onChange(apt.id)}
+                        disabled={isDisabled}
+                        title={isDisabled ? "Заявка уже подана на эту квартиру" : undefined}
+                        className={cn(
+                          "h-10 rounded-md px-2 text-sm font-medium transition-colors",
+                          !isDisabled && "hover:bg-accent hover:text-accent-foreground",
+                          "focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2",
+                          isSelected && "bg-primary text-primary-foreground",
+                          isDisabled && "cursor-not-allowed opacity-40"
+                        )}
+                      >
+                        {apt.number}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   // Parking
-  // Check if building has any parking spots
-  const hasParkingSpots =
-    building.parkings?.length > 0 &&
-    building.parkings.some((parking: any) =>
-      parking.floors?.some((floor: any) => floor.spots?.length > 0)
-    );
-
-  // Show placeholder if no parking spots available
-  if (!hasParkingSpots) {
-    return (
-      <div className="border-muted-foreground/20 bg-muted/30 space-y-3 rounded-lg border-2 border-dashed p-6 text-center">
-        <div className="text-muted-foreground">
-          <svg
-            className="mx-auto mb-3 h-12 w-12 opacity-40"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
-            />
-          </svg>
-          <p className="text-sm font-medium">Данные по парковке недоступны</p>
-          <p className="mx-auto mt-2 max-w-md text-xs">
-            В системе пока нет точных данных о парковочных местах в этом строении. Регистрация
-            парковочных мест для данного строения временно недоступна.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const parkingSpots =
+  const allParkingSpots =
     building.parkings[0]?.floors
       ?.sort((a: any, b: any) => a.floorNumber - b.floorNumber)
       .flatMap((floor: any) =>
@@ -300,6 +273,11 @@ export function PropertyForm({
         return parseInt(a.number) - parseInt(b.number);
       }) ?? [];
 
+  // Filter parking spots by search query
+  const parkingSpots = searchQuery
+    ? allParkingSpots.filter((spot: any) => spot.number.includes(searchQuery))
+    : allParkingSpots;
+
   // Group by floor
   const groups: Array<{ label: string; items: any[] }> = [];
   parkingSpots.forEach((spot: any) => {
@@ -313,39 +291,72 @@ export function PropertyForm({
   });
 
   return (
-    <div className="h-50 overflow-y-auto p-3">
-      <div className="space-y-4">
-        {groups.map((group, idx) => (
-          <div key={idx}>
-            <div className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
-              {group.label}
-            </div>
-            <div className="grid grid-cols-5 gap-2">
-              {group.items.map((spot: any) => {
-                const isSelected = value === spot.id;
-                const isDisabled = spot.disabled;
+    <div className="flex flex-col">
+      {/* Search Input - sticky at the top */}
+      <div className="border-primary relative mb-3 border-b-2 pb-3">
+        <div className="relative flex items-center">
+          <Search className="text-muted-foreground absolute left-3 h-4 w-4" />
+          <input
+            type="search"
+            placeholder="Быстрый поиск..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={cn(
+              "h-10 w-full border-0 bg-transparent py-2 pl-10 pr-10 text-center text-sm",
+              "placeholder:text-muted-foreground/60",
+              "focus-visible:outline-none",
+              "disabled:cursor-not-allowed disabled:opacity-50"
+            )}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="text-muted-foreground hover:text-foreground absolute right-3 transition-colors"
+              aria-label="Очистить поиск"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </div>
 
-                return (
-                  <button
-                    key={spot.id}
-                    type="button"
-                    onClick={() => !isDisabled && onChange(spot.id)}
-                    disabled={isDisabled}
-                    className={cn(
-                      "h-10 rounded-md px-2 text-sm font-medium transition-colors",
-                      !isDisabled && "hover:bg-accent hover:text-accent-foreground",
-                      "focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2",
-                      isSelected && "bg-primary text-primary-foreground",
-                      isDisabled && "cursor-not-allowed opacity-40"
-                    )}
-                  >
-                    {spot.number}
-                  </button>
-                );
-              })}
+      {/* Scrollable parking list */}
+      <div className="h-50 overflow-y-auto pr-1">
+        <div className="space-y-4">
+          {groups.map((group, idx) => (
+            <div key={idx}>
+              <div className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
+                {group.label}
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {group.items.map((spot: any) => {
+                  const isSelected = value === spot.id;
+                  const isDisabled = spot.disabled;
+
+                  return (
+                    <button
+                      key={spot.id}
+                      type="button"
+                      onClick={() => !isDisabled && onChange(spot.id)}
+                      disabled={isDisabled}
+                      title={isDisabled ? "Заявка уже подана на это парковочное место" : undefined}
+                      className={cn(
+                        "h-10 rounded-md px-2 text-sm font-medium transition-colors",
+                        !isDisabled && "hover:bg-accent hover:text-accent-foreground",
+                        "focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2",
+                        isSelected && "bg-primary text-primary-foreground",
+                        isDisabled && "cursor-not-allowed opacity-40"
+                      )}
+                    >
+                      {spot.number}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

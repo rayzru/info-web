@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { ChevronLeft, Loader2 } from "lucide-react";
 
+import type { UploadedDocument } from "~/components/claim-document-uploader";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -13,11 +14,12 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 
+import { DocumentsForm } from "./documents-form";
 import { BuildingForm, FormWrapper, PropertyForm, RoleForm, TypeForm } from "./forms";
 import { StepHeader } from "./step-header";
 
 type PropertyType = "apartment" | "parking";
-type WizardStep = "type" | "building" | "property" | "role" | "completed";
+type WizardStep = "type" | "building" | "property" | "role" | "documents" | "completed";
 
 interface Building {
   id: string;
@@ -62,6 +64,7 @@ interface PropertyWizardProps {
     buildingId: string;
     propertyId: string;
     role: string;
+    documents: UploadedDocument[];
   }) => Promise<void>;
   isSubmitting: boolean;
 }
@@ -79,6 +82,8 @@ export function PropertyWizard({
   const [selectedBuildingId, setSelectedBuildingId] = useState("");
   const [selectedPropertyId, setSelectedPropertyId] = useState("");
   const [role, setRole] = useState("");
+  const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const selectedBuilding = buildings.find((b) => b.id === selectedBuildingId);
 
@@ -150,6 +155,12 @@ export function PropertyWizard({
         return roleLabels[role] ?? role;
       },
     },
+    {
+      key: "documents",
+      label: "Документы",
+      getValue: () =>
+        uploadedDocuments.length > 0 ? `${uploadedDocuments.length} документ(ов)` : "",
+    },
   ];
 
   const currentStepIndex = steps.findIndex((s) => s.key === step);
@@ -161,11 +172,17 @@ export function PropertyWizard({
       setStep("property");
     } else if (step === "property" && selectedPropertyId) {
       setStep("role");
+    } else if (step === "role" && role) {
+      setStep("documents");
+    } else if (step === "documents") {
+      setStep("completed");
     }
   };
 
   const handleBack = () => {
     if (step === "completed") {
+      setStep("documents");
+    } else if (step === "documents") {
       setStep("role");
     } else if (step === "role") {
       setStep("property");
@@ -189,6 +206,7 @@ export function PropertyWizard({
       buildingId: selectedBuildingId,
       propertyId: selectedPropertyId,
       role,
+      documents: uploadedDocuments,
     });
 
     // Reset
@@ -197,6 +215,7 @@ export function PropertyWizard({
     setSelectedBuildingId("");
     setSelectedPropertyId("");
     setRole("");
+    setUploadedDocuments([]);
   };
 
   const handleClose = () => {
@@ -206,6 +225,7 @@ export function PropertyWizard({
       setSelectedBuildingId("");
       setSelectedPropertyId("");
       setRole("");
+      setUploadedDocuments([]);
       onOpenChange(false);
     }
   };
@@ -220,6 +240,8 @@ export function PropertyWizard({
         return propertyType === "apartment" ? "Выберите квартиру" : "Выберите парковочное место";
       case "role":
         return "Укажите вашу роль";
+      case "documents":
+        return "Подтверждающие документы";
       default:
         return "";
     }
@@ -303,8 +325,17 @@ export function PropertyWizard({
                         value={role}
                         onChange={(value) => {
                           setRole(value);
-                          setStep("completed");
+                          setStep("documents");
                         }}
+                      />
+                    )}
+
+                    {stepInfo.key === "documents" && (
+                      <DocumentsForm
+                        documents={uploadedDocuments}
+                        onDocumentsChange={setUploadedDocuments}
+                        isUploading={isUploading}
+                        onUploadingChange={setIsUploading}
                       />
                     )}
                   </FormWrapper>
@@ -317,7 +348,7 @@ export function PropertyWizard({
         {/* Footer */}
         <div className="flex items-center justify-between gap-3 border-t pt-4">
           {step !== "type" && (
-            <Button variant="ghost" onClick={handleBack} disabled={isSubmitting}>
+            <Button variant="ghost" onClick={handleBack} disabled={isSubmitting || isUploading}>
               <ChevronLeft className="mr-2 h-4 w-4" />
               Назад
             </Button>
@@ -325,9 +356,16 @@ export function PropertyWizard({
           {step === "type" && <div />}
 
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
+            <Button variant="outline" onClick={handleClose} disabled={isSubmitting || isUploading}>
               Отмена
             </Button>
+
+            {step === "documents" && (
+              <Button onClick={() => setStep("completed")} disabled={isUploading}>
+                {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Продолжить
+              </Button>
+            )}
 
             {step === "completed" && (
               <Button onClick={handleSubmit} disabled={!role || isSubmitting}>
