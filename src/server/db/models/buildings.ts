@@ -54,18 +54,16 @@ export const buildings = ({ db }: { db: Database }) => ({
       maxApartmentNumber: Math.max(
         ...building.entrances.flatMap((entrance) =>
           entrance.floors.flatMap((floor) =>
-            floor.apartments.map((apartment) => Number(apartment.number)),
-          ),
+            floor.apartments.map((apartment) => Number(apartment.number))
+          )
         ),
-        0,
+        0
       ),
       maxParkingNumber: Math.max(
         ...building.parkings.flatMap((parking) =>
-          parking.floors.flatMap((floor) =>
-            floor.spots.map((spot) => Number(spot.number)),
-          ),
+          parking.floors.flatMap((floor) => floor.spots.map((spot) => Number(spot.number)))
         ),
-        0,
+        0
       ),
     }));
   },

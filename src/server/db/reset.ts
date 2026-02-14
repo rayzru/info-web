@@ -9,6 +9,7 @@
  */
 
 import { sql } from "drizzle-orm";
+
 import { db } from "./index";
 
 async function resetDatabase() {
@@ -32,7 +33,6 @@ async function resetDatabase() {
     console.log("  2. Run: bun run db:seed");
     console.log("");
     console.log("💡 Or use the combined command: bun run db:reset:full");
-
   } catch (error) {
     console.error("❌ Error resetting database:", error);
     process.exit(1);

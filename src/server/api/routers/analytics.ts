@@ -2,29 +2,18 @@ import { TRPCError } from "@trpc/server";
 import { and, count, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 
-import {
-  analyticsEvents,
-  analyticsSessions,
-} from "~/server/db/schema";
-import {
-  adminProcedureWithFeature,
-  createTRPCRouter,
-  publicProcedure,
-} from "../trpc";
+import { analyticsEvents, analyticsSessions } from "~/server/db/schema";
+
+import { adminProcedureWithFeature, createTRPCRouter, publicProcedure } from "../trpc";
 
 // Session duration in milliseconds (30 minutes)
 const SESSION_DURATION_MS = 30 * 60 * 1000;
 
 // Device type detection
-function detectDeviceType(
-  userAgent: string
-): "desktop" | "mobile" | "tablet" | "unknown" {
+function detectDeviceType(userAgent: string): "desktop" | "mobile" | "tablet" | "unknown" {
   const ua = userAgent.toLowerCase();
   if (/tablet|ipad|playbook|silk/i.test(ua)) return "tablet";
-  if (
-    /mobile|iphone|ipod|android|blackberry|opera mini|iemobile/i.test(ua)
-  )
-    return "mobile";
+  if (/mobile|iphone|ipod|android|blackberry|opera mini|iemobile/i.test(ua)) return "mobile";
   if (/windows|macintosh|linux/i.test(ua)) return "desktop";
   return "unknown";
 }
@@ -305,10 +294,7 @@ export const analyticsRouter = createTRPCRouter({
           .select({ count: count() })
           .from(analyticsEvents)
           .where(
-            and(
-              gte(analyticsEvents.createdAt, startDate),
-              eq(analyticsEvents.eventType, "action")
-            )
+            and(gte(analyticsEvents.createdAt, startDate), eq(analyticsEvents.eventType, "action"))
           ),
 
         // Conversions
@@ -376,10 +362,7 @@ export const analyticsRouter = createTRPCRouter({
         })
         .from(analyticsEvents)
         .where(
-          and(
-            gte(analyticsEvents.createdAt, startDate),
-            eq(analyticsEvents.eventType, "page_view")
-          )
+          and(gte(analyticsEvents.createdAt, startDate), eq(analyticsEvents.eventType, "page_view"))
         )
         .groupBy(analyticsEvents.pagePath)
         .orderBy(desc(count()))
@@ -603,10 +586,7 @@ export const analyticsRouter = createTRPCRouter({
         })
         .from(analyticsEvents)
         .where(
-          and(
-            gte(analyticsEvents.createdAt, startDate),
-            eq(analyticsEvents.eventType, "page_view")
-          )
+          and(gte(analyticsEvents.createdAt, startDate), eq(analyticsEvents.eventType, "page_view"))
         )
         .groupBy(eventsPeriodExpr)
         .orderBy(eventsPeriodExpr);

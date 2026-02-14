@@ -1,3 +1,4 @@
+import type { JSONContent } from "@tiptap/react";
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
@@ -11,72 +12,71 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import type { JSONContent } from "@tiptap/react";
 
-import { createTable } from "./create-table";
-import { users } from "./users";
 import { buildings, entrances, floors } from "./buildings";
+import { createTable } from "./create-table";
 import { directoryTags } from "./directory";
+import { users } from "./users";
 
 // ============================================================================
 // Enums
 // ============================================================================
 
 export const publicationTypeEnum = pgEnum("publication_type_enum", [
-  "announcement",   // Объявление (обычное)
-  "event",          // Мероприятие
-  "help_request",   // Просьба о помощи
-  "lost_found",     // Потеряно/найдено
+  "announcement", // Объявление (обычное)
+  "event", // Мероприятие
+  "help_request", // Просьба о помощи
+  "lost_found", // Потеряно/найдено
   "recommendation", // Рекомендация
-  "question",       // Вопрос сообществу
-  "discussion",     // Обсуждение
+  "question", // Вопрос сообществу
+  "discussion", // Обсуждение
 ]);
 
 export const publicationStatusEnum = pgEnum("publication_status_enum", [
-  "draft",          // Черновик
-  "pending",        // На модерации (ожидает одобрений)
-  "published",      // Опубликовано
-  "rejected",       // Отклонено
-  "archived",       // В архиве
+  "draft", // Черновик
+  "pending", // На модерации (ожидает одобрений)
+  "published", // Опубликовано
+  "rejected", // Отклонено
+  "archived", // В архиве
 ]);
 
 // Результат голосования модератора
 export const moderationVoteEnum = pgEnum("moderation_vote_enum", [
-  "approve",        // Одобрить
-  "reject",         // Отклонить
+  "approve", // Одобрить
+  "reject", // Отклонить
   "request_changes", // Запросить изменения
 ]);
 
 // Действия в истории публикации
 export const publicationHistoryActionEnum = pgEnum("publication_history_action_enum", [
-  "created",           // Создано
-  "updated",           // Обновлено
-  "submitted",         // Отправлено на модерацию
-  "approved",          // Одобрено
-  "rejected",          // Отклонено
-  "archived",          // Архивировано
-  "published",         // Опубликовано
-  "pinned",            // Закреплено
-  "unpinned",          // Откреплено
-  "moderation_vote",   // Голос модератора
+  "created", // Создано
+  "updated", // Обновлено
+  "submitted", // Отправлено на модерацию
+  "approved", // Одобрено
+  "rejected", // Отклонено
+  "archived", // Архивировано
+  "published", // Опубликовано
+  "pinned", // Закреплено
+  "unpinned", // Откреплено
+  "moderation_vote", // Голос модератора
 ]);
 
 // Типы целей для привязки публикаций
 export const publicationTargetTypeEnum = pgEnum("publication_target_type_enum", [
-  "complex",        // Весь ЖК
-  "uk",             // УК (управляющая компания)
-  "building",       // Строение/корпус
-  "entrance",       // Подъезд
-  "floor",          // Этаж
+  "complex", // Весь ЖК
+  "uk", // УК (управляющая компания)
+  "building", // Строение/корпус
+  "entrance", // Подъезд
+  "floor", // Этаж
 ]);
 
 // Типы повторения событий
 export const eventRecurrenceTypeEnum = pgEnum("event_recurrence_type_enum", [
-  "none",           // Без повторения (одноразовое событие)
-  "daily",          // Ежедневно
-  "weekly",         // Еженедельно
-  "monthly",        // Ежемесячно
-  "yearly",         // Ежегодно
+  "none", // Без повторения (одноразовое событие)
+  "daily", // Ежедневно
+  "weekly", // Еженедельно
+  "monthly", // Ежемесячно
+  "yearly", // Ежегодно
 ]);
 
 // ============================================================================
@@ -103,8 +103,7 @@ export const publications = createTable(
 
     // Targeting - к каким строениям относится публикация
     // null = ко всем строениям пользователя / без привязки
-    buildingId: varchar("building_id", { length: 255 })
-      .references(() => buildings.id),
+    buildingId: varchar("building_id", { length: 255 }).references(() => buildings.id),
 
     // Publication timing
     publishAt: timestamp("publish_at", { withTimezone: true }), // Когда опубликовать (null = сразу)
@@ -156,8 +155,7 @@ export const publications = createTable(
       .references(() => users.id),
 
     // Moderation
-    moderatedBy: varchar("moderated_by", { length: 255 })
-      .references(() => users.id),
+    moderatedBy: varchar("moderated_by", { length: 255 }).references(() => users.id),
     moderatedAt: timestamp("moderated_at", { withTimezone: true }),
     moderationComment: text("moderation_comment"), // Причина отклонения
 
@@ -342,19 +340,16 @@ export const publicationsRelations = relations(publications, ({ one, many }) => 
   history: many(publicationHistory),
 }));
 
-export const publicationHistoryRelations = relations(
-  publicationHistory,
-  ({ one }) => ({
-    publication: one(publications, {
-      fields: [publicationHistory.publicationId],
-      references: [publications.id],
-    }),
-    changedBy: one(users, {
-      fields: [publicationHistory.changedById],
-      references: [users.id],
-    }),
-  })
-);
+export const publicationHistoryRelations = relations(publicationHistory, ({ one }) => ({
+  publication: one(publications, {
+    fields: [publicationHistory.publicationId],
+    references: [publications.id],
+  }),
+  changedBy: one(users, {
+    fields: [publicationHistory.changedById],
+    references: [users.id],
+  }),
+}));
 
 export const publicationModerationVotesRelations = relations(
   publicationModerationVotes,
@@ -394,18 +389,18 @@ export const publicationTargetsRelations = relations(publicationTargets, ({ one 
 
 // Allowed attachment types
 export const attachmentTypeEnum = pgEnum("attachment_type_enum", [
-  "document",  // PDF, DOC, DOCX, ODT
-  "image",     // JPG, PNG, GIF, WEBP
-  "archive",   // ZIP, RAR, 7Z
-  "other",     // Other files
+  "document", // PDF, DOC, DOCX, ODT
+  "image", // JPG, PNG, GIF, WEBP
+  "archive", // ZIP, RAR, 7Z
+  "other", // Other files
 ]);
 
 // Max file sizes by type (in bytes)
 export const ATTACHMENT_SIZE_LIMITS = {
-  document: 10 * 1024 * 1024,  // 10MB
-  image: 5 * 1024 * 1024,       // 5MB
-  archive: 50 * 1024 * 1024,    // 50MB
-  other: 5 * 1024 * 1024,       // 5MB
+  document: 10 * 1024 * 1024, // 10MB
+  image: 5 * 1024 * 1024, // 5MB
+  archive: 50 * 1024 * 1024, // 50MB
+  other: 5 * 1024 * 1024, // 5MB
 } as const;
 
 // Allowed MIME types
@@ -418,17 +413,8 @@ export const ALLOWED_ATTACHMENT_MIMES = {
     "application/vnd.ms-excel",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   ],
-  image: [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-  ],
-  archive: [
-    "application/zip",
-    "application/x-rar-compressed",
-    "application/x-7z-compressed",
-  ],
+  image: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+  archive: ["application/zip", "application/x-rar-compressed", "application/x-7z-compressed"],
 } as const;
 
 export const publicationAttachments = createTable(
@@ -472,19 +458,16 @@ export const publicationAttachments = createTable(
   ]
 );
 
-export const publicationAttachmentsRelations = relations(
-  publicationAttachments,
-  ({ one }) => ({
-    publication: one(publications, {
-      fields: [publicationAttachments.publicationId],
-      references: [publications.id],
-    }),
-    uploader: one(users, {
-      fields: [publicationAttachments.uploadedBy],
-      references: [users.id],
-    }),
-  })
-);
+export const publicationAttachmentsRelations = relations(publicationAttachments, ({ one }) => ({
+  publication: one(publications, {
+    fields: [publicationAttachments.publicationId],
+    references: [publications.id],
+  }),
+  uploader: one(users, {
+    fields: [publicationAttachments.uploadedBy],
+    references: [users.id],
+  }),
+}));
 
 // ============================================================================
 // Types

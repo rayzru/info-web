@@ -31,8 +31,8 @@ export const usePwaStore = create<PwaState>()(
     {
       name: "pwa-install",
       partialize: (state) => ({ isDismissed: state.isDismissed }),
-    },
-  ),
+    }
+  )
 );
 
 // Export type for use in hooks

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import {
   AlertTriangle,
   Check,
@@ -17,10 +18,7 @@ import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -57,7 +55,10 @@ const STATUS_COLORS: Record<string, "default" | "secondary" | "destructive" | "o
 };
 
 const REJECTION_TEMPLATES = [
-  { value: "rejected_active_properties", label: "У пользователя есть активные объекты недвижимости" },
+  {
+    value: "rejected_active_properties",
+    label: "У пользователя есть активные объекты недвижимости",
+  },
   { value: "rejected_active_listings", label: "У пользователя есть активные объявления" },
   { value: "rejected_pending_claims", label: "У пользователя есть нерассмотренные заявки" },
   { value: "rejected_custom", label: "Другая причина (указать)" },
@@ -145,9 +146,10 @@ function ReviewDialog({ request, open, onOpenChange, onSuccess }: ReviewDialogPr
         return;
       }
 
-      const rejectionReason = template === "rejected_custom"
-        ? customText
-        : REJECTION_TEMPLATES.find(t => t.value === template)?.label ?? "";
+      const rejectionReason =
+        template === "rejected_custom"
+          ? customText
+          : (REJECTION_TEMPLATES.find((t) => t.value === template)?.label ?? "");
 
       rejectMutation.mutate({
         requestId: request.id,
@@ -169,9 +171,9 @@ function ReviewDialog({ request, open, onOpenChange, onSuccess }: ReviewDialogPr
         </DialogHeader>
 
         {request.reason && (
-          <div className="bg-muted p-3 rounded-lg">
-            <p className="text-sm font-medium mb-1">Причина от пользователя:</p>
-            <p className="text-sm text-muted-foreground">{request.reason}</p>
+          <div className="bg-muted rounded-lg p-3">
+            <p className="mb-1 text-sm font-medium">Причина от пользователя:</p>
+            <p className="text-muted-foreground text-sm">{request.reason}</p>
           </div>
         )}
 
@@ -215,7 +217,7 @@ function ReviewDialog({ request, open, onOpenChange, onSuccess }: ReviewDialogPr
                 {REJECTION_TEMPLATES.map((t) => (
                   <div key={t.value} className="flex items-center space-x-2">
                     <RadioGroupItem value={t.value} id={t.value} />
-                    <Label htmlFor={t.value} className="font-normal cursor-pointer">
+                    <Label htmlFor={t.value} className="cursor-pointer font-normal">
                       {t.label}
                     </Label>
                   </div>
@@ -233,17 +235,19 @@ function ReviewDialog({ request, open, onOpenChange, onSuccess }: ReviewDialogPr
               <Textarea
                 value={customText}
                 onChange={(e) => setCustomText(e.target.value)}
-                placeholder={action === "approve"
-                  ? "Дополнительные заметки для протокола..."
-                  : "Укажите причину отклонения..."}
+                placeholder={
+                  action === "approve"
+                    ? "Дополнительные заметки для протокола..."
+                    : "Укажите причину отклонения..."
+                }
                 rows={3}
               />
             </div>
           )}
 
           {action === "approve" && (
-            <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border border-yellow-200 dark:border-yellow-800">
-              <AlertTriangle className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-950/30">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-600" />
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
                 После одобрения заявки, вам нужно будет отдельно подтвердить выполнение удаления.
                 Это безвозвратно удалит персональные данные пользователя.
@@ -261,9 +265,7 @@ function ReviewDialog({ request, open, onOpenChange, onSuccess }: ReviewDialogPr
             disabled={isPending}
             variant={action === "reject" ? "destructive" : "default"}
           >
-            {isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {action === "approve" ? "Одобрить" : "Отклонить"}
           </Button>
         </DialogFooter>
@@ -317,17 +319,15 @@ function ExecuteDialog({ request, open, onOpenChange, onSuccess }: ExecuteDialog
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-destructive">
+          <DialogTitle className="text-destructive flex items-center gap-2">
             <Trash2 className="h-5 w-5" />
             Подтверждение удаления
           </DialogTitle>
-          <DialogDescription>
-            Это действие необратимо
-          </DialogDescription>
+          <DialogDescription>Это действие необратимо</DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+        <div className="space-y-4 py-4">
+          <div className="bg-muted flex items-center gap-3 rounded-lg p-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={request.user.image ?? undefined} />
               <AvatarFallback>
@@ -336,13 +336,13 @@ function ExecuteDialog({ request, open, onOpenChange, onSuccess }: ExecuteDialog
             </Avatar>
             <div>
               <p className="font-medium">{request.user.name ?? "Без имени"}</p>
-              <p className="text-sm text-muted-foreground">{request.user.email}</p>
+              <p className="text-muted-foreground text-sm">{request.user.email}</p>
             </div>
           </div>
 
           <div className="space-y-2 text-sm">
             <p className="font-medium">Будут выполнены следующие действия:</p>
-            <ul className="list-disc list-inside text-muted-foreground space-y-1">
+            <ul className="text-muted-foreground list-inside list-disc space-y-1">
               <li>Удаление персональных данных профиля</li>
               <li>Отвязка всех OAuth аккаунтов</li>
               <li>Завершение всех сессий</li>
@@ -353,10 +353,11 @@ function ExecuteDialog({ request, open, onOpenChange, onSuccess }: ExecuteDialog
             </ul>
           </div>
 
-          <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
-            <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-            <p className="text-sm text-destructive">
-              Пользователь не сможет восстановить доступ к аккаунту. Данное действие нельзя отменить.
+          <div className="bg-destructive/10 border-destructive/20 flex items-start gap-2 rounded-lg border p-3">
+            <AlertTriangle className="text-destructive mt-0.5 h-5 w-5 shrink-0" />
+            <p className="text-destructive text-sm">
+              Пользователь не сможет восстановить доступ к аккаунту. Данное действие нельзя
+              отменить.
             </p>
           </div>
         </div>
@@ -370,9 +371,7 @@ function ExecuteDialog({ request, open, onOpenChange, onSuccess }: ExecuteDialog
             onClick={handleExecute}
             disabled={executeMutation.isPending}
           >
-            {executeMutation.isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {executeMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Удалить аккаунт
           </Button>
         </DialogFooter>
@@ -391,7 +390,11 @@ export default function AdminDeletionRequestsPage() {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [executeDialogOpen, setExecuteDialogOpen] = useState(false);
 
-  const { data: requests, isLoading, refetch } = api.admin.deletionRequests.list.useQuery({
+  const {
+    data: requests,
+    isLoading,
+    refetch,
+  } = api.admin.deletionRequests.list.useQuery({
     status: statusFilter !== "all" ? (statusFilter as any) : undefined,
   });
 
@@ -430,12 +433,10 @@ export default function AdminDeletionRequestsPage() {
       />
 
       {/* Stats Cards */}
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card
           className={`cursor-pointer transition-all hover:shadow-md ${
-            statusFilter === "pending"
-              ? "ring-2 ring-yellow-500 ring-offset-2"
-              : ""
+            statusFilter === "pending" ? "ring-2 ring-yellow-500 ring-offset-2" : ""
           }`}
           onClick={() => setFilter("pending")}
         >
@@ -444,14 +445,12 @@ export default function AdminDeletionRequestsPage() {
               <Clock className="h-5 w-5 text-yellow-600" />
               <div className="text-2xl font-bold text-yellow-600">{counts?.pending ?? 0}</div>
             </div>
-            <p className="text-sm text-muted-foreground">Ожидают</p>
+            <p className="text-muted-foreground text-sm">Ожидают</p>
           </CardContent>
         </Card>
         <Card
           className={`cursor-pointer transition-all hover:shadow-md ${
-            statusFilter === "approved"
-              ? "ring-2 ring-green-500 ring-offset-2"
-              : ""
+            statusFilter === "approved" ? "ring-2 ring-green-500 ring-offset-2" : ""
           }`}
           onClick={() => setFilter("approved")}
         >
@@ -460,14 +459,12 @@ export default function AdminDeletionRequestsPage() {
               <Check className="h-5 w-5 text-green-600" />
               <div className="text-2xl font-bold text-green-600">{counts?.approved ?? 0}</div>
             </div>
-            <p className="text-sm text-muted-foreground">К выполнению</p>
+            <p className="text-muted-foreground text-sm">К выполнению</p>
           </CardContent>
         </Card>
         <Card
           className={`cursor-pointer transition-all hover:shadow-md ${
-            statusFilter === "rejected"
-              ? "ring-2 ring-red-500 ring-offset-2"
-              : ""
+            statusFilter === "rejected" ? "ring-2 ring-red-500 ring-offset-2" : ""
           }`}
           onClick={() => setFilter("rejected")}
         >
@@ -476,23 +473,21 @@ export default function AdminDeletionRequestsPage() {
               <X className="h-5 w-5 text-red-600" />
               <div className="text-2xl font-bold text-red-600">{counts?.rejected ?? 0}</div>
             </div>
-            <p className="text-sm text-muted-foreground">Отклонено</p>
+            <p className="text-muted-foreground text-sm">Отклонено</p>
           </CardContent>
         </Card>
         <Card
           className={`cursor-pointer transition-all hover:shadow-md ${
-            statusFilter === "completed"
-              ? "ring-2 ring-primary ring-offset-2"
-              : ""
+            statusFilter === "completed" ? "ring-primary ring-2 ring-offset-2" : ""
           }`}
           onClick={() => setFilter("completed")}
         >
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Trash2 className="h-5 w-5 text-muted-foreground" />
+              <Trash2 className="text-muted-foreground h-5 w-5" />
               <div className="text-2xl font-bold">{counts?.completed ?? 0}</div>
             </div>
-            <p className="text-sm text-muted-foreground">Выполнено</p>
+            <p className="text-muted-foreground text-sm">Выполнено</p>
           </CardContent>
         </Card>
       </div>
@@ -533,8 +528,8 @@ export default function AdminDeletionRequestsPage() {
                   </Avatar>
 
                   {/* Request Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium">
                         {request.user?.name ?? request.user?.email}
                       </span>
@@ -543,7 +538,7 @@ export default function AdminDeletionRequestsPage() {
                       </Badge>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                    <div className="text-muted-foreground mt-1 flex items-center gap-4 text-xs">
                       <span>{request.user?.email}</span>
                       <span>·</span>
                       <span>
@@ -556,13 +551,11 @@ export default function AdminDeletionRequestsPage() {
                     </div>
 
                     {request.reason && (
-                      <p className="mt-2 text-sm bg-muted p-2 rounded">
-                        {request.reason}
-                      </p>
+                      <p className="bg-muted mt-2 rounded p-2 text-sm">{request.reason}</p>
                     )}
 
                     {request.adminNotes && (
-                      <p className="mt-2 text-sm text-muted-foreground italic">
+                      <p className="text-muted-foreground mt-2 text-sm italic">
                         Решение: {request.adminNotes}
                       </p>
                     )}
@@ -571,11 +564,7 @@ export default function AdminDeletionRequestsPage() {
                   {/* Actions */}
                   <div className="flex items-center gap-2">
                     {request.status === "pending" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openReviewDialog(request)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => openReviewDialog(request)}>
                         Рассмотреть
                       </Button>
                     )}
@@ -597,7 +586,7 @@ export default function AdminDeletionRequestsPage() {
         </div>
       ) : (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
+          <CardContent className="text-muted-foreground py-12 text-center">
             {statusFilter === "pending"
               ? "Нет заявок на рассмотрение"
               : statusFilter === "approved"

@@ -1,21 +1,19 @@
-import { desc, eq, and, gte, lte, or, ilike } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, lte, or } from "drizzle-orm";
 import { z } from "zod";
 
 import {
-  auditLogs,
-  auditEntityTypeEnum,
-  auditActionEnum,
   AUDIT_ACTION_LABELS,
   AUDIT_ENTITY_LABELS,
-  feedbackHistory,
+  auditActionEnum,
+  auditEntityTypeEnum,
+  auditLogs,
   FEEDBACK_HISTORY_ACTION_LABELS,
-  publicationHistory,
+  feedbackHistory,
   PUBLICATION_HISTORY_ACTION_LABELS,
+  publicationHistory,
 } from "~/server/db/schema";
-import {
-  adminProcedureWithFeature,
-  createTRPCRouter,
-} from "../trpc";
+
+import { adminProcedureWithFeature, createTRPCRouter } from "../trpc";
 
 // ============================================================================
 // Router
@@ -62,10 +60,7 @@ export const auditRouter = createTRPCRouter({
       }
       if (search) {
         conditions.push(
-          or(
-            ilike(auditLogs.description, `%${search}%`),
-            ilike(auditLogs.entityId, `%${search}%`)
-          )
+          or(ilike(auditLogs.description, `%${search}%`), ilike(auditLogs.entityId, `%${search}%`))
         );
       }
 

@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, Clock, Home, Car, History, User, ChevronDown, ChevronUp } from "lucide-react";
-import { api } from "~/trpc/react";
+
+import { Car, Check, ChevronDown, ChevronUp, Clock, History, Home, User, X } from "lucide-react";
+
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Textarea } from "~/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import { Textarea } from "~/components/ui/textarea";
 import { cn } from "~/lib/utils";
+import { api } from "~/trpc/react";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "Ожидает",
@@ -133,14 +135,10 @@ export function PendingTenantClaims() {
             <Clock className="h-5 w-5" />
             Входящие заявки
           </CardTitle>
-          <CardDescription>
-            Заявки на объекты, которыми вы управляете
-          </CardDescription>
+          <CardDescription>Заявки на объекты, которыми вы управляете</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-muted-foreground text-sm py-4 text-center">
-            Нет ожидающих заявок
-          </div>
+          <div className="text-muted-foreground py-4 text-center text-sm">Нет ожидающих заявок</div>
         </CardContent>
       </Card>
     );
@@ -164,39 +162,32 @@ export function PendingTenantClaims() {
         <CardContent>
           <div className="space-y-4">
             {claims.map((claim) => (
-              <div
-                key={claim.id}
-                className="border rounded-lg p-4 space-y-3"
-              >
+              <div key={claim.id} className="space-y-3 rounded-lg border p-4">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       {claim.apartment ? (
-                        <Home className="h-4 w-4 text-muted-foreground" />
+                        <Home className="text-muted-foreground h-4 w-4" />
                       ) : (
-                        <Car className="h-4 w-4 text-muted-foreground" />
+                        <Car className="text-muted-foreground h-4 w-4" />
                       )}
-                      <span className="font-medium">
-                        {getPropertyLabel(claim)}
-                      </span>
+                      <span className="font-medium">{getPropertyLabel(claim)}</span>
                       <Badge className={STATUS_COLORS[claim.status]}>
                         {STATUS_LABELS[claim.status]}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <User className="h-3 w-3" />
                       <span>{claim.user?.name ?? "Пользователь"}</span>
                       <span className="text-muted-foreground/50">•</span>
                       <span>{ROLE_LABELS[claim.claimedRole]}</span>
                     </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {formatDate(claim.createdAt)}
-                  </div>
+                  <div className="text-muted-foreground text-sm">{formatDate(claim.createdAt)}</div>
                 </div>
 
                 {claim.userComment && (
-                  <div className="text-sm bg-muted/50 p-2 rounded">
+                  <div className="bg-muted/50 rounded p-2 text-sm">
                     <span className="text-muted-foreground">Комментарий: </span>
                     {claim.userComment}
                   </div>
@@ -211,7 +202,7 @@ export function PendingTenantClaims() {
                     }}
                     disabled={reviewMutation.isPending}
                   >
-                    <Check className="h-4 w-4 mr-1" />
+                    <Check className="mr-1 h-4 w-4" />
                     Подтвердить
                   </Button>
                   <Button
@@ -223,7 +214,7 @@ export function PendingTenantClaims() {
                     }}
                     disabled={reviewMutation.isPending}
                   >
-                    <X className="h-4 w-4 mr-1" />
+                    <X className="mr-1 h-4 w-4" />
                     Отклонить
                   </Button>
                 </div>
@@ -277,10 +268,7 @@ export function PendingTenantClaims() {
               variant={action === "approve" ? "default" : "destructive"}
               onClick={() =>
                 selectedClaim &&
-                handleReview(
-                  selectedClaim,
-                  action === "approve" ? "approved" : "rejected"
-                )
+                handleReview(selectedClaim, action === "approve" ? "approved" : "rejected")
               }
               disabled={reviewMutation.isPending}
             >
@@ -309,14 +297,12 @@ export function PropertyTimeline({
   });
 
   if (isLoading) {
-    return <div className="text-sm text-muted-foreground">Загрузка истории...</div>;
+    return <div className="text-muted-foreground text-sm">Загрузка истории...</div>;
   }
 
   if (!claims || claims.length === 0) {
     return (
-      <div className="text-sm text-muted-foreground py-2">
-        Нет истории заявок для этого объекта
-      </div>
+      <div className="text-muted-foreground py-2 text-sm">Нет истории заявок для этого объекта</div>
     );
   }
 
@@ -326,16 +312,16 @@ export function PropertyTimeline({
         <History className="h-4 w-4" />
         История заявок: {propertyLabel}
       </div>
-      <div className="relative pl-6 space-y-4">
+      <div className="relative space-y-4 pl-6">
         {/* Timeline line */}
-        <div className="absolute left-2 top-2 bottom-2 w-px bg-border" />
+        <div className="bg-border absolute bottom-2 left-2 top-2 w-px" />
 
         {claims.map((claim, idx) => (
           <div key={claim.id} className="relative">
             {/* Timeline dot */}
             <div
               className={cn(
-                "absolute -left-4 top-1.5 w-3 h-3 rounded-full border-2 bg-background",
+                "bg-background absolute -left-4 top-1.5 h-3 w-3 rounded-full border-2",
                 claim.status === "approved"
                   ? "border-green-500"
                   : claim.status === "rejected"
@@ -344,12 +330,10 @@ export function PropertyTimeline({
               )}
             />
 
-            <div className="border rounded-lg p-3 space-y-2">
+            <div className="space-y-2 rounded-lg border p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm">
-                    {claim.user?.name ?? "Пользователь"}
-                  </span>
+                  <span className="text-sm font-medium">{claim.user?.name ?? "Пользователь"}</span>
                   <Badge variant="outline" className="text-xs">
                     {ROLE_LABELS[claim.claimedRole]}
                   </Badge>
@@ -357,13 +341,11 @@ export function PropertyTimeline({
                     {STATUS_LABELS[claim.status]}
                   </Badge>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {formatDate(claim.createdAt)}
-                </span>
+                <span className="text-muted-foreground text-xs">{formatDate(claim.createdAt)}</span>
               </div>
 
               {claim.userComment && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   Комментарий: {claim.userComment}
                 </div>
               )}
@@ -405,32 +387,26 @@ function ClaimHistoryEvents({
   if (history.length <= 1) return null;
 
   return (
-    <div className="pt-2 border-t mt-2">
+    <div className="mt-2 border-t pt-2">
       <button
-        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs"
         onClick={() => setExpanded(!expanded)}
       >
-        {expanded ? (
-          <ChevronUp className="h-3 w-3" />
-        ) : (
-          <ChevronDown className="h-3 w-3" />
-        )}
+        {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         {history.length} событий
       </button>
 
       {expanded && (
-        <div className="mt-2 space-y-1 pl-3 border-l">
+        <div className="mt-2 space-y-1 border-l pl-3">
           {history.map((event) => (
             <div key={event.id} className="text-xs">
-              <span className="text-muted-foreground">
-                {formatDate(event.createdAt)}
-              </span>
+              <span className="text-muted-foreground">{formatDate(event.createdAt)}</span>
               <span className="mx-1">•</span>
               {event.fromStatus && (
                 <>
                   <Badge
                     variant="outline"
-                    className={cn("text-[10px] px-1", STATUS_COLORS[event.fromStatus])}
+                    className={cn("px-1 text-[10px]", STATUS_COLORS[event.fromStatus])}
                   >
                     {STATUS_LABELS[event.fromStatus]}
                   </Badge>
@@ -439,14 +415,12 @@ function ClaimHistoryEvents({
               )}
               <Badge
                 variant="outline"
-                className={cn("text-[10px] px-1", STATUS_COLORS[event.toStatus])}
+                className={cn("px-1 text-[10px]", STATUS_COLORS[event.toStatus])}
               >
                 {STATUS_LABELS[event.toStatus]}
               </Badge>
               {event.changedByUser?.name && (
-                <span className="ml-1 text-muted-foreground">
-                  ({event.changedByUser.name})
-                </span>
+                <span className="text-muted-foreground ml-1">({event.changedByUser.name})</span>
               )}
             </div>
           ))}
@@ -492,8 +466,7 @@ export function MyPropertiesWithTimeline() {
   }
 
   const hasProperties =
-    (properties?.apartments?.length ?? 0) > 0 ||
-    (properties?.parkingSpots?.length ?? 0) > 0;
+    (properties?.apartments?.length ?? 0) > 0 || (properties?.parkingSpots?.length ?? 0) > 0;
 
   if (!hasProperties) {
     return (
@@ -508,7 +481,7 @@ export function MyPropertiesWithTimeline() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-muted-foreground text-sm py-4 text-center">
+          <div className="text-muted-foreground py-4 text-center text-sm">
             У вас пока нет подтвержденной недвижимости
           </div>
         </CardContent>
@@ -518,15 +491,15 @@ export function MyPropertiesWithTimeline() {
 
   const allProperties = [
     ...(properties?.apartments?.map((a) => ({
-      id: a.apartment!.id,
+      id: a.apartment.id,
       type: "apartment" as const,
-      label: `Квартира ${a.apartment!.number}, строение ${a.apartment!.floor?.entrance?.building?.number}`,
+      label: `Квартира ${a.apartment.number}, строение ${a.apartment.floor?.entrance?.building?.number}`,
       role: a.role,
     })) ?? []),
     ...(properties?.parkingSpots?.map((p) => ({
-      id: p.parkingSpot!.id,
+      id: p.parkingSpot.id,
       type: "parking" as const,
-      label: `Машиноместо ${p.parkingSpot!.number}, этаж ${p.parkingSpot!.floor?.floorNumber}, строение ${p.parkingSpot!.floor?.parking?.building?.number}`,
+      label: `Машиноместо ${p.parkingSpot.number}, этаж ${p.parkingSpot.floor?.floorNumber}, строение ${p.parkingSpot.floor?.parking?.building?.number}`,
       role: p.role,
     })) ?? []),
   ];
@@ -538,16 +511,14 @@ export function MyPropertiesWithTimeline() {
           <Home className="h-5 w-5" />
           Мои объекты
         </CardTitle>
-        <CardDescription>
-          Нажмите на объект, чтобы посмотреть историю заявок
-        </CardDescription>
+        <CardDescription>Нажмите на объект, чтобы посмотреть историю заявок</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
           {allProperties.map((property) => (
-            <div key={`${property.type}-${property.id}`} className="border rounded-lg">
+            <div key={`${property.type}-${property.id}`} className="rounded-lg border">
               <button
-                className="w-full p-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
+                className="hover:bg-muted/50 flex w-full items-center justify-between p-3 transition-colors"
                 onClick={() =>
                   setExpandedProperty(
                     expandedProperty === `${property.type}-${property.id}`
@@ -558,9 +529,9 @@ export function MyPropertiesWithTimeline() {
               >
                 <div className="flex items-center gap-2">
                   {property.type === "apartment" ? (
-                    <Home className="h-4 w-4 text-muted-foreground" />
+                    <Home className="text-muted-foreground h-4 w-4" />
                   ) : (
-                    <Car className="h-4 w-4 text-muted-foreground" />
+                    <Car className="text-muted-foreground h-4 w-4" />
                   )}
                   <span className="font-medium">{property.label}</span>
                   <Badge variant="secondary" className="text-xs">
@@ -568,20 +539,20 @@ export function MyPropertiesWithTimeline() {
                   </Badge>
                 </div>
                 {expandedProperty === `${property.type}-${property.id}` ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                  <ChevronUp className="text-muted-foreground h-4 w-4" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <ChevronDown className="text-muted-foreground h-4 w-4" />
                 )}
               </button>
 
               {expandedProperty === `${property.type}-${property.id}` && (
-                <div className="p-3 pt-0 border-t space-y-3">
+                <div className="space-y-3 border-t p-3 pt-0">
                   <PropertyTimeline
                     propertyType={property.type}
                     propertyId={property.id}
                     propertyLabel={property.label}
                   />
-                  <div className="pt-2 border-t">
+                  <div className="border-t pt-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -595,7 +566,7 @@ export function MyPropertiesWithTimeline() {
                         });
                       }}
                     >
-                      <X className="h-4 w-4 mr-1" />
+                      <X className="mr-1 h-4 w-4" />
                       Отозвать права
                     </Button>
                   </div>
@@ -607,26 +578,19 @@ export function MyPropertiesWithTimeline() {
       </CardContent>
 
       {/* Revoke Confirmation Dialog */}
-      <Dialog
-        open={!!propertyToRevoke}
-        onOpenChange={() => setPropertyToRevoke(null)}
-      >
+      <Dialog open={!!propertyToRevoke} onOpenChange={() => setPropertyToRevoke(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Отозвать права на объект</DialogTitle>
             <DialogDescription>
               Вы уверены, что хотите отозвать свои права на{" "}
-              <strong>{propertyToRevoke?.label}</strong>?
-              {"\n\n"}
-              Это действие необратимо. Если у вас нет других объектов с этой ролью,
-              роль будет также удалена.
+              <strong>{propertyToRevoke?.label}</strong>?{"\n\n"}
+              Это действие необратимо. Если у вас нет других объектов с этой ролью, роль будет также
+              удалена.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setPropertyToRevoke(null)}
-            >
+            <Button variant="outline" onClick={() => setPropertyToRevoke(null)}>
               Отмена
             </Button>
             <Button

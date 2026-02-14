@@ -1,6 +1,7 @@
 "use client";
 
 import { Shield, User } from "lucide-react";
+
 import { cn } from "~/lib/utils";
 
 type UserPillProps = {
@@ -21,16 +22,12 @@ export function UserPill({
   className,
 }: UserPillProps) {
   // Admin users always show as "Администрация"
-  const displayName = isAdmin
-    ? "Администрация"
-    : isCurrentUser
-      ? "Вы"
-      : truncateName(name);
+  const displayName = isAdmin ? "Администрация" : isCurrentUser ? "Вы" : truncateName(name);
 
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full bg-muted pl-0.5 pr-2.5 py-0.5",
+        "bg-muted inline-flex items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-2.5",
         className
       )}
     >
@@ -41,7 +38,7 @@ export function UserPill({
           isAdmin
             ? "bg-primary text-primary-foreground"
             : isVerified
-              ? "ring-2 ring-green-500 bg-muted-foreground/20"
+              ? "bg-muted-foreground/20 ring-2 ring-green-500"
               : "bg-muted-foreground/20"
         )}
       >
@@ -54,14 +51,12 @@ export function UserPill({
             className="h-full w-full rounded-full object-cover"
           />
         ) : (
-          <User className="h-3 w-3 text-muted-foreground" />
+          <User className="text-muted-foreground h-3 w-3" />
         )}
       </div>
 
       {/* Name */}
-      <span className="text-xs font-medium truncate max-w-[120px]">
-        {displayName}
-      </span>
+      <span className="max-w-[120px] truncate text-xs font-medium">{displayName}</span>
     </div>
   );
 }

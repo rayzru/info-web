@@ -12,8 +12,7 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
  * - +7XXXXXXXXXX (no spaces)
  * - 8XXXXXXXXXX
  */
-const PHONE_REGEX =
-  /(?:\+7|8)[\s-]?(?:\(?\d{3}\)?[\s-]?)?\d{3}[\s-]?\d{2}[\s-]?\d{2}/g;
+const PHONE_REGEX = /(?:\+7|8)[\s-]?(?:\(?\d{3}\)?[\s-]?)?\d{3}[\s-]?\d{2}[\s-]?\d{2}/g;
 
 /**
  * Normalize phone number to +7XXXXXXXXXX format for tel: links
@@ -49,9 +48,7 @@ export function formatPhoneNumber(phone: string): string {
  */
 function isMobileDevice(): boolean {
   if (typeof window === "undefined") return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  );
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
 export interface PhoneNumberOptions {
@@ -104,8 +101,7 @@ export const PhoneNumber = Mark.create<PhoneNumberOptions>({
     return {
       phone: {
         default: null,
-        parseHTML: (element) =>
-          element.getAttribute("data-phone") || element.textContent,
+        parseHTML: (element) => element.getAttribute("data-phone") || element.textContent,
         renderHTML: (attributes) => {
           if (!attributes.phone) return {};
           return {
@@ -119,10 +115,10 @@ export const PhoneNumber = Mark.create<PhoneNumberOptions>({
   parseHTML() {
     return [
       {
-        tag: 'a[data-phone-number]',
+        tag: "a[data-phone-number]",
       },
       {
-        tag: 'span[data-phone-number]',
+        tag: "span[data-phone-number]",
       },
     ];
   },
@@ -150,10 +146,7 @@ export const PhoneNumber = Mark.create<PhoneNumberOptions>({
           class: `${attrs.class} phone-number-mobile`,
         },
         // Phone icon SVG inline
-        [
-          "span",
-          { class: "phone-number-icon", "aria-hidden": "true" },
-        ],
+        ["span", { class: "phone-number-icon", "aria-hidden": "true" }],
         ["span", { class: "phone-number-text" }, formattedPhone],
       ];
     } else {
@@ -167,10 +160,7 @@ export const PhoneNumber = Mark.create<PhoneNumberOptions>({
           tabindex: "0",
           title: "Нажмите для копирования",
         },
-        [
-          "span",
-          { class: "phone-number-icon", "aria-hidden": "true" },
-        ],
+        ["span", { class: "phone-number-icon", "aria-hidden": "true" }],
         ["span", { class: "phone-number-text" }, formattedPhone],
         [
           "button",

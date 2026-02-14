@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { ShieldCheck } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -71,8 +72,8 @@ export function UnblockUserDialog({
       <DialogHeader>
         <DialogTitle>Снятие блокировки</DialogTitle>
         <DialogDescription>
-          Разблокировать {userName ?? "пользователя"}? После снятия блокировки
-          пользователь сможет снова войти в систему.
+          Разблокировать {userName ?? "пользователя"}? После снятия блокировки пользователь сможет
+          снова войти в систему.
         </DialogDescription>
       </DialogHeader>
 
@@ -86,9 +87,7 @@ export function UnblockUserDialog({
             rows={3}
           />
           {!reason.trim() && (
-            <p className="text-xs text-destructive">
-              Укажите причину снятия блокировки
-            </p>
+            <p className="text-destructive text-xs">Укажите причину снятия блокировки</p>
           )}
         </div>
       </div>
@@ -97,10 +96,7 @@ export function UnblockUserDialog({
         <Button variant="outline" onClick={() => setOpen(false)}>
           Отмена
         </Button>
-        <Button
-          onClick={handleSubmit}
-          disabled={!reason.trim() || unblockUser.isPending}
-        >
+        <Button onClick={handleSubmit} disabled={!reason.trim() || unblockUser.isPending}>
           {unblockUser.isPending ? "Снятие..." : "Разблокировать"}
         </Button>
       </DialogFooter>
@@ -111,7 +107,7 @@ export function UnblockUserDialog({
     return (
       <>
         <DropdownMenuItem
-          className="text-green-600 focus:text-green-600 focus:bg-green-600/10"
+          className="text-green-600 focus:bg-green-600/10 focus:text-green-600"
           onSelect={(e) => {
             e.preventDefault();
             setOpen(true);
@@ -133,7 +129,7 @@ export function UnblockUserDialog({
         <Button
           variant="ghost"
           size="icon"
-          className="text-green-600 hover:text-green-600 hover:bg-green-600/10"
+          className="text-green-600 hover:bg-green-600/10 hover:text-green-600"
         >
           <ShieldCheck className="h-4 w-4" />
         </Button>

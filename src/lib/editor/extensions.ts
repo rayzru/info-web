@@ -109,10 +109,7 @@ function getStandardExtensions(placeholder?: string): Extensions {
  * Get full extensions for help center/wiki
  * + embeds, mentions, reference cards, tables
  */
-function getFullExtensions(
-  placeholder?: string,
-  _config?: ExtensionConfig
-): Extensions {
+function getFullExtensions(placeholder?: string, _config?: ExtensionConfig): Extensions {
   return [
     StarterKit.configure({
       heading: {
@@ -294,9 +291,6 @@ export const FEATURES_BY_MODE: Record<EditorMode, string[]> = {
 /**
  * Check if a feature is available in the given mode
  */
-export function isFeatureAvailable(
-  feature: string,
-  mode: EditorMode
-): boolean {
+export function isFeatureAvailable(feature: string, mode: EditorMode): boolean {
   return FEATURES_BY_MODE[mode].includes(feature);
 }

@@ -1,10 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
+
 import { db } from "./index";
-import {
-  directoryTags,
-  knowledgeBaseArticles,
-  knowledgeBaseArticleTags,
-} from "./schema";
+import { directoryTags, knowledgeBaseArticles, knowledgeBaseArticleTags } from "./schema";
 
 /**
  * Seed script for HowTo articles (База знаний) ЖК Сердце Ростова 2
@@ -109,7 +106,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "otoplenie-nastroyka-termoregulyatora",
     title: "Отопление: как настроить терморегулятор и что делать с холодными батареями",
-    excerpt: "Инструкция по настройке терморегуляторов Danfoss RTR-C, решение проблем с холодными или чуть тёплыми батареями в морозы.",
+    excerpt:
+      "Инструкция по настройке терморегуляторов Danfoss RTR-C, решение проблем с холодными или чуть тёплыми батареями в морозы.",
     icon: "Thermometer",
     categoryId: "howto-cat-engineering",
     order: 1,
@@ -118,7 +116,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "okna-kondensat-i-remont",
     title: "Окна: конденсат, протечки и режим зима-лето",
-    excerpt: "Почему текут и потеют окна, как убрать конденсат, регулировка режима зима-лето, гарантийный ремонт стеклопакетов.",
+    excerpt:
+      "Почему текут и потеют окна, как убрать конденсат, регулировка режима зима-лето, гарантийный ремонт стеклопакетов.",
     icon: "Square",
     categoryId: "howto-cat-engineering",
     order: 2,
@@ -127,7 +126,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "voda-napor-i-temperatura",
     title: "Вода: низкий напор и температура горячей воды",
-    excerpt: "Решение проблем с напором воды, промывка фильтров, обратные клапаны, холодный полотенцесушитель.",
+    excerpt:
+      "Решение проблем с напором воды, промывка фильтров, обратные клапаны, холодный полотенцесушитель.",
     icon: "Droplet",
     categoryId: "howto-cat-engineering",
     order: 3,
@@ -136,7 +136,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "ventilyatsiya-proverka-i-obsluzhivanie",
     title: "Вентиляция: проверка работы и обслуживание",
-    excerpt: "Как проверить работу вентиляции в квартире, что делать при плохой тяге, куда обращаться.",
+    excerpt:
+      "Как проверить работу вентиляции в квартире, что делать при плохой тяге, куда обращаться.",
     icon: "Wind",
     categoryId: "howto-cat-engineering",
     order: 4,
@@ -147,7 +148,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "domofon-nastroyka-i-prilozhenie",
     title: "Домофон: настройка VDome и подключение к квартире",
-    excerpt: "Установка приложения VDome на iOS и Android, регистрация, набор номера квартиры, решение проблем с линией.",
+    excerpt:
+      "Установка приложения VDome на iOS и Android, регистрация, набор номера квартиры, решение проблем с линией.",
     icon: "DoorOpen",
     categoryId: "howto-cat-access",
     order: 1,
@@ -156,7 +158,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "klyuchi-i-pulty-dostupa",
     title: "Ключи и пульты: где получить и как настроить",
-    excerpt: "Получение магнитных ключей у консьержа, пульты для ворот и калиток, стоимость и сроки.",
+    excerpt:
+      "Получение магнитных ключей у консьержа, пульты для ворот и калиток, стоимость и сроки.",
     icon: "Key",
     categoryId: "howto-cat-access",
     order: 2,
@@ -165,7 +168,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "videonablyudenie-dostup-k-kameram",
     title: "Видеонаблюдение: доступ к камерам подъезда",
-    excerpt: "Приложение DMSS для просмотра камер, получение доступа к регистратору, личные камеры на этаже.",
+    excerpt:
+      "Приложение DMSS для просмотра камер, получение доступа к регистратору, личные камеры на этаже.",
     icon: "Camera",
     categoryId: "howto-cat-access",
     order: 3,
@@ -174,7 +178,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "pozharnaya-signalizatsiya",
     title: "Пожарная сигнализация: что делать при срабатывании",
-    excerpt: "Порядок действий при срабатывании пожарной сигнализации, контакты для вызова, датчики в квартире.",
+    excerpt:
+      "Порядок действий при срабатывании пожарной сигнализации, контакты для вызова, датчики в квартире.",
     icon: "Siren",
     categoryId: "howto-cat-access",
     order: 4,
@@ -185,7 +190,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "registratsiya-sobstvennosti",
     title: "Регистрация права собственности на квартиру",
-    excerpt: "Пошаговая инструкция по регистрации права собственности в Росреестре, необходимые документы, сроки.",
+    excerpt:
+      "Пошаговая инструкция по регистрации права собственности в Росреестре, необходимые документы, сроки.",
     icon: "FileCheck",
     categoryId: "howto-cat-docs",
     order: 1,
@@ -194,7 +200,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "snyatie-obremeneniya-ipoteka",
     title: "Снятие обременения по ипотеке",
-    excerpt: "Как снять обременение после погашения ипотеки, документы, сроки, письмо из Росреестра.",
+    excerpt:
+      "Как снять обременение после погашения ипотеки, документы, сроки, письмо из Росреестра.",
     icon: "Unlock",
     categoryId: "howto-cat-docs",
     order: 2,
@@ -212,7 +219,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "pereplanirovka-soglasovanie",
     title: "Перепланировка: что можно и как узаконить",
-    excerpt: "Какие перепланировки разрешены, порядок согласования, штрафы за незаконные изменения.",
+    excerpt:
+      "Какие перепланировки разрешены, порядок согласования, штрафы за незаконные изменения.",
     icon: "LayoutGrid",
     categoryId: "howto-cat-docs",
     order: 4,
@@ -221,7 +229,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "otkrytie-litsevyh-schetov",
     title: "Открытие лицевых счетов",
-    excerpt: "Как открыть лицевые счета на воду, электричество, газ после заселения в новую квартиру.",
+    excerpt:
+      "Как открыть лицевые счета на воду, электричество, газ после заселения в новую квартиру.",
     icon: "Receipt",
     categoryId: "howto-cat-docs",
     order: 5,
@@ -241,7 +250,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "peredacha-pokazaniy-schetchikov",
     title: "Передача показаний счётчиков",
-    excerpt: "Куда и когда передавать показания воды (Водоканал), электричества (ТНС-Энерго), тепла (Теплосервис).",
+    excerpt:
+      "Куда и когда передавать показания воды (Водоканал), электричества (ТНС-Энерго), тепла (Теплосервис).",
     icon: "Gauge",
     categoryId: "howto-cat-payments",
     order: 2,
@@ -268,7 +278,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "kontakty-uk-i-zastroyschika",
     title: "Контакты: УК, застройщик, мастера",
-    excerpt: "Все контакты управляющей компании, застройщика МСК, аварийных служб и местных мастеров.",
+    excerpt:
+      "Все контакты управляющей компании, застройщика МСК, аварийных служб и местных мастеров.",
     icon: "Phone",
     categoryId: "howto-cat-payments",
     order: 5,
@@ -279,7 +290,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "garantiynye-raboty-zastroyschika",
     title: "Гарантийные работы: куда обращаться и что покрывает",
-    excerpt: "Контакты гарантийного отдела МСК, как оставить заявку, сроки устранения дефектов, что попадает под гарантию.",
+    excerpt:
+      "Контакты гарантийного отдела МСК, как оставить заявку, сроки устранения дефектов, что попадает под гарантию.",
     icon: "ShieldCheck",
     categoryId: "howto-cat-renovation",
     order: 1,
@@ -297,7 +309,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "remont-whitebox-byudzhet-i-etapy",
     title: "Ремонт после whitebox: бюджет и этапы",
-    excerpt: "Примерный бюджет ремонта студии, этапы работ, выбор подрядчиков, сантехника и электрика.",
+    excerpt:
+      "Примерный бюджет ремонта студии, этапы работ, выбор подрядчиков, сантехника и электрика.",
     icon: "HardHat",
     categoryId: "howto-cat-renovation",
     order: 3,
@@ -306,7 +319,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "planirovki-idei-dlya-kvartir",
     title: "Планировки: идеи для студий и многокомнатных",
-    excerpt: "Популярные решения планировок: кухня-гостиная, маленькая ванная, гардеробные, размещение стиралки.",
+    excerpt:
+      "Популярные решения планировок: кухня-гостиная, маленькая ванная, гардеробные, размещение стиралки.",
     icon: "LayoutGrid",
     categoryId: "howto-cat-renovation",
     order: 4,
@@ -391,7 +405,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "prilozhenie-dmss-kamery",
     title: "Приложение DMSS: доступ к камерам",
-    excerpt: "Установка и настройка DMSS для просмотра камер видеонаблюдения в подъезде и на территории.",
+    excerpt:
+      "Установка и настройка DMSS для просмотра камер видеонаблюдения в подъезде и на территории.",
     icon: "Camera",
     categoryId: "howto-cat-digital",
     order: 3,
@@ -400,7 +415,8 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
   {
     slug: "lichnye-kabinety-zhkh",
     title: "Личные кабинеты ЖКХ: вода, свет, тепло",
-    excerpt: "Регистрация в личных кабинетах Водоканала, ТНС-Энерго, Теплосервис Юг для передачи показаний и оплаты.",
+    excerpt:
+      "Регистрация в личных кабинетах Водоканала, ТНС-Энерго, Теплосервис Юг для передачи показаний и оплаты.",
     icon: "User",
     categoryId: "howto-cat-digital",
     order: 4,

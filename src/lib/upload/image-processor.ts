@@ -1,7 +1,7 @@
-import sharp from "sharp";
-import path from "path";
-import fs from "fs/promises";
 import { randomUUID } from "crypto";
+import sharp from "sharp";
+
+import { deleteFromS3, extractS3Key, generateS3Key, uploadToS3 } from "~/lib/s3/client";
 
 // ============================================================================
 // Types
@@ -24,6 +24,10 @@ export interface ImageProcessingOptions {
   outputFormat?: "jpeg" | "png" | "webp" | "original";
   /** Custom filename (without extension) */
   customFilename?: string;
+  /** Upload type: determines folder structure */
+  uploadType?: "news" | "knowledge" | "publication" | "listing" | "media";
+  /** User ID for private uploads (required for publication, listing, media) */
+  userId?: string;
 }
 
 export interface ProcessedImage {
@@ -31,9 +35,9 @@ export interface ProcessedImage {
   id: string;
   /** Filename with extension */
   filename: string;
-  /** Relative path from public folder */
+  /** S3 key (path in bucket) */
   relativePath: string;
-  /** Full URL path */
+  /** Full public URL */
   url: string;
   /** Original filename */
   originalFilename: string;
@@ -51,7 +55,6 @@ export interface ProcessedImage {
 // Constants
 // ============================================================================
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const DEFAULT_MAX_WIDTH = 1920;
 const DEFAULT_MAX_HEIGHT = 1080;
 const DEFAULT_QUALITY = 85;
@@ -111,24 +114,15 @@ export async function processAndSaveImage(
     watermarkText = DEFAULT_WATERMARK,
     outputFormat = "webp",
     customFilename,
+    uploadType = "media",
+    userId,
   } = options;
 
   // Convert File to Buffer if needed
-  const buffer = file instanceof File
-    ? Buffer.from(await file.arrayBuffer())
-    : file;
+  const buffer = file instanceof File ? Buffer.from(await file.arrayBuffer()) : file;
 
   // Generate unique ID
   const id = randomUUID();
-
-  // Get current date for folder structure
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-
-  // Create upload subdirectory: uploads/YYYY/MM/
-  const uploadSubdir = path.join(UPLOAD_DIR, String(year), month);
-  await fs.mkdir(uploadSubdir, { recursive: true });
 
   // Initialize sharp instance
   let image = sharp(buffer);
@@ -184,7 +178,7 @@ export async function processAndSaveImage(
   // Determine output format
   let extension: string;
   let mimeType: string;
-  const originalExt = path.extname(originalFilename).toLowerCase().slice(1);
+  const originalExt = originalFilename.split(".").pop()?.toLowerCase() || "";
 
   if (outputFormat === "original" || keepOriginal) {
     extension = originalExt || "webp";
@@ -221,28 +215,32 @@ export async function processAndSaveImage(
   }
 
   // Generate filename
-  const filename = customFilename
-    ? `${customFilename}.${extension}`
-    : `${id}.${extension}`;
+  const filename = customFilename ? `${customFilename}.${extension}` : `${id}.${extension}`;
 
-  // Save file
-  const filePath = path.join(uploadSubdir, filename);
+  // Process image to buffer
   const outputBuffer = await image.toBuffer();
-  await fs.writeFile(filePath, outputBuffer);
 
-  // Get final file info
-  const stats = await fs.stat(filePath);
+  // Get final metadata
   const finalMeta = await sharp(outputBuffer).metadata();
 
-  const relativePath = `/uploads/${year}/${month}/${filename}`;
+  // Upload to S3 with proper folder structure
+  const s3Key = generateS3Key(filename, {
+    type: uploadType,
+    userId,
+  });
+  const url = await uploadToS3(outputBuffer, s3Key, mimeType, {
+    originalFilename,
+    uploadId: id,
+    uploadType,
+  });
 
   return {
     id,
     filename,
-    relativePath,
-    url: relativePath,
+    relativePath: s3Key, // S3 key
+    url, // Full public URL
     originalFilename,
-    size: stats.size,
+    size: outputBuffer.length,
     width: finalMeta.width ?? finalWidth,
     height: finalMeta.height ?? finalHeight,
     mimeType,
@@ -275,12 +273,18 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
 // Delete Image
 // ============================================================================
 
-export async function deleteImage(relativePath: string): Promise<boolean> {
+export async function deleteImage(urlOrPath: string): Promise<boolean> {
   try {
-    const filePath = path.join(process.cwd(), "public", relativePath);
-    await fs.unlink(filePath);
-    return true;
-  } catch {
+    // Extract S3 key from URL
+    const s3Key = extractS3Key(urlOrPath);
+    if (!s3Key) {
+      console.error("Invalid S3 URL:", urlOrPath);
+      return false;
+    }
+
+    return await deleteFromS3(s3Key);
+  } catch (error) {
+    console.error("Failed to delete image:", error);
     return false;
   }
 }

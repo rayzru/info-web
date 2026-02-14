@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import sharp from "sharp";
-import path from "path";
-import fs from "fs/promises";
 import { randomUUID } from "crypto";
 import { eq } from "drizzle-orm";
+import fs from "fs/promises";
+import { type NextRequest, NextResponse } from "next/server";
+import path from "path";
+import sharp from "sharp";
 
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
@@ -38,10 +38,7 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Parse form data
@@ -49,10 +46,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Validate file
@@ -155,10 +149,7 @@ export async function DELETE() {
     // Check authentication
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get current avatar

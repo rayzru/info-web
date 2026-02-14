@@ -1,8 +1,9 @@
 "use client";
 
-import type React from "react";
 import { useCallback, useEffect, useRef } from "react";
+
 import { usePathname, useSearchParams } from "next/navigation";
+import type React from "react";
 
 import { api } from "~/trpc/react";
 
@@ -78,68 +79,74 @@ export function useAnalytics() {
   }, [getSessionMutation, getStoredSessionId, storeSessionId, getUtmParams, getScreenResolution]);
 
   // Track page view
-  const trackPageView = useCallback(async (pagePath?: string) => {
-    const path = pagePath ?? pathname;
-    const sessionId = sessionIdRef.current;
+  const trackPageView = useCallback(
+    async (pagePath?: string) => {
+      const path = pagePath ?? pathname;
+      const sessionId = sessionIdRef.current;
 
-    if (!sessionId) return;
+      if (!sessionId) return;
 
-    // Don't track the same path twice in a row
-    if (lastTrackedPath.current === path) return;
-    lastTrackedPath.current = path;
+      // Don't track the same path twice in a row
+      if (lastTrackedPath.current === path) return;
+      lastTrackedPath.current = path;
 
-    try {
-      await trackMutation.mutateAsync({
-        sessionId,
-        eventType: "page_view",
-        eventName: "page_view",
-        pagePath: path,
-        pageTitle: typeof document !== "undefined" ? document.title : undefined,
-        referrer: typeof document !== "undefined" ? document.referrer : undefined,
-      });
-    } catch (error) {
-      console.error("Failed to track page view:", error);
-    }
-  }, [pathname, trackMutation]);
+      try {
+        await trackMutation.mutateAsync({
+          sessionId,
+          eventType: "page_view",
+          eventName: "page_view",
+          pagePath: path,
+          pageTitle: typeof document !== "undefined" ? document.title : undefined,
+          referrer: typeof document !== "undefined" ? document.referrer : undefined,
+        });
+      } catch (error) {
+        console.error("Failed to track page view:", error);
+      }
+    },
+    [pathname, trackMutation]
+  );
 
   // Track custom event
-  const trackEvent = useCallback(async (
-    eventName: string,
-    options?: {
-      category?: string;
-      properties?: Record<string, unknown>;
-      isConversion?: boolean;
-    }
-  ) => {
-    const sessionId = sessionIdRef.current;
+  const trackEvent = useCallback(
+    async (
+      eventName: string,
+      options?: {
+        category?: string;
+        properties?: Record<string, unknown>;
+        isConversion?: boolean;
+      }
+    ) => {
+      const sessionId = sessionIdRef.current;
 
-    if (!sessionId) return;
+      if (!sessionId) return;
 
-    try {
-      await trackMutation.mutateAsync({
-        sessionId,
-        eventType: options?.isConversion ? "conversion" : "action",
-        eventName,
-        eventCategory: options?.category,
-        pagePath: pathname,
-        pageTitle: typeof document !== "undefined" ? document.title : undefined,
-        properties: options?.properties,
-      });
-    } catch (error) {
-      console.error("Failed to track event:", error);
-    }
-  }, [pathname, trackMutation]);
+      try {
+        await trackMutation.mutateAsync({
+          sessionId,
+          eventType: options?.isConversion ? "conversion" : "action",
+          eventName,
+          eventCategory: options?.category,
+          pagePath: pathname,
+          pageTitle: typeof document !== "undefined" ? document.title : undefined,
+          properties: options?.properties,
+        });
+      } catch (error) {
+        console.error("Failed to track event:", error);
+      }
+    },
+    [pathname, trackMutation]
+  );
 
   // Track conversion
-  const trackConversion = useCallback(async (
-    conversionName: string,
-    properties?: Record<string, unknown>
-  ) => {
-    return trackEvent(conversionName, {
-      isConversion: true,
-      properties,
-    });
-  }, [trackEvent]);
+  const trackConversion = useCallback(
+    async (conversionName: string, properties?: Record<string, unknown>) => {
+      return trackEvent(conversionName, {
+        isConversion: true,
+        properties,
+      });
+    },
+    [trackEvent]
+  );
 
   // Initialize on mount
   useEffect(() => {

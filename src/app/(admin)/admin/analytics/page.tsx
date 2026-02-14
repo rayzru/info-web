@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import {
   BarChart3,
   Eye,
@@ -15,14 +16,9 @@ import {
   Users,
 } from "lucide-react";
 
+import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -31,7 +27,6 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Skeleton } from "~/components/ui/skeleton";
-import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { api } from "~/trpc/react";
 
 type Period = "today" | "week" | "month" | "year";
@@ -40,41 +35,59 @@ export default function AdminAnalyticsPage() {
   const [period, setPeriod] = useState<Period>("week");
 
   // Fetch dashboard data
-  const { data: dashboardData, isLoading: dashboardLoading, refetch: refetchDashboard } =
-    api.analytics.dashboard.useQuery({ period });
+  const {
+    data: dashboardData,
+    isLoading: dashboardLoading,
+    refetch: refetchDashboard,
+  } = api.analytics.dashboard.useQuery({ period });
 
   // Fetch top pages
-  const { data: topPagesData, isLoading: topPagesLoading, refetch: refetchTopPages } =
-    api.analytics.topPages.useQuery({
-      period: period === "year" ? "month" : period,
-      limit: 10
-    });
+  const {
+    data: topPagesData,
+    isLoading: topPagesLoading,
+    refetch: refetchTopPages,
+  } = api.analytics.topPages.useQuery({
+    period: period === "year" ? "month" : period,
+    limit: 10,
+  });
 
   // Fetch device stats
-  const { data: deviceData, isLoading: deviceLoading, refetch: refetchDevices } =
-    api.analytics.deviceStats.useQuery({
-      period: period === "year" ? "month" : period
-    });
+  const {
+    data: deviceData,
+    isLoading: deviceLoading,
+    refetch: refetchDevices,
+  } = api.analytics.deviceStats.useQuery({
+    period: period === "year" ? "month" : period,
+  });
 
   // Fetch browser stats
-  const { data: browserData, isLoading: browserLoading, refetch: refetchBrowsers } =
-    api.analytics.browserStats.useQuery({
-      period: period === "year" ? "month" : period
-    });
+  const {
+    data: browserData,
+    isLoading: browserLoading,
+    refetch: refetchBrowsers,
+  } = api.analytics.browserStats.useQuery({
+    period: period === "year" ? "month" : period,
+  });
 
   // Fetch conversion events
-  const { data: conversionData, isLoading: conversionLoading, refetch: refetchConversions } =
-    api.analytics.conversionEvents.useQuery({
-      period: period === "year" ? "month" : period,
-      limit: 10
-    });
+  const {
+    data: conversionData,
+    isLoading: conversionLoading,
+    refetch: refetchConversions,
+  } = api.analytics.conversionEvents.useQuery({
+    period: period === "year" ? "month" : period,
+    limit: 10,
+  });
 
   // Fetch referrer stats
-  const { data: referrerData, isLoading: referrerLoading, refetch: refetchReferrers } =
-    api.analytics.referrerStats.useQuery({
-      period: period === "year" ? "month" : period,
-      limit: 10
-    });
+  const {
+    data: referrerData,
+    isLoading: referrerLoading,
+    refetch: refetchReferrers,
+  } = api.analytics.referrerStats.useQuery({
+    period: period === "year" ? "month" : period,
+    limit: 10,
+  });
 
   const handleRefresh = () => {
     void refetchDashboard();
@@ -137,10 +150,10 @@ export default function AdminAnalyticsPage() {
       />
 
       {/* Controls */}
-      <div className="flex items-center gap-4 flex-wrap">
+      <div className="flex flex-wrap items-center gap-4">
         <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
           <SelectTrigger className="w-[160px]">
-            <BarChart3 className="h-4 w-4 mr-2" />
+            <BarChart3 className="mr-2 h-4 w-4" />
             <SelectValue placeholder="Период" />
           </SelectTrigger>
           <SelectContent>
@@ -161,7 +174,7 @@ export default function AdminAnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Сессии</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             {dashboardLoading ? (
@@ -171,16 +184,14 @@ export default function AdminAnalyticsPage() {
                 {dashboardData?.sessions.toLocaleString("ru-RU")}
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
-              За {periodAccusative[period]}
-            </p>
+            <p className="text-muted-foreground text-xs">За {periodAccusative[period]}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Просмотры</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <Eye className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             {dashboardLoading ? (
@@ -190,16 +201,14 @@ export default function AdminAnalyticsPage() {
                 {dashboardData?.pageViews.toLocaleString("ru-RU")}
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
-              Просмотров страниц
-            </p>
+            <p className="text-muted-foreground text-xs">Просмотров страниц</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Действия</CardTitle>
-            <MousePointerClick className="h-4 w-4 text-muted-foreground" />
+            <MousePointerClick className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             {dashboardLoading ? (
@@ -209,16 +218,14 @@ export default function AdminAnalyticsPage() {
                 {dashboardData?.actions.toLocaleString("ru-RU")}
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
-              Взаимодействий
-            </p>
+            <p className="text-muted-foreground text-xs">Взаимодействий</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Конверсии</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <Target className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             {dashboardLoading ? (
@@ -228,9 +235,7 @@ export default function AdminAnalyticsPage() {
                 {dashboardData?.conversions.toLocaleString("ru-RU")}
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
-              Целевых действий
-            </p>
+            <p className="text-muted-foreground text-xs">Целевых действий</p>
           </CardContent>
         </Card>
       </div>
@@ -240,7 +245,7 @@ export default function AdminAnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Уникальные пользователи</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             {dashboardLoading ? (
@@ -250,16 +255,14 @@ export default function AdminAnalyticsPage() {
                 {dashboardData?.uniqueUsers.toLocaleString("ru-RU")}
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
-              Авторизованных пользователей
-            </p>
+            <p className="text-muted-foreground text-xs">Авторизованных пользователей</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Всего событий</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <BarChart3 className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             {dashboardLoading ? (
@@ -269,9 +272,7 @@ export default function AdminAnalyticsPage() {
                 {dashboardData?.events.toLocaleString("ru-RU")}
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
-              Отслеженных событий
-            </p>
+            <p className="text-muted-foreground text-xs">Отслеженных событий</p>
           </CardContent>
         </Card>
       </div>
@@ -295,18 +296,18 @@ export default function AdminAnalyticsPage() {
                 ))}
               </div>
             ) : topPagesData?.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
+              <p className="text-muted-foreground py-4 text-center text-sm">
                 Нет данных за выбранный период
               </p>
             ) : (
               <div className="space-y-3">
                 {topPagesData?.map((page, index) => (
                   <div key={page.pagePath} className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-muted-foreground w-6">
+                    <span className="text-muted-foreground w-6 text-sm font-medium">
                       {index + 1}.
                     </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" title={page.pagePath}>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium" title={page.pagePath}>
                         {page.pagePath}
                       </p>
                     </div>
@@ -337,15 +338,14 @@ export default function AdminAnalyticsPage() {
                 ))}
               </div>
             ) : deviceData?.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
+              <p className="text-muted-foreground py-4 text-center text-sm">
                 Нет данных за выбранный период
               </p>
             ) : (
               <div className="space-y-4">
                 {deviceData?.map((device) => {
-                  const percentage = totalDevices > 0
-                    ? Math.round((device.count / totalDevices) * 100)
-                    : 0;
+                  const percentage =
+                    totalDevices > 0 ? Math.round((device.count / totalDevices) * 100) : 0;
                   return (
                     <div key={device.deviceType} className="space-y-2">
                       <div className="flex items-center justify-between">
@@ -355,13 +355,13 @@ export default function AdminAnalyticsPage() {
                             {getDeviceLabel(device.deviceType)}
                           </span>
                         </div>
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           {device.count.toLocaleString("ru-RU")} ({percentage}%)
                         </span>
                       </div>
-                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                      <div className="bg-muted h-2 overflow-hidden rounded-full">
                         <div
-                          className="h-full bg-primary transition-all"
+                          className="bg-primary h-full transition-all"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
@@ -393,14 +393,14 @@ export default function AdminAnalyticsPage() {
                 ))}
               </div>
             ) : browserData?.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
+              <p className="text-muted-foreground py-4 text-center text-sm">
                 Нет данных за выбранный период
               </p>
             ) : (
               <div className="space-y-3">
                 {browserData?.map((browser, index) => (
                   <div key={browser.browser ?? "unknown"} className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-muted-foreground w-6">
+                    <span className="text-muted-foreground w-6 text-sm font-medium">
                       {index + 1}.
                     </span>
                     <span className="flex-1 text-sm font-medium">
@@ -433,18 +433,21 @@ export default function AdminAnalyticsPage() {
                 ))}
               </div>
             ) : referrerData?.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
+              <p className="text-muted-foreground py-4 text-center text-sm">
                 Нет данных за выбранный период
               </p>
             ) : (
               <div className="space-y-3">
                 {referrerData?.map((ref, index) => (
                   <div key={ref.referrer ?? "direct"} className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-muted-foreground w-6">
+                    <span className="text-muted-foreground w-6 text-sm font-medium">
                       {index + 1}.
                     </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" title={ref.referrer ?? "Прямой переход"}>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="truncate text-sm font-medium"
+                        title={ref.referrer ?? "Прямой переход"}
+                      >
                         {ref.referrer ?? "Прямой переход"}
                       </p>
                     </div>
@@ -476,7 +479,7 @@ export default function AdminAnalyticsPage() {
               ))}
             </div>
           ) : conversionData?.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
+            <p className="text-muted-foreground py-4 text-center text-sm">
               Нет конверсий за выбранный период
             </p>
           ) : (
@@ -484,10 +487,10 @@ export default function AdminAnalyticsPage() {
               {conversionData?.map((conversion) => (
                 <div
                   key={conversion.eventName}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                  className="bg-muted/50 flex items-center justify-between rounded-lg p-3"
                 >
                   <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-primary" />
+                    <Target className="text-primary h-4 w-4" />
                     <span className="text-sm font-medium">{conversion.eventName}</span>
                   </div>
                   <span className="text-lg font-bold tabular-nums">

@@ -16,12 +16,7 @@ interface ArticleWithNavProps {
   children: React.ReactNode;
 }
 
-export function ArticleWithNav({
-  title,
-  description,
-  sections,
-  children,
-}: ArticleWithNavProps) {
+export function ArticleWithNav({ title, description, sections, children }: ArticleWithNavProps) {
   const [activeSection, setActiveSection] = useState(sections[0]?.id ?? "");
 
   useEffect(() => {
@@ -55,20 +50,18 @@ export function ArticleWithNav({
     <div className="py-6">
       <div className="flex gap-8">
         {/* Main content */}
-        <article className="flex-1 min-w-0 max-w-prose">
+        <article className="min-w-0 max-w-prose flex-1">
           <header className="mb-8">
             <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-            {description && (
-              <p className="text-muted-foreground mt-1">{description}</p>
-            )}
+            {description && <p className="text-muted-foreground mt-1">{description}</p>}
           </header>
           {children}
         </article>
 
         {/* Right navigation */}
-        <aside className="hidden md:block w-48 shrink-0">
+        <aside className="hidden w-48 shrink-0 md:block">
           <nav className="sticky top-6">
-            <p className="text-xs text-muted-foreground font-medium mb-3 uppercase tracking-wide">
+            <p className="text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wide">
               На странице
             </p>
             <ul className="space-y-1">
@@ -77,7 +70,7 @@ export function ArticleWithNav({
                   <button
                     onClick={() => scrollToSection(id)}
                     className={cn(
-                      "text-sm text-left w-full px-3 py-1.5 rounded-md transition-colors",
+                      "w-full rounded-md px-3 py-1.5 text-left text-sm transition-colors",
                       activeSection === id
                         ? "bg-primary/10 text-primary font-medium"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"

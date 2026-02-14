@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod/v4";
 import { Check, Loader2, X } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod/v4";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -24,8 +25,8 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { cn } from "~/lib/utils";
 import { useToast } from "~/hooks/use-toast";
+import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 // Password requirements
@@ -161,9 +162,7 @@ export function PasswordChangeDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {hasPassword ? "Изменить пароль" : "Установить пароль"}
-          </DialogTitle>
+          <DialogTitle>{hasPassword ? "Изменить пароль" : "Установить пароль"}</DialogTitle>
           <DialogDescription>
             {hasPassword
               ? "Введите текущий пароль и новый пароль"
@@ -190,7 +189,7 @@ export function PasswordChangeDialog({
                         <button
                           type="button"
                           onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                          className="text-muted-foreground hover:text-foreground absolute right-3 top-1/2 -translate-y-1/2 text-xs"
                         >
                           {showCurrentPassword ? "Скрыть" : "Показать"}
                         </button>
@@ -218,7 +217,7 @@ export function PasswordChangeDialog({
                       <button
                         type="button"
                         onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                        className="text-muted-foreground hover:text-foreground absolute right-3 top-1/2 -translate-y-1/2 text-xs"
                       >
                         {showNewPassword ? "Скрыть" : "Показать"}
                       </button>
@@ -231,10 +230,8 @@ export function PasswordChangeDialog({
 
             {/* Inline password strength indicator */}
             {newPasswordValue.length > 0 && (
-              <div className="space-y-2 rounded-lg border bg-muted/50 p-3">
-                <p className="text-xs font-medium text-muted-foreground">
-                  Требования к паролю:
-                </p>
+              <div className="bg-muted/50 space-y-2 rounded-lg border p-3">
+                <p className="text-muted-foreground text-xs font-medium">Требования к паролю:</p>
                 <div className="grid grid-cols-2 gap-1.5">
                   {passwordRules.map((rule) => {
                     const passed = rule.test(newPasswordValue);
@@ -246,11 +243,7 @@ export function PasswordChangeDialog({
                           passed ? "text-green-600" : "text-muted-foreground"
                         )}
                       >
-                        {passed ? (
-                          <Check className="h-3 w-3" />
-                        ) : (
-                          <X className="h-3 w-3" />
-                        )}
+                        {passed ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
                         {rule.label}
                       </div>
                     );
@@ -266,11 +259,7 @@ export function PasswordChangeDialog({
                 <FormItem>
                   <FormLabel>Подтвердите пароль</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      type="password"
-                      autoComplete="new-password"
-                    />
+                    <Input {...field} type="password" autoComplete="new-password" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -281,13 +270,8 @@ export function PasswordChangeDialog({
               <Button type="button" variant="outline" onClick={handleClose}>
                 Отмена
               </Button>
-              <Button
-                type="submit"
-                disabled={changePassword.isPending || !form.formState.isValid}
-              >
-                {changePassword.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+              <Button type="submit" disabled={changePassword.isPending || !form.formState.isValid}>
+                {changePassword.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {hasPassword ? "Изменить" : "Установить"}
               </Button>
             </DialogFooter>

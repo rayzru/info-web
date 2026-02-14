@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+
 import {
   Check,
   ChevronLeft,
@@ -17,7 +16,10 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
+import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -46,9 +48,8 @@ import {
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
-import { api } from "~/trpc/react";
 import type { PublicationStatus, PublicationType } from "~/server/db/schema";
-import { AdminPageHeader } from "~/components/admin/admin-page-header";
+import { api } from "~/trpc/react";
 
 const STATUS_CONFIG: Record<
   PublicationStatus,
@@ -118,7 +119,8 @@ export default function AdminPublicationsPage() {
   const moderateMutation = api.publications.admin.moderate.useMutation({
     onSuccess: () => {
       toast({
-        title: itemToModerate?.action === "approve" ? "Публикация одобрена" : "Публикация отклонена",
+        title:
+          itemToModerate?.action === "approve" ? "Публикация одобрена" : "Публикация отклонена",
       });
       setModerateDialogOpen(false);
       setItemToModerate(null);
@@ -194,10 +196,7 @@ export default function AdminPublicationsPage() {
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title="Публикации"
-        description="Модерация публикаций пользователей"
-      />
+      <AdminPageHeader title="Публикации" description="Модерация публикаций пользователей" />
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
@@ -224,11 +223,11 @@ export default function AdminPublicationsPage() {
       ) : items.length > 0 ? (
         <div className="rounded-lg border">
           {/* Table Header */}
-          <div className="flex items-center gap-4 border-b bg-muted/50 px-4 py-3 text-sm font-medium text-muted-foreground">
+          <div className="bg-muted/50 text-muted-foreground flex items-center gap-4 border-b px-4 py-3 text-sm font-medium">
             <div className="w-24">Дата</div>
-            <div className="flex-1 min-w-0">Заголовок</div>
-            <div className="w-28 hidden sm:block">Тип</div>
-            <div className="w-32 hidden md:block">Автор</div>
+            <div className="min-w-0 flex-1">Заголовок</div>
+            <div className="hidden w-28 sm:block">Тип</div>
+            <div className="hidden w-32 md:block">Автор</div>
             <div className="w-28">Статус</div>
             <div className="w-10"></div>
           </div>
@@ -241,7 +240,7 @@ export default function AdminPublicationsPage() {
             return (
               <div
                 key={item.id}
-                className="flex items-center gap-4 border-b px-4 py-3 last:border-b-0 hover:bg-muted/30 transition-colors"
+                className="hover:bg-muted/30 flex items-center gap-4 border-b px-4 py-3 transition-colors last:border-b-0"
               >
                 {/* Date Column */}
                 <div className="w-24 shrink-0">
@@ -252,7 +251,7 @@ export default function AdminPublicationsPage() {
                         month: "short",
                       })}
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                       {new Date(item.createdAt).toLocaleTimeString("ru-RU", {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -262,20 +261,18 @@ export default function AdminPublicationsPage() {
                 </div>
 
                 {/* Title Column */}
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-start gap-2">
                     <Link
                       href={`/publications/${item.id}`}
-                      className="font-medium hover:underline line-clamp-2"
+                      className="line-clamp-2 font-medium hover:underline"
                       target="_blank"
                     >
                       {item.title}
                     </Link>
-                    {item.isPinned && (
-                      <Pin className="h-4 w-4 text-primary shrink-0" />
-                    )}
+                    {item.isPinned && <Pin className="text-primary h-4 w-4 shrink-0" />}
                     {item.isUrgent && (
-                      <Badge variant="destructive" className="text-xs px-1.5 py-0 shrink-0">
+                      <Badge variant="destructive" className="shrink-0 px-1.5 py-0 text-xs">
                         !
                       </Badge>
                     )}
@@ -283,16 +280,16 @@ export default function AdminPublicationsPage() {
                 </div>
 
                 {/* Type Column */}
-                <div className="w-28 hidden sm:block">
+                <div className="hidden w-28 sm:block">
                   <Badge variant="outline" className={`${typeConfig.color} text-xs`}>
                     {typeConfig.label}
                   </Badge>
                 </div>
 
                 {/* Author Column */}
-                <div className="w-32 hidden md:block">
-                  <span className="text-sm text-muted-foreground truncate block">
-                    {item.isAnonymous ? "Аноним" : item.author?.name ?? "—"}
+                <div className="hidden w-32 md:block">
+                  <span className="text-muted-foreground block truncate text-sm">
+                    {item.isAnonymous ? "Аноним" : (item.author?.name ?? "—")}
                   </span>
                 </div>
 
@@ -342,9 +339,7 @@ export default function AdminPublicationsPage() {
                         </>
                       )}
                       {item.status === "published" && (
-                        <DropdownMenuItem
-                          onClick={() => togglePinMutation.mutate({ id: item.id })}
-                        >
+                        <DropdownMenuItem onClick={() => togglePinMutation.mutate({ id: item.id })}>
                           {item.isPinned ? (
                             <>
                               <PinOff className="mr-2 h-4 w-4" />
@@ -375,7 +370,7 @@ export default function AdminPublicationsPage() {
 
           {/* Pagination */}
           {data && data.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 py-4 border-t">
+            <div className="flex items-center justify-center gap-2 border-t py-4">
               <Button
                 variant="outline"
                 size="icon"
@@ -401,9 +396,9 @@ export default function AdminPublicationsPage() {
       ) : (
         <Card>
           <CardContent className="py-12 text-center">
-            <FileText className="mx-auto h-12 w-12 text-muted-foreground/30" />
+            <FileText className="text-muted-foreground/30 mx-auto h-12 w-12" />
             <h3 className="mt-4 text-lg font-medium">Публикаций пока нет</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-2 text-sm">
               Публикации пользователей появятся здесь
             </p>
           </CardContent>
@@ -416,8 +411,8 @@ export default function AdminPublicationsPage() {
           <DialogHeader>
             <DialogTitle>Удалить публикацию?</DialogTitle>
             <DialogDescription>
-              Вы уверены, что хотите удалить &quot;{itemToDelete?.title}&quot;? Это действие
-              нельзя отменить.
+              Вы уверены, что хотите удалить &quot;{itemToDelete?.title}&quot;? Это действие нельзя
+              отменить.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

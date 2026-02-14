@@ -31,11 +31,10 @@ export function RulesContent() {
     >
       {/* Intro */}
       <section id="intro" className="mb-8 scroll-mt-6">
-        <div className="rounded-lg border bg-muted/50 p-4">
-          <p className="text-sm text-muted-foreground">
-            Чаты и ресурсы сообщества ведут активные жильцы — ваши соседи — на
-            добровольных началах. Цель — объединение для улучшения качества жизни в
-            нашем ЖК.
+        <div className="bg-muted/50 rounded-lg border p-4">
+          <p className="text-muted-foreground text-sm">
+            Чаты и ресурсы сообщества ведут активные жильцы — ваши соседи — на добровольных началах.
+            Цель — объединение для улучшения качества жизни в нашем ЖК.
           </p>
         </div>
       </section>
@@ -43,7 +42,7 @@ export function RulesContent() {
       {/* Main principles */}
       <section id="principles" className="mb-8 scroll-mt-6">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-          <Heart className="h-5 w-5 text-primary" />
+          <Heart className="text-primary h-5 w-5" />
           Основные принципы
         </h2>
         <div className="space-y-3">
@@ -68,7 +67,7 @@ export function RulesContent() {
       {/* Prohibited */}
       <section id="prohibited" className="mb-8 scroll-mt-6">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-          <Ban className="h-5 w-5 text-destructive" />
+          <Ban className="text-destructive h-5 w-5" />
           Запрещено
         </h2>
         <div className="space-y-3">
@@ -102,13 +101,12 @@ export function RulesContent() {
       {/* Moderation */}
       <section id="moderation" className="scroll-mt-6">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-          <Scale className="h-5 w-5 text-primary" />
+          <Scale className="text-primary h-5 w-5" />
           Модерация
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Администраторы добровольно следят за соблюдением правил. Все спорные
-          вопросы обсуждаются открыто — мы за цивилизованное общение и
-          конструктивный подход.
+        <p className="text-muted-foreground text-sm">
+          Администраторы добровольно следят за соблюдением правил. Все спорные вопросы обсуждаются
+          открыто — мы за цивилизованное общение и конструктивный подход.
         </p>
       </section>
     </ArticleWithNav>
@@ -130,16 +128,14 @@ function RuleItem({
     <div className="flex gap-3">
       <div
         className={`flex h-5 shrink-0 items-center ${
-          variant === "destructive"
-            ? "text-destructive"
-            : "text-muted-foreground"
+          variant === "destructive" ? "text-destructive" : "text-muted-foreground"
         }`}
       >
         {icon}
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium leading-5">{title}</p>
-        <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+        <p className="text-muted-foreground mt-0.5 text-sm">{description}</p>
       </div>
     </div>
   );

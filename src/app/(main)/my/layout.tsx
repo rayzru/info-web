@@ -11,11 +11,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function MyLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function MyLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
   // Redirect to login if not authenticated

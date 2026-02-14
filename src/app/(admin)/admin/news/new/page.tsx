@@ -1,25 +1,17 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { JSONContent } from "@tiptap/react";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
+import { StandardEditor } from "~/components/editor/rich-editor";
+import { ImageUploader } from "~/components/media";
+import { TagSelector } from "~/components/tag-selector";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import { generateSlug } from "~/lib/utils/slug";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { Switch } from "~/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Form,
@@ -30,12 +22,20 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { StandardEditor } from "~/components/editor/rich-editor";
-import { ImageUploader } from "~/components/media";
-import { TagSelector } from "~/components/tag-selector";
+import { Input } from "~/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Switch } from "~/components/ui/switch";
+import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
-import { api } from "~/trpc/react";
+import { generateSlug } from "~/lib/utils/slug";
 import type { NewsStatus, NewsType } from "~/server/db/schema";
+import { api } from "~/trpc/react";
 
 const INITIAL_CONTENT: JSONContent = {
   type: "doc",
@@ -49,10 +49,7 @@ const INITIAL_CONTENT: JSONContent = {
 
 // Validation schema
 const newsFormSchema = z.object({
-  title: z
-    .string()
-    .min(1, "Заголовок обязателен")
-    .max(255, "Заголовок слишком длинный"),
+  title: z.string().min(1, "Заголовок обязателен").max(255, "Заголовок слишком длинный"),
   slug: z
     .string()
     .max(255, "Slug слишком длинный")
@@ -62,14 +59,7 @@ const newsFormSchema = z.object({
   excerpt: z.string().max(500, "Описание слишком длинное").optional(),
   coverImage: z.string().optional(),
   content: z.custom<JSONContent>(),
-  type: z.enum([
-    "announcement",
-    "event",
-    "maintenance",
-    "update",
-    "community",
-    "urgent",
-  ]),
+  type: z.enum(["announcement", "event", "maintenance", "update", "community", "urgent"]),
   status: z.enum(["draft", "scheduled", "published", "archived"]),
   publishAt: z.string().optional(),
   isPinned: z.boolean(),
@@ -123,8 +113,8 @@ export default function NewNewsPage() {
       excerpt: values.excerpt?.trim() || undefined,
       coverImage: values.coverImage?.trim() || undefined,
       content: values.content,
-      type: values.type as NewsType,
-      status: values.status as NewsStatus,
+      type: values.type,
+      status: values.status,
       publishAt: values.publishAt ? new Date(values.publishAt) : undefined,
       isPinned: values.isPinned,
       isHighlighted: values.isHighlighted,
@@ -144,9 +134,7 @@ export default function NewNewsPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-semibold">Создать новость</h1>
-          <p className="text-muted-foreground mt-1">
-            Заполните информацию о новости
-          </p>
+          <p className="text-muted-foreground mt-1">Заполните информацию о новости</p>
         </div>
       </div>
 
@@ -154,7 +142,7 @@ export default function NewNewsPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="space-y-6 lg:col-span-2">
               <Card>
                 <CardHeader>
                   <CardTitle>Основная информация</CardTitle>
@@ -167,10 +155,7 @@ export default function NewNewsPage() {
                       <FormItem>
                         <FormLabel>Заголовок *</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Введите заголовок новости"
-                            {...field}
-                          />
+                          <Input placeholder="Введите заголовок новости" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -184,14 +169,9 @@ export default function NewNewsPage() {
                       <FormItem>
                         <FormLabel>Slug (URL)</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Автоматически из заголовка и даты"
-                            {...field}
-                          />
+                          <Input placeholder="Автоматически из заголовка и даты" {...field} />
                         </FormControl>
-                        <FormDescription>
-                          Оставьте пустым для автогенерации
-                        </FormDescription>
+                        <FormDescription>Оставьте пустым для автогенерации</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -275,10 +255,7 @@ export default function NewNewsPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Статус</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
+                        <Select value={field.value} onValueChange={field.onChange}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
@@ -286,12 +263,8 @@ export default function NewNewsPage() {
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="draft">Черновик</SelectItem>
-                            <SelectItem value="scheduled">
-                              Запланирована
-                            </SelectItem>
-                            <SelectItem value="published">
-                              Опубликована
-                            </SelectItem>
+                            <SelectItem value="scheduled">Запланирована</SelectItem>
+                            <SelectItem value="published">Опубликована</SelectItem>
                             <SelectItem value="archived">В архиве</SelectItem>
                           </SelectContent>
                         </Select>
@@ -327,23 +300,16 @@ export default function NewNewsPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Тип</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
+                        <Select value={field.value} onValueChange={field.onChange}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="announcement">
-                              Объявление
-                            </SelectItem>
+                            <SelectItem value="announcement">Объявление</SelectItem>
                             <SelectItem value="event">Мероприятие</SelectItem>
-                            <SelectItem value="maintenance">
-                              Тех. работы
-                            </SelectItem>
+                            <SelectItem value="maintenance">Тех. работы</SelectItem>
                             <SelectItem value="update">Обновление</SelectItem>
                             <SelectItem value="community">Сообщество</SelectItem>
                             <SelectItem value="urgent">Срочное</SelectItem>
@@ -379,10 +345,7 @@ export default function NewNewsPage() {
                       <FormItem className="flex items-center justify-between">
                         <FormLabel>Закрепить</FormLabel>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -395,10 +358,7 @@ export default function NewNewsPage() {
                       <FormItem className="flex items-center justify-between">
                         <FormLabel>Выделить</FormLabel>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -411,15 +371,10 @@ export default function NewNewsPage() {
                       <FormItem className="flex items-center justify-between">
                         <div>
                           <FormLabel>Анонимно</FormLabel>
-                          <p className="text-muted-foreground text-xs">
-                            От имени ресурса
-                          </p>
+                          <p className="text-muted-foreground text-xs">От имени ресурса</p>
                         </div>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
                       </FormItem>
                     )}
@@ -427,11 +382,7 @@ export default function NewNewsPage() {
                 </CardContent>
               </Card>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={createMutation.isPending}
-              >
+              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
                 {createMutation.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (

@@ -129,13 +129,7 @@ const templateSubjects: Record<EmailTemplateId, string> = {
  * Load compiled HTML template from public/templates/email
  */
 async function loadTemplate(templateId: EmailTemplateId): Promise<string> {
-  const templatePath = join(
-    process.cwd(),
-    "public",
-    "templates",
-    "email",
-    `${templateId}.html`
-  );
+  const templatePath = join(process.cwd(), "public", "templates", "email", `${templateId}.html`);
   return readFile(templatePath, "utf-8");
 }
 
@@ -143,10 +137,7 @@ async function loadTemplate(templateId: EmailTemplateId): Promise<string> {
  * Replace placeholders in template with payload values
  * Supports both {{variableName}} and {{ variableName }} formats
  */
-function renderTemplate(
-  template: string,
-  payload: Record<string, string>
-): string {
+function renderTemplate(template: string, payload: Record<string, string>): string {
   return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key: string) => {
     return payload[key] ?? match;
   });
@@ -190,8 +181,7 @@ export async function sendEmail<T extends EmailTemplateId>(
       messageId: info.messageId,
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error(`Failed to send email ${templateId} to ${to}:`, error);
 
     return {

@@ -57,7 +57,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const startAt = event.eventStartAt ? new Date(event.eventStartAt) : null;
     const description = event.eventLocation
       ? `${event.eventLocation}${startAt ? ` • ${formatMetaDate(startAt)}` : ""}`
-      : (startAt ? formatMetaDate(startAt) : `Мероприятие: ${event.title}`);
+      : startAt
+        ? formatMetaDate(startAt)
+        : `Мероприятие: ${event.title}`;
     const imageUrl = getAbsoluteImageUrl(event.coverImage);
 
     return {
@@ -68,12 +70,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         type: "article",
         title: event.title,
         description,
-        images: imageUrl ? [{
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: event.title,
-        }] : undefined,
+        images: imageUrl
+          ? [
+              {
+                url: imageUrl,
+                width: 1200,
+                height: 630,
+                alt: event.title,
+              },
+            ]
+          : undefined,
         publishedTime: event.createdAt.toISOString(),
         section: "Мероприятия",
       },
@@ -149,29 +155,23 @@ export default async function EventDetailPage({ params }: PageProps) {
         </Link>
       </Button>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col gap-8 lg:flex-row">
         {/* Main Content */}
         <article className="flex-1">
           {/* Header */}
           <header className="mb-8">
             {/* Status Badges */}
-            <div className="flex items-center gap-2 mb-4">
-              {isOngoing && (
-                <Badge className="bg-green-500">Идёт сейчас</Badge>
-              )}
-              {isPast && (
-                <Badge variant="secondary">Завершено</Badge>
-              )}
-              {event.isUrgent && (
-                <Badge variant="destructive">Срочно</Badge>
-              )}
+            <div className="mb-4 flex items-center gap-2">
+              {isOngoing && <Badge className="bg-green-500">Идёт сейчас</Badge>}
+              {isPast && <Badge variant="secondary">Завершено</Badge>}
+              {event.isUrgent && <Badge variant="destructive">Срочно</Badge>}
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl font-bold mb-4">{event.title}</h1>
+            <h1 className="mb-4 text-3xl font-bold">{event.title}</h1>
 
             {/* Meta */}
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="text-muted-foreground flex items-center gap-4 text-sm">
               {/* Author */}
               {event.author && !event.isAnonymous ? (
                 <div className="flex items-center gap-2">
@@ -191,7 +191,7 @@ export default async function EventDetailPage({ params }: PageProps) {
 
           {/* Cover Image */}
           {event.coverImage && (
-            <div className="relative aspect-video overflow-hidden rounded-lg mb-8">
+            <div className="relative mb-8 aspect-video overflow-hidden rounded-lg">
               <Image
                 src={event.coverImage}
                 alt={event.title}
@@ -204,27 +204,23 @@ export default async function EventDetailPage({ params }: PageProps) {
           )}
 
           {/* Content */}
-          {event.content && (
-            <RichRenderer content={event.content} className="prose-lg mb-8" />
-          )}
+          {event.content && <RichRenderer content={event.content} className="prose-lg mb-8" />}
         </article>
 
         {/* Sidebar */}
-        <aside className="lg:w-80 space-y-4">
+        <aside className="space-y-4 lg:w-80">
           {/* Date & Time Card */}
           <Card>
             <CardContent className="pt-6">
-              <div className="flex items-start gap-3 mb-4">
-                <Calendar className="h-5 w-5 text-primary mt-0.5" />
+              <div className="mb-4 flex items-start gap-3">
+                <Calendar className="text-primary mt-0.5 h-5 w-5" />
                 <div>
                   <div className="font-semibold">Дата и время</div>
                   {startAt && (
-                    <div className="text-sm text-muted-foreground">
-                      {formatFullDate(startAt)}
-                    </div>
+                    <div className="text-muted-foreground text-sm">{formatFullDate(startAt)}</div>
                   )}
                   {startAt && (
-                    <div className="flex items-center gap-1 text-sm mt-1">
+                    <div className="mt-1 flex items-center gap-1 text-sm">
                       <Clock className="h-3.5 w-3.5" />
                       {formatTime(startAt)}
                       {endAt && ` — ${formatTime(endAt)}`}
@@ -244,10 +240,7 @@ export default async function EventDetailPage({ params }: PageProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56">
                     <DropdownMenuItem asChild>
-                      <a
-                        href={`/api/events/${event.id}/calendar.ics`}
-                        download
-                      >
+                      <a href={`/api/events/${event.id}/calendar.ics`} download>
                         <Calendar className="mr-2 h-4 w-4" />
                         Скачать .ics файл
                       </a>
@@ -283,14 +276,12 @@ export default async function EventDetailPage({ params }: PageProps) {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                  <MapPin className="text-primary mt-0.5 h-5 w-5" />
                   <div>
                     <div className="font-semibold">Место проведения</div>
-                    <div className="text-sm text-muted-foreground">
-                      {event.eventLocation}
-                    </div>
+                    <div className="text-muted-foreground text-sm">{event.eventLocation}</div>
                     {event.building && (
-                      <div className="text-xs text-muted-foreground mt-1">
+                      <div className="text-muted-foreground mt-1 text-xs">
                         Строение {event.building.number}
                       </div>
                     )}
@@ -305,18 +296,16 @@ export default async function EventDetailPage({ params }: PageProps) {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
-                  <User className="h-5 w-5 text-primary mt-0.5" />
+                  <User className="text-primary mt-0.5 h-5 w-5" />
                   <div>
                     <div className="font-semibold">Организатор</div>
                     {event.eventOrganizer && (
-                      <div className="text-sm text-muted-foreground">
-                        {event.eventOrganizer}
-                      </div>
+                      <div className="text-muted-foreground text-sm">{event.eventOrganizer}</div>
                     )}
                     {event.eventOrganizerPhone && (
                       <a
                         href={`tel:${event.eventOrganizerPhone}`}
-                        className="flex items-center gap-1 text-sm text-primary hover:underline mt-1"
+                        className="text-primary mt-1 flex items-center gap-1 text-sm hover:underline"
                       >
                         <Phone className="h-3.5 w-3.5" />
                         {event.eventOrganizerPhone}
@@ -333,10 +322,10 @@ export default async function EventDetailPage({ params }: PageProps) {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
-                  <Users className="h-5 w-5 text-primary mt-0.5" />
+                  <Users className="text-primary mt-0.5 h-5 w-5" />
                   <div>
                     <div className="font-semibold">Участники</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       Максимум {event.eventMaxAttendees} человек
                     </div>
                   </div>
@@ -350,11 +339,7 @@ export default async function EventDetailPage({ params }: PageProps) {
             <Card>
               <CardContent className="pt-6">
                 <Button asChild variant="outline" className="w-full">
-                  <a
-                    href={event.eventExternalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={event.eventExternalUrl} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Перейти по ссылке
                   </a>

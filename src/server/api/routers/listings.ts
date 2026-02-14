@@ -1,11 +1,12 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, desc, count, or } from "drizzle-orm";
+import { and, count, desc, eq, or } from "drizzle-orm";
 import { z } from "zod";
 
+import { deleteImage } from "~/lib/upload/image-processor";
 import {
   buildings,
-  listings,
   listingPhotos,
+  listings,
   parkings,
   userApartments,
   userParkingSpots,
@@ -82,10 +83,7 @@ export const listingsRouter = createTRPCRouter({
       where: and(
         eq(userApartments.userId, userId),
         eq(userApartments.status, "approved"),
-        or(
-          eq(userApartments.role, "ApartmentOwner"),
-          eq(userApartments.role, "ParkingOwner")
-        )
+        or(eq(userApartments.role, "ApartmentOwner"), eq(userApartments.role, "ParkingOwner"))
       ),
       with: {
         apartment: {
@@ -237,10 +235,7 @@ export const listingsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       const listing = await ctx.db.query.listings.findFirst({
-        where: and(
-          eq(listings.id, input.listingId),
-          eq(listings.userId, userId)
-        ),
+        where: and(eq(listings.id, input.listingId), eq(listings.userId, userId)),
       });
 
       if (!listing) {
@@ -279,10 +274,7 @@ export const listingsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       const listing = await ctx.db.query.listings.findFirst({
-        where: and(
-          eq(listings.id, input.listingId),
-          eq(listings.userId, userId)
-        ),
+        where: and(eq(listings.id, input.listingId), eq(listings.userId, userId)),
       });
 
       if (!listing) {
@@ -317,10 +309,7 @@ export const listingsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       const listing = await ctx.db.query.listings.findFirst({
-        where: and(
-          eq(listings.id, input.listingId),
-          eq(listings.userId, userId)
-        ),
+        where: and(eq(listings.id, input.listingId), eq(listings.userId, userId)),
       });
 
       if (!listing) {
@@ -350,10 +339,7 @@ export const listingsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       const listing = await ctx.db.query.listings.findFirst({
-        where: and(
-          eq(listings.id, input.listingId),
-          eq(listings.userId, userId)
-        ),
+        where: and(eq(listings.id, input.listingId), eq(listings.userId, userId)),
       });
 
       if (!listing) {
@@ -391,10 +377,7 @@ export const listingsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       const listing = await ctx.db.query.listings.findFirst({
-        where: and(
-          eq(listings.id, input.listingId),
-          eq(listings.userId, userId)
-        ),
+        where: and(eq(listings.id, input.listingId), eq(listings.userId, userId)),
       });
 
       if (!listing) {
@@ -443,10 +426,7 @@ export const listingsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       const listing = await ctx.db.query.listings.findFirst({
-        where: and(
-          eq(listings.id, input.listingId),
-          eq(listings.userId, userId)
-        ),
+        where: and(eq(listings.id, input.listingId), eq(listings.userId, userId)),
       });
 
       if (!listing) {
@@ -461,6 +441,21 @@ export const listingsRouter = createTRPCRouter({
           code: "BAD_REQUEST",
           message: "Можно удалить только черновики",
         });
+      }
+
+      // Get all photos for this listing
+      const photos = await ctx.db.query.listingPhotos.findMany({
+        where: eq(listingPhotos.listingId, input.listingId),
+      });
+
+      // Delete all photos from S3
+      for (const photo of photos) {
+        try {
+          await deleteImage(photo.url);
+          console.log(`[Listings] Deleted photo from S3: ${photo.url}`);
+        } catch (error) {
+          console.error("[Listings] Failed to delete photo from S3:", error);
+        }
       }
 
       await ctx.db.delete(listings).where(eq(listings.id, input.listingId));
@@ -482,10 +477,7 @@ export const listingsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       const listing = await ctx.db.query.listings.findFirst({
-        where: and(
-          eq(listings.id, input.listingId),
-          eq(listings.userId, userId)
-        ),
+        where: and(eq(listings.id, input.listingId), eq(listings.userId, userId)),
         with: { photos: true },
       });
 
@@ -554,8 +546,7 @@ export const listingsRouter = createTRPCRouter({
           conditions.push(eq(listings.listingType, type));
         }
 
-        const whereClause =
-          conditions.length > 0 ? and(...conditions) : undefined;
+        const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
         const listingsData = await ctx.db.query.listings.findMany({
           where: whereClause,
@@ -637,8 +628,7 @@ export const listingsRouter = createTRPCRouter({
           .update(listings)
           .set({
             status: input.status,
-            rejectionReason:
-              input.status === "rejected" ? input.rejectionReason : null,
+            rejectionReason: input.status === "rejected" ? input.rejectionReason : null,
             moderatedBy: ctx.session.user.id,
             moderatedAt: new Date(),
             publishedAt: input.status === "approved" ? new Date() : null,
@@ -666,9 +656,7 @@ export const listingsRouter = createTRPCRouter({
         .from(listings)
         .where(eq(listings.status, "rejected"));
 
-      const [total] = await ctx.db
-        .select({ count: count() })
-        .from(listings);
+      const [total] = await ctx.db.select({ count: count() }).from(listings);
 
       return {
         pendingModeration: pending?.count ?? 0,

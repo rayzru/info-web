@@ -196,9 +196,7 @@ export function isEmptyContent(content: JSONContent | null | undefined): boolean
 
   // Check if only empty paragraphs
   return content.content.every(
-    (node) =>
-      node.type === "paragraph" &&
-      (!node.content || node.content.length === 0)
+    (node) => node.type === "paragraph" && (!node.content || node.content.length === 0)
   );
 }
 

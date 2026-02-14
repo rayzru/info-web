@@ -7,11 +7,11 @@
 
 import { db } from "~/server/db";
 import {
-  auditLogs,
+  AUDIT_ACTION_LABELS,
   type AuditAction,
   type AuditEntityType,
+  auditLogs,
   type CreateAuditLogInput,
-  AUDIT_ACTION_LABELS,
 } from "~/server/db/schema";
 
 // ============================================================================
@@ -65,8 +65,7 @@ export async function logAction(
   context: AuditLogContext,
   options: AuditLogOptions = {}
 ) {
-  const description =
-    options.description ?? generateDescription(action, options);
+  const description = options.description ?? generateDescription(action, options);
 
   return await createAuditLog({
     entityType,
@@ -90,10 +89,7 @@ export async function logAction(
 /**
  * Генерирует человекочитаемое описание действия
  */
-function generateDescription(
-  action: AuditAction,
-  options: AuditLogOptions
-): string {
+function generateDescription(action: AuditAction, options: AuditLogOptions): string {
   const baseLabel = AUDIT_ACTION_LABELS[action];
 
   // Для некоторых действий добавляем детали из metadata
@@ -102,14 +98,10 @@ function generateDescription(
   if (metadata) {
     switch (action) {
       case "user_blocked":
-        return metadata.reason
-          ? `${baseLabel}. Причина: ${metadata.reason}`
-          : baseLabel;
+        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason}` : baseLabel;
 
       case "user_unblocked":
-        return metadata.reason
-          ? `${baseLabel}. Причина: ${metadata.reason}`
-          : baseLabel;
+        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason}` : baseLabel;
 
       case "role_granted":
         return metadata.role ? `${baseLabel}: ${metadata.role}` : baseLabel;
@@ -119,19 +111,13 @@ function generateDescription(
 
       case "listing_rejected":
       case "publication_rejected":
-        return metadata.reason
-          ? `${baseLabel}. Причина: ${metadata.reason}`
-          : baseLabel;
+        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason}` : baseLabel;
 
       case "listing_archived":
-        return metadata.reason
-          ? `${baseLabel}. Причина: ${metadata.reason}`
-          : baseLabel;
+        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason}` : baseLabel;
 
       case "deletion_rejected":
-        return metadata.reason
-          ? `${baseLabel}. Причина: ${metadata.reason}`
-          : baseLabel;
+        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason}` : baseLabel;
 
       case "feedback_status_changed":
         if (metadata.fromStatus && metadata.toStatus) {
@@ -146,14 +132,10 @@ function generateDescription(
         return baseLabel;
 
       case "feedback_assigned":
-        return metadata.assigneeName
-          ? `${baseLabel}: ${metadata.assigneeName}`
-          : baseLabel;
+        return metadata.assigneeName ? `${baseLabel}: ${metadata.assigneeName}` : baseLabel;
 
       case "feedback_forwarded":
-        return metadata.forwardedTo
-          ? `${baseLabel}: ${metadata.forwardedTo}`
-          : baseLabel;
+        return metadata.forwardedTo ? `${baseLabel}: ${metadata.forwardedTo}` : baseLabel;
 
       default:
         return baseLabel;
@@ -249,11 +231,7 @@ export async function logUserUnblocked(
 /**
  * Логирует выдачу роли
  */
-export async function logRoleGranted(
-  userId: string,
-  role: string,
-  context: AuditLogContext
-) {
+export async function logRoleGranted(userId: string, role: string, context: AuditLogContext) {
   return await logAction("user_role", userId, "role_granted", context, {
     metadata: { role, targetUserId: userId },
   });
@@ -370,14 +348,10 @@ export async function logDeletionRequestAction(
   requestId: string,
   action: Extract<
     AuditAction,
-    | "deletion_requested"
-    | "deletion_approved"
-    | "deletion_rejected"
-    | "deletion_completed"
+    "deletion_requested" | "deletion_approved" | "deletion_rejected" | "deletion_completed"
   >,
   context: AuditLogContext,
   options?: AuditLogOptions
 ) {
   return await logAction("deletion_request", requestId, action, context, options);
 }
-

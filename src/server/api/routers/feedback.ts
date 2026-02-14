@@ -4,20 +4,17 @@ import { z } from "zod";
 
 import {
   feedback,
-  feedbackTypeEnum,
-  feedbackStatusEnum,
-  feedbackPriorityEnum,
-  feedbackHistory,
   FEEDBACK_LIMITS,
+  FEEDBACK_PRIORITY_LABELS,
   FEEDBACK_RATE_LIMIT,
   FEEDBACK_STATUS_LABELS,
-  FEEDBACK_PRIORITY_LABELS,
+  feedbackHistory,
+  feedbackPriorityEnum,
+  feedbackStatusEnum,
+  feedbackTypeEnum,
 } from "~/server/db/schema";
-import {
-  adminProcedureWithFeature,
-  createTRPCRouter,
-  publicProcedure,
-} from "../trpc";
+
+import { adminProcedureWithFeature, createTRPCRouter, publicProcedure } from "../trpc";
 
 // ============================================================================
 // Validation Schemas
@@ -33,7 +30,10 @@ const createFeedbackSchema = z.object({
   content: z
     .string()
     .min(10, "Текст обращения должен содержать минимум 10 символов")
-    .max(FEEDBACK_LIMITS.MAX_CONTENT_LENGTH, `Максимум ${FEEDBACK_LIMITS.MAX_CONTENT_LENGTH} символов`),
+    .max(
+      FEEDBACK_LIMITS.MAX_CONTENT_LENGTH,
+      `Максимум ${FEEDBACK_LIMITS.MAX_CONTENT_LENGTH} символов`
+    ),
   // Контактные данные
   contactName: z.string().max(255).optional(),
   contactEmail: z.string().email("Некорректный email").optional().or(z.literal("")),
@@ -53,103 +53,91 @@ export const feedbackRouter = createTRPCRouter({
   /**
    * Submit new feedback (available to everyone, including guests)
    */
-  submit: publicProcedure
-    .input(createFeedbackSchema)
-    .mutation(async ({ ctx, input }) => {
-      // Get IP address from headers (for rate limiting)
-      const forwardedFor = ctx.headers.get("x-forwarded-for");
-      const realIp = ctx.headers.get("x-real-ip");
-      const ipAddress = forwardedFor?.split(",")[0]?.trim() ?? realIp ?? "127.0.0.1";
+  submit: publicProcedure.input(createFeedbackSchema).mutation(async ({ ctx, input }) => {
+    // Get IP address from headers (for rate limiting)
+    const forwardedFor = ctx.headers.get("x-forwarded-for");
+    const realIp = ctx.headers.get("x-real-ip");
+    const ipAddress = forwardedFor?.split(",")[0]?.trim() ?? realIp ?? "127.0.0.1";
 
-      // Rate limiting check
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    // Rate limiting check
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-      // Check hourly limit
-      const [hourlyCount] = await ctx.db
-        .select({ count: count() })
-        .from(feedback)
-        .where(
-          and(
-            eq(feedback.ipAddress, ipAddress),
-            gte(feedback.createdAt, oneHourAgo)
-          )
-        );
+    // Check hourly limit
+    const [hourlyCount] = await ctx.db
+      .select({ count: count() })
+      .from(feedback)
+      .where(and(eq(feedback.ipAddress, ipAddress), gte(feedback.createdAt, oneHourAgo)));
 
-      if ((hourlyCount?.count ?? 0) >= FEEDBACK_RATE_LIMIT.MAX_PER_HOUR) {
-        throw new TRPCError({
-          code: "TOO_MANY_REQUESTS",
-          message: "Слишком много обращений. Попробуйте позже.",
-        });
-      }
+    if ((hourlyCount?.count ?? 0) >= FEEDBACK_RATE_LIMIT.MAX_PER_HOUR) {
+      throw new TRPCError({
+        code: "TOO_MANY_REQUESTS",
+        message: "Слишком много обращений. Попробуйте позже.",
+      });
+    }
 
-      // Check daily limit
-      const [dailyCount] = await ctx.db
-        .select({ count: count() })
-        .from(feedback)
-        .where(
-          and(
-            eq(feedback.ipAddress, ipAddress),
-            gte(feedback.createdAt, oneDayAgo)
-          )
-        );
+    // Check daily limit
+    const [dailyCount] = await ctx.db
+      .select({ count: count() })
+      .from(feedback)
+      .where(and(eq(feedback.ipAddress, ipAddress), gte(feedback.createdAt, oneDayAgo)));
 
-      if ((dailyCount?.count ?? 0) >= FEEDBACK_RATE_LIMIT.MAX_PER_DAY) {
-        throw new TRPCError({
-          code: "TOO_MANY_REQUESTS",
-          message: "Достигнут лимит обращений на сегодня. Попробуйте завтра.",
-        });
-      }
+    if ((dailyCount?.count ?? 0) >= FEEDBACK_RATE_LIMIT.MAX_PER_DAY) {
+      throw new TRPCError({
+        code: "TOO_MANY_REQUESTS",
+        message: "Достигнут лимит обращений на сегодня. Попробуйте завтра.",
+      });
+    }
 
-      // Get user ID if authenticated (but store anonymously)
-      const userId = ctx.session?.user?.id;
+    // Get user ID if authenticated (but store anonymously)
+    const userId = ctx.session?.user?.id;
 
-      // Auto-fill contact info from user profile if authenticated and not provided
-      let contactName = input.contactName;
-      let contactEmail = input.contactEmail;
+    // Auto-fill contact info from user profile if authenticated and not provided
+    let contactName = input.contactName;
+    let contactEmail = input.contactEmail;
 
-      if (userId && !contactName) {
-        contactName = ctx.session?.user?.name ?? undefined;
-      }
-      if (userId && !contactEmail) {
-        contactEmail = ctx.session?.user?.email ?? undefined;
-      }
+    if (userId && !contactName) {
+      contactName = ctx.session?.user?.name ?? undefined;
+    }
+    if (userId && !contactEmail) {
+      contactEmail = ctx.session?.user?.email ?? undefined;
+    }
 
-      // Create feedback
-      const [newFeedback] = await ctx.db
-        .insert(feedback)
-        .values({
-          type: input.type,
-          title: input.title?.trim() || null,
-          content: input.content.trim(),
-          contactName: contactName?.trim() || null,
-          contactEmail: contactEmail?.trim() || null,
-          contactPhone: input.contactPhone?.trim() || null,
-          attachments: input.attachments ?? [],
-          photos: input.photos ?? [],
-          submittedByUserId: userId,
-          ipAddress,
-          isAnonymous: true, // Always anonymous from admin perspective
-        })
-        .returning({ id: feedback.id });
+    // Create feedback
+    const [newFeedback] = await ctx.db
+      .insert(feedback)
+      .values({
+        type: input.type,
+        title: input.title?.trim() || null,
+        content: input.content.trim(),
+        contactName: contactName?.trim() || null,
+        contactEmail: contactEmail?.trim() || null,
+        contactPhone: input.contactPhone?.trim() || null,
+        attachments: input.attachments ?? [],
+        photos: input.photos ?? [],
+        submittedByUserId: userId,
+        ipAddress,
+        isAnonymous: true, // Always anonymous from admin perspective
+      })
+      .returning({ id: feedback.id });
 
-      // Log creation in history (system action, no changedById for anonymous)
-      if (newFeedback?.id) {
-        await ctx.db.insert(feedbackHistory).values({
-          feedbackId: newFeedback.id,
-          action: "created",
-          toStatus: "new",
-          description: "Обращение создано",
-          changedById: userId ?? null,
-        });
-      }
+    // Log creation in history (system action, no changedById for anonymous)
+    if (newFeedback?.id) {
+      await ctx.db.insert(feedbackHistory).values({
+        feedbackId: newFeedback.id,
+        action: "created",
+        toStatus: "new",
+        description: "Обращение создано",
+        changedById: userId ?? null,
+      });
+    }
 
-      return {
-        success: true,
-        id: newFeedback?.id,
-        message: "Ваше обращение успешно отправлено. Спасибо!",
-      };
-    }),
+    return {
+      success: true,
+      id: newFeedback?.id,
+      message: "Ваше обращение успешно отправлено. Спасибо!",
+    };
+  }),
 
   // ==================== Admin Procedures ====================
 
@@ -477,10 +465,7 @@ export const feedbackRouter = createTRPCRouter({
     stats: adminProcedureWithFeature("users:manage").query(async ({ ctx }) => {
       const baseCondition = eq(feedback.isDeleted, false);
 
-      const [total] = await ctx.db
-        .select({ count: count() })
-        .from(feedback)
-        .where(baseCondition);
+      const [total] = await ctx.db.select({ count: count() }).from(feedback).where(baseCondition);
 
       const [newCount] = await ctx.db
         .select({ count: count() })

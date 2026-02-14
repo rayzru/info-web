@@ -7,11 +7,11 @@
 
 import { db } from "~/server/db";
 import {
+  PUBLICATION_HISTORY_ACTION_LABELS,
+  PUBLICATION_STATUS_LABELS,
   publicationHistory,
   type PublicationHistoryAction,
   type PublicationStatus,
-  PUBLICATION_STATUS_LABELS,
-  PUBLICATION_HISTORY_ACTION_LABELS,
 } from "~/server/db/schema";
 
 // ============================================================================
@@ -39,11 +39,8 @@ interface CreatePublicationHistoryInput {
 /**
  * Создаёт запись в истории публикации
  */
-export async function createPublicationHistoryRecord(
-  input: CreatePublicationHistoryInput
-) {
-  const description =
-    input.description ?? generatePublicationDescription(input);
+export async function createPublicationHistoryRecord(input: CreatePublicationHistoryInput) {
+  const description = input.description ?? generatePublicationDescription(input);
 
   return await db.insert(publicationHistory).values({
     publicationId: input.publicationId,
@@ -60,9 +57,7 @@ export async function createPublicationHistoryRecord(
 // Helper Functions
 // ============================================================================
 
-function generatePublicationDescription(
-  input: CreatePublicationHistoryInput
-): string {
+function generatePublicationDescription(input: CreatePublicationHistoryInput): string {
   const baseLabel = PUBLICATION_HISTORY_ACTION_LABELS[input.action];
 
   switch (input.action) {

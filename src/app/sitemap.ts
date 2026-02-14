@@ -78,42 +78,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Fetch all dynamic data in parallel
-  const [publishedNews, publishedEvents, activeDirectoryEntries] =
-    await Promise.all([
-      // Published news
-      db
-        .select({
-          slug: news.slug,
-          updatedAt: news.updatedAt,
-          publishAt: news.publishAt,
-        })
-        .from(news)
-        .where(and(eq(news.status, "published"), lte(news.publishAt, now))),
+  const [publishedNews, publishedEvents, activeDirectoryEntries] = await Promise.all([
+    // Published news
+    db
+      .select({
+        slug: news.slug,
+        updatedAt: news.updatedAt,
+        publishAt: news.publishAt,
+      })
+      .from(news)
+      .where(and(eq(news.status, "published"), lte(news.publishAt, now))),
 
-      // Published events
-      db
-        .select({
-          id: publications.id,
-          updatedAt: publications.updatedAt,
-          createdAt: publications.createdAt,
-        })
-        .from(publications)
-        .where(
-          and(
-            eq(publications.type, "event"),
-            eq(publications.status, "published"),
-          ),
-        ),
+    // Published events
+    db
+      .select({
+        id: publications.id,
+        updatedAt: publications.updatedAt,
+        createdAt: publications.createdAt,
+      })
+      .from(publications)
+      .where(and(eq(publications.type, "event"), eq(publications.status, "published"))),
 
-      // Active directory entries
-      db
-        .select({
-          slug: directoryEntries.slug,
-          updatedAt: directoryEntries.updatedAt,
-        })
-        .from(directoryEntries)
-        .where(eq(directoryEntries.isActive, 1)),
-    ]);
+    // Active directory entries
+    db
+      .select({
+        slug: directoryEntries.slug,
+        updatedAt: directoryEntries.updatedAt,
+      })
+      .from(directoryEntries)
+      .where(eq(directoryEntries.isActive, 1)),
+  ]);
 
   const newsPages: MetadataRoute.Sitemap = publishedNews.map((item) => ({
     url: `${siteUrl}/news/${item.slug}`,
@@ -129,20 +123,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  const directoryPages: MetadataRoute.Sitemap = activeDirectoryEntries.map(
-    (item) => ({
-      url: `${siteUrl}/info/${item.slug}`,
-      lastModified: item.updatedAt,
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    }),
-  );
+  const directoryPages: MetadataRoute.Sitemap = activeDirectoryEntries.map((item) => ({
+    url: `${siteUrl}/info/${item.slug}`,
+    lastModified: item.updatedAt,
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  }));
 
-  return [
-    ...staticPages,
-    ...communityPages,
-    ...newsPages,
-    ...eventPages,
-    ...directoryPages,
-  ];
+  return [...staticPages, ...communityPages, ...newsPages, ...eventPages, ...directoryPages];
 }

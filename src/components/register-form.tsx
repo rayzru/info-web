@@ -1,12 +1,13 @@
 "use client";
 
+import { useState } from "react";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -18,27 +19,16 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
-import {
-  registerFormSchema,
-  type RegisterFormData,
-} from "~/lib/validations/auth";
+import { type RegisterFormData, registerFormSchema } from "~/lib/validations/auth";
 import { api } from "~/trpc/react";
 
 import { VkIdStack } from "./auth/vk-id-stack";
 
 interface RegisterFormProps extends React.ComponentPropsWithoutRef<"div"> {}
 
-export function RegisterForm({
-  className,
-  ...props
-}: Readonly<RegisterFormProps>) {
+export function RegisterForm({ className, ...props }: Readonly<RegisterFormProps>) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/my";
@@ -80,7 +70,7 @@ export function RegisterForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <h1 className="text-center text-lg font-bold uppercase tracking-[0.2em] text-foreground/90 [text-shadow:inset_0_1px_2px_rgba(0,0,0,0.1)]">
+      <h1 className="text-foreground/90 text-center text-lg font-bold uppercase tracking-[0.2em] [text-shadow:inset_0_1px_2px_rgba(0,0,0,0.1)]">
         РЕГИСТРАЦИЯ
       </h1>
 
@@ -166,7 +156,7 @@ export function RegisterForm({
           />
 
           {serverError && (
-            <p className="text-sm text-destructive" data-testid="register-error">
+            <p className="text-destructive text-sm" data-testid="register-error">
               {serverError}
             </p>
           )}
@@ -187,7 +177,7 @@ export function RegisterForm({
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
+          <span className="bg-background text-muted-foreground px-2">
             Или зарегистрироваться через
           </span>
         </div>
@@ -251,7 +241,6 @@ export function RegisterForm({
             </TooltipTrigger>
             <TooltipContent>Google</TooltipContent>
           </Tooltip>
-
         </div>
       </TooltipProvider>
 
@@ -259,7 +248,7 @@ export function RegisterForm({
         <span className="text-muted-foreground/70">Уже есть аккаунт?</span>{" "}
         <Link
           href="/login"
-          className="font-medium underline underline-offset-4 hover:text-foreground"
+          className="hover:text-foreground font-medium underline underline-offset-4"
         >
           Войти
         </Link>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
+
 import {
   Check,
   ChevronLeft,
@@ -12,19 +13,14 @@ import {
   X,
 } from "lucide-react";
 
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "~/components/ui/dialog";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import { cn } from "~/lib/utils";
-import { api } from "~/trpc/react";
 import type { Media } from "~/server/db/schema";
+import { api } from "~/trpc/react";
 
 // ============================================================================
 // Types
@@ -85,9 +81,7 @@ export function MediaLibrary({
 
   const toggleTag = (tagId: string) => {
     setSelectedTagIds((prev) =>
-      prev.includes(tagId)
-        ? prev.filter((id) => id !== tagId)
-        : [...prev, tagId]
+      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
     );
     setPage(1);
   };
@@ -95,9 +89,7 @@ export function MediaLibrary({
   const handleSelect = (media: Media) => {
     if (multiple) {
       setSelected((prev) =>
-        prev.includes(media.id)
-          ? prev.filter((id) => id !== media.id)
-          : [...prev, media.id]
+        prev.includes(media.id) ? prev.filter((id) => id !== media.id) : [...prev, media.id]
       );
     } else {
       onSelect(media);
@@ -123,7 +115,7 @@ export function MediaLibrary({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+      <DialogContent className="flex h-[80vh] max-w-4xl flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ImageIcon className="h-5 w-5" />
@@ -133,7 +125,7 @@ export function MediaLibrary({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Поиск по имени файла и тегам..."
             value={search}
@@ -144,7 +136,7 @@ export function MediaLibrary({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+              className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
               onClick={() => {
                 setSearch("");
                 setDebouncedSearch("");
@@ -157,8 +149,8 @@ export function MediaLibrary({
 
         {/* Tags filter */}
         {tagsData && tagsData.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <Tag className="h-4 w-4 text-muted-foreground" />
+          <div className="flex flex-wrap items-center gap-2">
+            <Tag className="text-muted-foreground h-4 w-4" />
             {tagsData.map((tag) => (
               <Badge
                 key={tag.id}
@@ -168,8 +160,8 @@ export function MediaLibrary({
                   selectedTagIds.includes(tag.id) && tag.color
                     ? { backgroundColor: tag.color, borderColor: tag.color }
                     : tag.color
-                    ? { borderColor: tag.color, color: tag.color }
-                    : undefined
+                      ? { borderColor: tag.color, color: tag.color }
+                      : undefined
                 }
                 onClick={() => toggleTag(tag.id)}
               >
@@ -193,20 +185,16 @@ export function MediaLibrary({
         <ScrollArea className="flex-1">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
             </div>
           ) : !data?.items.length ? (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <ImageIcon className="h-12 w-12 mb-4 opacity-50" />
+            <div className="text-muted-foreground flex flex-col items-center justify-center py-12">
+              <ImageIcon className="mb-4 h-12 w-12 opacity-50" />
               <p>Нет изображений</p>
-              {search && (
-                <p className="text-sm mt-1">
-                  Попробуйте изменить поисковый запрос
-                </p>
-              )}
+              {search && <p className="mt-1 text-sm">Попробуйте изменить поисковый запрос</p>}
             </div>
           ) : (
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 p-1">
+            <div className="grid grid-cols-4 gap-2 p-1 sm:grid-cols-6">
               {data.items.map((item) => {
                 const isSelected = selected.includes(item.id);
                 const itemTags = item.tags?.map((t) => t.tag) ?? [];
@@ -215,12 +203,10 @@ export function MediaLibrary({
                     key={item.id}
                     onClick={() => handleSelect(item)}
                     className={cn(
-                      "group relative aspect-square rounded-lg overflow-hidden border-2 transition-all",
-                      "hover:ring-2 hover:ring-primary/50",
-                      "focus:outline-none focus:ring-2 focus:ring-primary",
-                      isSelected
-                        ? "border-primary ring-2 ring-primary"
-                        : "border-transparent"
+                      "group relative aspect-square overflow-hidden rounded-lg border-2 transition-all",
+                      "hover:ring-primary/50 hover:ring-2",
+                      "focus:ring-primary focus:outline-none focus:ring-2",
+                      isSelected ? "border-primary ring-primary ring-2" : "border-transparent"
                     )}
                   >
                     {/* Image */}
@@ -228,31 +214,26 @@ export function MediaLibrary({
                       src={item.url}
                       alt={item.alt ?? item.originalFilename}
                       loading="lazy"
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                     />
 
                     {/* Tags (always visible if present) */}
                     {itemTags.length > 0 && (
-                      <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                      <div className="absolute left-2 top-2 flex flex-wrap gap-1">
                         {itemTags.slice(0, 2).map((tag) => (
                           <Badge
                             key={tag.id}
                             variant="secondary"
-                            className="text-[10px] px-1 py-0 h-4"
+                            className="h-4 px-1 py-0 text-[10px]"
                             style={
-                              tag.color
-                                ? { backgroundColor: tag.color, color: "#fff" }
-                                : undefined
+                              tag.color ? { backgroundColor: tag.color, color: "#fff" } : undefined
                             }
                           >
                             {tag.name}
                           </Badge>
                         ))}
                         {itemTags.length > 2 && (
-                          <Badge
-                            variant="secondary"
-                            className="text-[10px] px-1 py-0 h-4"
-                          >
+                          <Badge variant="secondary" className="h-4 px-1 py-0 text-[10px]">
                             +{itemTags.length - 2}
                           </Badge>
                         )}
@@ -268,10 +249,8 @@ export function MediaLibrary({
                       )}
                     >
                       {/* File info */}
-                      <div className="absolute bottom-0 left-0 right-0 p-2 text-white text-xs">
-                        <p className="truncate font-medium">
-                          {item.originalFilename}
-                        </p>
+                      <div className="absolute bottom-0 left-0 right-0 p-2 text-xs text-white">
+                        <p className="truncate font-medium">{item.originalFilename}</p>
                         <p className="opacity-75">
                           {item.width}×{item.height} • {formatFileSize(item.size)}
                         </p>
@@ -280,7 +259,7 @@ export function MediaLibrary({
 
                     {/* Selection indicator */}
                     {isSelected && (
-                      <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
+                      <div className="bg-primary text-primary-foreground absolute right-2 top-2 rounded-full p-1">
                         <Check className="h-3 w-3" />
                       </div>
                     )}
@@ -293,7 +272,7 @@ export function MediaLibrary({
 
         {/* Footer with pagination */}
         <div className="flex items-center justify-between border-t pt-4">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             {data ? (
               <>
                 Показано {data.items.length} из {data.total}
@@ -306,7 +285,7 @@ export function MediaLibrary({
           <div className="flex items-center gap-2">
             {/* Pagination */}
             {data && data.totalPages > 1 && (
-              <div className="flex items-center gap-1 mr-4">
+              <div className="mr-4 flex items-center gap-1">
                 <Button
                   variant="outline"
                   size="icon"
@@ -316,7 +295,7 @@ export function MediaLibrary({
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-sm px-2">
+                <span className="px-2 text-sm">
                   {page} / {data.totalPages}
                 </span>
                 <Button

@@ -1,35 +1,28 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  boolean,
-  index,
-  pgEnum,
-  text,
-  timestamp,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { boolean, index, pgEnum, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 import { createTable } from "./create-table";
 import { users } from "./users";
 
 // Типы уведомлений
 export const notificationTypeEnum = pgEnum("notification_type_enum", [
-  "claim_submitted",      // Заявка подана
-  "claim_approved",       // Заявка одобрена
-  "claim_rejected",       // Заявка отклонена
-  "claim_cancelled",      // Заявка отменена
-  "claim_documents",      // Запрос документов
-  "tenant_claim",         // Заявка жильца на вашу собственность
-  "property_revoked",     // Права отозваны
-  "message",              // Сообщение от пользователя
-  "system",               // Системное уведомление
-  "admin",                // Уведомление от админа
+  "claim_submitted", // Заявка подана
+  "claim_approved", // Заявка одобрена
+  "claim_rejected", // Заявка отклонена
+  "claim_cancelled", // Заявка отменена
+  "claim_documents", // Запрос документов
+  "tenant_claim", // Заявка жильца на вашу собственность
+  "property_revoked", // Права отозваны
+  "message", // Сообщение от пользователя
+  "system", // Системное уведомление
+  "admin", // Уведомление от админа
 ]);
 
 // Категории для группировки в UI
 export const notificationCategoryEnum = pgEnum("notification_category_enum", [
-  "claims",       // Заявки и права
-  "messages",     // Сообщения
-  "system",       // Системные
+  "claims", // Заявки и права
+  "messages", // Сообщения
+  "system", // Системные
 ]);
 
 export const notifications = createTable(
@@ -46,8 +39,9 @@ export const notifications = createTable(
       .references(() => users.id, { onDelete: "cascade" }),
 
     // Отправитель (null для системных уведомлений)
-    fromUserId: varchar("from_user_id", { length: 255 })
-      .references(() => users.id, { onDelete: "set null" }),
+    fromUserId: varchar("from_user_id", { length: 255 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
 
     // Тип и категория
     type: notificationTypeEnum("type").notNull(),
@@ -78,7 +72,7 @@ export const notifications = createTable(
     index("notification_user_unread_idx").on(table.userId, table.isRead),
     index("notification_created_at_idx").on(table.createdAt),
     index("notification_entity_idx").on(table.entityType, table.entityId),
-  ],
+  ]
 );
 
 export const notificationsRelations = relations(notifications, ({ one }) => ({
