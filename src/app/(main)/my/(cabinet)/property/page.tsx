@@ -268,6 +268,7 @@ export default function PropertyPage() {
             claimedRole,
             apartmentId: data.type === "apartment" ? data.propertyId : undefined,
             parkingSpotId: data.type === "parking" ? data.propertyId : undefined,
+            documents: data.documents,
           });
         }}
         isSubmitting={createClaim.isPending}

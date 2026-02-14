@@ -560,6 +560,12 @@ export default function AdminClaimsPage() {
                         >
                           {STATUS_LABELS[claim.status]}
                         </Badge>
+                        {claim.documents && claim.documents.length > 0 && (
+                          <Badge variant="outline" className="gap-1">
+                            <FileText className="h-3 w-3" />
+                            {claim.documents.length}
+                          </Badge>
+                        )}
                       </div>
 
                       <div className="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
