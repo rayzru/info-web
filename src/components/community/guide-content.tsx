@@ -234,7 +234,7 @@ export function GuideContent() {
 
               <div className="pt-2">
                 <Button variant="outline" asChild>
-                  <Link href="/my/property/add">
+                  <Link href="/my/property">
                     <FileCheck className="mr-2 h-4 w-4" />
                     Добавить недвижимость
                   </Link>
