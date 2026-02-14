@@ -263,30 +263,6 @@ export function ClaimDocumentUploader({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Info Alert */}
-      <Alert>
-        <ShieldCheck className="h-4 w-4" />
-        <AlertTitle>Зачем нужны документы?</AlertTitle>
-        <AlertDescription className="space-y-2 text-sm">
-          <p>
-            Для подтверждения права собственности или проживания нам необходимы документы. Это
-            защищает вас и других жильцов от мошенничества.
-          </p>
-          <p className="font-medium">Какие документы подойдут:</p>
-          <ul className="text-muted-foreground list-inside list-disc space-y-1">
-            <li>Выписка из ЕГРН (подтверждает право собственности)</li>
-            <li>Договор купли-продажи или дарения</li>
-            <li>Договор аренды (для проживающих)</li>
-            <li>Страница паспорта с пропиской</li>
-          </ul>
-          <p className="text-muted-foreground mt-2 text-xs">
-            <strong>Конфиденциальность:</strong> Документы используются только для проверки заявки и
-            автоматически удаляются после её рассмотрения. Если у вас есть сомнения, вы можете
-            показать документы лично администратору.
-          </p>
-        </AlertDescription>
-      </Alert>
-
       {/* Drop Zone */}
       {canAddMore && !disabled && (
         <div
