@@ -2,9 +2,24 @@
 
 ## Quick Navigation
 
-- **[AGENT_LIST.md](AGENT_LIST.md)** – Available AI agents for development workflows
-- **[MCP_GUIDE.md](MCP_GUIDE.md)** – MCP server setup (Playwright, Chrome DevTools, Codex, Figma)
-- **[.claude/instructions/](.claude/instructions/)** – Workflow instructions
+### Documentation
+- **[docs/](docs/)** – Complete project documentation
+  - [Architecture](docs/architecture/) – System design, [tech stack](docs/architecture/technology-stack.md), NFRs
+  - [Development](docs/development/) – Setup, database, MCP servers
+  - [Guides](docs/guides/) – Frontend, backend, testing patterns
+  - [API](docs/api/) – API documentation
+
+### AI Configuration
+- **[.claude/](.claude/)** – Claude Code configuration
+  - [Agents](.claude/agents/) – AI agents ([core](.claude/agents/core/), [specialists](.claude/agents/specialists/), [testing](.claude/agents/testing/))
+  - [Skills](.claude/skills/) – Reusable skills
+  - [Workflows](.claude/workflows/) – Standard workflows
+  - [Guidelines](.claude/guidelines/) – Coding standards
+  - [Plans](.claude/plans/) – Implementation plans
+
+### Quick Links
+- **[AGENT_LIST.md](AGENT_LIST.md)** – Agent catalog (quick reference)
+- **[MCP_GUIDE.md](MCP_GUIDE.md)** – MCP server setup
 
 ## Repository
 
