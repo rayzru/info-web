@@ -1,5 +1,34 @@
 # sr2-t3
 
+## 0.4.4
+
+### Patch Changes
+
+- **Fix: News Cover Images**
+  - Added `media.sr2.ru` to Next.js `remotePatterns` configuration
+  - Fixed cover images not displaying on news pages (only visible in admin panel)
+  - Images from S3 CDN (media.sr2.ru) now properly optimized by Next.js Image API
+
+- **DevOps: Changesets Integration**
+  - Installed and configured `@changesets/cli` for automated versioning
+  - Synchronized package.json version (0.4.1 → 0.4.4)
+  - Added automated release workflow preparation
+
+## 0.4.3
+
+### Patch Changes
+
+- **DevOps: Deployment Workflow Fixes**
+  - Fixed prune script variable expansion issues
+  - Improved release cleanup logging
+
+## 0.4.2
+
+### Patch Changes
+
+- **DevOps: Prune Script Improvements**
+  - Enhanced variable expansion in cleanup workflow
+
 ## 0.4.1
 
 ### Patch Changes
