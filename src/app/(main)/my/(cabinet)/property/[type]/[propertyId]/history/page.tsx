@@ -173,7 +173,10 @@ export default function PropertyHistoryPage() {
         const changedByName = historyEntry.changedByUser?.name ?? "Система";
         // Check if changedBy user has admin role
         const changedByUserRoles = historyEntry.changedByUser?.roles?.map((r) => r.role) ?? [];
-        const actorIsAdmin = changedByUserRoles.includes("admin");
+        const actorIsAdmin =
+          changedByUserRoles.includes("Admin") ||
+          changedByUserRoles.includes("SuperAdmin") ||
+          changedByUserRoles.includes("Root");
 
         timelineEvents.push({
           id: historyEntry.id,
