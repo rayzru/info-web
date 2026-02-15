@@ -36,7 +36,7 @@ interface TypeFormProps {
 
 export function TypeForm({ value, onChange }: TypeFormProps) {
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-3 gap-2">
       <button
         type="button"
         onClick={() => onChange("apartment")}

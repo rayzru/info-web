@@ -160,10 +160,11 @@ export default function PropertyPage() {
         claim.status === "approved" ||
         (claim.status === "pending" && existing.latestStatus !== "approved")
       ) {
+        const buildingNum = claim.apartment.floor?.entrance?.building?.number;
         propertyMap.set(key, {
           id: claim.apartment.id,
           type: "apartment",
-          label: `Квартира ${claim.apartment.number}, строение ${claim.apartment.floor?.entrance?.building?.number}`,
+          label: `кв. ${claim.apartment.number}\nСтроение ${buildingNum ?? "?"}`,
           role: claim.claimedRole,
           latestStatus: claim.status,
           isConfirmed: confirmedApartmentIds.has(claim.apartment.id),
@@ -180,10 +181,13 @@ export default function PropertyPage() {
         claim.status === "approved" ||
         (claim.status === "pending" && existing.latestStatus !== "approved")
       ) {
+        const buildingNum = claim.parkingSpot.floor?.parking?.building?.number;
+        const floorNum = claim.parkingSpot.floor?.floorNumber;
+        const floorLabel = floorNum !== undefined ? ` (${floorNum} э)` : "";
         propertyMap.set(key, {
           id: claim.parkingSpot.id,
           type: "parking",
-          label: `Машиноместо ${claim.parkingSpot.number}, этаж ${claim.parkingSpot.floor?.floorNumber}, строение ${claim.parkingSpot.floor?.parking?.building?.number}`,
+          label: `м/м. ${claim.parkingSpot.number}${floorLabel}\nСтроение ${buildingNum ?? "?"}`,
           role: claim.claimedRole,
           latestStatus: claim.status,
           isConfirmed: confirmedParkingIds.has(claim.parkingSpot.id),
@@ -219,7 +223,7 @@ export default function PropertyPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {allProperties.map((property) => (
             <PropertyCard
               key={`${property.type}-${property.id}`}
@@ -228,18 +232,6 @@ export default function PropertyPage() {
               label={property.label}
               role={property.role}
               status={property.latestStatus}
-              isConfirmed={property.isConfirmed}
-              currentUserId={currentUserId}
-              onRevoke={() => setPropertyToRevoke(property)}
-              onCancelClaim={(claimId) => cancelClaimMutation.mutate({ claimId })}
-              onReviewTenantClaim={(claimId, action, userName) =>
-                setClaimToReview({
-                  id: claimId,
-                  action,
-                  userName,
-                  propertyLabel: property.label,
-                })
-              }
             />
           ))}
         </div>

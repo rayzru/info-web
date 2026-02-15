@@ -974,9 +974,39 @@ export const claimsRouter = createTRPCRouter({
               : eq(propertyClaims.parkingSpotId, input.propertyId),
           with: {
             user: true,
+            apartment: {
+              with: {
+                floor: {
+                  with: {
+                    entrance: {
+                      with: {
+                        building: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            parkingSpot: {
+              with: {
+                floor: {
+                  with: {
+                    parking: {
+                      with: {
+                        building: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
             history: {
               with: {
-                changedByUser: true,
+                changedByUser: {
+                  with: {
+                    roles: true,
+                  },
+                },
               },
               orderBy: desc(claimHistory.createdAt),
             },
