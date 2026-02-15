@@ -253,7 +253,7 @@ jobs:
           fi
 
           echo "=== Pruning old releases (keep 5) ==="
-          ssh "$USER@$HOST" 'bash -s' << 'ENDSSH'
+          ssh "$USER@$HOST" "bash -s" << ENDSSH
           set -euo pipefail
           KEEP_COUNT=5
           cd $TARGET/releases || exit 1
