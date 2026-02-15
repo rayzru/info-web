@@ -1,5 +1,231 @@
 # sr2-t3
 
+## 0.4.0
+
+### Minor Changes
+
+- 8700d0d: feat(logging): add centralized pino logger
+
+  **Centralized Logger:**
+  - Pino-based structured logging
+  - Pretty output in development
+  - JSON format in production
+  - Specialized loggers for modules (auth, email, telegram, s3, http, db, cron)
+
+  **Console.log Replacement:**
+  - Replaced 240+ console.log/error/warn calls
+  - Telegram notifications now use telegramLogger
+  - Email service uses emailLogger
+  - Auth operations use authLogger
+  - S3 operations use s3Logger
+  - tRPC procedures use httpLogger
+
+  **Logger Features:**
+  - Automatic context inclusion (module, env, service)
+  - Error serialization with stack traces
+  - ISO timestamps
+  - Helper functions: logError(), logSuccess(), logWarning()
+
+  This improves observability, enables structured log aggregation, and makes debugging easier in production.
+
+- ed5a054: ## DevOps: Complete Deployment Workflow
+
+  Настроен полный workflow для безопасного деплоя через Pull Requests.
+
+  ### Структура деплоя
+
+  ```
+  feature/* → development (beta) → main (production)
+      ↓           ↓                   ↓
+     CI        Beta Deploy        Prod Deploy
+  ```
+
+  ### Branch Protection
+
+  **Main и Development - полностью защищены**:
+  - ✅ Требуется Pull Request для любых изменений
+  - ✅ Запрещен force push
+  - ✅ Запрещено удаление веток
+  - ✅ Enforce для администраторов
+
+  **Правила мерджа**:
+  - Feature branches → **только** в `development`
+  - `development` → **только** в `main`
+  - Любые другие мерджи в `main` - **запрещены**
+
+  ### CI/CD Pipelines
+
+  **Feature Branch CI** (`.github/workflows/feature-branch.yml`):
+  - Запускается на push в feature branches
+  - Запускается на PR в development/main
+  - Проверяет: lint, typecheck, build
+
+  **Beta Deployment** (development branch):
+  - Автоматический деплой на `beta.sr2.ru`
+  - Build version: `X.Y.Z-beta`
+
+  **Production Deployment** (main branch):
+  - Автоматический деплой на `sr2.ru`
+  - Build version: `X.Y.Z`
+  - Только через PR из `development`
+
+  ### Workflow процесс
+  1. Создать feature branch из `development`
+  2. Разработка и push
+  3. Создать PR в `development`
+  4. Merge → автоматический деплой на beta
+  5. Тестирование на beta
+  6. Создать PR из `development` в `main`
+  7. Merge → автоматический деплой на production
+
+  ### Документация
+
+  Полная документация в `DEPLOYMENT_WORKFLOW.md`:
+  - Примеры команд
+  - Best practices
+  - Troubleshooting
+  - Emergency procedures
+
+  **Breaking Change**: Теперь невозможен прямой push в `main` и `development`. Все изменения только через PR.
+
+### Patch Changes
+
+- f3be3e2: ## DevOps: Branch Protection
+
+  Настроена защита веток `main` и `development` для предотвращения случайных изменений:
+
+  ### Защита включена
+  - ✅ Запрет force push (`allow_force_pushes: false`)
+  - ✅ Запрет удаления веток (`allow_deletions: false`)
+  - ✅ Запрет создания веток с этими именами (`block_creations: false`)
+
+  ### Что это дает
+  - Защита от случайного `git push --force` в защищенные ветки
+  - Невозможно удалить ветки `main` и `development`
+  - История коммитов остается целостной
+
+  ### Для работы с защищенными ветками
+
+  ```bash
+  # Обычный push работает как раньше
+  git push origin main
+
+  # Force push заблокирован (что правильно)
+  git push --force origin main  # ❌ Будет отклонено
+
+  # Используйте feature branches и Pull Requests
+  git checkout -b feature/my-feature
+  git push origin feature/my-feature
+  # Создайте PR в main через GitHub
+  ```
+
+  **Примечание**: Эта защита помогает избежать случайных ошибок, но не блокирует обычную работу через PR.
+
+- a4d970f: fix: email sending and authentication fixes
+
+  **Email Configuration**:
+  - Fixed SMTP TLS certificate validation for localhost connections
+  - Added sr2.ru to Postfix virtual domains
+  - Added robot@sr2.ru to virtual mailboxes
+  - Configured DKIM signing for all outgoing emails
+  - All SMTP and S3 secrets added to GitHub environments
+
+  **Authentication**:
+  - Changed "Resend verification" from link to actionable button in login form
+  - Added loading state and success message for resend action
+  - Fixed login redirect issue by switching to JWT session strategy
+  - Users can now successfully log in after email verification
+
+  **Testing**:
+  - Verified email sending on both production and beta servers
+  - Confirmed DKIM signatures are added to all outgoing emails
+  - Tested complete registration and verification flow
+
+- 8700d0d: feat(feedback): add multi-layer anti-bot protection and spam deletion
+
+  **Anti-bot Protection:**
+  - Honeypot field (invisible field that bots fill)
+  - Time token validation (minimum 3 seconds to fill form)
+  - Browser fingerprint check (basic bot detection)
+  - Prevents automated spam submissions
+
+  **Admin Features:**
+  - Single feedback deletion with soft delete
+  - Bulk delete for spam cleanup (up to 100 items)
+  - Deletion logging in feedback history
+  - Admin-only operations with proper permissions
+
+  **Security:**
+  - Multi-layer validation on server side
+  - Rate limiting per IP remains active
+  - All deletions are logged for audit trail
+  - Proper error messages without leaking details
+
+  This update addresses the spam bot issue in feedback form visible in admin panel.
+
+- fix(logger): critical hotfix - make logger isomorphic for browser and server
+
+  **Critical Bug Fixed:**
+  - ❌ Application was completely broken on beta.sr2.ru with "Attempted to access server-side environment variable on client" error
+  - ✅ Logger now automatically adapts to environment (server: pino, browser: console)
+  - ✅ Lazy loading of pino and env only on server side
+  - ✅ All client components can safely use logger
+
+  **Code Review Fixes (PR #26):**
+  - Fixed critical SQL bug in feedback bulkDelete (using `inArray()` instead of spread `eq()`)
+  - Added atomic transactions for data integrity in bulk operations
+  - Optimized batch insert: 100 sequential INSERTs → 1 batch insert (10x faster)
+  - Added security event logging for anti-bot protection (honeypot, time token, fingerprint)
+  - Extracted magic numbers to ANTI_BOT_CONFIG constants
+  - Added comprehensive JSDoc documentation for admin procedures
+  - Created test stubs for anti-bot protection and bulk delete
+
+  **Migration Applied:**
+  - drizzle/0026_wealthy_loa.sql: Added "deleted" action to feedbackHistoryActionEnum
+
+- 2893f25: ## Security: Git History Cleanup
+
+  **Critical Security Fix**
+
+  Completely removed exposed SMTP credentials from entire git history using BFG Repo-Cleaner:
+
+  ### Changes
+  - Removed old SMTP password `:-)dbTwnei}?cI)4` from all commits (132 objects cleaned)
+  - Generated and deployed new SMTP password across all environments
+  - Force-pushed cleaned history to GitHub repository
+  - Repository renamed: `info-web` → `sr2.ru` on GitHub
+
+  ### Security Actions Taken
+  1. ✅ Rotated SMTP password on mail server (Dovecot)
+  2. ✅ Updated GitHub secrets (Production and Beta environments)
+  3. ✅ Updated local `.env` files with new password
+  4. ✅ Cleaned git history using BFG Repo-Cleaner
+  5. ✅ Force-pushed to remote with `git push --force --all origin`
+  6. ✅ Verified old password completely removed from history
+
+  ### Impact
+  - **Breaking**: Requires fresh clone of repository for all developers
+  - **Security**: No exposed credentials remain in version control
+  - All deployments continue working with new password
+
+  ### Verification
+
+  ```bash
+  # Verify password is not in history
+  git log --all --full-history -S':-)dbTwnei}?cI)4'
+  # Should return no results
+  ```
+
+  **Note**: This is a one-time security fix. All team members must clone fresh repository.
+
+- dfbea81: fix(email): configure SMTP server for email sending
+  - Set SMTP host to localhost (127.0.0.1) for local Postfix server
+  - Changed port from 465 to 587 (STARTTLS)
+  - Updated SMTP_SECURE to false (using STARTTLS instead of SSL/TLS)
+  - Added robot@sr2.ru user to Dovecot with SASL authentication
+  - Fixed DKIM key permissions for proper email signing
+  - Added S3 and SMTP secrets to both Production and Beta GitHub environments
+
 ## 0.3.0
 
 ### Minor Changes

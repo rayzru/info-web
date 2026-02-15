@@ -63,7 +63,6 @@ function generatePublicationDescription(input: CreatePublicationHistoryInput): s
   switch (input.action) {
     case "submitted":
     case "approved":
-    case "rejected":
     case "archived":
     case "published":
       if (input.fromStatus && input.toStatus) {
@@ -76,6 +75,11 @@ function generatePublicationDescription(input: CreatePublicationHistoryInput): s
     case "rejected":
       if (input.moderationComment) {
         return `${baseLabel}. Причина: ${input.moderationComment}`;
+      }
+      if (input.fromStatus && input.toStatus) {
+        const fromLabel = PUBLICATION_STATUS_LABELS[input.fromStatus];
+        const toLabel = PUBLICATION_STATUS_LABELS[input.toStatus];
+        return `${baseLabel}: ${fromLabel} → ${toLabel}`;
       }
       return baseLabel;
 

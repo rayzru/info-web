@@ -1,4 +1,5 @@
 import { env } from "~/env";
+import { logger } from "~/lib/logger";
 
 // ============================================================================
 // Telegram Bot API Types
@@ -69,7 +70,7 @@ export async function sendTelegramMessage(
   }
 ): Promise<TelegramMessage | null> {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_NEWS_CHANNEL_ID) {
-    console.warn("[Telegram] Bot token or channel ID not configured");
+    logger.warn("[Telegram] Bot token or channel ID not configured");
     return null;
   }
 
@@ -91,13 +92,13 @@ export async function sendTelegramMessage(
     const data = (await response.json()) as TelegramResponse<TelegramMessage>;
 
     if (!data.ok) {
-      console.error("[Telegram] API error:", data.description);
+      logger.error("[Telegram] API error:", data.description);
       return null;
     }
 
     return data.result ?? null;
   } catch (error) {
-    console.error("[Telegram] Send message error:", error);
+    logger.error("[Telegram] Send message error:", error);
     return null;
   }
 }
@@ -114,7 +115,7 @@ export async function sendTelegramPhoto(
   }
 ): Promise<TelegramMessage | null> {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_NEWS_CHANNEL_ID) {
-    console.warn("[Telegram] Bot token or channel ID not configured");
+    logger.warn("[Telegram] Bot token or channel ID not configured");
     return null;
   }
 
@@ -136,13 +137,13 @@ export async function sendTelegramPhoto(
     const data = (await response.json()) as TelegramResponse<TelegramMessage>;
 
     if (!data.ok) {
-      console.error("[Telegram] API error:", data.description);
+      logger.error("[Telegram] API error:", data.description);
       return null;
     }
 
     return data.result ?? null;
   } catch (error) {
-    console.error("[Telegram] Send photo error:", error);
+    logger.error("[Telegram] Send photo error:", error);
     return null;
   }
 }
@@ -188,7 +189,7 @@ export async function publishNewsToTelegram(options: {
     }
 
     // If photo failed (maybe invalid URL), fall back to text message
-    console.warn("[Telegram] Photo send failed, falling back to text");
+    logger.warn("[Telegram] Photo send failed, falling back to text");
   }
 
   // Send as text message
@@ -233,13 +234,13 @@ export async function getChatAdministrators(
   chatId?: string
 ): Promise<TelegramChatAdministrator[] | null> {
   if (!env.TELEGRAM_BOT_TOKEN) {
-    console.warn("[Telegram] Bot token not configured");
+    logger.warn("[Telegram] Bot token not configured");
     return null;
   }
 
   const targetChatId = chatId ?? env.TELEGRAM_ADMIN_CHAT_ID;
   if (!targetChatId) {
-    console.warn("[Telegram] Admin chat ID not configured");
+    logger.warn("[Telegram] Admin chat ID not configured");
     return null;
   }
 
@@ -260,13 +261,13 @@ export async function getChatAdministrators(
     const data = (await response.json()) as TelegramResponse<TelegramChatAdministrator[]>;
 
     if (!data.ok) {
-      console.error("[Telegram] API error:", data.description);
+      logger.error("[Telegram] API error:", data.description);
       return null;
     }
 
     return data.result ?? null;
   } catch (error) {
-    console.error("[Telegram] Get chat administrators error:", error);
+    logger.error("[Telegram] Get chat administrators error:", error);
     return null;
   }
 }
@@ -280,13 +281,13 @@ export async function checkChatMember(
   chatId?: string
 ): Promise<TelegramChatMember | null> {
   if (!env.TELEGRAM_BOT_TOKEN) {
-    console.warn("[Telegram] Bot token not configured");
+    logger.warn("[Telegram] Bot token not configured");
     return null;
   }
 
   const targetChatId = chatId ?? env.TELEGRAM_ADMIN_CHAT_ID;
   if (!targetChatId) {
-    console.warn("[Telegram] Admin chat ID not configured");
+    logger.warn("[Telegram] Admin chat ID not configured");
     return null;
   }
 
@@ -309,13 +310,13 @@ export async function checkChatMember(
       if (data.error_code === 400) {
         return { user: { id: userId, is_bot: false, first_name: "Unknown" }, status: "left" };
       }
-      console.error("[Telegram] API error:", data.description);
+      logger.error("[Telegram] API error:", data.description);
       return null;
     }
 
     return data.result ?? null;
   } catch (error) {
-    console.error("[Telegram] Check chat member error:", error);
+    logger.error("[Telegram] Check chat member error:", error);
     return null;
   }
 }
@@ -325,7 +326,7 @@ export async function checkChatMember(
  */
 export async function getBotInfo(): Promise<TelegramUser | null> {
   if (!env.TELEGRAM_BOT_TOKEN) {
-    console.warn("[Telegram] Bot token not configured");
+    logger.warn("[Telegram] Bot token not configured");
     return null;
   }
 
@@ -337,13 +338,13 @@ export async function getBotInfo(): Promise<TelegramUser | null> {
     const data = (await response.json()) as TelegramResponse<TelegramUser>;
 
     if (!data.ok) {
-      console.error("[Telegram] API error:", data.description);
+      logger.error("[Telegram] API error:", data.description);
       return null;
     }
 
     return data.result ?? null;
   } catch (error) {
-    console.error("[Telegram] Get bot info error:", error);
+    logger.error("[Telegram] Get bot info error:", error);
     return null;
   }
 }

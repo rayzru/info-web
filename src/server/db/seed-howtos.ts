@@ -1,3 +1,5 @@
+import { logger } from "~/lib/logger";
+
 import { eq, inArray } from "drizzle-orm";
 
 import { db } from "./index";
@@ -436,11 +438,11 @@ const HOWTO_ARTICLES: ArticleDefinition[] = [
 // ============== SEED FUNCTION ==============
 
 async function seedHowtos() {
-  console.log("🌱 Seeding HowTo articles for ЖК Сердце Ростова 2...");
+  logger.info("🌱 Seeding HowTo articles for ЖК Сердце Ростова 2...");
 
   try {
     // Clear existing howto data
-    console.log("🧹 Clearing existing howto data...");
+    logger.info("🧹 Clearing existing howto data...");
     await db.delete(knowledgeBaseArticleTags);
     await db.delete(knowledgeBaseArticles);
 
@@ -451,7 +453,7 @@ async function seedHowtos() {
     }
 
     // Insert howto category tags
-    console.log("📁 Inserting howto category tags...");
+    logger.info("📁 Inserting howto category tags...");
     for (const tag of HOWTO_TAGS) {
       await db.insert(directoryTags).values({
         id: tag.id,
@@ -463,10 +465,10 @@ async function seedHowtos() {
         order: tag.order + 200, // Offset to not conflict with directory tags
       });
     }
-    console.log(`  ✓ Inserted ${HOWTO_TAGS.length} howto category tags`);
+    logger.info(`  ✓ Inserted ${HOWTO_TAGS.length} howto category tags`);
 
     // Insert articles
-    console.log("📝 Inserting draft articles...");
+    logger.info("📝 Inserting draft articles...");
     let articleCount = 0;
 
     for (const article of HOWTO_ARTICLES) {
@@ -526,30 +528,30 @@ async function seedHowtos() {
       articleCount++;
     }
 
-    console.log(`  ✓ Inserted ${articleCount} draft articles`);
+    logger.info(`  ✓ Inserted ${articleCount} draft articles`);
 
     // Summary by category
-    console.log("\n✅ HowTo seeding complete!");
-    console.log("");
-    console.log("📊 Summary by category:");
+    logger.info("\n✅ HowTo seeding complete!");
+    logger.info("");
+    logger.info("📊 Summary by category:");
     for (const tag of HOWTO_TAGS) {
       const count = HOWTO_ARTICLES.filter((a) => a.categoryId === tag.id).length;
-      console.log(`  • ${tag.name}: ${count} статей`);
+      logger.info(`  • ${tag.name}: ${count} статей`);
     }
 
-    console.log("");
-    console.log("📝 Priority breakdown:");
+    logger.info("");
+    logger.info("📝 Priority breakdown:");
     const p1 = HOWTO_ARTICLES.filter((a) => a.priority === 1).length;
     const p2 = HOWTO_ARTICLES.filter((a) => a.priority === 2).length;
     const p3 = HOWTO_ARTICLES.filter((a) => a.priority === 3).length;
-    console.log(`  ⭐⭐⭐ High priority: ${p1} статей`);
-    console.log(`  ⭐⭐ Medium priority: ${p2} статей`);
-    console.log(`  ⭐ Low priority: ${p3} статей`);
+    logger.info(`  ⭐⭐⭐ High priority: ${p1} статей`);
+    logger.info(`  ⭐⭐ Medium priority: ${p2} статей`);
+    logger.info(`  ⭐ Low priority: ${p3} статей`);
 
-    console.log("");
-    console.log("💡 All articles created as DRAFTS. Use admin panel to edit and publish.");
+    logger.info("");
+    logger.info("💡 All articles created as DRAFTS. Use admin panel to edit and publish.");
   } catch (error) {
-    console.error("❌ Error seeding howtos:", error);
+    logger.error("❌ Error seeding howtos:", error);
     throw error;
   }
 

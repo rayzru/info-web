@@ -1,3 +1,5 @@
+import { logger } from "~/lib/logger";
+
 import type { JSONContent } from "@tiptap/react";
 import { inArray } from "drizzle-orm";
 
@@ -3717,11 +3719,11 @@ const ARTICLES: ArticleWithContent[] = [
 // ============== SEED FUNCTION ==============
 
 async function seedHowtosWithContent() {
-  console.log("🌱 Seeding HowTo articles (ATOMIC structure)...");
+  logger.info("🌱 Seeding HowTo articles (ATOMIC structure)...");
 
   try {
     // Clear existing data
-    console.log("🧹 Clearing existing howto data...");
+    logger.info("🧹 Clearing existing howto data...");
     await db.delete(knowledgeBaseArticleTags);
     await db.delete(knowledgeBaseArticles);
 
@@ -3731,7 +3733,7 @@ async function seedHowtosWithContent() {
     }
 
     // Insert tags
-    console.log("📁 Inserting category tags...");
+    logger.info("📁 Inserting category tags...");
     for (const tag of HOWTO_TAGS) {
       await db.insert(directoryTags).values({
         id: tag.id,
@@ -3743,10 +3745,10 @@ async function seedHowtosWithContent() {
         order: tag.order + 200,
       });
     }
-    console.log(`  ✓ Inserted ${HOWTO_TAGS.length} tags`);
+    logger.info(`  ✓ Inserted ${HOWTO_TAGS.length} tags`);
 
     // Insert articles
-    console.log("📝 Inserting articles with content...");
+    logger.info("📝 Inserting articles with content...");
     for (const article of ARTICLES) {
       const articleId = crypto.randomUUID();
 
@@ -3767,17 +3769,17 @@ async function seedHowtosWithContent() {
         tagId: article.categoryId,
       });
     }
-    console.log(`  ✓ Inserted ${ARTICLES.length} articles`);
+    logger.info(`  ✓ Inserted ${ARTICLES.length} articles`);
 
-    console.log("\n✅ HowTo seeding complete!");
-    console.log("");
-    console.log("📊 Articles by category:");
+    logger.info("\n✅ HowTo seeding complete!");
+    logger.info("");
+    logger.info("📊 Articles by category:");
     for (const tag of HOWTO_TAGS) {
       const count = ARTICLES.filter((a) => a.categoryId === tag.id).length;
-      console.log(`  • ${tag.name}: ${count}`);
+      logger.info(`  • ${tag.name}: ${count}`);
     }
   } catch (error) {
-    console.error("❌ Error seeding howtos:", error);
+    logger.error("❌ Error seeding howtos:", error);
     throw error;
   }
 

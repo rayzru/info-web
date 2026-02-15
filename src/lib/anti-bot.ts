@@ -20,11 +20,7 @@ export function generateTimeToken(): string {
  * @param maxSeconds - Maximum seconds before token expires (default: 600 = 10 min)
  * @returns true if token is valid
  */
-export function validateTimeToken(
-  token: string,
-  minSeconds: number = 3,
-  maxSeconds: number = 600
-): boolean {
+export function validateTimeToken(token: string, minSeconds = 3, maxSeconds = 600): boolean {
   try {
     const timestamp = parseInt(Buffer.from(token, "base64").toString("utf-8"), 10);
 

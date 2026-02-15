@@ -1,6 +1,8 @@
 import { readFile } from "fs/promises";
 import { join } from "path";
 
+import { emailLogger } from "~/lib/logger";
+
 import { emailConfig, getTransporter } from "./config";
 
 /**
@@ -174,7 +176,10 @@ export async function sendEmail<T extends EmailTemplateId>(
       html,
     });
 
-    console.log(`Email sent: ${templateId} to ${to}, messageId: ${info.messageId}`);
+    emailLogger.info(
+      { templateId, to, messageId: info.messageId },
+      "Email sent successfully"
+    );
 
     return {
       success: true,
@@ -182,7 +187,7 @@ export async function sendEmail<T extends EmailTemplateId>(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error(`Failed to send email ${templateId} to ${to}:`, error);
+    emailLogger.error({ err: error, templateId, to }, "Failed to send email");
 
     return {
       success: false,
@@ -198,10 +203,10 @@ export async function verifyEmailConnection(): Promise<boolean> {
   try {
     const transporter = getTransporter();
     await transporter.verify();
-    console.log("SMTP connection verified successfully");
+    emailLogger.info("SMTP connection verified successfully");
     return true;
   } catch (error) {
-    console.error("SMTP connection verification failed:", error);
+    emailLogger.error("SMTP connection verification failed", error);
     return false;
   }
 }

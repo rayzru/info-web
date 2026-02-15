@@ -11,6 +11,8 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
+import { httpLogger } from "~/lib/logger";
+
 import { auth } from "~/server/auth";
 import { type AdminFeature, hasFeatureAccess, isAdmin, type UserRole } from "~/server/auth/rbac";
 import { db } from "~/server/db";
@@ -96,7 +98,8 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   const result = await next();
 
   const end = Date.now();
-  console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
+  const duration = end - start;
+  httpLogger.debug({ path, duration }, "tRPC procedure executed");
 
   return result;
 });

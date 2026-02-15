@@ -589,12 +589,8 @@ export default function AdminFeedbackPage() {
 
                   {/* Content */}
                   <div className="min-w-0 flex-1">
-                    {item.title && (
-                      <div className="truncate font-medium">{item.title}</div>
-                    )}
-                    <p className="text-muted-foreground line-clamp-1 text-sm">
-                      {item.content}
-                    </p>
+                    {item.title && <div className="truncate font-medium">{item.title}</div>}
+                    <p className="text-muted-foreground line-clamp-1 text-sm">{item.content}</p>
                   </div>
 
                   {/* Contact */}
@@ -617,9 +613,7 @@ export default function AdminFeedbackPage() {
 
                   {/* Status */}
                   <div className="w-28">
-                    <Badge variant={STATUS_COLORS[item.status]}>
-                      {STATUS_LABELS[item.status]}
-                    </Badge>
+                    <Badge variant={STATUS_COLORS[item.status]}>{STATUS_LABELS[item.status]}</Badge>
                   </div>
 
                   {/* Actions */}
@@ -662,23 +656,17 @@ export default function AdminFeedbackPage() {
                       <div className="min-w-0">
                         <div className="text-sm font-medium">{TYPE_LABELS[item.type]}</div>
                         {item.title && (
-                          <div className="text-muted-foreground truncate text-xs">
-                            {item.title}
-                          </div>
+                          <div className="text-muted-foreground truncate text-xs">{item.title}</div>
                         )}
                       </div>
                     </div>
                   </div>
 
                   <div className="mb-3 flex flex-wrap gap-2">
-                    <Badge variant={STATUS_COLORS[item.status]}>
-                      {STATUS_LABELS[item.status]}
-                    </Badge>
+                    <Badge variant={STATUS_COLORS[item.status]}>{STATUS_LABELS[item.status]}</Badge>
                   </div>
 
-                  <p className="text-muted-foreground mb-2 line-clamp-2 text-sm">
-                    {item.content}
-                  </p>
+                  <p className="text-muted-foreground mb-2 line-clamp-2 text-sm">{item.content}</p>
 
                   <div className="text-muted-foreground flex items-center gap-2 text-xs">
                     {item.contactName && (

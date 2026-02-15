@@ -88,13 +88,10 @@ const navigationItems: NavigationEntry[] = [
 export default function CabinetLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const { data: unreadCount } = api.notifications.unreadCount.useQuery(
-    undefined,
-    {
-      enabled: !!session?.user, // Only fetch if user is logged in
-      refetchInterval: 30000, // Refetch every 30 seconds
-    }
-  );
+  const { data: unreadCount } = api.notifications.unreadCount.useQuery(undefined, {
+    enabled: !!session?.user, // Only fetch if user is logged in
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
 
   const isAdmin = session?.user?.isAdmin;
 

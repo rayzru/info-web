@@ -1,3 +1,5 @@
+import { logger } from "~/lib/logger";
+
 import { asc } from "drizzle-orm";
 import { writeFileSync } from "fs";
 import { join } from "path";
@@ -46,18 +48,18 @@ interface MigrationPlan {
 }
 
 async function analyzeMigration(): Promise<MigrationPlan> {
-  console.log("🔍 Анализируем миграцию...\n");
+  logger.info("🔍 Анализируем миграцию...\n");
 
   const prodDbUrl = process.env.PROD_DATABASE_URL || env.DATABASE_URL;
   if (prodDbUrl === env.DATABASE_URL) {
-    console.warn("⚠️  PROD_DATABASE_URL не задан, используется DATABASE_URL\n");
+    logger.warn("⚠️  PROD_DATABASE_URL не задан, используется DATABASE_URL\n");
   }
 
   const prodDb = postgres(prodDbUrl, { max: 1 });
 
   try {
     // Получаем локальные данные
-    console.log("📊 Читаем локальные данные...");
+    logger.info("📊 Читаем локальные данные...");
     const [
       localBuildings,
       localEntrances,
@@ -76,13 +78,13 @@ async function analyzeMigration(): Promise<MigrationPlan> {
       db.query.parkingSpots.findMany(),
     ]);
 
-    console.log("   ✅ Локально:");
-    console.log(`      - Строений: ${localBuildings.length}`);
-    console.log(`      - Квартир: ${localApartments.length}`);
-    console.log(`      - Парковочных мест: ${localParkingSpots.length}\n`);
+    logger.info("   ✅ Локально:");
+    logger.info(`      - Строений: ${localBuildings.length}`);
+    logger.info(`      - Квартир: ${localApartments.length}`);
+    logger.info(`      - Парковочных мест: ${localParkingSpots.length}\n`);
 
     // Получаем prod данные
-    console.log("📊 Читаем prod данные...");
+    logger.info("📊 Читаем prod данные...");
     const [
       prodBuildings,
       prodEntrances,
@@ -101,17 +103,17 @@ async function analyzeMigration(): Promise<MigrationPlan> {
       prodDb`SELECT * FROM parking_spot`,
     ]);
 
-    console.log("   ✅ В prod:");
-    console.log(`      - Строений: ${prodBuildings.length}`);
-    console.log(`      - Квартир: ${prodApartments.length}`);
-    console.log(`      - Парковочных мест: ${prodParkingSpots.length}\n`);
+    logger.info("   ✅ В prod:");
+    logger.info(`      - Строений: ${prodBuildings.length}`);
+    logger.info(`      - Квартир: ${prodApartments.length}`);
+    logger.info(`      - Парковочных мест: ${prodParkingSpots.length}\n`);
 
     // Создаем индексы по уникальным ключам
     const prodBuildingsByNumber = new Map(prodBuildings.map((b: any) => [b.number, b]));
     const prodApartmentsByNumber = new Map(prodApartments.map((a: any) => [a.number, a]));
     const prodParkingSpotsByNumber = new Map(prodParkingSpots.map((ps: any) => [ps.number, ps]));
 
-    console.log("🔎 Анализируем различия...\n");
+    logger.info("🔎 Анализируем различия...\n");
 
     // Buildings
     const buildingsToUpdate: any[] = [];
@@ -165,22 +167,22 @@ async function analyzeMigration(): Promise<MigrationPlan> {
       }
     }
 
-    console.log("📋 Результаты анализа:");
-    console.log("\n🏢 Строения:");
-    console.log(`   - Для обновления: ${buildingsToUpdate.length}`);
-    console.log(`   - Для добавления: ${buildingsToInsert.length}`);
+    logger.info("📋 Результаты анализа:");
+    logger.info("\n🏢 Строения:");
+    logger.info(`   - Для обновления: ${buildingsToUpdate.length}`);
+    logger.info(`   - Для добавления: ${buildingsToInsert.length}`);
 
-    console.log("\n🏠 Квартиры (КРИТИЧНО - связи с user_apartment):");
-    console.log(`   - Для обновления: ${apartmentsToUpdate.length}`);
-    console.log(`   - Для добавления: ${apartmentsToInsert.length}`);
-    console.log(
+    logger.info("\n🏠 Квартиры (КРИТИЧНО - связи с user_apartment):");
+    logger.info(`   - Для обновления: ${apartmentsToUpdate.length}`);
+    logger.info(`   - Для добавления: ${apartmentsToInsert.length}`);
+    logger.info(
       `   - Без изменений: ${localApartments.length - apartmentsToUpdate.length - apartmentsToInsert.length}`
     );
 
-    console.log("\n🚗 Парковочные места (КРИТИЧНО - связи с user_parking_spot):");
-    console.log(`   - Для обновления: ${parkingSpotsToUpdate.length}`);
-    console.log(`   - Для добавления: ${parkingSpotsToInsert.length}`);
-    console.log(
+    logger.info("\n🚗 Парковочные места (КРИТИЧНО - связи с user_parking_spot):");
+    logger.info(`   - Для обновления: ${parkingSpotsToUpdate.length}`);
+    logger.info(`   - Для добавления: ${parkingSpotsToInsert.length}`);
+    logger.info(
       `   - Без изменений: ${localParkingSpots.length - parkingSpotsToUpdate.length - parkingSpotsToInsert.length}\n`
     );
 
@@ -421,42 +423,42 @@ async function main() {
       plan.parkingSpotsToInsert.length;
 
     if (totalChanges === 0) {
-      console.log("✅ Структура ЖК в prod актуальна!");
-      console.log("   Нет изменений для применения.\n");
+      logger.info("✅ Структура ЖК в prod актуальна!");
+      logger.info("   Нет изменений для применения.\n");
       return;
     }
 
-    console.log("📝 Генерирую SQL миграцию...\n");
+    logger.info("📝 Генерирую SQL миграцию...\n");
     const sql = generateMigrationSQL(plan);
 
     const outputPath = join(process.cwd(), "drizzle", "migrate-buildings-safe.sql");
     writeFileSync(outputPath, sql, "utf-8");
 
-    console.log("✅ SQL файл создан!");
-    console.log(`📄 Файл: ${outputPath}`);
-    console.log(`📊 Размер: ${(sql.length / 1024).toFixed(2)} KB\n`);
+    logger.info("✅ SQL файл создан!");
+    logger.info(`📄 Файл: ${outputPath}`);
+    logger.info(`📊 Размер: ${(sql.length / 1024).toFixed(2)} KB\n`);
 
-    console.log("⚠️  ВАЖНЫЕ ИНСТРУКЦИИ:");
-    console.log("1. 📋 Проверьте файл перед применением");
-    console.log("2. 💾 Сделайте бэкап prod БД:");
-    console.log("   pg_dump $PROD_DATABASE_URL > backup-$(date +%Y%m%d-%H%M%S).sql");
-    console.log("3. ✅ Примените миграцию:");
-    console.log(`   psql $PROD_DATABASE_URL -f ${outputPath}`);
-    console.log("4. 🔍 Проверьте связи пользователей:");
-    console.log("   SELECT COUNT(*) FROM user_apartment;");
-    console.log("   SELECT COUNT(*) FROM user_parking_spot;\n");
+    logger.info("⚠️  ВАЖНЫЕ ИНСТРУКЦИИ:");
+    logger.info("1. 📋 Проверьте файл перед применением");
+    logger.info("2. 💾 Сделайте бэкап prod БД:");
+    logger.info("   pg_dump $PROD_DATABASE_URL > backup-$(date +%Y%m%d-%H%M%S).sql");
+    logger.info("3. ✅ Примените миграцию:");
+    logger.info(`   psql $PROD_DATABASE_URL -f ${outputPath}`);
+    logger.info("4. 🔍 Проверьте связи пользователей:");
+    logger.info("   SELECT COUNT(*) FROM user_apartment;");
+    logger.info("   SELECT COUNT(*) FROM user_parking_spot;\n");
   } catch (error) {
-    console.error("❌ Ошибка:", error);
+    logger.error("❌ Ошибка:", error);
     process.exit(1);
   }
 }
 
 main()
   .then(() => {
-    console.log("✨ Готово!");
+    logger.info("✨ Готово!");
     process.exit(0);
   })
   .catch((error) => {
-    console.error("❌ Ошибка:", error);
+    logger.error("❌ Ошибка:", error);
     process.exit(1);
   });

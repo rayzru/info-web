@@ -43,6 +43,7 @@ export const feedbackHistoryActionEnum = pgEnum("feedback_history_action_enum", 
   "note_added", // Добавлена заметка
   "closed", // Закрыто
   "reopened", // Переоткрыто
+  "deleted", // Удалено
 ]);
 
 // ============================================================================
@@ -311,4 +312,5 @@ export const FEEDBACK_HISTORY_ACTION_LABELS: Record<FeedbackHistoryAction, strin
   note_added: "Добавлена заметка",
   closed: "Закрыто",
   reopened: "Переоткрыто",
+  deleted: "Удалено",
 };

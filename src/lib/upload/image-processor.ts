@@ -1,3 +1,4 @@
+import { logger } from "~/lib/logger";
 import { randomUUID } from "crypto";
 import sharp from "sharp";
 
@@ -278,13 +279,13 @@ export async function deleteImage(urlOrPath: string): Promise<boolean> {
     // Extract S3 key from URL
     const s3Key = extractS3Key(urlOrPath);
     if (!s3Key) {
-      console.error("Invalid S3 URL:", urlOrPath);
+      logger.error("Invalid S3 URL:", urlOrPath);
       return false;
     }
 
     return await deleteFromS3(s3Key);
   } catch (error) {
-    console.error("Failed to delete image:", error);
+    logger.error("Failed to delete image:", error);
     return false;
   }
 }
