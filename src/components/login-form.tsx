@@ -22,6 +22,7 @@ import { Input } from "~/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
 import { type LoginFormData, loginFormSchema } from "~/lib/validations/auth";
+import { api } from "~/trpc/react";
 
 import { VkIdStack } from "./auth/vk-id-stack";
 
@@ -33,6 +34,7 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
   const errorParam = searchParams.get("error");
 
   const [isLoading, setIsLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   // Маппинг серверных ошибок (из URL или code параметра)
   const codeParam = searchParams.get("code");
@@ -59,6 +61,18 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
     codeParam === "EMAIL_NOT_VERIFIED" || errorParam === "EMAIL_NOT_VERIFIED"
   );
 
+  // Mutation for resending verification email
+  const resendVerificationMutation = api.auth.resendVerificationEmail.useMutation({
+    onSuccess: () => {
+      setResendSuccess(true);
+      setShowResendLink(false);
+      setTimeout(() => setResendSuccess(false), 5000); // Hide success message after 5 seconds
+    },
+    onError: (error) => {
+      setServerError(error.message);
+    },
+  });
+
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -73,9 +87,19 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
   const password = form.watch("password");
   const canSubmit = email.includes("@") && password.length >= 1;
 
+  const handleResendVerification = async () => {
+    const emailValue = form.getValues("email");
+    if (!emailValue) {
+      setServerError("Введите email для повторной отправки");
+      return;
+    }
+    await resendVerificationMutation.mutateAsync({ email: emailValue });
+  };
+
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setServerError(null);
+    setResendSuccess(false);
 
     try {
       const result = await signIn("credentials", {
@@ -185,21 +209,28 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
             )}
           />
 
-          {serverError && serverError !== "blocked" && (
-            <p className="text-destructive text-sm" data-testid="login-error">
-              {serverError}
-              {showResendLink && (
-                <>
-                  {" "}
-                  <Link
-                    href="/resend-verification"
-                    className="hover:text-destructive/80 underline underline-offset-2"
-                  >
-                    Отправить повторно
-                  </Link>
-                </>
-              )}
+          {resendSuccess && (
+            <p className="text-green-600 text-sm" data-testid="resend-success">
+              Письмо для подтверждения отправлено повторно. Проверьте почту.
             </p>
+          )}
+
+          {serverError && serverError !== "blocked" && (
+            <div className="text-destructive text-sm" data-testid="login-error">
+              <p>{serverError}</p>
+              {showResendLink && (
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="text-destructive hover:text-destructive/80 h-auto p-0 underline underline-offset-2"
+                  onClick={handleResendVerification}
+                  disabled={resendVerificationMutation.isPending}
+                >
+                  {resendVerificationMutation.isPending ? "Отправка..." : "Отправить повторно"}
+                </Button>
+              )}
+            </div>
           )}
 
           <Button
