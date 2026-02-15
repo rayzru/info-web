@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { JSONContent } from "@tiptap/react";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -106,6 +106,16 @@ export default function NewNewsPage() {
     },
   });
 
+  const generateSlugMutation = api.news.generateSlug.useMutation({
+    onSuccess: (data) => {
+      form.setValue("slug", data.slug);
+      toast({ title: "Slug сгенерирован", description: data.slug });
+    },
+    onError: (error) => {
+      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
+    },
+  });
+
   const onSubmit = (values: NewsFormValues) => {
     createMutation.mutate({
       title: values.title.trim(),
@@ -168,10 +178,32 @@ export default function NewNewsPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Slug (URL)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Автоматически из заголовка и даты" {...field} />
-                        </FormControl>
-                        <FormDescription>Оставьте пустым для автогенерации</FormDescription>
+                        <div className="flex gap-2">
+                          <FormControl>
+                            <Input placeholder="Автоматически из заголовка" {...field} />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() =>
+                              generateSlugMutation.mutate({
+                                title: form.getValues("title") || "",
+                              })
+                            }
+                            disabled={generateSlugMutation.isPending}
+                            title="Сгенерировать slug из заголовка"
+                          >
+                            {generateSlugMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Sparkles className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                        <FormDescription>
+                          Нажмите ✨ для автогенерации из заголовка (транслитерация в [a-z0-9-])
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
