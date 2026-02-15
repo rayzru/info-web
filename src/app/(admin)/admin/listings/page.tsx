@@ -430,7 +430,9 @@ export default function AdminListingsPage() {
                     {listing.photos && listing.photos.length > 0 && (
                       <div className="mt-1 flex items-center gap-1">
                         <ImageIcon className="h-3 w-3" />
-                        <span className="text-muted-foreground text-xs">{listing.photos.length}</span>
+                        <span className="text-muted-foreground text-xs">
+                          {listing.photos.length}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -445,7 +447,9 @@ export default function AdminListingsPage() {
                   {/* Price */}
                   <div className="w-32 text-sm font-medium">
                     {listing.price.toLocaleString("ru-RU")} ₽
-                    {listing.listingType === "rent" && <span className="text-muted-foreground">/мес</span>}
+                    {listing.listingType === "rent" && (
+                      <span className="text-muted-foreground">/мес</span>
+                    )}
                   </div>
 
                   {/* Author */}

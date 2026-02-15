@@ -8,9 +8,15 @@
 
 import { eq, lte } from "drizzle-orm";
 
+import { logger } from "~/lib/logger";
+
+
 import { deleteFromS3, extractS3Key } from "~/lib/s3/client";
+
 import { db } from "~/server/db";
+
 import { claimDocuments } from "~/server/db/schema";
+
 
 interface CleanupResult {
   total: number;
@@ -22,7 +28,7 @@ interface CleanupResult {
 export async function cleanupClaimDocuments(): Promise<CleanupResult> {
   const now = new Date();
 
-  console.log(`[Cleanup] Starting document cleanup at ${now.toISOString()}`);
+  logger.info(`[Cleanup] Starting document cleanup at ${now.toISOString()}`);
 
   // Найти все документы, у которых scheduledForDeletion <= now
   const documentsToDelete = await db
@@ -30,7 +36,7 @@ export async function cleanupClaimDocuments(): Promise<CleanupResult> {
     .from(claimDocuments)
     .where(lte(claimDocuments.scheduledForDeletion, now));
 
-  console.log(`[Cleanup] Found ${documentsToDelete.length} documents to delete`);
+  logger.info(`[Cleanup] Found ${documentsToDelete.length} documents to delete`);
 
   let successCount = 0;
   let errorCount = 0;
@@ -38,7 +44,7 @@ export async function cleanupClaimDocuments(): Promise<CleanupResult> {
 
   for (const doc of documentsToDelete) {
     try {
-      console.log(`[Cleanup] Deleting document ${doc.id}: ${doc.fileName}`);
+      logger.info(`[Cleanup] Deleting document ${doc.id}: ${doc.fileName}`);
 
       // Удалить основной файл из S3
       if (doc.fileUrl) {
@@ -46,9 +52,9 @@ export async function cleanupClaimDocuments(): Promise<CleanupResult> {
         if (s3Key) {
           const deleted = await deleteFromS3(s3Key);
           if (deleted) {
-            console.log(`[Cleanup] Deleted file from S3: ${s3Key}`);
+            logger.info(`[Cleanup] Deleted file from S3: ${s3Key}`);
           } else {
-            console.warn(`[Cleanup] Failed to delete file from S3: ${s3Key}`);
+            logger.warn(`[Cleanup] Failed to delete file from S3: ${s3Key}`);
           }
         }
       }
@@ -59,9 +65,9 @@ export async function cleanupClaimDocuments(): Promise<CleanupResult> {
         if (thumbnailKey) {
           const deleted = await deleteFromS3(thumbnailKey);
           if (deleted) {
-            console.log(`[Cleanup] Deleted thumbnail from S3: ${thumbnailKey}`);
+            logger.info(`[Cleanup] Deleted thumbnail from S3: ${thumbnailKey}`);
           } else {
-            console.warn(`[Cleanup] Failed to delete thumbnail from S3: ${thumbnailKey}`);
+            logger.warn(`[Cleanup] Failed to delete thumbnail from S3: ${thumbnailKey}`);
           }
         }
       }
@@ -69,11 +75,11 @@ export async function cleanupClaimDocuments(): Promise<CleanupResult> {
       // Удалить запись из БД
       await db.delete(claimDocuments).where(eq(claimDocuments.id, doc.id));
 
-      console.log(`[Cleanup] Successfully deleted document ${doc.id}`);
+      logger.info(`[Cleanup] Successfully deleted document ${doc.id}`);
       successCount++;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      console.error(`[Cleanup] Failed to delete document ${doc.id}:`, errorMessage);
+      logger.error(`[Cleanup] Failed to delete document ${doc.id}:`, errorMessage);
       errorDetails.push({ id: doc.id, error: errorMessage });
       errorCount++;
     }
@@ -86,12 +92,12 @@ export async function cleanupClaimDocuments(): Promise<CleanupResult> {
     errorDetails,
   };
 
-  console.log(
+  logger.info(
     `[Cleanup] Cleanup complete: ${successCount} deleted, ${errorCount} errors out of ${result.total} total`
   );
 
   if (errorDetails.length > 0) {
-    console.error("[Cleanup] Error details:", JSON.stringify(errorDetails, null, 2));
+    logger.error("[Cleanup] Error details:", JSON.stringify(errorDetails, null, 2));
   }
 
   return result;
@@ -104,18 +110,18 @@ const isMainModule = typeof require !== "undefined" && require.main === module;
 if (isMainModule) {
   void cleanupClaimDocuments()
     .then((result) => {
-      console.log("[Cleanup] Result:", JSON.stringify(result, null, 2));
+      logger.info("[Cleanup] Result:", JSON.stringify(result, null, 2));
 
       // Exit with error code if there were errors
       if (result.errors > 0) {
-        console.error(`[Cleanup] Exiting with error code 1 due to ${result.errors} errors`);
+        logger.error(`[Cleanup] Exiting with error code 1 due to ${result.errors} errors`);
         process.exit(1);
       }
 
       process.exit(0);
     })
     .catch((error) => {
-      console.error("[Cleanup] Fatal error:", error);
+      logger.error("[Cleanup] Fatal error:", error);
       process.exit(1);
     });
 }

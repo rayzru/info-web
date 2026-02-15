@@ -6,6 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import YandexProvider from "next-auth/providers/yandex";
 
+import { authLogger } from "~/lib/logger";
 import { db } from "~/server/db";
 import {
   accounts,
@@ -146,7 +147,7 @@ async function isUserBlocked(userId: string): Promise<boolean> {
     return !!activeBlock;
   } catch (error) {
     // If table doesn't exist yet or query fails, allow login
-    console.error("[auth] Error checking user block status:", error);
+    authLogger.error({ err: error, userId }, "Error checking user block status");
     return false;
   }
 }
@@ -468,21 +469,21 @@ export const authConfig = {
             : code.name === "UserBlockedError"
               ? "пользователь заблокирован"
               : "неверные учётные данные";
-        console.log(` ⚠ [auth] ${code.name} - ${errorType}`);
+        authLogger.warn({ name: code.name, errorType }, "Auth error");
         return;
       }
-      console.error("[auth][error]", code);
+      authLogger.error({ code }, "Auth error");
       // Выводим cause для отладки VK ID
       if (code.cause) {
-        console.error("[auth][error][cause]", JSON.stringify(code.cause, null, 2));
+        authLogger.error({ cause: code.cause }, "Auth error cause");
       }
     },
     warn: (code) => {
-      console.warn("[auth][warn]", code);
+      authLogger.warn({ code }, "Auth warning");
     },
     debug: (code) => {
       if (isDev) {
-        console.debug("[auth][debug]", code);
+        authLogger.debug({ code }, "Auth debug");
       }
     },
   },
@@ -506,17 +507,18 @@ export const authConfig = {
           // For credentials and telegram, block check happens in authorize()
           // For OAuth, we need to check here
           if (await isUserBlocked(user.id)) {
-            console.warn(`[auth][signIn] User ${user.id} is blocked`);
+            authLogger.warn({ userId: user.id }, "Blocked user attempted sign in");
             return "/login?error=USER_BLOCKED";
           }
         }
 
-        console.log(
-          `[auth][signIn] User ${user?.id ?? "unknown"} signed in via ${account?.provider ?? "unknown"}`
+        authLogger.info(
+          { userId: user?.id, provider: account?.provider },
+          "User signed in"
         );
         return true;
       } catch (error) {
-        console.error("[auth][signIn] Error in signIn callback:", error);
+        authLogger.error("Error in signIn callback", error);
         // Allow sign in to continue even if block check fails
         return true;
       }
@@ -532,7 +534,7 @@ export const authConfig = {
       const userId = user?.id ?? (token?.id as string);
 
       if (!userId) {
-        console.warn("[auth][session] No userId in session callback");
+        authLogger.warn("No userId in session callback");
         return session;
       }
 
@@ -544,7 +546,7 @@ export const authConfig = {
             .from(userRoles)
             .where(eq(userRoles.userId, userId))
             .catch((error) => {
-              console.error(`[auth][session] Error fetching roles for user ${userId}:`, error);
+              authLogger.error({ err: error, userId }, "Error fetching roles");
               return [];
             }),
           db.query.userProfiles
@@ -553,7 +555,7 @@ export const authConfig = {
               columns: { avatar: true },
             })
             .catch((error) => {
-              console.error(`[auth][session] Error fetching profile for user ${userId}:`, error);
+              authLogger.error({ err: error, userId }, "Error fetching profile");
               return null;
             }),
         ]);
@@ -562,7 +564,7 @@ export const authConfig = {
 
         // Fallback: If user has no roles, assign Guest role
         if (userRolesList.length === 0) {
-          console.warn(`[auth][session] User ${userId} has no roles, assigning Guest role`);
+          authLogger.warn({ userId }, "User has no roles, assigning Guest");
           try {
             await db
               .insert(userRoles)
@@ -573,7 +575,7 @@ export const authConfig = {
               .onConflictDoNothing();
             userRolesList = ["Guest"];
           } catch (error) {
-            console.error(`[auth][session] Failed to assign Guest role to user ${userId}:`, error);
+            authLogger.error({ err: error, userId }, "Failed to assign Guest role");
             // Still allow session with empty roles array
             userRolesList = ["Guest"];
           }
@@ -591,9 +593,9 @@ export const authConfig = {
           },
         };
       } catch (error) {
-        console.error(
-          `[auth][session] Unexpected error in session callback for user ${userId}:`,
-          error
+        authLogger.error(
+          { err: error, userId },
+          "Unexpected error in session callback"
         );
         // Return session with minimal data to prevent complete auth failure
         return {
@@ -612,7 +614,7 @@ export const authConfig = {
     // Send notification when a new OAuth account is linked
     linkAccount: async ({ user, account }) => {
       try {
-        console.log(`[auth][linkAccount] Linking ${account.provider} account for user ${user.id}`);
+        authLogger.info({ provider: account.provider, userId: user.id }, "Linking account");
         if (user.email && account.provider) {
           notifyAsync({
             type: "account.linked",
@@ -624,16 +626,16 @@ export const authConfig = {
           });
         }
       } catch (error) {
-        console.error("[auth][linkAccount] Error in linkAccount event:", error);
+        authLogger.error("Error in linkAccount event", error);
       }
     },
     createUser: async ({ user }) => {
-      console.log(`[auth][createUser] New user created: ${user.id} (${user.email})`);
+      authLogger.info({ userId: user.id, email: user.email }, "New user created");
     },
     session: async ({ session }) => {
       // Log session creation for debugging
       if (isDev) {
-        console.log(`[auth][session] Session created for user: ${session.user?.id ?? "unknown"}`);
+        authLogger.debug({ userId: session.user?.id }, "Session created");
       }
     },
   },

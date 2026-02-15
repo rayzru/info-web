@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { generateFingerprint, generateTimeToken } from "~/lib/anti-bot";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -49,6 +48,7 @@ import {
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
+import { generateFingerprint, generateTimeToken } from "~/lib/anti-bot";
 import { FEEDBACK_LIMITS } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 

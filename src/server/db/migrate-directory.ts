@@ -1,9 +1,11 @@
 import { sql } from "drizzle-orm";
 
+import { logger } from "~/lib/logger";
+
 import { db } from "./index";
 
 async function migrateDirectory() {
-  console.log("Creating directory tables...");
+  logger.info("Creating directory tables...");
 
   try {
     // Create enums
@@ -302,9 +304,9 @@ async function migrateDirectory() {
       sql`CREATE INDEX IF NOT EXISTS "building_channel_active_idx" ON "building_channel" ("is_active")`
     );
 
-    console.log("Directory and building_channel tables created successfully!");
+    logger.info("Directory and building_channel tables created successfully!");
   } catch (error) {
-    console.error("Error creating directory tables:", error);
+    logger.error("Error creating directory tables:", error);
     throw error;
   }
 

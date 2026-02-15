@@ -9,8 +9,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 
-import { generateFingerprint, generateTimeToken } from "~/lib/anti-bot";
-
 import { Button } from "~/components/ui/button";
 import {
   Form,
@@ -22,6 +20,7 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { generateFingerprint, generateTimeToken } from "~/lib/anti-bot";
 import { cn } from "~/lib/utils";
 import { type RegisterFormData, registerFormSchema } from "~/lib/validations/auth";
 import { api } from "~/trpc/react";
@@ -100,7 +99,7 @@ export function RegisterForm({ className, ...props }: Readonly<RegisterFormProps
             control={form.control}
             name="website"
             render={({ field }) => (
-              <FormItem className="absolute -left-2499.75 h-0 w-0 overflow-hidden opacity-0">
+              <FormItem className="-left-2499.75 absolute h-0 w-0 overflow-hidden opacity-0">
                 <FormLabel>Website</FormLabel>
                 <FormControl>
                   <Input

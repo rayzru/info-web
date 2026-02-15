@@ -1,11 +1,17 @@
 "use client";
+import { logger } from "~/lib/logger";
+
 
 import { useCallback, useEffect, useRef } from "react";
 
+
 import { usePathname, useSearchParams } from "next/navigation";
+
 import type React from "react";
 
+
 import { api } from "~/trpc/react";
+
 
 const SESSION_STORAGE_KEY = "analytics_session_id";
 
@@ -73,7 +79,7 @@ export function useAnalytics() {
       storeSessionId(result.sessionId);
       return result.sessionId;
     } catch (error) {
-      console.error("Failed to initialize analytics session:", error);
+      logger.error("Failed to initialize analytics session:", error);
       return null;
     }
   }, [getSessionMutation, getStoredSessionId, storeSessionId, getUtmParams, getScreenResolution]);
@@ -100,7 +106,7 @@ export function useAnalytics() {
           referrer: typeof document !== "undefined" ? document.referrer : undefined,
         });
       } catch (error) {
-        console.error("Failed to track page view:", error);
+        logger.error("Failed to track page view:", error);
       }
     },
     [pathname, trackMutation]
@@ -131,7 +137,7 @@ export function useAnalytics() {
           properties: options?.properties,
         });
       } catch (error) {
-        console.error("Failed to track event:", error);
+        logger.error("Failed to track event:", error);
       }
     },
     [pathname, trackMutation]

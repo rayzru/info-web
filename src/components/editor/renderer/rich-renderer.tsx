@@ -1,3 +1,4 @@
+import { logger } from "~/lib/logger";
 import { Fragment, type ReactNode } from "react";
 
 import type { JSONContent } from "@tiptap/react";
@@ -106,7 +107,7 @@ function renderNode(node: JSONContent): ReactNode {
 
     // Unknown node type - render children if any
     default:
-      console.warn(`Unknown node type: ${node.type}`);
+      logger.warn(`Unknown node type: ${node.type}`);
       return node.content ? renderNodes(node.content) : null;
   }
 }

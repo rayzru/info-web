@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { logger } from "~/lib/logger";
 
 import {
   MAX_DOCUMENT_SIZE,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
       document: result,
     });
   } catch (error) {
-    console.error("Document upload error:", error);
+    logger.error("Document upload error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Ошибка загрузки" },
       { status: 500 }

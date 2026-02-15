@@ -1,4 +1,5 @@
 import { decode as authDecode } from "@auth/core/jwt";
+import { logger } from "~/lib/logger";
 import { hkdf } from "@panva/hkdf";
 import * as jose from "jose";
 import { cookies } from "next/headers";
@@ -50,13 +51,13 @@ async function decryptJWE(jwe: string): Promise<string | null> {
 
   for (const salt of salts) {
     try {
-      console.log("[VK ID Callback] Trying auth.js decode with salt:", salt);
+      logger.info("[VK ID Callback] Trying auth.js decode with salt:", salt);
       const decoded = await authDecode({
         token: jwe,
         secret: AUTH_SECRET,
         salt,
       });
-      console.log("[VK ID Callback] auth.js decode succeeded:", JSON.stringify(decoded));
+      logger.info("[VK ID Callback] auth.js decode succeeded:", JSON.stringify(decoded));
       if (decoded && typeof decoded.value === "string") {
         return decoded.value;
       }
@@ -64,7 +65,7 @@ async function decryptJWE(jwe: string): Promise<string | null> {
         return JSON.stringify(decoded);
       }
     } catch (authErr) {
-      console.log("[VK ID Callback] auth.js decode with salt", salt, "failed");
+      logger.info("[VK ID Callback] auth.js decode with salt", salt, "failed");
     }
   }
 
@@ -73,19 +74,19 @@ async function decryptJWE(jwe: string): Promise<string | null> {
     // Parse JWE header to check algorithm
     const headerB64 = jwe.split(".")[0];
     if (!headerB64) {
-      console.error("[VK ID Callback] Invalid JWE format");
+      logger.error("[VK ID Callback] Invalid JWE format");
       return null;
     }
     const headerJson = Buffer.from(headerB64, "base64url").toString();
-    console.log("[VK ID Callback] JWE header:", headerJson);
+    logger.info("[VK ID Callback] JWE header:", headerJson);
 
     const key = await getEncryptionKey(AUTH_SECRET);
-    console.log("[VK ID Callback] Derived key length:", key.length, "bytes");
+    logger.info("[VK ID Callback] Derived key length:", key.length, "bytes");
 
     // Try compactDecrypt
     const { plaintext } = await jose.compactDecrypt(jwe, key);
     const decoded = new TextDecoder().decode(plaintext);
-    console.log("[VK ID Callback] compactDecrypt succeeded, content:", decoded.substring(0, 100));
+    logger.info("[VK ID Callback] compactDecrypt succeeded, content:", decoded.substring(0, 100));
 
     if (decoded.startsWith("{")) {
       const parsed = JSON.parse(decoded);
@@ -96,7 +97,7 @@ async function decryptJWE(jwe: string): Promise<string | null> {
     }
     return decoded;
   } catch (err) {
-    console.error("[VK ID Callback] JWE decryption error:", err);
+    logger.error("[VK ID Callback] JWE decryption error:", err);
     return null;
   }
 }
@@ -119,7 +120,7 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 
-  console.log("[VK ID Callback] Received params:", {
+  logger.info("[VK ID Callback] Received params:", {
     code: code?.substring(0, 20) + "...",
     deviceId: deviceId?.substring(0, 20) + "...",
     state: state || "(empty)",
@@ -129,11 +130,11 @@ export async function GET(request: NextRequest) {
 
   // Get base URL for all redirects
   const baseUrl = getBaseUrl(request);
-  console.log("[VK ID Callback] Using baseUrl:", baseUrl);
+  logger.info("[VK ID Callback] Using baseUrl:", baseUrl);
 
   // Handle VK ID errors
   if (error) {
-    console.error("[VK ID Callback] Error from VK:", {
+    logger.error("[VK ID Callback] Error from VK:", {
       error,
       errorDescription,
     });
@@ -146,7 +147,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (!code || !deviceId) {
-    console.error("[VK ID Callback] Missing required params");
+    logger.error("[VK ID Callback] Missing required params");
     return NextResponse.redirect(new URL("/login?error=MissingParams", baseUrl));
   }
 
@@ -156,30 +157,30 @@ export async function GET(request: NextRequest) {
     cookieStore.get("authjs.pkce.code_verifier")?.value ||
     cookieStore.get("__Secure-authjs.pkce.code_verifier")?.value;
 
-  console.log("[VK ID Callback] PKCE JWE cookie:", pkceJWE ? "found" : "NOT FOUND");
-  console.log("[VK ID Callback] PKCE JWE length:", pkceJWE?.length || 0);
-  console.log("[VK ID Callback] PKCE JWE parts:", pkceJWE?.split(".").length || 0);
+  logger.info("[VK ID Callback] PKCE JWE cookie:", pkceJWE ? "found" : "NOT FOUND");
+  logger.info("[VK ID Callback] PKCE JWE length:", pkceJWE?.length || 0);
+  logger.info("[VK ID Callback] PKCE JWE parts:", pkceJWE?.split(".").length || 0);
 
   if (!pkceJWE) {
-    console.error("[VK ID Callback] Missing PKCE code_verifier cookie");
+    logger.error("[VK ID Callback] Missing PKCE code_verifier cookie");
     return NextResponse.redirect(new URL("/login?error=MissingPKCE", baseUrl));
   }
 
   // Decrypt the code_verifier
   const pkceCodeVerifier = await decryptJWE(pkceJWE);
-  console.log(
+  logger.info(
     "[VK ID Callback] Decrypted code_verifier:",
     pkceCodeVerifier ? `success (${pkceCodeVerifier.length} chars)` : "FAILED"
   );
 
   if (!pkceCodeVerifier) {
-    console.error("[VK ID Callback] Failed to decrypt PKCE code_verifier");
+    logger.error("[VK ID Callback] Failed to decrypt PKCE code_verifier");
     return NextResponse.redirect(new URL("/login?error=PKCEDecrypt", baseUrl));
   }
 
   // Callback URL for token exchange (must match what was sent to VK)
   const callbackUrl = `${baseUrl}/api/auth/callback/vk`;
-  console.log("[VK ID Callback] callbackUrl:", callbackUrl);
+  logger.info("[VK ID Callback] callbackUrl:", callbackUrl);
 
   try {
     // Exchange code for tokens
@@ -198,8 +199,8 @@ export async function GET(request: NextRequest) {
       tokenBody.set("state", state);
     }
 
-    console.log("[VK ID Callback] Token request to:", "https://id.vk.com/oauth2/auth");
-    console.log(
+    logger.info("[VK ID Callback] Token request to:", "https://id.vk.com/oauth2/auth");
+    logger.info(
       "[VK ID Callback] Token request body:",
       tokenBody.toString().replace(/client_secret=[^&]+/, "client_secret=***")
     );
@@ -213,10 +214,10 @@ export async function GET(request: NextRequest) {
     });
 
     const tokenData = await tokenResponse.json();
-    console.log("[VK ID Callback] Token response:", JSON.stringify(tokenData, null, 2));
+    logger.info("[VK ID Callback] Token response:", JSON.stringify(tokenData, null, 2));
 
     if (tokenData.error) {
-      console.error("[VK ID Callback] Token error:", tokenData);
+      logger.error("[VK ID Callback] Token error:", tokenData);
       return NextResponse.redirect(
         new URL(
           `/login?error=TokenExchange&description=${encodeURIComponent(tokenData.error_description || tokenData.error)}`,
@@ -227,7 +228,7 @@ export async function GET(request: NextRequest) {
 
     const accessToken = tokenData.access_token;
     if (!accessToken) {
-      console.error("[VK ID Callback] No access_token in response");
+      logger.error("[VK ID Callback] No access_token in response");
       return NextResponse.redirect(new URL("/login?error=NoAccessToken", baseUrl));
     }
 
@@ -246,10 +247,10 @@ export async function GET(request: NextRequest) {
     });
 
     const userInfoData = await userInfoResponse.json();
-    console.log("[VK ID Callback] User info response:", JSON.stringify(userInfoData, null, 2));
+    logger.info("[VK ID Callback] User info response:", JSON.stringify(userInfoData, null, 2));
 
     if (!userInfoData.user) {
-      console.error("[VK ID Callback] No user in response");
+      logger.error("[VK ID Callback] No user in response");
       return NextResponse.redirect(new URL("/login?error=NoUserInfo", baseUrl));
     }
 
@@ -264,7 +265,7 @@ export async function GET(request: NextRequest) {
       image: vkUser.avatar || null,
     };
 
-    console.log("[VK ID Callback] User data:", userData);
+    logger.info("[VK ID Callback] User data:", userData);
 
     // For now, redirect to login with success and user data encoded
     // In production, we'd create the session here using auth.js signIn
@@ -294,7 +295,7 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (err) {
-    console.error("[VK ID Callback] Error:", err);
+    logger.error("[VK ID Callback] Error:", err);
     return NextResponse.redirect(new URL("/login?error=CallbackError", baseUrl));
   }
 }

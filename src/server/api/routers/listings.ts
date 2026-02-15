@@ -1,9 +1,16 @@
 import { TRPCError } from "@trpc/server";
+import { logger } from "~/lib/logger";
+
+
 import { and, count, desc, eq, or } from "drizzle-orm";
+
 import { z } from "zod";
 
+
 import { deleteImage } from "~/lib/upload/image-processor";
+
 import {
+
   buildings,
   listingPhotos,
   listings,
@@ -13,6 +20,7 @@ import {
 } from "~/server/db/schema";
 
 import {
+
   adminProcedureWithFeature,
   createTRPCRouter,
   protectedProcedure,
@@ -452,9 +460,9 @@ export const listingsRouter = createTRPCRouter({
       for (const photo of photos) {
         try {
           await deleteImage(photo.url);
-          console.log(`[Listings] Deleted photo from S3: ${photo.url}`);
+          logger.info(`[Listings] Deleted photo from S3: ${photo.url}`);
         } catch (error) {
-          console.error("[Listings] Failed to delete photo from S3:", error);
+          logger.error("[Listings] Failed to delete photo from S3:", error);
         }
       }
 

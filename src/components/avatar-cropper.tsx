@@ -2,6 +2,8 @@
 
 import { useCallback, useRef, useState } from "react";
 
+import { logger } from "~/lib/logger";
+
 import { Camera, Loader2, Trash2, Upload, X, ZoomIn, ZoomOut } from "lucide-react";
 import ReactCrop, { centerCrop, type Crop, makeAspectCrop, type PixelCrop } from "react-image-crop";
 
@@ -197,7 +199,7 @@ export function AvatarCropper({
       setIsOpen(false);
       setImageSrc(null);
     } catch (error) {
-      console.error("Avatar upload error:", error);
+      logger.error("Avatar upload error:", error);
       // Could show toast here
     } finally {
       setIsUploading(false);
@@ -218,7 +220,7 @@ export function AvatarCropper({
 
       onAvatarChange?.(null);
     } catch (error) {
-      console.error("Avatar delete error:", error);
+      logger.error("Avatar delete error:", error);
     } finally {
       setIsDeleting(false);
     }

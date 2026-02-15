@@ -1,4 +1,5 @@
 import { encode } from "@auth/core/jwt";
+import { logger } from "~/lib/logger";
 import crypto from "crypto";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
   const credsCookie = cookieStore.get("vk_session_creds")?.value;
 
   if (!credsCookie) {
-    console.error("[VK Session] No credentials cookie found");
+    logger.error("[VK Session] No credentials cookie found");
     return NextResponse.redirect(new URL("/login?error=NoCredentials", baseUrl));
   }
 
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
 
     // Verify the token
     if (!verifySessionToken(userId, token)) {
-      console.error("[VK Session] Invalid token");
+      logger.error("[VK Session] Invalid token");
       return NextResponse.redirect(new URL("/login?error=InvalidToken", baseUrl));
     }
 
@@ -86,11 +87,11 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      console.error("[VK Session] User not found:", userId);
+      logger.error("[VK Session] User not found:", userId);
       return NextResponse.redirect(new URL("/login?error=UserNotFound", baseUrl));
     }
 
-    console.log("[VK Session] Creating session for user:", userId);
+    logger.info("[VK Session] Creating session for user:", userId);
 
     const response = NextResponse.redirect(new URL(callbackUrl, baseUrl));
 
@@ -121,7 +122,7 @@ export async function GET(request: NextRequest) {
         maxAge: 30 * 24 * 60 * 60, // 30 days
       });
 
-      console.log("[VK Session] Set JWT cookie:", cookieName, "secure:", useSecureCookies);
+      logger.info("[VK Session] Set JWT cookie:", cookieName, "secure:", useSecureCookies);
     } else {
       // Database strategy in production
       const sessionToken = crypto.randomUUID();
@@ -143,13 +144,13 @@ export async function GET(request: NextRequest) {
         expires,
       });
 
-      console.log("[VK Session] Set DB session cookie:", cookieName);
+      logger.info("[VK Session] Set DB session cookie:", cookieName);
     }
 
-    console.log("[VK Session] Session created, redirecting to:", callbackUrl);
+    logger.info("[VK Session] Session created, redirecting to:", callbackUrl);
     return response;
   } catch (err) {
-    console.error("[VK Session] Error:", err);
+    logger.error("[VK Session] Error:", err);
     return NextResponse.redirect(new URL("/login?error=SessionError", baseUrl));
   }
 }

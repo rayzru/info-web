@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { logger } from "~/lib/logger";
 
 import {
   type ImageProcessingOptions,
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
       media: mediaRecord,
     });
   } catch (error) {
-    console.error("Upload error:", error);
+    logger.error("Upload error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Upload failed" },
       { status: 500 }

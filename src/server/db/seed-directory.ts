@@ -1,3 +1,5 @@
+import { logger } from "~/lib/logger";
+
 import { db } from "./index";
 import {
   buildingChannels,
@@ -1071,11 +1073,11 @@ const ENTRIES: EntryDefinition[] = [
 ];
 
 async function seedDirectory() {
-  console.log("🌱 Seeding directory for ЖК Сердце Ростова 2...");
+  logger.info("🌱 Seeding directory for ЖК Сердце Ростова 2...");
 
   try {
     // Get building IDs for linking
-    console.log("🏢 Fetching buildings...");
+    logger.info("🏢 Fetching buildings...");
     const allBuildings = await db.select().from(buildings);
     const buildingMap = new Map<number, string>();
     for (const b of allBuildings) {
@@ -1083,10 +1085,10 @@ async function seedDirectory() {
         buildingMap.set(b.number, b.id);
       }
     }
-    console.log(`  ✓ Found ${buildingMap.size} buildings`);
+    logger.info(`  ✓ Found ${buildingMap.size} buildings`);
 
     // Clear existing data
-    console.log("🧹 Clearing existing directory data...");
+    logger.info("🧹 Clearing existing directory data...");
     await db.delete(directoryContactTags);
     await db.delete(directoryEntryTags);
     await db.delete(directoryContacts);
@@ -1096,7 +1098,7 @@ async function seedDirectory() {
     await db.delete(buildingChannels);
 
     // Insert tags
-    console.log("📁 Inserting tags...");
+    logger.info("📁 Inserting tags...");
     for (const tag of TAGS) {
       await db.insert(directoryTags).values({
         id: tag.id,
@@ -1110,10 +1112,10 @@ async function seedDirectory() {
         order: tag.order,
       });
     }
-    console.log(`  ✓ Inserted ${TAGS.length} tags`);
+    logger.info(`  ✓ Inserted ${TAGS.length} tags`);
 
     // Insert entries with contacts and tags
-    console.log("📝 Inserting entries...");
+    logger.info("📝 Inserting entries...");
     let contactsCount = 0;
     let contactTagsCount = 0;
     let channelsCount = 0;
@@ -1207,21 +1209,21 @@ async function seedDirectory() {
       channelsCount++;
     }
 
-    console.log(`  ✓ Inserted ${ENTRIES.length} entries`);
-    console.log(`  ✓ Inserted ${contactsCount} contacts`);
-    console.log(`  ✓ Inserted ${contactTagsCount} contact-tag relations`);
-    console.log(`  ✓ Inserted ${channelsCount} building channels`);
+    logger.info(`  ✓ Inserted ${ENTRIES.length} entries`);
+    logger.info(`  ✓ Inserted ${contactsCount} contacts`);
+    logger.info(`  ✓ Inserted ${contactTagsCount} contact-tag relations`);
+    logger.info(`  ✓ Inserted ${channelsCount} building channels`);
 
-    console.log("\n✅ Directory seeding complete!");
-    console.log("");
-    console.log("📊 Summary:");
-    console.log(`  • ${TAGS.length} tags`);
-    console.log(`  • ${ENTRIES.length} directory entries`);
-    console.log(`  • ${contactsCount} contacts (phones, addresses, urls, messengers)`);
-    console.log(`  • ${contactTagsCount} contact-tag relations (for granular search)`);
-    console.log(`  • ${channelsCount} building channels (for system notifications)`);
+    logger.info("\n✅ Directory seeding complete!");
+    logger.info("");
+    logger.info("📊 Summary:");
+    logger.info(`  • ${TAGS.length} tags`);
+    logger.info(`  • ${ENTRIES.length} directory entries`);
+    logger.info(`  • ${contactsCount} contacts (phones, addresses, urls, messengers)`);
+    logger.info(`  • ${contactTagsCount} contact-tag relations (for granular search)`);
+    logger.info(`  • ${channelsCount} building channels (for system notifications)`);
   } catch (error) {
-    console.error("❌ Error seeding directory:", error);
+    logger.error("❌ Error seeding directory:", error);
     throw error;
   }
 

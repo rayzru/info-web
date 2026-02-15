@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { logger } from "~/lib/logger";
 import { NextResponse } from "next/server";
 
 import { auth } from "~/server/auth";
@@ -29,7 +30,7 @@ export async function GET() {
       isAdmin,
     });
   } catch (error) {
-    console.error("Maintenance check error:", error);
+    logger.error("Maintenance check error:", error);
     // On error, return maintenance disabled to avoid locking users out
     return NextResponse.json({
       maintenanceEnabled: false,

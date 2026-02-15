@@ -1,3 +1,4 @@
+import { logger } from "~/lib/logger";
 import { type SVGProps, useEffect, useState } from "react";
 
 import { cn } from "~/lib/utils";
@@ -18,7 +19,7 @@ export function MapCompactPicker({
   className,
 }: Readonly<MapCompactPickerProps>) {
   const [selected, setSelected] = useState<number | undefined>(initialSelected);
-  console.log(selected);
+  logger.info(selected);
   const handleClick = (value: number) => {
     if (readOnly) return;
     setSelected(value);

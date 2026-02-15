@@ -51,7 +51,7 @@ export function DocumentViewerDialog({ document, open, onOpenChange }: DocumentV
             <div className="flex items-center gap-2">
               <Badge variant="secondary">{documentTypeLabel}</Badge>
               {document.fileSize && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {formatFileSize(document.fileSize)}
                 </span>
               )}
@@ -73,7 +73,7 @@ export function DocumentViewerDialog({ document, open, onOpenChange }: DocumentV
           </Button>
         </div>
 
-        <div className="h-[600px] w-full overflow-auto rounded-lg border bg-muted/30">
+        <div className="bg-muted/30 h-[600px] w-full overflow-auto rounded-lg border">
           {isPdf && (
             <iframe
               src={document.fileUrl}
@@ -93,7 +93,7 @@ export function DocumentViewerDialog({ document, open, onOpenChange }: DocumentV
           )}
           {!isPdf && !isImage && (
             <div className="flex h-full items-center justify-center">
-              <div className="text-center text-muted-foreground">
+              <div className="text-muted-foreground text-center">
                 <p className="mb-2">Предпросмотр недоступен для этого типа файла</p>
                 <Button variant="outline" size="sm" asChild>
                   <a href={document.fileUrl} download target="_blank" rel="noopener noreferrer">

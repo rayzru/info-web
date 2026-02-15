@@ -1,8 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import { and, count, desc, eq, gte } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 import { validateFingerprint, validateTimeToken } from "~/lib/anti-bot";
+import { logger } from "~/lib/logger";
 import {
   feedback,
   FEEDBACK_LIMITS,
@@ -49,6 +50,23 @@ const createFeedbackSchema = z.object({
 });
 
 // ============================================================================
+// Anti-Bot Configuration
+// ============================================================================
+
+/**
+ * Configuration for anti-bot protection mechanisms
+ * Adjust these values based on monitoring of bot activity
+ */
+const ANTI_BOT_CONFIG = {
+  /** Minimum seconds user must spend on form (prevents instant bot submissions) */
+  MIN_FORM_TIME_SECONDS: 3,
+  /** Maximum seconds before time token expires */
+  MAX_FORM_TIME_SECONDS: 600,
+  /** Maximum items that can be bulk deleted at once */
+  MAX_BULK_DELETE_ITEMS: 100,
+} as const;
+
+// ============================================================================
 // Router
 // ============================================================================
 
@@ -59,10 +77,26 @@ export const feedbackRouter = createTRPCRouter({
    * Submit new feedback (available to everyone, including guests)
    */
   submit: publicProcedure.input(createFeedbackSchema).mutation(async ({ ctx, input }) => {
+    // Get IP address from headers (for logging and rate limiting)
+    const forwardedFor = ctx.headers.get("x-forwarded-for");
+    const realIp = ctx.headers.get("x-real-ip");
+    const ipAddress = forwardedFor?.split(",")[0]?.trim() ?? realIp ?? "127.0.0.1";
+    const userAgent = ctx.headers.get("user-agent") ?? "unknown";
+
     // ==================== Anti-bot validation ====================
 
     // 1. Honeypot check - website field must be empty
     if (input.website && input.website.trim() !== "") {
+      logger.warn(
+        {
+          event: "bot_blocked",
+          method: "honeypot",
+          ip: ipAddress,
+          userAgent,
+        },
+        "Honeypot triggered - bot detected"
+      );
+
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Обращение временно недоступно. Попробуйте позже.",
@@ -70,7 +104,24 @@ export const feedbackRouter = createTRPCRouter({
     }
 
     // 2. Time token validation - user must spend reasonable time on form
-    if (!validateTimeToken(input.timeToken, 3, 600)) {
+    if (
+      !validateTimeToken(
+        input.timeToken,
+        ANTI_BOT_CONFIG.MIN_FORM_TIME_SECONDS,
+        ANTI_BOT_CONFIG.MAX_FORM_TIME_SECONDS
+      )
+    ) {
+      logger.warn(
+        {
+          event: "bot_blocked",
+          method: "time_token",
+          ip: ipAddress,
+          userAgent,
+          tokenPreview: input.timeToken.substring(0, 10),
+        },
+        "Time token validation failed"
+      );
+
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Форма заполнена слишком быстро или токен устарел. Попробуйте снова.",
@@ -79,16 +130,22 @@ export const feedbackRouter = createTRPCRouter({
 
     // 3. Fingerprint validation - basic browser fingerprint check
     if (!validateFingerprint(input.fingerprint)) {
+      logger.warn(
+        {
+          event: "bot_blocked",
+          method: "fingerprint",
+          ip: ipAddress,
+          userAgent,
+          fingerprintPreview: input.fingerprint.substring(0, 10),
+        },
+        "Fingerprint validation failed"
+      );
+
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Не удалось проверить подлинность браузера. Попробуйте обновить страницу.",
       });
     }
-
-    // Get IP address from headers (for rate limiting)
-    const forwardedFor = ctx.headers.get("x-forwarded-for");
-    const realIp = ctx.headers.get("x-real-ip");
-    const ipAddress = forwardedFor?.split(",")[0]?.trim() ?? realIp ?? "127.0.0.1";
 
     // Rate limiting check
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
@@ -161,6 +218,18 @@ export const feedbackRouter = createTRPCRouter({
         description: "Обращение создано",
         changedById: userId ?? null,
       });
+
+      // Log successful submission for monitoring
+      logger.info(
+        {
+          event: "feedback_submitted",
+          ip: ipAddress,
+          type: input.type,
+          hasAuth: !!userId,
+          feedbackId: newFeedback.id,
+        },
+        "Feedback submitted successfully"
+      );
     }
 
     return {
@@ -539,21 +608,31 @@ export const feedbackRouter = createTRPCRouter({
     }),
 
     /**
-     * Delete feedback (soft delete)
+     * Delete feedback item (soft delete)
+     *
+     * Marks feedback as deleted without removing from database.
+     * Creates audit trail entry in feedbackHistory.
+     *
+     * @throws {TRPCError} NOT_FOUND if feedback doesn't exist or already deleted
+     * @requires Feature flag: "users:manage"
+     *
+     * @example
+     * await trpc.feedback.admin.delete({ id: "uuid" });
      */
     delete: adminProcedureWithFeature("users:manage")
       .input(z.object({ id: z.string().uuid() }))
       .mutation(async ({ ctx, input }) => {
         const adminId = ctx.session.user.id;
 
+        // Check if feedback exists and not already deleted
         const existing = await ctx.db.query.feedback.findFirst({
-          where: eq(feedback.id, input.id),
+          where: and(eq(feedback.id, input.id), eq(feedback.isDeleted, false)),
         });
 
         if (!existing) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Обращение не найдено",
+            message: "Обращение не найдено или уже удалено",
           });
         }
 
@@ -578,42 +657,69 @@ export const feedbackRouter = createTRPCRouter({
       }),
 
     /**
-     * Bulk delete feedback (soft delete multiple items)
+     * Bulk delete feedback items (soft delete up to 100 items)
+     *
+     * Efficiently deletes multiple feedback items in a single atomic transaction.
+     * All deletions are logged to feedbackHistory for audit trail.
+     * Returns actual count of deleted items (may be less than requested if some already deleted).
+     *
+     * @throws {TRPCError} BAD_REQUEST if more than 100 IDs provided
+     * @requires Feature flag: "users:manage"
+     *
+     * @example
+     * const result = await trpc.feedback.admin.bulkDelete({ ids: ["uuid1", "uuid2"] });
+     * console.log(`Deleted ${result.actual} out of ${result.requested} items`);
      */
     bulkDelete: adminProcedureWithFeature("users:manage")
-      .input(z.object({ ids: z.array(z.string().uuid()).min(1).max(100) }))
+      .input(
+        z.object({
+          ids: z
+            .array(z.string().uuid())
+            .min(1, "Необходимо выбрать хотя бы один элемент")
+            .max(
+              ANTI_BOT_CONFIG.MAX_BULK_DELETE_ITEMS,
+              `Максимум ${ANTI_BOT_CONFIG.MAX_BULK_DELETE_ITEMS} элементов за раз`
+            ),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const adminId = ctx.session.user.id;
 
-        // Update all items
-        await ctx.db
-          .update(feedback)
-          .set({
-            isDeleted: true,
-            updatedAt: new Date(),
-          })
-          .where(
-            and(
-              eq(feedback.isDeleted, false),
-              // Use IN operator for multiple IDs
-              ...input.ids.map((id) => eq(feedback.id, id))
-            )
-          );
+        // Use transaction for atomicity - all or nothing
+        const result = await ctx.db.transaction(async (tx) => {
+          // 1. Update items (only non-deleted ones)
+          const updated = await tx
+            .update(feedback)
+            .set({
+              isDeleted: true,
+              updatedAt: new Date(),
+            })
+            .where(and(eq(feedback.isDeleted, false), inArray(feedback.id, input.ids)))
+            .returning({ id: feedback.id });
 
-        // Log deletions
-        for (const id of input.ids) {
-          await ctx.db.insert(feedbackHistory).values({
-            feedbackId: id,
-            action: "deleted",
-            changedById: adminId,
-            description: "Обращение удалено администратором (массовое удаление)",
-          });
-        }
+          // 2. Batch insert history records (single query instead of loop)
+          if (updated.length > 0) {
+            await tx.insert(feedbackHistory).values(
+              updated.map(({ id }) => ({
+                feedbackId: id,
+                action: "deleted" as const,
+                changedById: adminId,
+                description: "Обращение удалено администратором (массовое удаление)",
+              }))
+            );
+          }
+
+          return {
+            requested: input.ids.length,
+            actual: updated.length,
+          };
+        });
 
         return {
           success: true,
-          message: `Удалено обращений: ${input.ids.length}`,
-          count: input.ids.length,
+          message: `Удалено обращений: ${result.actual}`,
+          requested: result.requested,
+          actual: result.actual,
         };
       }),
   }),
