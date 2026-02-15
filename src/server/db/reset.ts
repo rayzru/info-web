@@ -10,14 +10,16 @@
 
 import { sql } from "drizzle-orm";
 
+import { logger } from "~/lib/logger";
+
 import { db } from "./index";
 
 async function resetDatabase() {
-  console.log("🚀 Starting database reset...");
+  logger.info("🚀 Starting database reset...");
 
   try {
     // Drop all tables (cascade will drop dependent objects)
-    console.log("🗑️  Dropping all tables...");
+    logger.info("🗑️  Dropping all tables...");
 
     await db.execute(sql`
       DROP SCHEMA public CASCADE;
@@ -26,15 +28,15 @@ async function resetDatabase() {
       GRANT ALL ON SCHEMA public TO public;
     `);
 
-    console.log("✅ All tables dropped successfully");
-    console.log("");
-    console.log("📋 Next steps:");
-    console.log("  1. Run: bun run db:push");
-    console.log("  2. Run: bun run db:seed");
-    console.log("");
-    console.log("💡 Or use the combined command: bun run db:reset:full");
+    logger.info("✅ All tables dropped successfully");
+    logger.info("");
+    logger.info("📋 Next steps:");
+    logger.info("  1. Run: bun run db:push");
+    logger.info("  2. Run: bun run db:seed");
+    logger.info("");
+    logger.info("💡 Or use the combined command: bun run db:reset:full");
   } catch (error) {
-    console.error("❌ Error resetting database:", error);
+    logger.error("❌ Error resetting database:", error);
     process.exit(1);
   } finally {
     process.exit(0);

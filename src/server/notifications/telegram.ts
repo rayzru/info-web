@@ -1,4 +1,5 @@
 import { env } from "~/env";
+import { telegramLogger } from "~/lib/logger";
 
 /**
  * Telegram notification service for admin events
@@ -109,7 +110,7 @@ export async function sendTelegramNotification(data: NotificationData): Promise<
 
   // Skip if Telegram is not configured
   if (!botToken || !channelId) {
-    console.log("[Telegram Notifications] Skipping notification - Telegram not configured");
+    telegramLogger.debug("Skipping notification - Telegram not configured");
     return false;
   }
 
@@ -131,14 +132,14 @@ export async function sendTelegramNotification(data: NotificationData): Promise<
 
     if (!response.ok) {
       const error = await response.text();
-      console.error("[Telegram Notifications] Failed to send:", error);
+      telegramLogger.error({ error, event: data.event }, "Failed to send notification");
       return false;
     }
 
-    console.log(`[Telegram Notifications] Sent notification: ${data.event} - ${data.title}`);
+    telegramLogger.info({ event: data.event, title: data.title }, "Notification sent");
     return true;
   } catch (error) {
-    console.error("[Telegram Notifications] Error sending notification:", error);
+    telegramLogger.error({ err: error, event: data.event }, "Error sending notification");
     return false;
   }
 }
@@ -149,6 +150,6 @@ export async function sendTelegramNotification(data: NotificationData): Promise<
 export function sendTelegramNotificationAsync(data: NotificationData): void {
   // Fire and forget - don't block the main request
   void sendTelegramNotification(data).catch((error) => {
-    console.error("[Telegram Notifications] Async notification failed:", error);
+    telegramLogger.error({ err: error, event: data.event }, "Async notification failed");
   });
 }

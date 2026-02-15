@@ -231,8 +231,7 @@ export default function PropertyHistoryPage() {
 
   // Determine which action buttons to show on card
   const isOwnClaim = firstClaim?.userId === currentUserId;
-  const isTenantClaim =
-    currentRole === "ApartmentResident" || currentRole === "ParkingResident";
+  const isTenantClaim = currentRole === "ApartmentResident" || currentRole === "ParkingResident";
 
   const showRevokeButton = hasApprovedClaim && currentStatus === "approved" && isOwnClaim;
   const showCancelButton = currentStatus === "pending" && isOwnClaim;
@@ -368,9 +367,7 @@ export default function PropertyHistoryPage() {
 
                     {/* Actor (Who) */}
                     <TableCell>
-                      <div className="text-sm">
-                        {ACTOR_TYPE_LABELS[actorType] ?? actorType}
-                      </div>
+                      <div className="text-sm">{ACTOR_TYPE_LABELS[actorType] ?? actorType}</div>
                     </TableCell>
 
                     {/* Data (Comment) */}

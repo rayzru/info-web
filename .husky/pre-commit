@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Run linter (ignore warnings, fail only on errors)
+echo "🔍 Linting..."
+bun run lint --quiet || {
+  echo "❌ Lint errors found. Commit aborted."
+  exit 1
+}
+
+# Run type checking
+echo "📝 Type checking..."
+bun run typecheck || {
+  echo "❌ Type check failed. Commit aborted."
+  exit 1
+}
+
+echo "✅ All pre-commit checks passed!"

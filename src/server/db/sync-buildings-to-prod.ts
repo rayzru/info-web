@@ -1,3 +1,5 @@
+import { logger } from "~/lib/logger";
+
 import { asc } from "drizzle-orm";
 import { writeFileSync } from "fs";
 import { join } from "path";
@@ -26,21 +28,21 @@ interface ComparisonResult {
 }
 
 async function compareWithProd(): Promise<ComparisonResult> {
-  console.log("🔍 Сверяем локальную БД с prod...\n");
+  logger.info("🔍 Сверяем локальную БД с prod...\n");
 
   // Read prod connection from env or ask user
   const prodDbUrl = process.env.PROD_DATABASE_URL || env.DATABASE_URL;
 
   if (prodDbUrl === env.DATABASE_URL) {
-    console.warn("⚠️  PROD_DATABASE_URL не задан, используется DATABASE_URL");
-    console.warn("   Для подключения к prod установите PROD_DATABASE_URL\n");
+    logger.warn("⚠️  PROD_DATABASE_URL не задан, используется DATABASE_URL");
+    logger.warn("   Для подключения к prod установите PROD_DATABASE_URL\n");
   }
 
   const prodDb = postgres(prodDbUrl, { max: 1 });
 
   try {
     // Get local data
-    console.log("📊 Читаем локальные данные...");
+    logger.info("📊 Читаем локальные данные...");
     const [
       localBuildings,
       localEntrances,
@@ -59,17 +61,17 @@ async function compareWithProd(): Promise<ComparisonResult> {
       db.query.parkingSpots.findMany(),
     ]);
 
-    console.log("   ✅ Локально:");
-    console.log(`      - Строений: ${localBuildings.length}`);
-    console.log(`      - Подъездов: ${localEntrances.length}`);
-    console.log(`      - Этажей: ${localFloors.length}`);
-    console.log(`      - Квартир: ${localApartments.length}`);
-    console.log(`      - Парковок: ${localParkings.length}`);
-    console.log(`      - Этажей парковок: ${localParkingFloors.length}`);
-    console.log(`      - Парковочных мест: ${localParkingSpots.length}\n`);
+    logger.info("   ✅ Локально:");
+    logger.info(`      - Строений: ${localBuildings.length}`);
+    logger.info(`      - Подъездов: ${localEntrances.length}`);
+    logger.info(`      - Этажей: ${localFloors.length}`);
+    logger.info(`      - Квартир: ${localApartments.length}`);
+    logger.info(`      - Парковок: ${localParkings.length}`);
+    logger.info(`      - Этажей парковок: ${localParkingFloors.length}`);
+    logger.info(`      - Парковочных мест: ${localParkingSpots.length}\n`);
 
     // Get prod data
-    console.log("📊 Читаем данные из prod...");
+    logger.info("📊 Читаем данные из prod...");
     const [
       prodBuildings,
       prodEntrances,
@@ -88,17 +90,17 @@ async function compareWithProd(): Promise<ComparisonResult> {
       prodDb`SELECT * FROM parking_spot`,
     ]);
 
-    console.log("   ✅ В prod:");
-    console.log(`      - Строений: ${prodBuildings.length}`);
-    console.log(`      - Подъездов: ${prodEntrances.length}`);
-    console.log(`      - Этажей: ${prodFloors.length}`);
-    console.log(`      - Квартир: ${prodApartments.length}`);
-    console.log(`      - Парковок: ${prodParkings.length}`);
-    console.log(`      - Этажей парковок: ${prodParkingFloors.length}`);
-    console.log(`      - Парковочных мест: ${prodParkingSpots.length}\n`);
+    logger.info("   ✅ В prod:");
+    logger.info(`      - Строений: ${prodBuildings.length}`);
+    logger.info(`      - Подъездов: ${prodEntrances.length}`);
+    logger.info(`      - Этажей: ${prodFloors.length}`);
+    logger.info(`      - Квартир: ${prodApartments.length}`);
+    logger.info(`      - Парковок: ${prodParkings.length}`);
+    logger.info(`      - Этажей парковок: ${prodParkingFloors.length}`);
+    logger.info(`      - Парковочных мест: ${prodParkingSpots.length}\n`);
 
     // Find missing data
-    console.log("🔎 Ищем различия...\n");
+    logger.info("🔎 Ищем различия...\n");
 
     const prodBuildingIds = new Set(prodBuildings.map((b: any) => b.id));
     const prodEntranceIds = new Set(prodEntrances.map((e: any) => e.id));
@@ -116,14 +118,14 @@ async function compareWithProd(): Promise<ComparisonResult> {
     const missingParkingFloors = localParkingFloors.filter((pf) => !prodParkingFloorIds.has(pf.id));
     const missingParkingSpots = localParkingSpots.filter((ps) => !prodParkingSpotIds.has(ps.id));
 
-    console.log("📋 Различия:");
-    console.log(`   - Строений для добавления: ${missingBuildings.length}`);
-    console.log(`   - Подъездов для добавления: ${missingEntrances.length}`);
-    console.log(`   - Этажей для добавления: ${missingFloors.length}`);
-    console.log(`   - Квартир для добавления: ${missingApartments.length}`);
-    console.log(`   - Парковок для добавления: ${missingParkings.length}`);
-    console.log(`   - Этажей парковок для добавления: ${missingParkingFloors.length}`);
-    console.log(`   - Парковочных мест для добавления: ${missingParkingSpots.length}\n`);
+    logger.info("📋 Различия:");
+    logger.info(`   - Строений для добавления: ${missingBuildings.length}`);
+    logger.info(`   - Подъездов для добавления: ${missingEntrances.length}`);
+    logger.info(`   - Этажей для добавления: ${missingFloors.length}`);
+    logger.info(`   - Квартир для добавления: ${missingApartments.length}`);
+    logger.info(`   - Парковок для добавления: ${missingParkings.length}`);
+    logger.info(`   - Этажей парковок для добавления: ${missingParkingFloors.length}`);
+    logger.info(`   - Парковочных мест для добавления: ${missingParkingSpots.length}\n`);
 
     return {
       missingBuildings,
@@ -327,35 +329,35 @@ async function main() {
       result.missingParkingSpots.length;
 
     if (totalMissing === 0) {
-      console.log("✅ Prod и локальная БД синхронизированы!");
-      console.log("   Нет данных для переноса.\n");
+      logger.info("✅ Prod и локальная БД синхронизированы!");
+      logger.info("   Нет данных для переноса.\n");
       return;
     }
 
-    console.log("📝 Генерирую SQL для синхронизации...\n");
+    logger.info("📝 Генерирую SQL для синхронизации...\n");
     const sql = generateInsertSQL(result);
 
     const outputPath = join(process.cwd(), "drizzle", "sync-to-prod.sql");
     writeFileSync(outputPath, sql, "utf-8");
 
-    console.log("✅ SQL файл создан!");
-    console.log(`📄 Файл: ${outputPath}`);
-    console.log(`📊 Размер: ${(sql.length / 1024).toFixed(2)} KB\n`);
-    console.log("🚀 Для применения в prod:");
-    console.log(`   psql <PROD_DATABASE_URL> -f ${outputPath}\n`);
-    console.log("⚠️  ВАЖНО: Проверьте файл перед применением!");
+    logger.info("✅ SQL файл создан!");
+    logger.info(`📄 Файл: ${outputPath}`);
+    logger.info(`📊 Размер: ${(sql.length / 1024).toFixed(2)} KB\n`);
+    logger.info("🚀 Для применения в prod:");
+    logger.info(`   psql <PROD_DATABASE_URL> -f ${outputPath}\n`);
+    logger.info("⚠️  ВАЖНО: Проверьте файл перед применением!");
   } catch (error) {
-    console.error("❌ Ошибка:", error);
+    logger.error("❌ Ошибка:", error);
     process.exit(1);
   }
 }
 
 main()
   .then(() => {
-    console.log("✨ Готово!");
+    logger.info("✨ Готово!");
     process.exit(0);
   })
   .catch((error) => {
-    console.error("❌ Ошибка:", error);
+    logger.error("❌ Ошибка:", error);
     process.exit(1);
   });

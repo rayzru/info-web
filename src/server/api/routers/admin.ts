@@ -1,14 +1,21 @@
 import { TRPCError } from "@trpc/server";
+import { logger } from "~/lib/logger";
+
+
 import { and, count, desc, eq, gte, ilike, isNull, or, sql } from "drizzle-orm";
+
 import { z } from "zod";
 
+
 import {
+
   BLOCK_CATEGORIES,
   type BlockCategory,
   RULES_VIOLATIONS,
   type RuleViolation,
 } from "~/lib/block-reasons";
 import {
+
   checkChatMember,
   getAdminChatId,
   getBotInfo,
@@ -16,7 +23,9 @@ import {
   isAdminChatConfigured,
 } from "~/lib/telegram";
 import { hasFeatureAccess, type UserRole } from "~/server/auth/rbac";
+
 import {
+
   accounts,
   apartments,
   buildings,
@@ -44,6 +53,7 @@ import {
 } from "~/server/db/schema";
 
 import {
+
   adminProcedure,
   adminProcedureWithFeature,
   createTRPCRouter,
@@ -962,7 +972,7 @@ export const adminRouter = createTRPCRouter({
         });
 
         // Log the action (outside transaction to ensure it's recorded)
-        console.log(
+        logger.info(
           `[ADMIN] User ${userId} force-deleted by ${ctx.session.user.id}. Reason: ${reason ?? "No reason provided"}`
         );
 

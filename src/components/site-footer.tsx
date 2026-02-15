@@ -106,7 +106,7 @@ export function SiteFooter() {
           {/* Theme switcher & Version badge */}
           <div className="flex items-center gap-2">
             {process.env.NEXT_PUBLIC_BUILD_VERSION && (
-              <Badge variant="outline" className="text-muted-foreground h-7 text-[10px] font-mono">
+              <Badge variant="outline" className="text-muted-foreground h-7 font-mono text-[10px]">
                 v{process.env.NEXT_PUBLIC_BUILD_VERSION}
               </Badge>
             )}

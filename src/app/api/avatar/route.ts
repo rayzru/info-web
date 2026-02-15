@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { logger } from "~/lib/logger";
 import { eq } from "drizzle-orm";
 import fs from "fs/promises";
 import { type NextRequest, NextResponse } from "next/server";
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
       url: avatarUrl,
     });
   } catch (error) {
-    console.error("Avatar upload error:", error);
+    logger.error("Avatar upload error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Upload failed" },
       { status: 500 }
@@ -186,7 +187,7 @@ export async function DELETE() {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Avatar delete error:", error);
+    logger.error("Avatar delete error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Delete failed" },
       { status: 500 }

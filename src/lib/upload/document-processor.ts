@@ -1,3 +1,4 @@
+import { logger } from "~/lib/logger";
 import { randomUUID } from "crypto";
 import sharp from "sharp";
 
@@ -127,7 +128,7 @@ export async function processAndSaveDocument(
         uploadType,
       });
     } catch (error) {
-      console.error("Failed to generate thumbnail:", error);
+      logger.error("Failed to generate thumbnail:", error);
       // Continue without thumbnail
     }
   }
@@ -178,7 +179,7 @@ export async function deleteDocument(urlOrPath: string): Promise<boolean> {
     // Extract S3 key from URL
     const s3Key = extractS3Key(urlOrPath);
     if (!s3Key) {
-      console.error("Invalid S3 URL:", urlOrPath);
+      logger.error("Invalid S3 URL:", urlOrPath);
       return false;
     }
 
@@ -195,7 +196,7 @@ export async function deleteDocument(urlOrPath: string): Promise<boolean> {
 
     return deleted;
   } catch (error) {
-    console.error("Failed to delete document:", error);
+    logger.error("Failed to delete document:", error);
     return false;
   }
 }

@@ -210,7 +210,7 @@ export function LoginForm({ className, ...props }: Readonly<LoginFormProps>) {
           />
 
           {resendSuccess && (
-            <p className="text-green-600 text-sm" data-testid="resend-success">
+            <p className="text-sm text-green-600" data-testid="resend-success">
               Письмо для подтверждения отправлено повторно. Проверьте почту.
             </p>
           )}

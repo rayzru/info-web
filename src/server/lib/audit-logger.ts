@@ -98,44 +98,46 @@ function generateDescription(action: AuditAction, options: AuditLogOptions): str
   if (metadata) {
     switch (action) {
       case "user_blocked":
-        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason}` : baseLabel;
+        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason as string}` : baseLabel;
 
       case "user_unblocked":
-        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason}` : baseLabel;
+        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason as string}` : baseLabel;
 
       case "role_granted":
-        return metadata.role ? `${baseLabel}: ${metadata.role}` : baseLabel;
+        return metadata.role ? `${baseLabel}: ${metadata.role as string}` : baseLabel;
 
       case "role_revoked":
-        return metadata.role ? `${baseLabel}: ${metadata.role}` : baseLabel;
+        return metadata.role ? `${baseLabel}: ${metadata.role as string}` : baseLabel;
 
       case "listing_rejected":
       case "publication_rejected":
-        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason}` : baseLabel;
+        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason as string}` : baseLabel;
 
       case "listing_archived":
-        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason}` : baseLabel;
+        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason as string}` : baseLabel;
 
       case "deletion_rejected":
-        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason}` : baseLabel;
+        return metadata.reason ? `${baseLabel}. Причина: ${metadata.reason as string}` : baseLabel;
 
       case "feedback_status_changed":
         if (metadata.fromStatus && metadata.toStatus) {
-          return `${baseLabel}: ${metadata.fromStatus} → ${metadata.toStatus}`;
+          return `${baseLabel}: ${metadata.fromStatus as string} → ${metadata.toStatus as string}`;
         }
         return baseLabel;
 
       case "feedback_priority_changed":
         if (metadata.fromPriority && metadata.toPriority) {
-          return `${baseLabel}: ${metadata.fromPriority} → ${metadata.toPriority}`;
+          return `${baseLabel}: ${metadata.fromPriority as string} → ${metadata.toPriority as string}`;
         }
         return baseLabel;
 
       case "feedback_assigned":
-        return metadata.assigneeName ? `${baseLabel}: ${metadata.assigneeName}` : baseLabel;
+        return metadata.assigneeName
+          ? `${baseLabel}: ${metadata.assigneeName as string}`
+          : baseLabel;
 
       case "feedback_forwarded":
-        return metadata.forwardedTo ? `${baseLabel}: ${metadata.forwardedTo}` : baseLabel;
+        return metadata.forwardedTo ? `${baseLabel}: ${metadata.forwardedTo as string}` : baseLabel;
 
       default:
         return baseLabel;

@@ -30,7 +30,7 @@ setInterval(
  * @param windowMs - Time window in milliseconds
  * @returns true if rate limit exceeded
  */
-export function isRateLimited(key: string, limit: number = 5, windowMs: number = 60000): boolean {
+export function isRateLimited(key: string, limit = 5, windowMs = 60000): boolean {
   const now = Date.now();
   const entry = rateLimitStore.get(key);
 

@@ -1,4 +1,7 @@
 import type { OAuthConfig, OAuthUserConfig } from "next-auth/providers";
+import { logger } from "~/lib/logger";
+
+
 
 export interface VKIDProfile {
   user: {
@@ -48,7 +51,7 @@ export default function VKIDProvider(
       url: "https://id.vk.com/oauth2/user_info",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async request({ tokens }: { tokens: any }) {
-        console.log("[VK ID] Userinfo request, tokens:", tokens);
+        logger.info("[VK ID] Userinfo request, tokens:", tokens);
         const response = await fetch("https://id.vk.com/oauth2/user_info", {
           method: "POST",
           headers: {
@@ -60,12 +63,12 @@ export default function VKIDProvider(
           }),
         });
         const data = await response.json();
-        console.log("[VK ID] Userinfo response:", data);
+        logger.info("[VK ID] Userinfo response:", data);
         return data;
       },
     },
     profile(profile) {
-      console.log("[VK ID] Profile:", profile);
+      logger.info("[VK ID] Profile:", profile);
       const user = profile.user;
       return {
         id: String(user.user_id),

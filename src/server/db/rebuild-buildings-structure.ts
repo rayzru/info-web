@@ -1,3 +1,5 @@
+import { logger } from "~/lib/logger";
+
 import { asc } from "drizzle-orm";
 import { writeFileSync } from "fs";
 import { join } from "path";
@@ -14,10 +16,10 @@ import { db } from "./index";
  */
 
 async function generateRebuildSQL() {
-  console.log("🔄 Генерируем SQL для полной замены структуры ЖК...\n");
+  logger.info("🔄 Генерируем SQL для полной замены структуры ЖК...\n");
 
   // Читаем локальные данные
-  console.log("📊 Читаем данные из локальной БД...");
+  logger.info("📊 Читаем данные из локальной БД...");
   const [
     localBuildings,
     localEntrances,
@@ -36,14 +38,14 @@ async function generateRebuildSQL() {
     db.query.parkingSpots.findMany(),
   ]);
 
-  console.log("   ✅ Данные прочитаны:");
-  console.log(`      - Строений: ${localBuildings.length}`);
-  console.log(`      - Подъездов: ${localEntrances.length}`);
-  console.log(`      - Этажей: ${localFloors.length}`);
-  console.log(`      - Квартир: ${localApartments.length}`);
-  console.log(`      - Парковок: ${localParkings.length}`);
-  console.log(`      - Этажей парковок: ${localParkingFloors.length}`);
-  console.log(`      - Парковочных мест: ${localParkingSpots.length}\n`);
+  logger.info("   ✅ Данные прочитаны:");
+  logger.info(`      - Строений: ${localBuildings.length}`);
+  logger.info(`      - Подъездов: ${localEntrances.length}`);
+  logger.info(`      - Этажей: ${localFloors.length}`);
+  logger.info(`      - Квартир: ${localApartments.length}`);
+  logger.info(`      - Парковок: ${localParkings.length}`);
+  logger.info(`      - Этажей парковок: ${localParkingFloors.length}`);
+  logger.info(`      - Парковочных мест: ${localParkingSpots.length}\n`);
 
   const sqlLines: string[] = [];
 
@@ -251,28 +253,28 @@ async function main() {
     const outputPath = join(process.cwd(), "drizzle", "rebuild-buildings.sql");
     writeFileSync(outputPath, sql, "utf-8");
 
-    console.log("✅ SQL файл создан!");
-    console.log(`📄 Файл: ${outputPath}`);
-    console.log(`📊 Размер: ${(sql.length / 1024).toFixed(2)} KB\n`);
-    console.log("⚠️  КРИТИЧЕСКАЯ ВАЖНОСТЬ:");
-    console.log("   1. Этот скрипт УДАЛИТ все квартиры и парковки");
-    console.log("   2. Все связи user_apartment и user_parking_spot будут УДАЛЕНЫ");
-    console.log("   3. Убедитесь, что есть резервная копия БД");
-    console.log("   4. После применения нужно ПЕРЕСОЗДАТЬ связи пользователей\n");
-    console.log("🚀 Для применения в prod:");
-    console.log(`   psql <PROD_DATABASE_URL> -f ${outputPath}\n`);
+    logger.info("✅ SQL файл создан!");
+    logger.info(`📄 Файл: ${outputPath}`);
+    logger.info(`📊 Размер: ${(sql.length / 1024).toFixed(2)} KB\n`);
+    logger.info("⚠️  КРИТИЧЕСКАЯ ВАЖНОСТЬ:");
+    logger.info("   1. Этот скрипт УДАЛИТ все квартиры и парковки");
+    logger.info("   2. Все связи user_apartment и user_parking_spot будут УДАЛЕНЫ");
+    logger.info("   3. Убедитесь, что есть резервная копия БД");
+    logger.info("   4. После применения нужно ПЕРЕСОЗДАТЬ связи пользователей\n");
+    logger.info("🚀 Для применения в prod:");
+    logger.info(`   psql <PROD_DATABASE_URL> -f ${outputPath}\n`);
   } catch (error) {
-    console.error("❌ Ошибка:", error);
+    logger.error("❌ Ошибка:", error);
     process.exit(1);
   }
 }
 
 main()
   .then(() => {
-    console.log("✨ Готово!");
+    logger.info("✨ Готово!");
     process.exit(0);
   })
   .catch((error) => {
-    console.error("❌ Ошибка:", error);
+    logger.error("❌ Ошибка:", error);
     process.exit(1);
   });

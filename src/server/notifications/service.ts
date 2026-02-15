@@ -5,6 +5,7 @@
  * (email, push notifications, in-app notifications, etc.)
  */
 
+import { logger } from "~/lib/logger";
 import { type EmailPayload, type EmailTemplateId, sendEmail } from "~/server/email";
 
 import type {
@@ -346,15 +347,15 @@ export async function notify(
       default: {
         // TypeScript will catch unhandled event types at compile time
         const _exhaustiveCheck: never = event;
-        console.warn("Unhandled notification event type:", _exhaustiveCheck);
+        logger.warn({ event: _exhaustiveCheck }, "Unhandled notification event type");
       }
     }
 
-    console.log(`Notification sent: ${event.type} to ${event.email}`);
+    logger.info({ type: event.type, email: event.email }, "Notification sent");
     return { success: true };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error(`Failed to send notification ${event.type}:`, error);
+    logger.error({ err: error, type: event.type, email: event.email }, "Failed to send notification");
     return { success: false, error: errorMessage };
   }
 }
@@ -367,6 +368,6 @@ export async function notify(
  */
 export function notifyAsync(event: NotificationEvent): void {
   notify(event).catch((err) => {
-    console.error(`Async notification failed for ${event.type}:`, err);
+    logger.error({ err, type: event.type }, "Async notification failed");
   });
 }

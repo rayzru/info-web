@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 
-import {
-  AlertTriangle,
-  Check,
-  Loader2,
-  MoreHorizontal,
-  Trash2,
-  X,
-} from "lucide-react";
+import { AlertTriangle, Check, Loader2, MoreHorizontal, Trash2, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
@@ -503,9 +496,7 @@ export default function AdminDeletionRequestsPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <div className="truncate font-medium">
-                      {request.user?.name ?? "Без имени"}
-                    </div>
+                    <div className="truncate font-medium">{request.user?.name ?? "Без имени"}</div>
                     <div className="text-muted-foreground truncate text-xs">
                       {request.user?.email}
                     </div>
@@ -515,9 +506,7 @@ export default function AdminDeletionRequestsPage() {
                 {/* Reason */}
                 <div className="hidden w-64 lg:block">
                   {request.reason ? (
-                    <p className="text-muted-foreground line-clamp-2 text-sm">
-                      {request.reason}
-                    </p>
+                    <p className="text-muted-foreground line-clamp-2 text-sm">{request.reason}</p>
                   ) : (
                     <span className="text-muted-foreground text-sm">—</span>
                   )}

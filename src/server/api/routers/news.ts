@@ -1,14 +1,25 @@
 import type { JSONContent } from "@tiptap/react";
+import { logger } from "~/lib/logger";
+
+
 import { TRPCError } from "@trpc/server";
+
 import { and, count, desc, eq, gte, lte, or, sql } from "drizzle-orm";
+
 import { z } from "zod";
 
+
 import { extractPlainText } from "~/lib/editor";
+
 import { deleteImage } from "~/lib/upload/image-processor";
+
 import { news, newsStatusEnum, newsTags, newsTypeEnum } from "~/server/db/schema";
+
 import { sendTelegramNotificationAsync } from "~/server/notifications/telegram";
 
+
 import { adminProcedureWithFeature, createTRPCRouter, publicProcedure } from "../trpc";
+
 
 // ============================================================================
 // Validation Schemas
@@ -553,9 +564,9 @@ export const newsRouter = createTRPCRouter({
         if (newsData.coverImage !== existing.coverImage) {
           try {
             await deleteImage(existing.coverImage);
-            console.log(`[News] Deleted old cover image: ${existing.coverImage}`);
+            logger.info(`[News] Deleted old cover image: ${existing.coverImage}`);
           } catch (error) {
-            console.error("[News] Failed to delete old cover image:", error);
+            logger.error("[News] Failed to delete old cover image:", error);
             // Continue with update even if deletion fails
           }
         }
@@ -629,9 +640,9 @@ export const newsRouter = createTRPCRouter({
       if (existing.coverImage) {
         try {
           await deleteImage(existing.coverImage);
-          console.log(`[News] Deleted cover image from S3: ${existing.coverImage}`);
+          logger.info(`[News] Deleted cover image from S3: ${existing.coverImage}`);
         } catch (error) {
-          console.error("[News] Failed to delete cover image from S3:", error);
+          logger.error("[News] Failed to delete cover image from S3:", error);
           // Continue with news deletion even if S3 deletion fails
         }
       }

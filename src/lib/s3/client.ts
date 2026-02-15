@@ -1,6 +1,7 @@
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 import { env } from "~/env";
+import { s3Logger } from "~/lib/logger";
 
 /**
  * S3 Client configured for Timeweb Cloud S3-compatible storage
@@ -36,7 +37,7 @@ export async function uploadToS3(
   metadata?: Record<string, string>
 ): Promise<string> {
   try {
-    console.log(`[S3] Uploading to key: ${key}, size: ${buffer.length} bytes`);
+    s3Logger.debug({ key, size: buffer.length }, "Uploading to S3");
 
     const command = new PutObjectCommand({
       Bucket: env.S3_BUCKET,
@@ -57,13 +58,18 @@ export async function uploadToS3(
       ? `${env.S3_PUBLIC_URL}/${key}`
       : `${env.S3_URL}/${env.S3_BUCKET}/${key}`;
 
-    console.log(`[S3] Upload successful: ${publicUrl}`);
+    s3Logger.info({ key, publicUrl }, "Upload successful");
     return publicUrl;
   } catch (error) {
-    console.error("[S3] Upload failed:", error);
-    console.error("[S3] Key:", key);
-    console.error("[S3] Bucket:", env.S3_BUCKET);
-    console.error("[S3] Endpoint:", env.S3_URL);
+    s3Logger.error(
+      {
+        err: error,
+        key,
+        bucket: env.S3_BUCKET,
+        endpoint: env.S3_URL,
+      },
+      "Upload failed"
+    );
     throw new Error(
       `Failed to upload to S3: ${error instanceof Error ? error.message : "Unknown error"}`
     );
@@ -84,9 +90,10 @@ export async function deleteFromS3(key: string): Promise<boolean> {
     });
 
     await s3Client.send(command);
+    s3Logger.info({ key }, "File deleted from S3");
     return true;
   } catch (error) {
-    console.error("Failed to delete from S3:", error);
+    s3Logger.error({ err: error, key }, "Failed to delete from S3");
     return false;
   }
 }

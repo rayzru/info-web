@@ -1,10 +1,18 @@
 import type { JSONContent } from "@tiptap/react";
+import { logger } from "~/lib/logger";
+
+
 import { TRPCError } from "@trpc/server";
+
 import { and, count, desc, eq, gte, inArray, isNull, lte, ne, or, sql } from "drizzle-orm";
+
 import { z } from "zod";
 
+
 import { deleteImage } from "~/lib/upload/image-processor";
+
 import {
+
   eventRecurrenceTypeEnum,
   publications,
   publicationStatusEnum,
@@ -18,7 +26,9 @@ import {
 } from "~/server/db/schema";
 import { sendTelegramNotificationAsync } from "~/server/notifications/telegram";
 
+
 import {
+
   adminProcedureWithFeature,
   createTRPCRouter,
   protectedProcedure,
@@ -466,9 +476,9 @@ export const publicationsRouter = createTRPCRouter({
       if (updateData.coverImage !== existing.coverImage) {
         try {
           await deleteImage(existing.coverImage);
-          console.log(`[Publications] Deleted old cover image: ${existing.coverImage}`);
+          logger.info(`[Publications] Deleted old cover image: ${existing.coverImage}`);
         } catch (error) {
-          console.error("[Publications] Failed to delete old cover image:", error);
+          logger.error("[Publications] Failed to delete old cover image:", error);
         }
       }
     }
@@ -539,9 +549,9 @@ export const publicationsRouter = createTRPCRouter({
       if (existing.coverImage) {
         try {
           await deleteImage(existing.coverImage);
-          console.log(`[Publications] Deleted cover image from S3: ${existing.coverImage}`);
+          logger.info(`[Publications] Deleted cover image from S3: ${existing.coverImage}`);
         } catch (error) {
-          console.error("[Publications] Failed to delete cover image from S3:", error);
+          logger.error("[Publications] Failed to delete cover image from S3:", error);
         }
       }
 
@@ -955,9 +965,9 @@ export const publicationsRouter = createTRPCRouter({
         if (existing?.coverImage) {
           try {
             await deleteImage(existing.coverImage);
-            console.log(`[Publications] Admin deleted cover image from S3: ${existing.coverImage}`);
+            logger.info(`[Publications] Admin deleted cover image from S3: ${existing.coverImage}`);
           } catch (error) {
-            console.error("[Publications] Failed to delete cover image from S3:", error);
+            logger.error("[Publications] Failed to delete cover image from S3:", error);
           }
         }
 

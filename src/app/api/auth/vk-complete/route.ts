@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { logger } from "~/lib/logger";
 import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
@@ -50,18 +51,18 @@ export async function GET(request: NextRequest) {
   const sessionCookie = cookieStore.get("vk_session_temp")?.value;
 
   if (!sessionCookie) {
-    console.error("[VK Complete] No session cookie found");
+    logger.error("[VK Complete] No session cookie found");
     return NextResponse.redirect(new URL("/login?error=NoSession", baseUrl));
   }
 
   try {
     const sessionData = JSON.parse(Buffer.from(sessionCookie, "base64").toString());
-    console.log("[VK Complete] Session data:", sessionData);
+    logger.info("[VK Complete] Session data:", sessionData);
 
     const { user: vkUser, accessToken, refreshToken } = sessionData;
 
     if (!vkUser?.id) {
-      console.error("[VK Complete] No user ID in session");
+      logger.error("[VK Complete] No user ID in session");
       return NextResponse.redirect(new URL("/login?error=NoUserId", baseUrl));
     }
 
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest) {
     if (existingAccount) {
       // Update existing account
       userId = existingAccount.userId;
-      console.log("[VK Complete] Existing user found:", userId);
+      logger.info("[VK Complete] Existing user found:", userId);
 
       await db
         .update(accounts)
@@ -86,7 +87,7 @@ export async function GET(request: NextRequest) {
         .where(and(eq(accounts.provider, "vk"), eq(accounts.providerAccountId, vkUser.id)));
     } else {
       // Create new user
-      console.log("[VK Complete] Creating new user for VK ID:", vkUser.id);
+      logger.info("[VK Complete] Creating new user for VK ID:", vkUser.id);
 
       // Check if user with this email exists
       let existingUser = null;
@@ -98,7 +99,7 @@ export async function GET(request: NextRequest) {
 
       if (existingUser) {
         userId = existingUser.id;
-        console.log("[VK Complete] Linking to existing user by email:", userId);
+        logger.info("[VK Complete] Linking to existing user by email:", userId);
       } else {
         // Create new user
         const [newUser] = await db
@@ -112,7 +113,7 @@ export async function GET(request: NextRequest) {
           .returning();
 
         userId = newUser!.id;
-        console.log("[VK Complete] Created new user:", userId);
+        logger.info("[VK Complete] Created new user:", userId);
 
         // Assign Guest role
         await db.insert(userRoles).values({
@@ -132,7 +133,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    console.log("[VK Complete] User authenticated:", userId);
+    logger.info("[VK Complete] User authenticated:", userId);
 
     // Generate signed token for session creation
     const sessionToken = generateSessionToken(userId);
@@ -161,7 +162,7 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (err) {
-    console.error("[VK Complete] Error:", err);
+    logger.error("[VK Complete] Error:", err);
     return NextResponse.redirect(new URL("/login?error=CompleteError", baseUrl));
   }
 }

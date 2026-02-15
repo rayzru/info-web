@@ -1,10 +1,17 @@
 import { TRPCError } from "@trpc/server";
+import { logger } from "~/lib/logger";
+
+
 import { and, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+
 import { z } from "zod";
+
 
 import { media, mediaTags, mediaToTags, mediaTypeEnum } from "~/server/db/schema";
 
+
 import { adminProcedureWithFeature, createTRPCRouter, protectedProcedure } from "../trpc";
+
 
 // ============================================================================
 // Validation Schemas
@@ -297,10 +304,10 @@ export const mediaRouter = createTRPCRouter({
         const s3Key = extractS3Key(existing.url);
         if (s3Key) {
           await deleteFromS3(s3Key);
-          console.log(`[Media] Deleted file from S3: ${s3Key}`);
+          logger.info(`[Media] Deleted file from S3: ${s3Key}`);
         }
       } catch (error) {
-        console.error("[Media] Failed to delete file from S3:", error);
+        logger.error("[Media] Failed to delete file from S3:", error);
       }
 
       await ctx.db.delete(media).where(eq(media.id, input.id));
