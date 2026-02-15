@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, count, desc, eq, gte } from "drizzle-orm";
 import { z } from "zod";
 
+import { validateFingerprint, validateTimeToken } from "~/lib/anti-bot";
 import {
   feedback,
   FEEDBACK_LIMITS,
@@ -41,6 +42,10 @@ const createFeedbackSchema = z.object({
   // Вложения (могут быть относительными путями типа /uploads/...)
   attachments: z.array(z.string().min(1)).max(FEEDBACK_LIMITS.MAX_ATTACHMENTS).optional(),
   photos: z.array(z.string().min(1)).max(FEEDBACK_LIMITS.MAX_PHOTOS).optional(),
+  // Anti-bot protection
+  website: z.string().optional(), // Honeypot field (must be empty)
+  timeToken: z.string().min(1, "Отсутствует токен времени"), // Time-based token
+  fingerprint: z.string().min(1, "Отсутствует отпечаток браузера"), // Browser fingerprint
 });
 
 // ============================================================================
@@ -54,6 +59,32 @@ export const feedbackRouter = createTRPCRouter({
    * Submit new feedback (available to everyone, including guests)
    */
   submit: publicProcedure.input(createFeedbackSchema).mutation(async ({ ctx, input }) => {
+    // ==================== Anti-bot validation ====================
+
+    // 1. Honeypot check - website field must be empty
+    if (input.website && input.website.trim() !== "") {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Обращение временно недоступно. Попробуйте позже.",
+      });
+    }
+
+    // 2. Time token validation - user must spend reasonable time on form
+    if (!validateTimeToken(input.timeToken, 3, 600)) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Форма заполнена слишком быстро или токен устарел. Попробуйте снова.",
+      });
+    }
+
+    // 3. Fingerprint validation - basic browser fingerprint check
+    if (!validateFingerprint(input.fingerprint)) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Не удалось проверить подлинность браузера. Попробуйте обновить страницу.",
+      });
+    }
+
     // Get IP address from headers (for rate limiting)
     const forwardedFor = ctx.headers.get("x-forwarded-for");
     const realIp = ctx.headers.get("x-real-ip");
@@ -506,5 +537,84 @@ export const feedbackRouter = createTRPCRouter({
         ),
       };
     }),
+
+    /**
+     * Delete feedback (soft delete)
+     */
+    delete: adminProcedureWithFeature("users:manage")
+      .input(z.object({ id: z.string().uuid() }))
+      .mutation(async ({ ctx, input }) => {
+        const adminId = ctx.session.user.id;
+
+        const existing = await ctx.db.query.feedback.findFirst({
+          where: eq(feedback.id, input.id),
+        });
+
+        if (!existing) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Обращение не найдено",
+          });
+        }
+
+        // Soft delete
+        await ctx.db
+          .update(feedback)
+          .set({
+            isDeleted: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(feedback.id, input.id));
+
+        // Log deletion
+        await ctx.db.insert(feedbackHistory).values({
+          feedbackId: input.id,
+          action: "deleted",
+          changedById: adminId,
+          description: "Обращение удалено администратором",
+        });
+
+        return { success: true, message: "Обращение удалено" };
+      }),
+
+    /**
+     * Bulk delete feedback (soft delete multiple items)
+     */
+    bulkDelete: adminProcedureWithFeature("users:manage")
+      .input(z.object({ ids: z.array(z.string().uuid()).min(1).max(100) }))
+      .mutation(async ({ ctx, input }) => {
+        const adminId = ctx.session.user.id;
+
+        // Update all items
+        await ctx.db
+          .update(feedback)
+          .set({
+            isDeleted: true,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(feedback.isDeleted, false),
+              // Use IN operator for multiple IDs
+              ...input.ids.map((id) => eq(feedback.id, id))
+            )
+          );
+
+        // Log deletions
+        for (const id of input.ids) {
+          await ctx.db.insert(feedbackHistory).values({
+            feedbackId: id,
+            action: "deleted",
+            changedById: adminId,
+            description: "Обращение удалено администратором (массовое удаление)",
+          });
+        }
+
+        return {
+          success: true,
+          message: `Удалено обращений: ${input.ids.length}`,
+          count: input.ids.length,
+        };
+      }),
   }),
 });

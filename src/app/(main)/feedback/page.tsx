@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { generateFingerprint, generateTimeToken } from "~/lib/anti-bot";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -81,6 +82,11 @@ export default function FeedbackPage() {
   const [photos, setPhotos] = useState<string[]>([]);
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
+  // Anti-bot protection
+  const [timeToken] = useState(() => generateTimeToken());
+  const [fingerprint] = useState(() => generateFingerprint());
+  const [honeypotValue, setHoneypotValue] = useState("");
+
   // Read URL params for pre-filling
   const typeParam = searchParams.get("type");
   const titleParam = searchParams.get("title");
@@ -145,6 +151,10 @@ export default function FeedbackPage() {
       contactEmail: values.contactEmail || undefined,
       contactPhone: values.contactPhone || undefined,
       photos: photos.length > 0 ? photos : undefined,
+      // Anti-bot fields
+      website: honeypotValue, // Should be empty
+      timeToken,
+      fingerprint,
     });
   };
 
@@ -417,6 +427,20 @@ export default function FeedbackPage() {
                 addWatermark={false}
               />
             )}
+          </div>
+
+          {/* Honeypot field (hidden, bots will fill it) */}
+          <div className="hidden" aria-hidden="true">
+            <label htmlFor="website">Оставьте это поле пустым</label>
+            <input
+              type="text"
+              id="website"
+              name="website"
+              value={honeypotValue}
+              onChange={(e) => setHoneypotValue(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+            />
           </div>
 
           {/* Submit */}
