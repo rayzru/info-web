@@ -113,7 +113,7 @@ export type EmailPayload<T extends EmailTemplateId> = T extends "welcome"
  * Template subjects mapping
  */
 const templateSubjects: Record<EmailTemplateId, string> = {
-  welcome: "Добро пожаловать в Парадную!",
+  welcome: "Добро пожаловать в SR2.ru!",
   verification: "Подтвердите ваш email",
   "password-reset": "Сброс пароля",
   "password-changed": "Пароль успешно изменён",
