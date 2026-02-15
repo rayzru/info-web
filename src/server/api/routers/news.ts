@@ -774,4 +774,57 @@ export const newsRouter = createTRPCRouter({
         messageId: result.messageId,
       };
     }),
+
+  /**
+   * Admin: Generate unique slug from title
+   */
+  generateSlug: adminProcedureWithFeature("directory:manage")
+    .input(
+      z.object({
+        title: z.string().min(1),
+        excludeId: z.string().uuid().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { title, excludeId } = input;
+
+      // Generate base slug (fallback to date if title is empty)
+      let baseSlug: string;
+      if (!title.trim()) {
+        const dateStr = new Date().toISOString().slice(0, 10);
+        baseSlug = dateStr;
+      } else {
+        baseSlug = generateSlug(title);
+      }
+
+      // Check if slug is unique
+      let finalSlug = baseSlug;
+      let suffix = 1;
+
+      while (true) {
+        const existing = await ctx.db.query.news.findFirst({
+          where: excludeId
+            ? and(eq(news.slug, finalSlug), sql`${news.id} != ${excludeId}`)
+            : eq(news.slug, finalSlug),
+        });
+
+        if (!existing) {
+          break;
+        }
+
+        // Add numeric suffix
+        finalSlug = `${baseSlug}-${suffix}`;
+        suffix++;
+
+        // Safety limit to prevent infinite loop
+        if (suffix > 100) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Не удалось сгенерировать уникальный slug",
+          });
+        }
+      }
+
+      return { slug: finalSlug };
+    }),
 });

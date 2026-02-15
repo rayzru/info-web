@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import type { JSONContent } from "@tiptap/react";
-import { ArrowLeft, ExternalLink, Loader2, Save, Send, Trash2, User } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Save, Send, Sparkles, Trash2, User } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
@@ -100,6 +100,16 @@ export default function EditNewsPage() {
     onSuccess: () => {
       toast({ title: "Опубликовано в Telegram" });
       setTelegramDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const generateSlugMutation = api.news.generateSlug.useMutation({
+    onSuccess: (data) => {
+      setSlug(data.slug);
+      toast({ title: "Slug сгенерирован", description: data.slug });
     },
     onError: (error) => {
       toast({ title: "Ошибка", description: error.message, variant: "destructive" });
@@ -230,7 +240,33 @@ export default function EditNewsPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="slug">Slug (URL)</Label>
-                  <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
+                  <div className="flex gap-2">
+                    <Input
+                      id="slug"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                      placeholder="Автоматически из заголовка"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        generateSlugMutation.mutate({ title: title || "", excludeId: id })
+                      }
+                      disabled={generateSlugMutation.isPending}
+                      title="Сгенерировать slug из заголовка"
+                    >
+                      {generateSlugMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-muted-foreground text-xs">
+                    Нажмите ✨ для автогенерации из заголовка (транслитерация в [a-z0-9-])
+                  </p>
                 </div>
 
                 <div className="space-y-2">
