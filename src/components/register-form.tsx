@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
@@ -8,6 +8,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
+
+import { generateFingerprint, generateTimeToken } from "~/lib/anti-bot";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -41,9 +43,22 @@ export function RegisterForm({ className, ...props }: Readonly<RegisterFormProps
       email: "",
       password: "",
       confirmPassword: "",
+      // Anti-bot fields
+      website: "", // Honeypot - must stay empty
+      timeToken: "",
+      fingerprint: "",
     },
     mode: "onChange",
   });
+
+  // Generate time token and fingerprint on mount
+  useEffect(() => {
+    const timeToken = generateTimeToken();
+    const fingerprint = generateFingerprint();
+
+    form.setValue("timeToken", timeToken);
+    form.setValue("fingerprint", fingerprint);
+  }, [form]);
 
   const registerMutation = api.auth.register.useMutation({
     onSuccess: (_data, variables) => {
@@ -62,6 +77,10 @@ export function RegisterForm({ className, ...props }: Readonly<RegisterFormProps
       email: data.email,
       password: data.password,
       name: data.name,
+      // Anti-bot fields
+      website: data.website,
+      timeToken: data.timeToken,
+      fingerprint: data.fingerprint,
     });
   };
 
@@ -76,6 +95,26 @@ export function RegisterForm({ className, ...props }: Readonly<RegisterFormProps
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          {/* Honeypot field - hidden from users, bots will fill it */}
+          <FormField
+            control={form.control}
+            name="website"
+            render={({ field }) => (
+              <FormItem className="absolute -left-2499.75 h-0 w-0 overflow-hidden opacity-0">
+                <FormLabel>Website</FormLabel>
+                <FormControl>
+                  <Input
+                    type="text"
+                    placeholder="https://example.com"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    {...field}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="name"

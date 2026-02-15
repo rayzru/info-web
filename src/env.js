@@ -73,7 +73,7 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    NEXT_PUBLIC_BUILD_VERSION: z.string().optional(),
   },
 
   /**
@@ -81,6 +81,7 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
+    NEXT_PUBLIC_BUILD_VERSION: process.env.NEXT_PUBLIC_BUILD_VERSION,
     AUTH_SECRET: process.env.AUTH_SECRET,
     // OAuth Providers
     YANDEX_CLIENT_ID: process.env.YANDEX_CLIENT_ID,

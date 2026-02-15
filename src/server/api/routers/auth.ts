@@ -3,6 +3,8 @@ import crypto from "crypto";
 import { and, eq, gt } from "drizzle-orm";
 import { z } from "zod";
 
+import { validateFingerprint, validateTimeToken } from "~/lib/anti-bot";
+import { getClientIp, isRateLimited } from "~/lib/rate-limit";
 import { passwordSchema, registerInputSchema } from "~/lib/validations/auth";
 import {
   accounts,
@@ -18,6 +20,28 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 export const authRouter = createTRPCRouter({
   // Register new user with email and password
   register: publicProcedure.input(registerInputSchema).mutation(async ({ ctx, input }) => {
+    // Rate limiting - 5 attempts per 15 minutes per IP
+    const clientIp = getClientIp(ctx.headers);
+    if (isRateLimited(`register:${clientIp}`, 5, 15 * 60 * 1000)) {
+      throw new Error("Слишком много попыток регистрации. Попробуйте через 15 минут.");
+    }
+
+    // Anti-bot validation
+    // 1. Honeypot check - website field must be empty
+    if (input.website && input.website.trim() !== "") {
+      throw new Error("Регистрация временно недоступна. Попробуйте позже.");
+    }
+
+    // 2. Time token validation - user must spend at least 3 seconds on form
+    if (input.timeToken && !validateTimeToken(input.timeToken, 3, 600)) {
+      throw new Error("Регистрация временно недоступна. Попробуйте позже.");
+    }
+
+    // 3. Fingerprint validation - basic format check
+    if (input.fingerprint && !validateFingerprint(input.fingerprint)) {
+      throw new Error("Регистрация временно недоступна. Попробуйте позже.");
+    }
+
     // Check if user already exists
     const existingUser = await ctx.db.query.users.findFirst({
       where: eq(users.email, input.email.toLowerCase()),

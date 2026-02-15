@@ -15,6 +15,9 @@ const withSerwist = withSerwistInit({
 const config = {
   output: "standalone",
   serverExternalPackages: ["sharp"],
+  env: {
+    NEXT_PUBLIC_BUILD_VERSION: process.env.NEXT_PUBLIC_BUILD_VERSION || "dev",
+  },
   images: {
     remotePatterns: [
       {

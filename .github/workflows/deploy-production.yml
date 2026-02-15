@@ -34,9 +34,13 @@ jobs:
           echo "=== Cleaning Next.js cache ==="
           rm -rf .next/cache
 
+          # Extract version from package.json
+          BUILD_VERSION=$(cat package.json | grep '"version"' | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
+          echo "=== Build version: $BUILD_VERSION ==="
+
           # Build with production settings
           echo "=== Building application ==="
-          NODE_ENV=production bun run build
+          NEXT_PUBLIC_BUILD_VERSION=$BUILD_VERSION NODE_ENV=production bun run build
 
           # Capture BUILD_ID for verification
           BUILD_ID=$(cat .next/BUILD_ID)

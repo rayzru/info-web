@@ -9,6 +9,7 @@ import { useTheme } from "next-themes";
 import { cn } from "~/lib/utils";
 import { type Theme, useThemeStore } from "~/stores/theme-store";
 
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { useThemeTransition } from "./theme-transition";
 
@@ -102,24 +103,31 @@ export function SiteFooter() {
               Ст. 30 Конституции РФ
             </a>
           </span>
-          {/* Theme switcher */}
-          <div className="bg-background flex items-center gap-0.5 rounded-md border p-0.5">
-            {themeOptions.map((option) => {
-              const Icon = option.icon;
-              const isSelected = theme === option.value;
-              return (
-                <Button
-                  key={option.value}
-                  variant="ghost"
-                  size="icon"
-                  className={cn("h-7 w-7", isSelected && "bg-muted")}
-                  onClick={(e) => handleThemeChange(option.value, e)}
-                  title={option.label}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                </Button>
-              );
-            })}
+          {/* Theme switcher & Version badge */}
+          <div className="flex items-center gap-2">
+            {process.env.NEXT_PUBLIC_BUILD_VERSION && (
+              <Badge variant="outline" className="text-muted-foreground h-7 text-[10px] font-mono">
+                v{process.env.NEXT_PUBLIC_BUILD_VERSION}
+              </Badge>
+            )}
+            <div className="bg-background flex items-center gap-0.5 rounded-md border p-0.5">
+              {themeOptions.map((option) => {
+                const Icon = option.icon;
+                const isSelected = theme === option.value;
+                return (
+                  <Button
+                    key={option.value}
+                    variant="ghost"
+                    size="icon"
+                    className={cn("h-7 w-7", isSelected && "bg-muted")}
+                    onClick={(e) => handleThemeChange(option.value, e)}
+                    title={option.label}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                  </Button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
