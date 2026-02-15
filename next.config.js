@@ -30,6 +30,11 @@ const config = {
         hostname: "beta.sr2.ru",
         pathname: "/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "media.sr2.ru",
+        pathname: "/**",
+      },
     ],
   },
 };
