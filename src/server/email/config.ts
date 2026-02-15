@@ -21,6 +21,7 @@ export const emailConfig = {
  */
 export function createTransporter() {
   const hasAuth = env.SMTP_USER && env.SMTP_PASSWORD;
+  const isLocalhost = env.SMTP_HOST === "127.0.0.1" || env.SMTP_HOST === "localhost";
 
   return nodemailer.createTransport({
     host: env.SMTP_HOST ?? "127.0.0.1",
@@ -33,8 +34,9 @@ export function createTransporter() {
         pass: env.SMTP_PASSWORD,
       },
     }),
-    // For local sending without TLS
-    ...(!hasAuth && {
+    // For localhost connections, disable certificate validation
+    // This is safe because we're connecting to local SMTP server
+    ...(isLocalhost && {
       tls: {
         rejectUnauthorized: false,
       },
