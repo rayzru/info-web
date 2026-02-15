@@ -12,55 +12,62 @@
  * ```
  */
 
-import pino from "pino";
-
-import { env } from "~/env";
-
 // ============================================================================
-// Base Pino Logger
+// Isomorphic Logger (works on both server and client)
 // ============================================================================
 
-const pinoLogger = pino({
-  level: env.NODE_ENV === "production" ? "info" : "debug",
+const isBrowser = typeof window !== "undefined";
 
-  // Production: JSON format для парсинга в log aggregators
-  // Development: pino-pretty для читаемости
-  transport:
-    env.NODE_ENV !== "production"
-      ? {
-          target: "pino-pretty",
-          options: {
-            colorize: true,
-            translateTime: "HH:MM:ss",
-            ignore: "pid,hostname",
-            singleLine: false,
-            messageFormat: "{levelLabel} - {msg}",
-          },
-        }
-      : undefined,
+// Lazy import pino only on server
+let pinoLogger: any;
+if (!isBrowser) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pino = require("pino");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { env } = require("~/env");
 
-  // Base context для всех логов
-  base: {
-    env: env.NODE_ENV,
-    service: "sr2-t3",
-  },
+  pinoLogger = pino({
+    level: env.NODE_ENV === "production" ? "info" : "debug",
 
-  // Форматирование для production
-  formatters: {
-    level: (label) => {
-      return { level: label };
+    // Production: JSON format для парсинга в log aggregators
+    // Development: pino-pretty для читаемости
+    transport:
+      env.NODE_ENV !== "production"
+        ? {
+            target: "pino-pretty",
+            options: {
+              colorize: true,
+              translateTime: "HH:MM:ss",
+              ignore: "pid,hostname",
+              singleLine: false,
+              messageFormat: "{levelLabel} - {msg}",
+            },
+          }
+        : undefined,
+
+    // Base context для всех логов
+    base: {
+      env: env.NODE_ENV,
+      service: "sr2-t3",
     },
-  },
 
-  // Сериализация ошибок
-  serializers: {
-    err: pino.stdSerializers.err,
-    error: pino.stdSerializers.err,
-  },
+    // Форматирование для production
+    formatters: {
+      level: (label: string) => {
+        return { level: label };
+      },
+    },
 
-  // Timestamp в ISO формате
-  timestamp: pino.stdTimeFunctions.isoTime,
-});
+    // Сериализация ошибок
+    serializers: {
+      err: pino.stdSerializers.err,
+      error: pino.stdSerializers.err,
+    },
+
+    // Timestamp в ISO формате
+    timestamp: pino.stdTimeFunctions.isoTime,
+  });
+}
 
 // ============================================================================
 // Console-Compatible Wrapper
@@ -76,7 +83,25 @@ interface ConsoleCompatibleLogger {
   child: (bindings: Record<string, unknown>) => ConsoleCompatibleLogger;
 }
 
-function createConsoleCompatibleLogger(baseLogger: pino.Logger): ConsoleCompatibleLogger {
+function createConsoleCompatibleLogger(baseLogger?: any): ConsoleCompatibleLogger {
+  // Browser fallback: use console directly
+  if (isBrowser || !baseLogger) {
+    const browserWrap = (level: "info" | "error" | "warn" | "debug"): LogMethod => {
+      return (...args: unknown[]) => {
+        console[level](...args);
+      };
+    };
+
+    return {
+      info: browserWrap("info"),
+      error: browserWrap("error"),
+      warn: browserWrap("warn"),
+      debug: browserWrap("debug"),
+      child: () => createConsoleCompatibleLogger(undefined),
+    };
+  }
+
+  // Server: use pino
   const wrap = (level: "info" | "error" | "warn" | "debug"): LogMethod => {
     return (...args: unknown[]) => {
       if (args.length === 0) {
@@ -187,12 +212,16 @@ export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "fatal";
  * logError(logger, error, { userId: "123", action: "login" });
  */
 export function logError(
-  loggerInstance: pino.Logger,
+  loggerInstance: ConsoleCompatibleLogger,
   error: unknown,
   context?: Record<string, unknown>
 ) {
   const err = error instanceof Error ? error : new Error(String(error));
-  loggerInstance.error({ err, ...context }, err.message);
+  if (isBrowser) {
+    console.error(err.message, { err, ...context });
+  } else {
+    loggerInstance.error({ err, ...context }, err.message);
+  }
 }
 
 /**
@@ -202,11 +231,15 @@ export function logError(
  * logSuccess(logger, "User registered", { userId: "123" });
  */
 export function logSuccess(
-  loggerInstance: pino.Logger,
+  loggerInstance: ConsoleCompatibleLogger,
   message: string,
   context?: Record<string, unknown>
 ) {
-  loggerInstance.info({ success: true, ...context }, message);
+  if (isBrowser) {
+    console.info(message, { success: true, ...context });
+  } else {
+    loggerInstance.info({ success: true, ...context }, message);
+  }
 }
 
 /**
@@ -216,9 +249,13 @@ export function logSuccess(
  * logWarning(logger, "Rate limit approaching", { ip: "1.2.3.4", count: 5 });
  */
 export function logWarning(
-  loggerInstance: pino.Logger,
+  loggerInstance: ConsoleCompatibleLogger,
   message: string,
   context?: Record<string, unknown>
 ) {
-  loggerInstance.warn(context, message);
+  if (isBrowser) {
+    console.warn(message, context);
+  } else {
+    loggerInstance.warn(context, message);
+  }
 }
