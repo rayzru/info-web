@@ -263,8 +263,49 @@ jobs:
             exit 1
           fi
 
-          echo "=== Pruning old releases ==="
-          ssh "$USER@$HOST" "cd $TARGET/releases && echo 'Current releases:' && ls -1t && echo 'Keeping 5 newest, deleting:' && ls -1t | tail -n +6 && ls -1t | tail -n +6 | xargs -r rm -rf && echo 'Remaining releases:' && ls -1t"
+          echo "=== Pruning old releases (keep 5) ==="
+          ssh "$USER@$HOST" 'bash -s' << 'ENDSSH'
+          set -euo pipefail
+          KEEP_COUNT=5
+          cd $TARGET/releases || exit 1
+
+          # Count total releases
+          TOTAL=$(ls -1 | wc -l)
+          echo "📦 Total releases: $TOTAL"
+
+          # List all releases
+          echo ""
+          echo "📋 Current releases (newest first):"
+          ls -1t | nl -w2 -s'. '
+          echo ""
+
+          # Calculate deletions
+          TO_DELETE=$((TOTAL - KEEP_COUNT))
+          if [ "$TO_DELETE" -le 0 ]; then
+            echo "✅ No cleanup needed (keeping $KEEP_COUNT)"
+            exit 0
+          fi
+
+          # Show what will be deleted
+          echo "🗑️  Deleting $TO_DELETE oldest release(s):"
+          ls -1t | tail -n +$((KEEP_COUNT + 1)) | while read dir; do
+            echo "   - $dir"
+          done
+          echo ""
+
+          # Delete old releases
+          DELETED=0
+          for dir in $(ls -1t | tail -n +$((KEEP_COUNT + 1))); do
+            rm -rf "$dir" && DELETED=$((DELETED + 1))
+          done
+
+          # Verify
+          REMAINING=$(ls -1 | wc -l)
+          echo "✅ Cleanup complete: deleted $DELETED, remaining $REMAINING"
+          echo ""
+          echo "📋 Remaining releases:"
+          ls -1t | nl -w2 -s'. '
+          ENDSSH
         env:
           USER: ${{ secrets.SSH_USER }}
           HOST: ${{ secrets.SSH_HOST }}
