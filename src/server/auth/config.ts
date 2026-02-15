@@ -493,7 +493,7 @@ export const authConfig = {
     verificationTokensTable: verificationTokens,
   }),
   session: {
-    strategy: isDev ? "jwt" : "database",
+    strategy: "jwt", // Use JWT for both dev and production for simplicity and reliability
   },
   pages: {
     signIn: "/login",
