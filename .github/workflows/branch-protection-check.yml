@@ -1,0 +1,84 @@
+name: Branch Protection Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-branch-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Git Flow Rules
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+
+            const sourceBranch = pr.head.ref;
+            const targetBranch = pr.base.ref;
+
+            console.log(`PR: ${sourceBranch} → ${targetBranch}`);
+
+            // Rule 1: Feature branches should target development, not main
+            if (targetBranch === 'main' && !sourceBranch.startsWith('hotfix/')) {
+              const isFromDevelopment = sourceBranch === 'development';
+
+              if (!isFromDevelopment) {
+                core.setFailed(
+                  `❌ INCORRECT TARGET BRANCH\n\n` +
+                  `Feature branches must target 'development', not 'main'.\n\n` +
+                  `Current: ${sourceBranch} → main ❌\n` +
+                  `Correct: ${sourceBranch} → development ✅\n\n` +
+                  `Only these can target main:\n` +
+                  `  - development → main (production release)\n` +
+                  `  - hotfix/* → main (emergency fixes)\n\n` +
+                  `See: Git Flow & Deployment in CLAUDE.md`
+                );
+              }
+            }
+
+            // Rule 2: Branch naming convention
+            const validPrefixes = ['feature/', 'fix/', 'hotfix/', 'docs/', 'chore/', 'refactor/', 'test/', 'ci/', 'development'];
+            const hasValidPrefix = validPrefixes.some(prefix => sourceBranch.startsWith(prefix)) || sourceBranch === 'development';
+
+            if (!hasValidPrefix) {
+              core.warning(
+                `⚠️ Branch naming convention:\n` +
+                `Branch '${sourceBranch}' doesn't follow naming convention.\n` +
+                `Recommended prefixes: ${validPrefixes.join(', ')}\n` +
+                `Example: feature/my-feature, fix/bug-description`
+              );
+            }
+
+            // Rule 3: Development → Main should have migration awareness
+            if (sourceBranch === 'development' && targetBranch === 'main') {
+              const { data: files } = await github.rest.pulls.listFiles({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+              });
+
+              const hasMigrations = files.some(file => file.filename.startsWith('drizzle/'));
+
+              if (hasMigrations) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body:
+                    `⚠️ **Database Migrations Detected**\n\n` +
+                    `This PR contains database migrations. Before merging:\n\n` +
+                    `1. ✅ Verify migrations are backward-compatible\n` +
+                    `2. ✅ Test on beta environment first\n` +
+                    `3. ✅ Ensure zero-downtime deployment (migrations run BEFORE code swap)\n\n` +
+                    `Migration files:\n` +
+                    files.filter(f => f.filename.startsWith('drizzle/')).map(f => `- \`${f.filename}\``).join('\n')
+                });
+              }
+            }
+
+            console.log('✅ Branch protection checks passed');

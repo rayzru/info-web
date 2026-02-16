@@ -58,6 +58,9 @@ jobs:
           cp -r .next/static     deploy/static/
           [ -d public ] && [ -n "$(ls -A public 2>/dev/null)" ] && cp -r public/* deploy/public/ || echo "Public directory empty or doesn't exist"
           cp ecosystem.config.cjs deploy/standalone/
+          cp -r drizzle deploy/standalone/
+          cp drizzle.config.ts deploy/standalone/
+          cp package.json deploy/standalone/
 
           # Verification
           echo "=== Deploy directory contents ==="
@@ -203,24 +206,6 @@ jobs:
           # Verify BUILD_ID on server
           echo "=== Verifying BUILD_ID on server ==="
           ssh "$USER@$HOST" "cat $TARGET/$REL/.next/BUILD_ID"
-
-          # Create symlink and restart app with PM2
-          PM2_APP_NAME="sr2"
-          echo "=== Updating symlink and restarting app ($PM2_APP_NAME) ==="
-          ssh "$USER@$HOST" "cd $TARGET && rm -rf current && ln -sfn $REL current && echo 'Symlink created:' && ls -la current && echo 'Target directory:' && ls -la && cd current && echo 'Current directory:' && pwd && echo 'All files in current:' && ls -la && echo 'Check .next directory:' && ls -la .next/ && echo 'Check BUILD_ID:' && cat .next/BUILD_ID && echo 'Check .env file:' && ls -la .env && echo '=== Restarting PM2 ($PM2_APP_NAME) ===' && (pm2 delete $PM2_APP_NAME 2>/dev/null || true) && PM2_APP_NAME=$PM2_APP_NAME pm2 start ecosystem.config.cjs && pm2 save && echo 'PM2 app restarted successfully'"
-
-          # Create shared directories and symlinks for persistent storage (uploads with avatars inside)
-          echo "=== Setting up shared directories ==="
-          ssh "$USER@$HOST" "
-            mkdir -p $TARGET/shared/uploads/avatars
-            rm -rf $TARGET/current/public/uploads
-            ln -sfn $TARGET/shared/uploads $TARGET/current/public/uploads
-            chown -R rayz:fastsecure $TARGET/shared/
-            chmod -R 755 $TARGET/shared/
-            echo 'Shared directories configured:'
-            ls -la $TARGET/current/public/ | grep uploads
-            ls -la $TARGET/shared/uploads/
-          "
         env:
           USER: ${{ secrets.SSH_USER }}
           HOST: ${{ secrets.SSH_HOST }}
@@ -254,6 +239,63 @@ jobs:
           SMTP_FROM_NAME: ${{ secrets.SMTP_FROM_NAME }}
           SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
           SMTP_REPLY_TO: ${{ secrets.SMTP_REPLY_TO }}
+
+      - name: Run database migrations
+        timeout-minutes: 5
+        run: |
+          echo "=== Running database migrations ==="
+          REL="\$(ssh \"$USER@$HOST\" \"ls -1t $TARGET/releases | head -1\")"
+          echo "Running migrations on release: \$REL"
+
+          if ! ssh "$USER@$HOST" "cd $TARGET/releases/\$REL && bash -c 'export \$(grep -v \"^#\" .env | xargs) && bun run db:push'"; then
+            echo "❌ Migration failed - deployment aborted"
+            exit 1
+          fi
+
+          echo "✅ Migrations completed successfully"
+        env:
+          USER: ${{ secrets.SSH_USER }}
+          HOST: ${{ secrets.SSH_HOST }}
+          TARGET: ${{ secrets.SSH_TARGET_DIR }}
+
+      - name: Update symlink to current release (atomic)
+        timeout-minutes: 2
+        run: |
+          echo "=== Updating symlink to current release (atomic swap) ==="
+          ssh "$USER@$HOST" "cd $TARGET && ln -sfn releases/\$(ls -1t releases | head -1) current-new && mv -Tf current-new current && ls -la current"
+          echo "✅ Symlink updated atomically"
+        env:
+          USER: ${{ secrets.SSH_USER }}
+          HOST: ${{ secrets.SSH_HOST }}
+          TARGET: ${{ secrets.SSH_TARGET_DIR }}
+
+      - name: Restart application (PM2)
+        timeout-minutes: 3
+        run: |
+          PM2_APP_NAME="sr2"
+          echo "=== Restarting PM2 app: $PM2_APP_NAME ==="
+          ssh "$USER@$HOST" "cd $TARGET/current && (pm2 delete $PM2_APP_NAME 2>/dev/null || true) && PM2_APP_NAME=$PM2_APP_NAME pm2 start ecosystem.config.cjs && pm2 save"
+          echo "✅ Application restarted successfully"
+        env:
+          USER: ${{ secrets.SSH_USER }}
+          HOST: ${{ secrets.SSH_HOST }}
+          TARGET: ${{ secrets.SSH_TARGET_DIR }}
+
+      - name: Setup shared directories
+        run: |
+          echo "=== Setting up shared directories ==="
+          ssh "$USER@$HOST" "
+            mkdir -p $TARGET/shared/uploads/avatars
+            rm -rf $TARGET/current/public/uploads
+            ln -sfn $TARGET/shared/uploads $TARGET/current/public/uploads
+            chown -R rayz:fastsecure $TARGET/shared/
+            chmod -R 755 $TARGET/shared/
+            ls -la $TARGET/current/public/ | grep uploads
+          "
+        env:
+          USER: ${{ secrets.SSH_USER }}
+          HOST: ${{ secrets.SSH_HOST }}
+          TARGET: ${{ secrets.SSH_TARGET_DIR }}
 
       - name: Prune old releases (keep 5)
         run: |

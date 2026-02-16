@@ -45,6 +45,9 @@ docker compose up -d     # Start PostgreSQL
 bun run db:push          # Apply schema
 bun run db:seed          # Seed data
 bun run db:studio        # Drizzle Studio
+
+# Git Flow Protection (First-time setup)
+bash scripts/setup-git-hooks.sh   # Install Git hooks for branch protection
 ```
 
 ## Pre-Production Context
@@ -52,6 +55,71 @@ bun run db:studio        # Drizzle Studio
 - **Status**: Active development, NOT in production
 - **Breaking changes**: Allowed - no backward compatibility required
 - **Testing**: All changes must pass `bun run check`
+
+---
+
+## Git Flow & Deployment
+
+### Branch Strategy
+
+```
+feature/* → development → main (production)
+    ↓           ↓            ↓
+  Local      Beta        Production
+```
+
+**MANDATORY SEQUENCE**:
+1. Create feature branch from `development`: `git checkout development && git checkout -b feature/my-feature`
+2. Develop + commit changes
+3. Push to remote: `git push origin feature/my-feature`
+4. **Merge to development** (triggers beta deployment):
+   - Sync with latest: `git checkout development && git pull origin development`
+   - Merge feature: `git merge feature/my-feature --no-ff`
+   - Push: `git push origin development`
+5. **Deployment to beta happens automatically** via GitHub Actions
+6. **After beta verification** → create PR: `development` → `main` (production)
+
+### Deployment Triggers
+
+| Branch | Environment | Trigger | Auto-Deploy |
+|--------|------------|---------|-------------|
+| `feature/*` | Local only | Manual | No |
+| `development` | Beta | Push to `development` | ✅ Yes |
+| `main` | Production | Push to `main` | ✅ Yes |
+
+### When to Merge
+
+**To Development (Beta)**:
+- Feature is complete and tested locally
+- `bun run check` passes
+- `bun run build` passes
+- Ready for beta testing
+
+**To Main (Production)**:
+- Feature verified on beta
+- No critical issues reported
+- User/stakeholder approval obtained
+- Changeset created (if using Changesets)
+
+### NEVER
+
+- ❌ Direct merge: `feature/*` → `main` (skip development)
+- ❌ Force push to `development` or `main`
+- ❌ Merge without testing locally first
+- ❌ Deploy to production without beta verification
+
+### Monitoring Deployments
+
+```bash
+# Check recent deployments
+gh run list --branch development --limit 5
+
+# Watch active deployment
+gh run watch <run-id>
+
+# View deployment logs
+gh run view <run-id> --log
+```
 
 ---
 
