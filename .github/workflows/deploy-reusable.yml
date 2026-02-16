@@ -137,19 +137,7 @@ jobs:
           cp -r drizzle deploy/standalone/
           cp drizzle.config.ts deploy/standalone/
           cp package.json deploy/standalone/
-
-          # Copy drizzle-kit and dependencies for migrations
-          echo "=== Copying drizzle-kit for migrations ==="
-          mkdir -p deploy/standalone/node_modules
-          cp -r node_modules/drizzle-kit deploy/standalone/node_modules/
-          cp -r node_modules/drizzle-orm deploy/standalone/node_modules/
-
-          # Copy other required dependencies
-          for pkg in esbuild chalk postgres zod dotenv; do
-            if [ -d "node_modules/$pkg" ]; then
-              cp -r "node_modules/$pkg" deploy/standalone/node_modules/
-            fi
-          done
+          cp bun.lock deploy/standalone/
 
           # Verification
           echo "=== Deploy directory contents ==="
@@ -324,8 +312,8 @@ jobs:
           echo "=== Running database migrations ==="
 
           # Execute migration on server (all commands run remotely)
-          # drizzle-kit is now available in node_modules
-          if ! ssh "$USER@$HOST" "cd $TARGET/releases && REL=\$(ls -1t | head -1) && echo \"Running migrations on release: \$REL\" && cd \$REL && bash -c 'set -a && source .env && set +a && ./node_modules/.bin/drizzle-kit push'"; then
+          # Install dependencies first, then run migrations
+          if ! ssh "$USER@$HOST" "cd $TARGET/releases && REL=\$(ls -1t | head -1) && echo \"Running migrations on release: \$REL\" && cd \$REL && bun install --frozen-lockfile --production && bash -c 'set -a && source .env && set +a && bunx drizzle-kit push'"; then
             echo "❌ Migration failed - deployment aborted"
             exit 1
           fi
