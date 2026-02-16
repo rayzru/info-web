@@ -136,6 +136,8 @@ jobs:
           cp ecosystem.config.cjs deploy/standalone/
           cp -r drizzle deploy/standalone/
           cp drizzle.config.ts deploy/standalone/
+          mkdir -p deploy/standalone/src/server/db
+          cp src/server/db/schema.ts deploy/standalone/src/server/db/
           cp package.json deploy/standalone/
           cp bun.lock deploy/standalone/
 
