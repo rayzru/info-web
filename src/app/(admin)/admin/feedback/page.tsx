@@ -15,14 +15,26 @@ import {
   MessageSquare,
   MoreHorizontal,
   Send,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -452,6 +464,8 @@ export default function AdminFeedbackPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [localSearch, setLocalSearch] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
 
   const { data, isLoading, refetch } = api.feedback.admin.list.useQuery({
     page,
@@ -459,6 +473,28 @@ export default function AdminFeedbackPage() {
     status: statusFilter !== "all" ? statusFilter : undefined,
     type: typeFilter !== "all" ? typeFilter : undefined,
     priority: priorityFilter !== "all" ? priorityFilter : undefined,
+  });
+
+  const { toast } = useToast();
+  const utils = api.useUtils();
+
+  const bulkDeleteMutation = api.feedback.admin.bulkDelete.useMutation({
+    onSuccess: (result) => {
+      toast({
+        title: "Обращения удалены",
+        description: `Удалено: ${result.actual} из ${result.requested}`,
+      });
+      utils.feedback.admin.list.invalidate();
+      setSelectedIds(new Set());
+      setBulkDeleteDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка удаления",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   const updateParams = (key: string, value: string) => {
@@ -493,6 +529,29 @@ export default function AdminFeedbackPage() {
       month: "2-digit",
       year: "2-digit",
     });
+  };
+
+  const toggleSelection = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const toggleAllSelection = () => {
+    if (!data?.items) return;
+    if (selectedIds.size === data.items.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(data.items.map((item) => item.id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate({ ids: Array.from(selectedIds) });
   };
 
   return (
@@ -550,6 +609,31 @@ export default function AdminFeedbackPage() {
         </Select>
       </div>
 
+      {/* Bulk Action Toolbar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 rounded-lg border bg-muted p-4">
+          <span className="text-sm font-medium">Выбрано: {selectedIds.size}</span>
+          <Separator orientation="vertical" className="h-6" />
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setBulkDeleteDialogOpen(true)}
+            disabled={bulkDeleteMutation.isPending}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Удалить выбранные
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedIds(new Set())}
+            disabled={bulkDeleteMutation.isPending}
+          >
+            Отменить выбор
+          </Button>
+        </div>
+      )}
+
       {/* Feedback Table/Cards */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
@@ -560,6 +644,13 @@ export default function AdminFeedbackPage() {
           {/* Desktop Table View */}
           <div className="hidden rounded-lg border md:block">
             <div className="bg-muted/50 text-muted-foreground flex items-center gap-4 border-b px-4 py-3 text-sm font-medium">
+              <div className="w-10">
+                <Checkbox
+                  checked={data?.items && selectedIds.size === data.items.length && data.items.length > 0}
+                  onCheckedChange={toggleAllSelection}
+                  aria-label="Выбрать все"
+                />
+              </div>
               <div className="w-24">Дата</div>
               <div className="w-32">Тип</div>
               <div className="min-w-0 flex-1">Содержание</div>
@@ -576,6 +667,15 @@ export default function AdminFeedbackPage() {
                   key={item.id}
                   className="hover:bg-muted/30 flex items-center gap-4 border-b px-4 py-3 last:border-b-0"
                 >
+                  {/* Checkbox */}
+                  <div className="w-10">
+                    <Checkbox
+                      checked={selectedIds.has(item.id)}
+                      onCheckedChange={() => toggleSelection(item.id)}
+                      aria-label={`Выбрать ${TYPE_LABELS[item.type]}`}
+                    />
+                  </div>
+
                   {/* Date */}
                   <div className="text-muted-foreground w-24 text-sm">
                     {formatDate(item.createdAt)}
@@ -643,13 +743,12 @@ export default function AdminFeedbackPage() {
               const TypeIcon = TYPE_ICONS[item.type];
 
               return (
-                <div
-                  key={item.id}
-                  className="bg-card cursor-pointer rounded-lg border p-4"
-                  onClick={() => openViewDialog(item.id)}
-                >
+                <div key={item.id} className="bg-card rounded-lg border p-4">
                   <div className="mb-3 flex items-start justify-between">
-                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <div
+                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+                      onClick={() => openViewDialog(item.id)}
+                    >
                       <div className={`bg-muted rounded-full p-2 ${TYPE_COLORS[item.type]}`}>
                         <TypeIcon className="h-4 w-4" />
                       </div>
@@ -660,27 +759,38 @@ export default function AdminFeedbackPage() {
                         )}
                       </div>
                     </div>
+                    <Checkbox
+                      checked={selectedIds.has(item.id)}
+                      onCheckedChange={() => toggleSelection(item.id)}
+                      aria-label={`Выбрать ${TYPE_LABELS[item.type]}`}
+                      onClick={(e) => e.stopPropagation()}
+                    />
                   </div>
 
-                  <div className="mb-3 flex flex-wrap gap-2">
-                    <Badge variant={STATUS_COLORS[item.status]}>{STATUS_LABELS[item.status]}</Badge>
-                  </div>
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => openViewDialog(item.id)}
+                  >
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      <Badge variant={STATUS_COLORS[item.status]}>{STATUS_LABELS[item.status]}</Badge>
+                    </div>
 
-                  <p className="text-muted-foreground mb-2 line-clamp-2 text-sm">{item.content}</p>
+                    <p className="text-muted-foreground mb-2 line-clamp-2 text-sm">{item.content}</p>
 
-                  <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                    {item.contactName && (
-                      <div className="flex items-center gap-1">
-                        <Avatar className="h-4 w-4">
-                          <AvatarFallback className="text-[8px]">
-                            {item.contactName.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{item.contactName}</span>
-                      </div>
-                    )}
-                    <span>·</span>
-                    <span>{formatDate(item.createdAt)}</span>
+                    <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                      {item.contactName && (
+                        <div className="flex items-center gap-1">
+                          <Avatar className="h-4 w-4">
+                            <AvatarFallback className="text-[8px]">
+                              {item.contactName.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>{item.contactName}</span>
+                        </div>
+                      )}
+                      <span>·</span>
+                      <span>{formatDate(item.createdAt)}</span>
+                    </div>
                   </div>
                 </div>
               );
@@ -725,6 +835,30 @@ export default function AdminFeedbackPage() {
         onOpenChange={setViewDialogOpen}
         onSuccess={() => refetch()}
       />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удаление {selectedIds.size} обращений</AlertDialogTitle>
+            <AlertDialogDescription>
+              Это действие удалит {selectedIds.size} обращений. Удаление обратимо - записи помечаются
+              как удалённые, но остаются в базе данных.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleteMutation.isPending}>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
