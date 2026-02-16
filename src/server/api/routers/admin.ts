@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { logger } from "~/lib/logger";
 
 
-import { and, count, desc, eq, gte, ilike, isNull, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 
 import { z } from "zod";
 
@@ -331,6 +331,69 @@ export const adminRouter = createTRPCRouter({
         await ctx.db.delete(users).where(eq(users.id, userId));
 
         return { success: true };
+      }),
+
+    // Bulk delete users (for spam/bot accounts)
+    bulkDelete: adminProcedureWithFeature("users:delete")
+      .input(
+        z.object({
+          userIds: z.array(z.string().uuid()).min(1).max(50),
+          reason: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { userIds, reason } = input;
+
+        // Prevent self-deletion
+        if (userIds.includes(ctx.session.user.id)) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Cannot delete yourself",
+          });
+        }
+
+        // Fetch users to check for Root
+        const usersToDelete = await ctx.db.query.users.findMany({
+          where: inArray(users.id, userIds),
+          with: {
+            roles: {
+              columns: {
+                role: true,
+              },
+            },
+          },
+        });
+
+        // Check if any user is Root
+        const hasRoot = usersToDelete.some((user) =>
+          user.roles.some((r) => r.role === "Root")
+        );
+
+        if (hasRoot) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Cannot delete Root user",
+          });
+        }
+
+        // Use transaction for atomicity
+        await ctx.db.transaction(async (tx) => {
+          // Delete in correct order (foreign key constraints)
+          await tx.delete(userProfiles).where(inArray(userProfiles.userId, userIds));
+          await tx.delete(userRoles).where(inArray(userRoles.userId, userIds));
+          await tx.delete(sessions).where(inArray(sessions.userId, userIds));
+          await tx.delete(accounts).where(inArray(accounts.userId, userIds));
+          await tx.delete(users).where(inArray(users.id, userIds));
+        });
+
+        // Log outside transaction
+        logger.info("[Bulk Delete] Deleted users", {
+          count: userIds.length,
+          adminId: ctx.session.user.id,
+          reason,
+        });
+
+        return { deleted: userIds.length };
       }),
 
     // Get user's tagline (for admin editing)
