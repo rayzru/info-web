@@ -3,10 +3,10 @@
 import { useState } from "react";
 
 import {
+  AlertTriangle,
   Ban,
   Building2,
   KeyRound,
-  MessageSquareText,
   MoreHorizontal,
   Search,
   Trash2,
@@ -14,10 +14,21 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +37,8 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Separator } from "~/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -34,7 +47,9 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { Textarea } from "~/components/ui/textarea";
 import { useMobile } from "~/hooks/use-mobile";
+import { useToast } from "~/hooks/use-toast";
 import { getRankConfig } from "~/lib/ranks";
 import { cn } from "~/lib/utils";
 import { type UserRole } from "~/server/auth/rbac";
@@ -74,10 +89,14 @@ function UserRow({
   user,
   canManageRoles,
   canDeleteUsers,
+  selectedUserIds,
+  toggleUser,
 }: {
   user: User;
   canManageRoles: boolean;
   canDeleteUsers: boolean;
+  selectedUserIds: Set<string>;
+  toggleUser: (userId: string) => void;
 }) {
   const { data: blockStatus } = api.admin.users.getActiveBlock.useQuery(
     { userId: user.id },
@@ -89,6 +108,13 @@ function UserRow({
 
   return (
     <TableRow key={user.id} className={cn(isBlocked && "bg-destructive/5")}>
+      <TableCell>
+        <Checkbox
+          checked={selectedUserIds.has(user.id)}
+          onCheckedChange={() => toggleUser(user.id)}
+          aria-label={`Выбрать ${user.name}`}
+        />
+      </TableCell>
       <TableCell>
         <div className="relative">
           <Avatar
@@ -150,7 +176,7 @@ function UserRow({
       </TableCell>
       <TableCell className="text-muted-foreground text-sm">{formatDate(user.createdAt)}</TableCell>
       <TableCell>
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
               <MoreHorizontal className="h-4 w-4" />
@@ -202,10 +228,14 @@ function UserCard({
   user,
   canManageRoles,
   canDeleteUsers,
+  selectedUserIds,
+  toggleUser,
 }: {
   user: User;
   canManageRoles: boolean;
   canDeleteUsers: boolean;
+  selectedUserIds: Set<string>;
+  toggleUser: (userId: string) => void;
 }) {
   const { data: blockStatus } = api.admin.users.getActiveBlock.useQuery(
     { userId: user.id },
@@ -219,6 +249,12 @@ function UserCard({
     <Card className={cn(isBlocked && "border-destructive/50")}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
+          <Checkbox
+            checked={selectedUserIds.has(user.id)}
+            onCheckedChange={() => toggleUser(user.id)}
+            aria-label={`Выбрать ${user.name}`}
+            className="mt-2"
+          />
           <div className="flex flex-1 items-start gap-3">
             <div className="relative">
               <Avatar
@@ -277,7 +313,7 @@ function UserCard({
               </div>
             </div>
           </div>
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
                 <MoreHorizontal className="h-4 w-4" />
@@ -329,13 +365,66 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [bulkDeleteReason, setBulkDeleteReason] = useState("");
   const isMobile = useMobile();
+  const { toast } = useToast();
 
   const { data, isLoading } = api.admin.users.list.useQuery({
     page,
     limit: 20,
     search: search || undefined,
   });
+
+  const utils = api.useUtils();
+
+  const toggleUser = (userId: string) => {
+    const newSet = new Set(selectedUserIds);
+    if (newSet.has(userId)) {
+      newSet.delete(userId);
+    } else {
+      newSet.add(userId);
+    }
+    setSelectedUserIds(newSet);
+  };
+
+  const toggleAll = () => {
+    if (data?.users) {
+      if (selectedUserIds.size === data.users.length) {
+        setSelectedUserIds(new Set());
+      } else {
+        setSelectedUserIds(new Set(data.users.map((u) => u.id)));
+      }
+    }
+  };
+
+  const bulkDeleteMutation = api.admin.users.bulkDelete.useMutation({
+    onSuccess: (result) => {
+      toast({
+        title: "Пользователи удалены",
+        description: `Удалено пользователей: ${result.deleted}`,
+      });
+      setSelectedUserIds(new Set());
+      setShowBulkDeleteDialog(false);
+      setBulkDeleteReason("");
+      void utils.admin.users.list.invalidate();
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate({
+      userIds: Array.from(selectedUserIds),
+      reason: bulkDeleteReason || undefined,
+    });
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -358,6 +447,21 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
         </div>
         <Button type="submit">Найти</Button>
       </form>
+
+      {/* Bulk Action Toolbar */}
+      {selectedUserIds.size > 0 && (
+        <div className="bg-muted mb-4 flex items-center gap-3 rounded-md border p-3">
+          <span className="text-sm font-medium">Выбрано: {selectedUserIds.size}</span>
+          <Separator orientation="vertical" className="h-6" />
+          <Button variant="destructive" size="sm" onClick={() => setShowBulkDeleteDialog(true)}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Удалить выбранных
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setSelectedUserIds(new Set())}>
+            Отменить выбор
+          </Button>
+        </div>
+      )}
 
       {/* Content - Mobile Cards or Desktop Table */}
       {isMobile ? (
@@ -382,6 +486,8 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
                 user={user}
                 canManageRoles={canManageRoles}
                 canDeleteUsers={canDeleteUsers}
+                selectedUserIds={selectedUserIds}
+                toggleUser={toggleUser}
               />
             ))
           )}
@@ -392,6 +498,17 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={
+                      data?.users &&
+                      data.users.length > 0 &&
+                      selectedUserIds.size === data.users.length
+                    }
+                    onCheckedChange={toggleAll}
+                    aria-label="Выбрать всех"
+                  />
+                </TableHead>
                 <TableHead className="w-12"></TableHead>
                 <TableHead>Пользователь</TableHead>
                 <TableHead>Роли</TableHead>
@@ -402,13 +519,13 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
+                  <TableCell colSpan={6} className="text-center">
                     Загрузка...
                   </TableCell>
                 </TableRow>
               ) : data?.users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
+                  <TableCell colSpan={6} className="text-center">
                     Пользователи не найдены
                   </TableCell>
                 </TableRow>
@@ -419,6 +536,8 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
                     user={user}
                     canManageRoles={canManageRoles}
                     canDeleteUsers={canDeleteUsers}
+                    selectedUserIds={selectedUserIds}
+                    toggleUser={toggleUser}
                   />
                 ))
               )}
@@ -453,6 +572,41 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
           </div>
         </div>
       )}
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="text-destructive h-5 w-5" />
+              Удаление {selectedUserIds.size} пользователей
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Это действие удалит {selectedUserIds.size} пользователей без возможности
+              восстановления. Все данные будут удалены немедленно.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label>Причина удаления (опционально)</Label>
+            <Textarea
+              value={bulkDeleteReason}
+              onChange={(e) => setBulkDeleteReason(e.target.value)}
+              placeholder="Спам-аккаунты, боты..."
+              rows={3}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleteMutation.isPending ? "Удаление..." : "Удалить"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

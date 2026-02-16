@@ -1,6 +1,8 @@
 import { TRPCError } from "@trpc/server";
-import { and, count, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
+
+import { logger } from "~/lib/logger";
 
 import { type UserRole } from "~/server/auth/rbac";
 import {
@@ -1290,5 +1292,38 @@ export const claimsRouter = createTRPCRouter({
           (rejected?.count ?? 0),
       };
     }),
+
+    // Bulk delete claims (for spam)
+    bulkDelete: adminProcedureWithFeature("claims:review")
+      .input(
+        z.object({
+          claimIds: z.array(z.string().uuid()).min(1).max(100),
+          reason: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { claimIds, reason } = input;
+
+        // Use transaction for atomicity
+        await ctx.db.transaction(async (tx) => {
+          // Delete claim documents from database (S3 cleanup handled separately)
+          await tx.delete(claimDocuments).where(inArray(claimDocuments.claimId, claimIds));
+
+          // Delete claim history
+          await tx.delete(claimHistory).where(inArray(claimHistory.claimId, claimIds));
+
+          // Delete claims
+          await tx.delete(propertyClaims).where(inArray(propertyClaims.id, claimIds));
+        });
+
+        // Log outside transaction
+        logger.info("[Bulk Delete] Deleted claims", {
+          count: claimIds.length,
+          adminId: ctx.session.user.id,
+          reason,
+        });
+
+        return { deleted: claimIds.length };
+      }),
   }),
 });
