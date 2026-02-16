@@ -1,0 +1,1 @@
+ALTER TABLE "feedback" ADD COLUMN "test_migration_field" varchar(100);
