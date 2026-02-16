@@ -10,6 +10,7 @@
 
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { sql } from "drizzle-orm";
 import postgres from "postgres";
 
 async function runMigrations() {
@@ -26,9 +27,23 @@ async function runMigrations() {
   const migrationClient = postgres(DATABASE_URL, { max: 1 });
 
   try {
-    console.log("🔄 Running migrations from drizzle/ directory...");
-
     const db = drizzle(migrationClient);
+
+    // Check existing migrations
+    console.log("📊 Checking migration status...");
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM drizzle.__drizzle_migrations ORDER BY created_at
+      `);
+      console.log(`✓ Found ${result.length} applied migrations in database`);
+      if (result.length > 0) {
+        console.log(`  Last applied migration: ${result[result.length - 1]?.hash || 'unknown'}`);
+      }
+    } catch (e) {
+      console.log("  No migrations table found - this appears to be first run");
+    }
+
+    console.log("🔄 Running new migrations from drizzle/ directory...");
 
     await migrate(db, { migrationsFolder: "./drizzle" });
 
