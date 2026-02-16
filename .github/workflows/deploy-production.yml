@@ -1,313 +1,49 @@
-name: Deploy Production (SR2)
+name: Deploy Production (SR2 standalone)
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
-concurrency:
-  group: deploy-production
-  cancel-in-progress: true
-
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    environment: Production
-    env:
-      NODE_VERSION: "22"
-      BUN_VERSION: "1.2.9"
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Build (Next.js standalone)
-        run: |
-          # Clean cache to ensure fresh build
-          echo "=== Cleaning Next.js cache ==="
-          rm -rf .next/cache
-
-          # Extract version from package.json
-          BUILD_VERSION=$(cat package.json | grep '"version"' | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
-          echo "=== Build version: $BUILD_VERSION ==="
-
-          # Build with production settings
-          echo "=== Building application ==="
-          NEXT_PUBLIC_BUILD_VERSION=$BUILD_VERSION NODE_ENV=production bun run build
-
-          # Capture BUILD_ID for verification
-          BUILD_ID=$(cat .next/BUILD_ID)
-          echo "=== Build ID: $BUILD_ID ==="
-          echo "BUILD_ID=$BUILD_ID" >> $GITHUB_ENV
-
-          # Prepare deployment directories
-          mkdir -p deploy/standalone deploy/static deploy/public
-          cp -r .next/standalone/* deploy/standalone/
-          mkdir -p deploy/standalone/.next
-          cp -r .next/static deploy/standalone/.next/
-          cp -r .next/server deploy/standalone/.next/
-          cp .next/BUILD_ID deploy/standalone/.next/
-          cp .next/*.json deploy/standalone/.next/
-          cp -r .next/static     deploy/static/
-          [ -d public ] && [ -n "$(ls -A public 2>/dev/null)" ] && cp -r public/* deploy/public/ || echo "Public directory empty or doesn't exist"
-          cp ecosystem.config.cjs deploy/standalone/
-
-          # Verification
-          echo "=== Deploy directory contents ==="
-          ls -la deploy/standalone/ | head -15
-          echo "=== .next directory check ==="
-          ls -la deploy/standalone/.next/ || echo ".next directory not found in deploy"
-          echo "=== BUILD_ID verification ==="
-          cat deploy/standalone/.next/BUILD_ID
-          echo "=== Static files check ==="
-          ls -la deploy/static/ | head -10
-          echo "=== Ecosystem config check ==="
-          ls -la deploy/standalone/ecosystem.config.cjs || echo "Ecosystem config not found in deploy"
-        env:
-          SKIP_ENV_VALIDATION: "1"
-          # Database (will be configured on server)
-          DATABASE_URL: "postgresql://placeholder"
-          DATABASE_NAME: "placeholder"
-          # Auth (will be configured on server)
-          AUTH_SECRET: "placeholder-will-be-set-on-server"
-          YANDEX_CLIENT_ID: "placeholder"
-          YANDEX_CLIENT_SECRET: "placeholder"
-
-      - name: Prepare SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-
-          # Add known hosts
-          if [[ -n "${{ secrets.KNOWN_HOSTS }}" ]]; then
-            echo "${{ secrets.KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
-          else
-            echo "StrictHostKeyChecking no" >> ~/.ssh/config
-            echo "UserKnownHostsFile /dev/null" >> ~/.ssh/config
-          fi
-
-          # Create SSH private key - use env var to preserve newlines
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-
-          # Ensure proper permissions and line endings
-          chmod 600 ~/.ssh/id_ed25519
-          [[ -f ~/.ssh/config ]] && chmod 600 ~/.ssh/config || true
-
-          # Verify key format
-          ssh-keygen -l -f ~/.ssh/id_ed25519 || echo "Warning: SSH key verification failed"
-
-      - name: Upload release via rsync
-        timeout-minutes: 15
-        run: |
-          set -euo pipefail
-
-          # Validate required environment variables
-          if [[ -z "$USER" || -z "$HOST" || -z "$TARGET" ]]; then
-            echo "Error: Missing required SSH configuration"
-            echo "USER: '$USER'"
-            echo "HOST: '$HOST'"
-            echo "TARGET: '$TARGET'"
-            exit 1
-          fi
-
-          REL="releases/$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
-          echo "Creating release directory: $REL"
-
-          # Test SSH connection
-          echo "Testing SSH connection..."
-          ssh -p 22 -o ConnectTimeout=30 "$USER@$HOST" "echo 'SSH connection successful' && uptime"
-
-          # Create release directory structure that matches nginx expectations
-          ssh -p 22 "$USER@$HOST" "mkdir -p $TARGET/$REL"
-
-          # Deploy standalone app files to the root of the release (including .next directory)
-          echo "Deploying standalone files..."
-          timeout 300 rsync -azq --delete --exclude='.env' deploy/standalone/ "$USER@$HOST:$TARGET/$REL/" || echo "Standalone deployment failed or timed out"
-
-          # Deploy static and public files to match nginx paths
-          echo "Deploying static files..."
-          timeout 180 rsync -azq --delete deploy/static/     "$USER@$HOST:$TARGET/$REL/static/" || echo "Static deployment failed or timed out"
-          echo "Deploying public files..."
-          timeout 60 rsync -azq deploy/public/     "$USER@$HOST:$TARGET/$REL/public/" || echo "Public deployment failed or timed out"
-
-          # Create production .env file locally and upload
-          echo "Creating production .env file..."
-          cat > .env << EOF
-
-          # Next Auth
-          AUTH_SECRET="$AUTH_SECRET"
-          NEXTAUTH_SECRET="$NEXTAUTH_SECRET"
-          NEXTAUTH_URL="$NEXTAUTH_URL"
-
-          # Yandex OAuth
-          YANDEX_CLIENT_ID="$YANDEX_CLIENT_ID"
-          YANDEX_CLIENT_SECRET="$YANDEX_CLIENT_SECRET"
-
-          # VK OAuth
-          VK_CLIENT_ID="$VK_CLIENT_ID"
-          VK_CLIENT_SECRET="$VK_CLIENT_SECRET"
-
-          # Google OAuth
-          GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID"
-          GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET"
-
-          # Telegram
-          TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN"
-          TELEGRAM_NEWS_CHANNEL_ID="$TELEGRAM_NEWS_CHANNEL_ID"
-          TELEGRAM_ADMIN_CHAT_ID="$TELEGRAM_ADMIN_CHAT_ID"
-
-          # Database (PostgreSQL)
-          DATABASE_URL="$DATABASE_URL"
-          DATABASE_NAME="$DATABASE_NAME"
-
-          # S3 Storage
-          S3_URL="$S3_URL"
-          S3_ACCESS_KEY="$S3_ACCESS_KEY"
-          S3_SECRET_KEY="$S3_SECRET_KEY"
-          S3_BUCKET="$S3_BUCKET"
-          S3_REGION="$S3_REGION"
-          S3_PUBLIC_URL="$S3_PUBLIC_URL"
-
-          # SMTP Configuration
-          SMTP_HOST="$SMTP_HOST"
-          SMTP_PORT="$SMTP_PORT"
-          SMTP_SECURE="$SMTP_SECURE"
-          SMTP_USER="$SMTP_USER"
-          SMTP_PASSWORD="$SMTP_PASSWORD"
-          SMTP_FROM_NAME="$SMTP_FROM_NAME"
-          SMTP_FROM_EMAIL="$SMTP_FROM_EMAIL"
-          SMTP_REPLY_TO="$SMTP_REPLY_TO"
-
-          # Trust host for auth
-          AUTH_TRUST_HOST=true
-          EOF
-
-          # Upload .env file to server
-          scp .env "$USER@$HOST:$TARGET/$REL/.env"
-
-          # Fix port to 3002 for production (nginx expects 3002)
-          ssh "$USER@$HOST" "sed -i 's/PORT: 3001/PORT: 3002/g' $TARGET/$REL/ecosystem.config.cjs"
-
-          # Verify .env file was created and has content
-          echo "Verifying .env file..."
-          ssh "$USER@$HOST" "ls -la $TARGET/$REL/.env && echo 'File size:' && wc -c $TARGET/$REL/.env"
-
-          # Verify BUILD_ID on server
-          echo "=== Verifying BUILD_ID on server ==="
-          ssh "$USER@$HOST" "cat $TARGET/$REL/.next/BUILD_ID"
-
-          # Create symlink and restart app with PM2
-          PM2_APP_NAME="sr2"
-          echo "=== Updating symlink and restarting app ($PM2_APP_NAME) ==="
-          ssh "$USER@$HOST" "cd $TARGET && rm -rf current && ln -sfn $REL current && echo 'Symlink created:' && ls -la current && echo 'Target directory:' && ls -la && cd current && echo 'Current directory:' && pwd && echo 'All files in current:' && ls -la && echo 'Check .next directory:' && ls -la .next/ && echo 'Check BUILD_ID:' && cat .next/BUILD_ID && echo 'Check .env file:' && ls -la .env && echo '=== Restarting PM2 ($PM2_APP_NAME) ===' && (pm2 delete $PM2_APP_NAME 2>/dev/null || true) && PM2_APP_NAME=$PM2_APP_NAME pm2 start ecosystem.config.cjs && pm2 save && echo 'PM2 app restarted successfully'"
-
-          # Create shared directories and symlinks for persistent storage (uploads with avatars inside)
-          echo "=== Setting up shared directories ==="
-          ssh "$USER@$HOST" "
-            mkdir -p $TARGET/shared/uploads/avatars
-            rm -rf $TARGET/current/public/uploads
-            ln -sfn $TARGET/shared/uploads $TARGET/current/public/uploads
-            chown -R rayz:fastsecure $TARGET/shared/
-            chmod -R 755 $TARGET/shared/
-            echo 'Shared directories configured:'
-            ls -la $TARGET/current/public/ | grep uploads
-            ls -la $TARGET/shared/uploads/
-          "
-        env:
-          USER: ${{ secrets.SSH_USER }}
-          HOST: ${{ secrets.SSH_HOST }}
-          TARGET: ${{ secrets.SSH_TARGET_DIR }}
-          # Environment variables for .env file creation
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-          YANDEX_CLIENT_ID: ${{ secrets.YANDEX_CLIENT_ID }}
-          YANDEX_CLIENT_SECRET: ${{ secrets.YANDEX_CLIENT_SECRET }}
-          VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
-          VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_NEWS_CHANNEL_ID: ${{ secrets.TELEGRAM_NEWS_CHANNEL_ID }}
-          TELEGRAM_ADMIN_CHAT_ID: ${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
-          S3_URL: ${{ secrets.S3_URL }}
-          S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
-          S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
-          S3_BUCKET: ${{ secrets.S3_BUCKET }}
-          S3_REGION: ${{ secrets.S3_REGION }}
-          S3_PUBLIC_URL: ${{ secrets.S3_PUBLIC_URL }}
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          SMTP_FROM_NAME: ${{ secrets.SMTP_FROM_NAME }}
-          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
-          SMTP_REPLY_TO: ${{ secrets.SMTP_REPLY_TO }}
-
-      - name: Prune old releases (keep 5)
-        run: |
-          # Validate required environment variables
-          if [[ -z "$USER" || -z "$HOST" || -z "$TARGET" ]]; then
-            echo "Error: Missing required SSH configuration for cleanup"
-            exit 1
-          fi
-
-          echo "=== Pruning old releases (keep 5) ==="
-          ssh "$USER@$HOST" "bash -s $TARGET" << 'ENDSSH'
-          set -euo pipefail
-          KEEP_COUNT=5
-          TARGET="$1"
-          cd "$TARGET/releases" || exit 1
-
-          # Count total releases
-          TOTAL=$(ls -1 | wc -l)
-          echo "📦 Total releases: $TOTAL"
-
-          # List all releases
-          echo ""
-          echo "📋 Current releases (newest first):"
-          ls -1t | nl -w2 -s'. '
-          echo ""
-
-          # Calculate deletions
-          TO_DELETE=$((TOTAL - KEEP_COUNT))
-          if [ "$TO_DELETE" -le 0 ]; then
-            echo "✅ No cleanup needed (keeping $KEEP_COUNT)"
-            exit 0
-          fi
-
-          # Show what will be deleted
-          echo "🗑️  Deleting $TO_DELETE oldest release(s):"
-          ls -1t | tail -n +$((KEEP_COUNT + 1)) | while read dir; do
-            echo "   - $dir"
-          done
-          echo ""
-
-          # Delete old releases
-          DELETED=0
-          for dir in $(ls -1t | tail -n +$((KEEP_COUNT + 1))); do
-            rm -rf "$dir" && DELETED=$((DELETED + 1))
-          done
-
-          # Verify
-          REMAINING=$(ls -1 | wc -l)
-          echo "✅ Cleanup complete: deleted $DELETED, remaining $REMAINING"
-          echo ""
-          echo "📋 Remaining releases:"
-          ls -1t | nl -w2 -s'. '
-          ENDSSH
-        env:
-          USER: ${{ secrets.SSH_USER }}
-          HOST: ${{ secrets.SSH_HOST }}
-          TARGET: ${{ secrets.SSH_TARGET_DIR }}
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      environment: "Production"
+      pm2_app_name: "sr2-production"
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_TARGET_DIR: ${{ secrets.SSH_TARGET_DIR }}
+      KNOWN_HOSTS: ${{ secrets.KNOWN_HOSTS }}
+      # Auth
+      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+      # OAuth
+      YANDEX_CLIENT_ID: ${{ secrets.YANDEX_CLIENT_ID }}
+      YANDEX_CLIENT_SECRET: ${{ secrets.YANDEX_CLIENT_SECRET }}
+      VK_CLIENT_ID: ${{ secrets.VK_CLIENT_ID }}
+      VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      # Database
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+      # S3
+      S3_URL: ${{ secrets.S3_URL }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      S3_REGION: ${{ secrets.S3_REGION }}
+      S3_PUBLIC_URL: ${{ secrets.S3_PUBLIC_URL }}
+      # SMTP
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      SMTP_FROM_NAME: ${{ secrets.SMTP_FROM_NAME }}
+      SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
+      SMTP_REPLY_TO: ${{ secrets.SMTP_REPLY_TO }}

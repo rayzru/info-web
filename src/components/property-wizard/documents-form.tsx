@@ -1,7 +1,10 @@
 "use client";
 
+import { AlertCircle, CheckCircle } from "lucide-react";
+
 import type { UploadedDocument } from "~/components/claim-document-uploader";
 import { ClaimDocumentUploader } from "~/components/claim-document-uploader";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 
 interface DocumentsFormProps {
   documents: UploadedDocument[];
@@ -13,6 +16,32 @@ interface DocumentsFormProps {
 export function DocumentsForm({ documents, onDocumentsChange }: DocumentsFormProps) {
   return (
     <div className="space-y-4">
+      {/* Document importance warning */}
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Важная информация о документах</AlertTitle>
+        <AlertDescription className="space-y-2 text-sm">
+          <p>
+            <strong>Рекомендуем загрузить подтверждающие документы</strong> для ускорения
+            рассмотрения вашей заявки.
+          </p>
+          <p className="text-muted-foreground">
+            Без документов проверка может быть выполнена только в личном порядке с
+            администрацией, что займет больше времени.
+          </p>
+        </AlertDescription>
+      </Alert>
+
+      {/* Success message after uploading documents */}
+      {documents.length > 0 && (
+        <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-900/50 dark:bg-green-950/20 dark:text-green-100">
+          <CheckCircle className="h-4 w-4 shrink-0" />
+          <span>
+            Загружено документов: {documents.length}. Ваша заявка будет рассмотрена быстрее!
+          </span>
+        </div>
+      )}
+
       {/* Document Uploader - at the top */}
       <ClaimDocumentUploader documents={documents} onChange={onDocumentsChange} />
 
