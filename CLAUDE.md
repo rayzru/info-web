@@ -45,6 +45,9 @@ docker compose up -d     # Start PostgreSQL
 bun run db:push          # Apply schema
 bun run db:seed          # Seed data
 bun run db:studio        # Drizzle Studio
+
+# Git Flow Protection (First-time setup)
+bash scripts/setup-git-hooks.sh   # Install Git hooks for branch protection
 ```
 
 ## Pre-Production Context
