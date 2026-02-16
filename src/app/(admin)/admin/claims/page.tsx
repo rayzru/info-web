@@ -64,6 +64,7 @@ import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
 import { useMobile } from "~/hooks/use-mobile";
 import { useToast } from "~/hooks/use-toast";
+import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 // ============================================================================
@@ -568,12 +569,16 @@ export default function AdminClaimsPage() {
                             >
                               {STATUS_LABELS[claim.status]}
                             </Badge>
-                            {claim.documents && claim.documents.length > 0 && (
-                              <Badge variant="outline" className="gap-1 text-xs">
-                                <FileText className="h-3 w-3" />
-                                {claim.documents.length}
-                              </Badge>
-                            )}
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "gap-1 text-xs",
+                                (claim.documents?.length ?? 0) === 0 && "text-muted-foreground"
+                              )}
+                            >
+                              <FileText className="h-3 w-3" />
+                              {claim.documents?.length ?? 0}
+                            </Badge>
                           </div>
                           <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
                             <PropertyIcon className="h-3.5 w-3.5" />
@@ -704,13 +709,16 @@ export default function AdminClaimsPage() {
                       <Badge variant="outline" className="text-xs">
                         {claim.claimType === "apartment" ? "Квартира" : "Парковка"}
                       </Badge>
-                      {claim.documents && claim.documents.length > 0 && (
-                        <div className="mt-1 flex items-center gap-1">
+                      {claim.documents && claim.documents.length > 0 ? (
+                        <Badge variant="outline" className="mt-1 gap-1 text-xs">
                           <FileText className="h-3 w-3" />
-                          <span className="text-muted-foreground text-xs">
-                            {claim.documents.length}
-                          </span>
-                        </div>
+                          {claim.documents.length}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-muted-foreground mt-1 gap-1 text-xs">
+                          <FileText className="h-3 w-3" />
+                          0
+                        </Badge>
                       )}
                     </div>
 

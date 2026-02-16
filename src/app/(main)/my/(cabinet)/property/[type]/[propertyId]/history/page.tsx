@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 
-import { Check, ChevronLeft, X } from "lucide-react";
+import { AlertCircle, Check, ChevronLeft, FileText, X } from "lucide-react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 import { PropertyCard } from "~/components/property-card";
 import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -327,6 +329,42 @@ export default function PropertyHistoryPage() {
           disableLink={true}
           actionButtons={cardActionButtons}
         />
+      )}
+
+      {/* Missing documents alert */}
+      {firstClaim?.status === "documents_requested" && (
+        <Card className="border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <AlertCircle className="h-6 w-6 shrink-0 text-amber-600 dark:text-amber-400" />
+              <div className="flex-1 space-y-2">
+                <p className="font-medium text-amber-900 dark:text-amber-100">
+                  Требуются дополнительные документы
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  Администрация запросила подтверждающие документы для рассмотрения вашей заявки.
+                  Пожалуйста, загрузите требуемые файлы для продолжения процесса рассмотрения.
+                </p>
+                <div className="flex items-center gap-2 pt-2">
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/my/property">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Перейти к заявкам
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Document count indicator */}
+      {firstClaim?.documents && firstClaim.documents.length > 0 && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <FileText className="h-4 w-4" />
+          <span>Загружено документов: {firstClaim.documents.length}</span>
+        </div>
       )}
 
       {/* History Table */}
