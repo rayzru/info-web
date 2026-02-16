@@ -3,10 +3,15 @@ name: Deploy Beta (SR2 standalone)
 on:
   push:
     branches: [development]
+  pull_request:
+    types: [closed]
+    branches: [development]
   workflow_dispatch:
 
 jobs:
   deploy:
+    # Run on push or on merged PR (not on closed-without-merge)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     uses: ./.github/workflows/deploy-reusable.yml
     with:
       environment: "Beta"
