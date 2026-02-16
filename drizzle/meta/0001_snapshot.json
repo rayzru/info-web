@@ -1,6 +1,6 @@
 {
-  "id": "93fbb232-e1f8-4b1e-9974-4fc8320918f3",
-  "prevId": "8ad94c31-e2f3-4be1-86ce-c5636e089d61",
+  "id": "8ad94c31-e2f3-4be1-86ce-c5636e089d61",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -3408,12 +3408,6 @@
         "responded_by_id": {
           "name": "responded_by_id",
           "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "test_migration_field": {
-          "name": "test_migration_field",
-          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": false
         },
