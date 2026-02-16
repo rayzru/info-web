@@ -4,9 +4,36 @@
 
 ### Patch Changes
 
-- b8fbe74: fix(release): remove build step from release script to avoid env validation errors
+- **Admin: Bulk Operations for Users and Claims**
+  - Multi-select with checkboxes (header "select all" + individual rows)
+  - Bulk delete up to 50 users at once
+  - Bulk delete up to 100 claims at once
+  - Bulk action toolbar with count and actions
+  - Confirmation dialogs with optional reason field
+  - Works on both desktop table and mobile cards
+  - Root user cannot be bulk deleted
+  - Admins cannot delete themselves
+  - All operations wrapped in transactions (atomicity)
+  - Comprehensive audit logging
 
-  The Release workflow was failing because 'bun run release' included build step that required environment variables. Release workflow only needs to create git tags via 'changeset publish', not build the app (building happens in Deploy Production workflow which has all secrets).
+- **Fix: Dropdown Modal Bug**
+  - Added `modal={false}` to DropdownMenu components
+  - Dropdown now properly closes when nested dialogs (delete/block) open
+  - Applied to both users and claims admin pages
+
+- b8fbe74: **Fix: Release Workflow**
+  - Removed build step from release script to avoid env validation errors
+  - Release workflow now only creates git tags (via `changeset publish`)
+  - Build happens in Deploy Production workflow which has all secrets
+  - Fixes failing Release workflow that prevented GitHub release creation
+
+- **Added: Release Manager Agent**
+  - Comprehensive release management specialist
+  - Enforces git flow process (feature → development → main)
+  - Catches common mistakes (direct main merges, missing changesets)
+  - Provides pre/post-release checklists
+  - Documents rollback procedures
+  - Monitors deployment health
 
 ## 0.4.4
 
