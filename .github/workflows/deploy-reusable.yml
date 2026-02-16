@@ -315,11 +315,12 @@ jobs:
           echo "=== Running database migrations ==="
 
           # Execute migration on server (all commands run remotely)
-          # Install dependencies first, then run migrations
+          # Use drizzle-kit migrate instead of push for non-interactive CI/CD
+          # migrate applies pre-generated SQL files from drizzle/ directory
           # Note: Server has bun 1.1.45, delete incompatible lockfile before install
           # Install all deps (not --production) since drizzle-kit is a devDependency
           # Use direct connection string instead of drizzle.config.ts to avoid TS path alias issues
-          if ! ssh "$USER@$HOST" "cd $TARGET/releases && REL=\$(ls -1t | head -1) && echo \"Running migrations on release: \$REL\" && cd \$REL && rm -f bun.lock && bun install && bash -c 'set -a && source .env && set +a && echo \"n\" | bunx drizzle-kit push --dialect=postgresql --schema=./src/server/db/schema.ts --url=\$DATABASE_URL'"; then
+          if ! ssh "$USER@$HOST" "cd $TARGET/releases && REL=\$(ls -1t | head -1) && echo \"Running migrations on release: \$REL\" && cd \$REL && rm -f bun.lock && bun install && bash -c 'set -a && source .env && set +a && bunx drizzle-kit migrate --dialect=postgresql --url=\$DATABASE_URL'"; then
             echo "❌ Migration failed - deployment aborted"
             exit 1
           fi
