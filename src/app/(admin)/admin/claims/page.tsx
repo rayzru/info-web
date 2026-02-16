@@ -582,7 +582,7 @@ export default function AdminClaimsPage() {
                             <span>{new Date(claim.createdAt).toLocaleDateString("ru-RU")}</span>
                           </div>
                         </div>
-                        <DropdownMenu>
+                        <DropdownMenu modal={false}>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                               <MoreHorizontal className="h-4 w-4" />
@@ -741,7 +741,7 @@ export default function AdminClaimsPage() {
 
                     {/* Actions Column */}
                     <div className="w-10 shrink-0">
-                      <DropdownMenu>
+                      <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
                             <MoreHorizontal className="h-4 w-4" />
