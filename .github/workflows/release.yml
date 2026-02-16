@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.2.9
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: bun run release
+          version: bun run version
+          commit: "chore(release): version packages"
+          title: "chore(release): version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        if: steps.changesets.outputs.published == 'true'
+        uses: actions/github-script@v7
+        env:
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        with:
+          script: |
+            const packages = JSON.parse(process.env.PUBLISHED_PACKAGES);
+
+            for (const pkg of packages) {
+              const tagName = `v${pkg.version}`;
+              const releaseName = `v${pkg.version}`;
+
+              // Read CHANGELOG to extract release notes
+              const fs = require('fs');
+              const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+
+              // Extract notes for this version
+              const versionRegex = new RegExp(`## ${pkg.version}\\n([\\s\\S]*?)(?=\\n## |$)`);
+              const match = changelog.match(versionRegex);
+              const releaseNotes = match ? match[1].trim() : `Release ${pkg.version}`;
+
+              await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tagName,
+                name: releaseName,
+                body: releaseNotes,
+                draft: false,
+                prerelease: false
+              });
+
+              console.log(`✅ Created release ${tagName}`);
+            }

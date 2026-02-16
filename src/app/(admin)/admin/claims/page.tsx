@@ -3,28 +3,39 @@
 import { useState } from "react";
 
 import {
+  AlertTriangle,
   Check,
   ChevronLeft,
   ChevronRight,
-  Clock,
   Eye,
   FileText,
-  History,
   Home,
   Loader2,
   MoreHorizontal,
   ParkingCircle,
   Search,
+  Trash2,
   X,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
 import { DocumentViewerDialog } from "~/components/admin/document-viewer-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -37,7 +48,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
@@ -50,6 +60,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
 import { useMobile } from "~/hooks/use-mobile";
 import { useToast } from "~/hooks/use-toast";
@@ -293,6 +304,61 @@ export default function AdminClaimsPage() {
   const [viewerDocument, setViewerDocument] = useState<any>(null);
   const [viewerDialogOpen, setViewerDialogOpen] = useState(false);
 
+  // Bulk selection state
+  const [selectedClaimIds, setSelectedClaimIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [bulkDeleteReason, setBulkDeleteReason] = useState("");
+
+  const toggleClaim = (claimId: string) => {
+    const newSet = new Set(selectedClaimIds);
+    if (newSet.has(claimId)) {
+      newSet.delete(claimId);
+    } else {
+      newSet.add(claimId);
+    }
+    setSelectedClaimIds(newSet);
+  };
+
+  const toggleAll = () => {
+    if (data?.claims) {
+      if (selectedClaimIds.size === data.claims.length) {
+        setSelectedClaimIds(new Set());
+      } else {
+        setSelectedClaimIds(new Set(data.claims.map(c => c.id)));
+      }
+    }
+  };
+
+  const utils = api.useUtils();
+
+  const bulkDeleteMutation = api.claims.admin.bulkDelete.useMutation({
+    onSuccess: (result) => {
+      toast({
+        title: "Заявки удалены",
+        description: `Удалено заявок: ${result.deleted}`,
+      });
+      setSelectedClaimIds(new Set());
+      setShowBulkDeleteDialog(false);
+      setBulkDeleteReason("");
+      void utils.claims.admin.list.invalidate();
+      void utils.claims.admin.stats.invalidate();
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate({
+      claimIds: Array.from(selectedClaimIds),
+      reason: bulkDeleteReason || undefined,
+    });
+  };
+
   // Queries
   const { data, isLoading, refetch } = api.claims.admin.list.useQuery({
     page,
@@ -434,6 +500,31 @@ export default function AdminClaimsPage() {
         )}
       </div>
 
+      {/* Bulk Action Toolbar */}
+      {selectedClaimIds.size > 0 && (
+        <div className="mb-4 flex items-center gap-3 rounded-md border bg-muted p-3">
+          <span className="text-sm font-medium">
+            Выбрано заявок: {selectedClaimIds.size}
+          </span>
+          <Separator orientation="vertical" className="h-6" />
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowBulkDeleteDialog(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Удалить выбранные
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedClaimIds(new Set())}
+          >
+            Отменить выбор
+          </Button>
+        </div>
+      )}
+
       {/* Claims List */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
@@ -450,53 +541,61 @@ export default function AdminClaimsPage() {
               return (
                 <Card key={claim.id}>
                   <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-2 flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={claim.user?.image ?? undefined} />
-                            <AvatarFallback>
-                              {claim.user?.name?.slice(0, 2).toUpperCase() ?? "??"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">
-                            {claim.user?.name ?? claim.user?.email}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge
-                            variant={STATUS_VARIANTS[claim.status] ?? "outline"}
-                            className="text-xs"
-                          >
-                            {STATUS_LABELS[claim.status]}
-                          </Badge>
-                          {claim.documents && claim.documents.length > 0 && (
-                            <Badge variant="outline" className="gap-1 text-xs">
-                              <FileText className="h-3 w-3" />
-                              {claim.documents.length}
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={selectedClaimIds.has(claim.id)}
+                        onCheckedChange={() => toggleClaim(claim.id)}
+                        aria-label={`Выбрать заявку ${claim.user?.name ?? claim.user?.email}`}
+                        className="mt-1"
+                      />
+                      <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-2 flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={claim.user?.image ?? undefined} />
+                              <AvatarFallback>
+                                {claim.user?.name?.slice(0, 2).toUpperCase() ?? "??"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">
+                              {claim.user?.name ?? claim.user?.email}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge
+                              variant={STATUS_VARIANTS[claim.status] ?? "outline"}
+                              className="text-xs"
+                            >
+                              {STATUS_LABELS[claim.status]}
                             </Badge>
-                          )}
+                            {claim.documents && claim.documents.length > 0 && (
+                              <Badge variant="outline" className="gap-1 text-xs">
+                                <FileText className="h-3 w-3" />
+                                {claim.documents.length}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
+                            <PropertyIcon className="h-3.5 w-3.5" />
+                            <span>{propertyInfo.title}</span>
+                            <span>·</span>
+                            <span>{new Date(claim.createdAt).toLocaleDateString("ru-RU")}</span>
+                          </div>
                         </div>
-                        <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
-                          <PropertyIcon className="h-3.5 w-3.5" />
-                          <span>{propertyInfo.title}</span>
-                          <span>·</span>
-                          <span>{new Date(claim.createdAt).toLocaleDateString("ru-RU")}</span>
-                        </div>
+                        <DropdownMenu modal={false}>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openReviewDialog(claim)}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Рассмотреть
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openReviewDialog(claim)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Рассмотреть
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
                   </CardContent>
                 </Card>
@@ -534,6 +633,17 @@ export default function AdminClaimsPage() {
             <div className="rounded-lg border">
               {/* Table Header */}
               <div className="bg-muted/50 text-muted-foreground flex items-center gap-4 border-b px-4 py-3 text-sm font-medium">
+                <div className="w-12">
+                  <Checkbox
+                    checked={
+                      data?.claims &&
+                      data.claims.length > 0 &&
+                      selectedClaimIds.size === data.claims.length
+                    }
+                    onCheckedChange={toggleAll}
+                    aria-label="Выбрать все"
+                  />
+                </div>
                 <div className="w-24">Дата</div>
                 <div className="min-w-0 flex-1">Заголовок</div>
                 <div className="hidden w-32 sm:block">Тип</div>
@@ -552,6 +662,15 @@ export default function AdminClaimsPage() {
                     key={claim.id}
                     className="hover:bg-muted/30 flex items-center gap-4 border-b px-4 py-3 transition-colors last:border-b-0"
                   >
+                    {/* Checkbox Column */}
+                    <div className="w-12 shrink-0">
+                      <Checkbox
+                        checked={selectedClaimIds.has(claim.id)}
+                        onCheckedChange={() => toggleClaim(claim.id)}
+                        aria-label={`Выбрать заявку ${claim.user?.name ?? claim.user?.email}`}
+                      />
+                    </div>
+
                     {/* Date Column */}
                     <div className="w-24 shrink-0">
                       <div className="text-sm font-medium">
@@ -622,7 +741,7 @@ export default function AdminClaimsPage() {
 
                     {/* Actions Column */}
                     <div className="w-10 shrink-0">
-                      <DropdownMenu>
+                      <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
                             <MoreHorizontal className="h-4 w-4" />
@@ -702,6 +821,41 @@ export default function AdminClaimsPage() {
         open={viewerDialogOpen}
         onOpenChange={setViewerDialogOpen}
       />
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Удаление {selectedClaimIds.size} заявок
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Это действие удалит {selectedClaimIds.size} заявок без возможности восстановления.
+              Все данные и документы будут удалены немедленно.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label>Причина удаления (опционально)</Label>
+            <Textarea
+              value={bulkDeleteReason}
+              onChange={(e) => setBulkDeleteReason(e.target.value)}
+              placeholder="Спам, некорректные заявки..."
+              rows={3}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleteMutation.isPending ? "Удаление..." : "Удалить"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
