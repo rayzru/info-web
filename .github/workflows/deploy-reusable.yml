@@ -7,18 +7,6 @@ on:
         description: 'Deployment environment (Beta or Production)'
         required: true
         type: string
-      ssh_user:
-        description: 'SSH user for deployment'
-        required: true
-        type: string
-      ssh_host:
-        description: 'SSH host for deployment'
-        required: true
-        type: string
-      ssh_target_dir:
-        description: 'Target directory on server'
-        required: true
-        type: string
       pm2_app_name:
         description: 'PM2 application name'
         required: true
