@@ -10,9 +10,6 @@ jobs:
     uses: ./.github/workflows/deploy-reusable.yml
     with:
       environment: "Beta"
-      ssh_user: ${{ secrets.SSH_USER }}
-      ssh_host: ${{ secrets.SSH_HOST }}
-      ssh_target_dir: ${{ secrets.SSH_TARGET_DIR }}
       pm2_app_name: "sr2-beta"
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
