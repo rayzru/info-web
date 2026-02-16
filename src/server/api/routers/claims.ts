@@ -1002,6 +1002,7 @@ export const claimsRouter = createTRPCRouter({
                 },
               },
             },
+            documents: true,
             history: {
               with: {
                 changedByUser: {
