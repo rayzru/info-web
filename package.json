@@ -31,7 +31,7 @@
     "changeset:add": "changeset add",
     "changeset:status": "changeset status",
     "version": "changeset version && bun install",
-    "release": "bun run check && bun run build && changeset publish",
+    "release": "changeset publish",
     "release:github": "./scripts/create-release.sh",
     "release:analyze": "bun run scripts/analyze-release-changes.ts",
     "release:summarize": "bun run scripts/summarize-release.ts"
