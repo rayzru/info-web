@@ -235,7 +235,7 @@ jobs:
           echo "=== Running database migrations ==="
 
           # Execute migration on server (all commands run remotely)
-          if ! ssh "$USER@$HOST" "cd $TARGET/releases && REL=\$(ls -1t | head -1) && echo \"Running migrations on release: \$REL\" && cd \$REL && bash -c 'export \$(grep -v \"^#\" .env | xargs) && bun run db:push'"; then
+          if ! ssh "$USER@$HOST" "cd $TARGET/releases && REL=\$(ls -1t | head -1) && echo \"Running migrations on release: \$REL\" && cd \$REL && bash -c 'set -a && source .env && set +a && bun run db:push'"; then
             echo "❌ Migration failed - deployment aborted"
             exit 1
           fi
