@@ -138,6 +138,7 @@ jobs:
           cp drizzle.config.ts deploy/standalone/
           mkdir -p deploy/standalone/src/server/db
           cp src/server/db/schema.ts deploy/standalone/src/server/db/
+          cp -r src/server/db/schemas deploy/standalone/src/server/db/
           cp package.json deploy/standalone/
           cp bun.lock deploy/standalone/
 
