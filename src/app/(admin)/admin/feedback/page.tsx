@@ -15,14 +15,26 @@ import {
   MessageSquare,
   MoreHorizontal,
   Send,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AdminPageHeader } from "~/components/admin/admin-page-header";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -442,6 +454,7 @@ export default function AdminFeedbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isMobile = useMobile();
+  const { toast } = useToast();
 
   const statusFilter = (searchParams.get("status") ?? "all") as FeedbackStatus | "all";
   const typeFilter = (searchParams.get("type") ?? "all") as FeedbackType | "all";
@@ -452,6 +465,8 @@ export default function AdminFeedbackPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [localSearch, setLocalSearch] = useState("");
+  const [selectedFeedbackIds, setSelectedFeedbackIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
 
   const { data, isLoading, refetch } = api.feedback.admin.list.useQuery({
     page,
@@ -460,6 +475,54 @@ export default function AdminFeedbackPage() {
     type: typeFilter !== "all" ? typeFilter : undefined,
     priority: priorityFilter !== "all" ? priorityFilter : undefined,
   });
+
+  const utils = api.useUtils();
+
+  const toggleFeedback = (feedbackId: string) => {
+    const newSet = new Set(selectedFeedbackIds);
+    if (newSet.has(feedbackId)) {
+      newSet.delete(feedbackId);
+    } else {
+      newSet.add(feedbackId);
+    }
+    setSelectedFeedbackIds(newSet);
+  };
+
+  const toggleAll = () => {
+    if (data?.items) {
+      if (selectedFeedbackIds.size === data.items.length) {
+        setSelectedFeedbackIds(new Set());
+      } else {
+        setSelectedFeedbackIds(new Set(data.items.map((item) => item.id)));
+      }
+    }
+  };
+
+  const bulkDeleteMutation = api.feedback.admin.bulkDelete.useMutation({
+    onSuccess: (result) => {
+      toast({
+        title: "Обращения удалены",
+        description: `${result.message} (удалено: ${result.actual} из ${result.requested})`,
+      });
+      setSelectedFeedbackIds(new Set());
+      setShowBulkDeleteDialog(false);
+      void utils.feedback.admin.list.invalidate();
+      void refetch();
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate({
+      ids: Array.from(selectedFeedbackIds),
+    });
+  };
 
   const updateParams = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -550,6 +613,29 @@ export default function AdminFeedbackPage() {
         </Select>
       </div>
 
+      {/* Bulk Action Toolbar */}
+      {selectedFeedbackIds.size > 0 && (
+        <div className="bg-muted flex items-center gap-2 rounded-md border p-3">
+          <span className="text-sm font-medium">Выбрано: {selectedFeedbackIds.size}</span>
+          <Separator orientation="vertical" className="h-6" />
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowBulkDeleteDialog(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Удалить выбранные
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedFeedbackIds(new Set())}
+          >
+            Отменить выбор
+          </Button>
+        </div>
+      )}
+
       {/* Feedback Table/Cards */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
@@ -560,6 +646,16 @@ export default function AdminFeedbackPage() {
           {/* Desktop Table View */}
           <div className="hidden rounded-lg border md:block">
             <div className="bg-muted/50 text-muted-foreground flex items-center gap-4 border-b px-4 py-3 text-sm font-medium">
+              <div className="w-12">
+                <Checkbox
+                  checked={
+                    selectedFeedbackIds.size === data.items.length &&
+                    data.items.length > 0
+                  }
+                  onCheckedChange={toggleAll}
+                  aria-label="Выбрать все"
+                />
+              </div>
               <div className="w-24">Дата</div>
               <div className="w-32">Тип</div>
               <div className="min-w-0 flex-1">Содержание</div>
@@ -576,6 +672,15 @@ export default function AdminFeedbackPage() {
                   key={item.id}
                   className="hover:bg-muted/30 flex items-center gap-4 border-b px-4 py-3 last:border-b-0"
                 >
+                  {/* Checkbox */}
+                  <div className="w-12">
+                    <Checkbox
+                      checked={selectedFeedbackIds.has(item.id)}
+                      onCheckedChange={() => toggleFeedback(item.id)}
+                      aria-label={`Выбрать ${item.title ?? "обращение"}`}
+                    />
+                  </div>
+
                   {/* Date */}
                   <div className="text-muted-foreground w-24 text-sm">
                     {formatDate(item.createdAt)}
@@ -717,6 +822,38 @@ export default function AdminFeedbackPage() {
           Обращений не найдено
         </div>
       )}
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Удаление {selectedFeedbackIds.size} обращений
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Это действие пометит {selectedFeedbackIds.size} обращений как удалённые.
+              Обращения будут скрыты из общего списка, но сохранятся в системе для аудита.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleteMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Удаление...
+                </>
+              ) : (
+                "Удалить"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* View Dialog */}
       <ViewDialog
