@@ -233,10 +233,9 @@ jobs:
         timeout-minutes: 5
         run: |
           echo "=== Running database migrations ==="
-          REL="\$(ssh \"$USER@$HOST\" \"ls -1t $TARGET/releases | head -1\")"
-          echo "Running migrations on release: \$REL"
 
-          if ! ssh "$USER@$HOST" "cd $TARGET/releases/\$REL && bash -c 'export \$(grep -v \"^#\" .env | xargs) && bun run db:push'"; then
+          # Execute migration on server (all commands run remotely)
+          if ! ssh "$USER@$HOST" "cd $TARGET/releases && REL=\$(ls -1t | head -1) && echo \"Running migrations on release: \$REL\" && cd \$REL && bash -c 'export \$(grep -v \"^#\" .env | xargs) && bun run db:push'"; then
             echo "❌ Migration failed - deployment aborted"
             exit 1
           fi
