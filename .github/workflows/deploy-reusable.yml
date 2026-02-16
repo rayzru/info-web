@@ -88,7 +88,7 @@ jobs:
     environment: ${{ inputs.environment }}
     env:
       NODE_VERSION: "22"
-      BUN_VERSION: "1.1.45"
+      BUN_VERSION: "1.2.9"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -313,7 +313,8 @@ jobs:
 
           # Execute migration on server (all commands run remotely)
           # Install dependencies first, then run migrations
-          if ! ssh "$USER@$HOST" "cd $TARGET/releases && REL=\$(ls -1t | head -1) && echo \"Running migrations on release: \$REL\" && cd \$REL && bun install --frozen-lockfile --production && bash -c 'set -a && source .env && set +a && bunx drizzle-kit push'"; then
+          # Note: Server has bun 1.1.45, skip --frozen-lockfile due to version mismatch
+          if ! ssh "$USER@$HOST" "cd $TARGET/releases && REL=\$(ls -1t | head -1) && echo \"Running migrations on release: \$REL\" && cd \$REL && bun install --production && bash -c 'set -a && source .env && set +a && bunx drizzle-kit push'"; then
             echo "❌ Migration failed - deployment aborted"
             exit 1
           fi
