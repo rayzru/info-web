@@ -15,7 +15,7 @@ jobs:
     uses: ./.github/workflows/deploy-reusable.yml
     with:
       environment: "Production"
-      pm2_app_name: "sr2-production"
+      pm2_app_name: "sr2"
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       SSH_HOST: ${{ secrets.SSH_HOST }}
