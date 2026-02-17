@@ -272,6 +272,16 @@ export const feedbackRouter = createTRPCRouter({
 
         const whereClause = and(...conditions);
 
+        // DEBUG: Log query parameters
+        logger.info("[Feedback Admin List] Query", {
+          page,
+          limit,
+          offset,
+          filters: { status, type, priority },
+          userId: ctx.session?.user?.id,
+          userRoles: ctx.session?.user?.roles,
+        });
+
         const items = await ctx.db.query.feedback.findMany({
           where: whereClause,
           with: {
@@ -308,6 +318,14 @@ export const feedbackRouter = createTRPCRouter({
           .select({ count: count() })
           .from(feedback)
           .where(and(eq(feedback.status, "in_progress"), eq(feedback.isDeleted, false)));
+
+        // DEBUG: Log query results
+        logger.info("[Feedback Admin List] Results", {
+          itemsCount: items.length,
+          total: totalResult?.count ?? 0,
+          newCount: newCount?.count ?? 0,
+          inProgressCount: inProgressCount?.count ?? 0,
+        });
 
         return {
           items,
