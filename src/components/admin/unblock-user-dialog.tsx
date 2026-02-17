@@ -113,7 +113,7 @@ export function UnblockUserDialog({
             setOpen(true);
           }}
         >
-          <ShieldCheck className="size-4" />
+          <ShieldCheck className="h-4 w-4" />
           Разблокировать
         </DropdownMenuItem>
         <Dialog open={open} onOpenChange={setOpen}>

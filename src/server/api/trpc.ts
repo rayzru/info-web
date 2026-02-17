@@ -99,7 +99,11 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 
   const end = Date.now();
   const duration = end - start;
-  httpLogger.debug({ path, duration }, "tRPC procedure executed");
+
+  // Only log slow procedures (> 1s)
+  if (duration > 1000) {
+    httpLogger.warn({ path, duration }, "Slow tRPC procedure");
+  }
 
   return result;
 });

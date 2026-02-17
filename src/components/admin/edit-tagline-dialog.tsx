@@ -168,8 +168,8 @@ export function EditTaglineDialog({
             setOpen(true);
           }}
         >
-          <MessageSquareText className="size-4" />
-          Редактировать подпись
+          <MessageSquareText className="h-4 w-4" />
+          Подпись
         </DropdownMenuItem>
         <Dialog open={open} onOpenChange={setOpen}>
           {dialogContent}

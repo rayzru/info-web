@@ -376,6 +376,55 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
+        // Check for blocking dependencies
+        const usersWithDependencies: string[] = [];
+
+        for (const userId of userIds) {
+          const dependencies: string[] = [];
+
+          // Check for publications
+          const [publicationsCount] = await ctx.db
+            .select({ count: count() })
+            .from(publications)
+            .where(eq(publications.authorId, userId));
+          if (publicationsCount && publicationsCount.count > 0) {
+            dependencies.push("публикации");
+          }
+
+          // Check for listings
+          const [listingsCount] = await ctx.db
+            .select({ count: count() })
+            .from(listings)
+            .where(eq(listings.userId, userId));
+          if (listingsCount && listingsCount.count > 0) {
+            dependencies.push("объявления");
+          }
+
+          // Check for news
+          const [newsCount] = await ctx.db
+            .select({ count: count() })
+            .from(news)
+            .where(eq(news.authorId, userId));
+          if (newsCount && newsCount.count > 0) {
+            dependencies.push("новости");
+          }
+
+          if (dependencies.length > 0) {
+            const user = usersToDelete.find((u) => u.id === userId);
+            usersWithDependencies.push(
+              `${user?.name ?? userId}: ${dependencies.join(", ")}`
+            );
+          }
+        }
+
+        // If there are users with blocking dependencies, return error
+        if (usersWithDependencies.length > 0) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: `Невозможно удалить следующих пользователей из-за зависимостей:\n${usersWithDependencies.join("\n")}`,
+          });
+        }
+
         // Use transaction for atomicity
         await ctx.db.transaction(async (tx) => {
           // Delete in correct order (foreign key constraints)
@@ -394,6 +443,100 @@ export const adminRouter = createTRPCRouter({
         });
 
         return { deleted: userIds.length };
+      }),
+
+    // Hard delete user with dependency checks
+    hardDelete: adminProcedureWithFeature("users:hard-delete")
+      .input(z.object({ userId: z.string().uuid() }))
+      .mutation(async ({ ctx, input }) => {
+        const { userId } = input;
+
+        // Prevent self-deletion
+        if (userId === ctx.session.user.id) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Cannot delete yourself",
+          });
+        }
+
+        // Verify user exists
+        const user = await ctx.db.query.users.findFirst({
+          where: eq(users.id, userId),
+          with: {
+            roles: { columns: { role: true } },
+          },
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+          });
+        }
+
+        // Check if target user is Root (cannot be deleted)
+        if (user.roles.some((r) => r.role === "Root")) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Cannot delete Root user",
+          });
+        }
+
+        // Check for blocking dependencies
+        const dependencies: string[] = [];
+
+        // Check for publications
+        const [publicationsCount] = await ctx.db
+          .select({ count: count() })
+          .from(publications)
+          .where(eq(publications.authorId, userId));
+        if (publicationsCount && publicationsCount.count > 0) {
+          dependencies.push(`${publicationsCount.count} публикаций`);
+        }
+
+        // Check for listings
+        const [listingsCount] = await ctx.db
+          .select({ count: count() })
+          .from(listings)
+          .where(eq(listings.userId, userId));
+        if (listingsCount && listingsCount.count > 0) {
+          dependencies.push(`${listingsCount.count} объявлений`);
+        }
+
+        // Check for news
+        const [newsCount] = await ctx.db
+          .select({ count: count() })
+          .from(news)
+          .where(eq(news.authorId, userId));
+        if (newsCount && newsCount.count > 0) {
+          dependencies.push(`${newsCount.count} новостей`);
+        }
+
+        // If there are blocking dependencies, return error
+        if (dependencies.length > 0) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: `Невозможно удалить пользователя. Найдены зависимости: ${dependencies.join(", ")}. Сначала удалите или переназначьте эти данные.`,
+          });
+        }
+
+        // Proceed with hard delete in transaction
+        await ctx.db.transaction(async (tx) => {
+          // Delete in correct order (foreign key constraints)
+          await tx.delete(userProfiles).where(eq(userProfiles.userId, userId));
+          await tx.delete(userRoles).where(eq(userRoles.userId, userId));
+          await tx.delete(sessions).where(eq(sessions.userId, userId));
+          await tx.delete(accounts).where(eq(accounts.userId, userId));
+          await tx.delete(users).where(eq(users.id, userId));
+        });
+
+        logger.info("[Hard Delete] Permanently deleted user", {
+          userId,
+          userName: user.name,
+          adminId: ctx.session.user.id,
+        });
+
+        return { success: true };
       }),
 
     // Get user's tagline (for admin editing)
