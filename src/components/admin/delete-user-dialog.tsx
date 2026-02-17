@@ -121,7 +121,7 @@ export function DeleteUserDialog({ userId, userName, asMenuItem = false }: Delet
             setOpen(true);
           }}
         >
-          <Trash2 className="size-4" />
+          <Trash2 className="h-4 w-4" />
           Удалить
         </DropdownMenuItem>
         <AlertDialog open={open} onOpenChange={setOpen}>

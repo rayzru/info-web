@@ -467,6 +467,8 @@ export default function AdminFeedbackPage() {
   const [localSearch, setLocalSearch] = useState("");
   const [selectedFeedbackIds, setSelectedFeedbackIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const { data, isLoading, refetch } = api.feedback.admin.list.useQuery({
     page,
@@ -498,6 +500,25 @@ export default function AdminFeedbackPage() {
     }
   };
 
+  const deleteMutation = api.feedback.admin.delete.useMutation({
+    onSuccess: () => {
+      toast({
+        title: "Обращение удалено",
+      });
+      setDeleteId(null);
+      setShowDeleteDialog(false);
+      void utils.feedback.admin.list.invalidate();
+      void refetch();
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const bulkDeleteMutation = api.feedback.admin.bulkDelete.useMutation({
     onSuccess: (result) => {
       toast({
@@ -518,10 +539,21 @@ export default function AdminFeedbackPage() {
     },
   });
 
+  const handleDelete = () => {
+    if (deleteId) {
+      deleteMutation.mutate({ id: deleteId });
+    }
+  };
+
   const handleBulkDelete = () => {
     bulkDeleteMutation.mutate({
       ids: Array.from(selectedFeedbackIds),
     });
+  };
+
+  const openDeleteDialog = (id: string) => {
+    setDeleteId(id);
+    setShowDeleteDialog(true);
   };
 
   const updateParams = (key: string, value: string) => {
@@ -734,6 +766,14 @@ export default function AdminFeedbackPage() {
                           <Eye className="mr-2 h-4 w-4" />
                           Открыть
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => openDeleteDialog(item.id)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Удалить
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -843,6 +883,36 @@ export default function AdminFeedbackPage() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {bulkDeleteMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Удаление...
+                </>
+              ) : (
+                "Удалить"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Single Delete Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удаление обращения</AlertDialogTitle>
+            <AlertDialogDescription>
+              Это действие пометит обращение как удалённое.
+              Оно будет скрыто из общего списка, но сохранится в системе для аудита.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Удаление...

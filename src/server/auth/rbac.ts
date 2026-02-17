@@ -15,7 +15,8 @@ export type AdminFeature =
   | "users:view" // View users list
   | "users:manage" // Edit user details
   | "users:roles" // Assign/remove roles
-  | "users:delete" // Delete users
+  | "users:delete" // Soft delete users (deletion request)
+  | "users:hard-delete" // Hard delete users (permanent removal)
   | "buildings:view" // View buildings
   | "buildings:manage" // Manage buildings
   | "properties:view" // View property requests
@@ -27,6 +28,8 @@ export type AdminFeature =
   | "content:view" // View content
   | "content:moderate" // Moderate user content
   | "directory:manage" // Manage directory entries and tags
+  | "feedback:view" // View feedback submissions
+  | "feedback:manage" // Manage and respond to feedback
   | "system:settings" // Access system settings
   | "system:logs"; // View system logs
 
@@ -65,6 +68,7 @@ const FEATURE_PERMISSIONS: Record<AdminFeature, UserRole[]> = {
   "users:manage": ["Root", "SuperAdmin", "Admin"],
   "users:roles": ["Root", "SuperAdmin", "Admin"],
   "users:delete": ["Root", "SuperAdmin", "Admin"],
+  "users:hard-delete": ["Root", "SuperAdmin"], // Only top-level admins can permanently delete
   "buildings:view": ["Root", "SuperAdmin", "Admin", "BuildingChairman"],
   "buildings:manage": ["Root", "SuperAdmin", "Admin"],
   "properties:view": ["Root", "SuperAdmin", "Admin", "BuildingChairman", "ComplexChairman"],
@@ -76,6 +80,8 @@ const FEATURE_PERMISSIONS: Record<AdminFeature, UserRole[]> = {
   "content:view": ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"],
   "content:moderate": ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"],
   "directory:manage": ["Root", "SuperAdmin", "Admin", "Editor"],
+  "feedback:view": ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"],
+  "feedback:manage": ["Root", "SuperAdmin", "Admin", "Editor", "Moderator"],
   "system:settings": ["Root", "SuperAdmin"],
   "system:logs": ["Root"],
 };
@@ -210,7 +216,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     title: "Обратная связь",
     href: "/admin/feedback",
     icon: "MessageSquare",
-    feature: "users:manage",
+    feature: "feedback:view",
     group: "users",
     countKey: "feedback",
   },

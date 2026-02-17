@@ -221,7 +221,7 @@ export function BlockUserDialog({
             setOpen(true);
           }}
         >
-          <Ban className="size-4" />
+          <Ban className="h-4 w-4" />
           Заблокировать
         </DropdownMenuItem>
         <Dialog open={open} onOpenChange={setOpen}>

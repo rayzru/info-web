@@ -245,7 +245,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * List all feedback for admin
      */
-    list: adminProcedureWithFeature("users:manage")
+    list: adminProcedureWithFeature("feedback:view")
       .input(
         z.object({
           status: feedbackStatusSchema.optional(),
@@ -324,7 +324,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * Get single feedback by ID
      */
-    byId: adminProcedureWithFeature("users:manage")
+    byId: adminProcedureWithFeature("feedback:view")
       .input(z.object({ id: z.string().uuid() }))
       .query(async ({ ctx, input }) => {
         const item = await ctx.db.query.feedback.findFirst({
@@ -370,7 +370,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * Update feedback status and details
      */
-    update: adminProcedureWithFeature("users:manage")
+    update: adminProcedureWithFeature("feedback:manage")
       .input(
         z.object({
           id: z.string().uuid(),
@@ -483,7 +483,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * Respond to feedback
      */
-    respond: adminProcedureWithFeature("users:manage")
+    respond: adminProcedureWithFeature("feedback:manage")
       .input(
         z.object({
           id: z.string().uuid(),
@@ -534,7 +534,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * Get history for a feedback
      */
-    history: adminProcedureWithFeature("users:manage")
+    history: adminProcedureWithFeature("feedback:view")
       .input(z.object({ feedbackId: z.string().uuid() }))
       .query(async ({ ctx, input }) => {
         const history = await ctx.db.query.feedbackHistory.findMany({
@@ -562,7 +562,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * Get statistics
      */
-    stats: adminProcedureWithFeature("users:manage").query(async ({ ctx }) => {
+    stats: adminProcedureWithFeature("feedback:view").query(async ({ ctx }) => {
       const baseCondition = eq(feedback.isDeleted, false);
 
       const [total] = await ctx.db.select({ count: count() }).from(feedback).where(baseCondition);
@@ -619,7 +619,7 @@ export const feedbackRouter = createTRPCRouter({
      * @example
      * await trpc.feedback.admin.delete({ id: "uuid" });
      */
-    delete: adminProcedureWithFeature("users:manage")
+    delete: adminProcedureWithFeature("feedback:manage")
       .input(z.object({ id: z.string().uuid() }))
       .mutation(async ({ ctx, input }) => {
         const adminId = ctx.session.user.id;
@@ -670,7 +670,7 @@ export const feedbackRouter = createTRPCRouter({
      * const result = await trpc.feedback.admin.bulkDelete({ ids: ["uuid1", "uuid2"] });
      * console.log(`Deleted ${result.actual} out of ${result.requested} items`);
      */
-    bulkDelete: adminProcedureWithFeature("users:manage")
+    bulkDelete: adminProcedureWithFeature("feedback:manage")
       .input(
         z.object({
           ids: z
