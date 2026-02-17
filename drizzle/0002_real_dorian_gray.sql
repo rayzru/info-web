@@ -1,1 +1,1 @@
-ALTER TABLE "feedback" DROP COLUMN "test_migration_field";
+ALTER TABLE "feedback" DROP COLUMN IF EXISTS "test_migration_field";
