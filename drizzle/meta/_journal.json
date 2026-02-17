@@ -15,6 +15,13 @@
       "when": 1771262107000,
       "tag": "0001_drop_test_field",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771291500503,
+      "tag": "0002_real_dorian_gray",
+      "breakpoints": true
     }
   ]
 }
