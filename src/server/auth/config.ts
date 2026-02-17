@@ -633,10 +633,7 @@ export const authConfig = {
       authLogger.info({ userId: user.id, email: user.email }, "New user created");
     },
     session: async ({ session }) => {
-      // Log session creation for debugging
-      if (isDev) {
-        authLogger.debug({ userId: session.user?.id }, "Session created");
-      }
+      // Session callback - no logging needed
     },
   },
 } satisfies NextAuthConfig;

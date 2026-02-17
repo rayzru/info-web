@@ -9,12 +9,13 @@ export default async function AdminUsersPage() {
 
   const canManageRoles = hasFeatureAccess(userRoles, "users:roles");
   const canDeleteUsers = hasFeatureAccess(userRoles, "users:delete");
+  const canHardDeleteUsers = hasFeatureAccess(userRoles, "users:hard-delete");
 
   return (
     <div className="space-y-6">
       <AdminPageHeader title="Пользователи" description="Управление пользователями системы" />
 
-      <UsersTable canManageRoles={canManageRoles} canDeleteUsers={canDeleteUsers} />
+      <UsersTable canManageRoles={canManageRoles} canDeleteUsers={canDeleteUsers} canHardDeleteUsers={canHardDeleteUsers} />
     </div>
   );
 }

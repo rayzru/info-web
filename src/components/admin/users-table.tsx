@@ -57,6 +57,7 @@ import { api } from "~/trpc/react";
 
 import { BlockUserDialog } from "./block-user-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
+import { HardDeleteUserDialog } from "./hard-delete-user-dialog";
 import { EditTaglineDialog } from "./edit-tagline-dialog";
 import { UnblockUserDialog } from "./unblock-user-dialog";
 
@@ -73,6 +74,7 @@ interface User {
 interface UsersTableProps {
   canManageRoles: boolean;
   canDeleteUsers: boolean;
+  canHardDeleteUsers: boolean;
 }
 
 function formatDate(date: Date | null): string {
@@ -89,12 +91,14 @@ function UserRow({
   user,
   canManageRoles,
   canDeleteUsers,
+  canHardDeleteUsers,
   selectedUserIds,
   toggleUser,
 }: {
   user: User;
   canManageRoles: boolean;
   canDeleteUsers: boolean;
+  canHardDeleteUsers: boolean;
   selectedUserIds: Set<string>;
   toggleUser: (userId: string) => void;
 }) {
@@ -187,19 +191,19 @@ function UserRow({
               <>
                 <DropdownMenuItem asChild>
                   <Link href={`/admin/users/${user.id}/roles`}>
-                    <UserCog className="mr-2 h-4 w-4" />
+                    <UserCog className="h-4 w-4" />
                     Управление ролями
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href={`/admin/users/${user.id}/properties`}>
-                    <Building2 className="mr-2 h-4 w-4" />
+                    <Building2 className="h-4 w-4" />
                     Собственность
                   </Link>
                 </DropdownMenuItem>
                 <EditTaglineDialog userId={user.id} userName={user.name} asMenuItem />
                 <DropdownMenuItem>
-                  <KeyRound className="mr-2 h-4 w-4" />
+                  <KeyRound className="h-4 w-4" />
                   Сбросить пароль
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -214,6 +218,9 @@ function UserRow({
               <>
                 {canManageRoles && <DropdownMenuSeparator />}
                 <DeleteUserDialog userId={user.id} userName={user.name} asMenuItem />
+                {canHardDeleteUsers && (
+                  <HardDeleteUserDialog userId={user.id} userName={user.name} asMenuItem />
+                )}
               </>
             )}
           </DropdownMenuContent>
@@ -228,12 +235,14 @@ function UserCard({
   user,
   canManageRoles,
   canDeleteUsers,
+  canHardDeleteUsers,
   selectedUserIds,
   toggleUser,
 }: {
   user: User;
   canManageRoles: boolean;
   canDeleteUsers: boolean;
+  canHardDeleteUsers: boolean;
   selectedUserIds: Set<string>;
   toggleUser: (userId: string) => void;
 }) {
@@ -324,19 +333,19 @@ function UserCard({
                 <>
                   <DropdownMenuItem asChild>
                     <Link href={`/admin/users/${user.id}/roles`}>
-                      <UserCog className="mr-2 h-4 w-4" />
+                      <UserCog className="h-4 w-4" />
                       Управление ролями
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href={`/admin/users/${user.id}/properties`}>
-                      <Building2 className="mr-2 h-4 w-4" />
+                      <Building2 className="h-4 w-4" />
                       Собственность
                     </Link>
                   </DropdownMenuItem>
                   <EditTaglineDialog userId={user.id} userName={user.name} asMenuItem />
                   <DropdownMenuItem>
-                    <KeyRound className="mr-2 h-4 w-4" />
+                    <KeyRound className="h-4 w-4" />
                     Сбросить пароль
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -351,6 +360,9 @@ function UserCard({
                 <>
                   {canManageRoles && <DropdownMenuSeparator />}
                   <DeleteUserDialog userId={user.id} userName={user.name} asMenuItem />
+                  {canHardDeleteUsers && (
+                    <HardDeleteUserDialog userId={user.id} userName={user.name} asMenuItem />
+                  )}
                 </>
               )}
             </DropdownMenuContent>
@@ -361,7 +373,7 @@ function UserCard({
   );
 }
 
-export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) {
+export function UsersTable({ canManageRoles, canDeleteUsers, canHardDeleteUsers }: UsersTableProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -420,8 +432,23 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
   });
 
   const handleBulkDelete = () => {
+    const userIds = Array.from(selectedUserIds).filter((id) => {
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(id);
+    });
+
+    if (userIds.length === 0) {
+      toast({
+        title: "Ошибка",
+        description: "Не выбрано ни одного валидного пользователя",
+        variant: "destructive",
+      });
+      return;
+    }
+
     bulkDeleteMutation.mutate({
-      userIds: Array.from(selectedUserIds),
+      userIds,
       reason: bulkDeleteReason || undefined,
     });
   };
@@ -454,7 +481,7 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
           <span className="text-sm font-medium">Выбрано: {selectedUserIds.size}</span>
           <Separator orientation="vertical" className="h-6" />
           <Button variant="destructive" size="sm" onClick={() => setShowBulkDeleteDialog(true)}>
-            <Trash2 className="mr-2 h-4 w-4" />
+            <Trash2 className="h-4 w-4" />
             Удалить выбранных
           </Button>
           <Button variant="outline" size="sm" onClick={() => setSelectedUserIds(new Set())}>
@@ -486,6 +513,7 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
                 user={user}
                 canManageRoles={canManageRoles}
                 canDeleteUsers={canDeleteUsers}
+                canHardDeleteUsers={canHardDeleteUsers}
                 selectedUserIds={selectedUserIds}
                 toggleUser={toggleUser}
               />
@@ -536,6 +564,7 @@ export function UsersTable({ canManageRoles, canDeleteUsers }: UsersTableProps) 
                     user={user}
                     canManageRoles={canManageRoles}
                     canDeleteUsers={canDeleteUsers}
+                    canHardDeleteUsers={canHardDeleteUsers}
                     selectedUserIds={selectedUserIds}
                     toggleUser={toggleUser}
                   />

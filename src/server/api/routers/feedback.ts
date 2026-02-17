@@ -245,7 +245,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * List all feedback for admin
      */
-    list: adminProcedureWithFeature("users:manage")
+    list: adminProcedureWithFeature("feedback:view")
       .input(
         z.object({
           status: feedbackStatusSchema.optional(),
@@ -272,17 +272,6 @@ export const feedbackRouter = createTRPCRouter({
 
         const whereClause = and(...conditions);
 
-        // DEBUG: Log query parameters
-        logger.info("[Feedback Admin List] Query", {
-          page,
-          limit,
-          offset,
-          filters: { status, type, priority },
-          userId: ctx.session?.user?.id,
-          userRoles: ctx.session?.user?.roles,
-        });
-
-        logger.info("[Feedback Admin List] Before findMany");
         const items = await ctx.db.query.feedback.findMany({
           where: whereClause,
           with: {
@@ -303,37 +292,22 @@ export const feedbackRouter = createTRPCRouter({
           limit,
           offset,
         });
-        logger.info("[Feedback Admin List] After findMany", { itemsCount: items.length });
 
-        logger.info("[Feedback Admin List] Before total count");
         const [totalResult] = await ctx.db
           .select({ count: count() })
           .from(feedback)
           .where(whereClause);
-        logger.info("[Feedback Admin List] After total count", { total: totalResult?.count ?? 0 });
 
         // Count by status for filters
-        logger.info("[Feedback Admin List] Before new count");
         const [newCount] = await ctx.db
           .select({ count: count() })
           .from(feedback)
           .where(and(eq(feedback.status, "new"), eq(feedback.isDeleted, false)));
-        logger.info("[Feedback Admin List] After new count", { newCount: newCount?.count ?? 0 });
 
-        logger.info("[Feedback Admin List] Before in_progress count");
         const [inProgressCount] = await ctx.db
           .select({ count: count() })
           .from(feedback)
           .where(and(eq(feedback.status, "in_progress"), eq(feedback.isDeleted, false)));
-        logger.info("[Feedback Admin List] After in_progress count", { inProgressCount: inProgressCount?.count ?? 0 });
-
-        // DEBUG: Log query results
-        logger.info("[Feedback Admin List] Results", {
-          itemsCount: items.length,
-          total: totalResult?.count ?? 0,
-          newCount: newCount?.count ?? 0,
-          inProgressCount: inProgressCount?.count ?? 0,
-        });
 
         return {
           items,
@@ -350,7 +324,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * Get single feedback by ID
      */
-    byId: adminProcedureWithFeature("users:manage")
+    byId: adminProcedureWithFeature("feedback:view")
       .input(z.object({ id: z.string().uuid() }))
       .query(async ({ ctx, input }) => {
         const item = await ctx.db.query.feedback.findFirst({
@@ -396,7 +370,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * Update feedback status and details
      */
-    update: adminProcedureWithFeature("users:manage")
+    update: adminProcedureWithFeature("feedback:manage")
       .input(
         z.object({
           id: z.string().uuid(),
@@ -509,7 +483,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * Respond to feedback
      */
-    respond: adminProcedureWithFeature("users:manage")
+    respond: adminProcedureWithFeature("feedback:manage")
       .input(
         z.object({
           id: z.string().uuid(),
@@ -560,7 +534,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * Get history for a feedback
      */
-    history: adminProcedureWithFeature("users:manage")
+    history: adminProcedureWithFeature("feedback:view")
       .input(z.object({ feedbackId: z.string().uuid() }))
       .query(async ({ ctx, input }) => {
         const history = await ctx.db.query.feedbackHistory.findMany({
@@ -588,7 +562,7 @@ export const feedbackRouter = createTRPCRouter({
     /**
      * Get statistics
      */
-    stats: adminProcedureWithFeature("users:manage").query(async ({ ctx }) => {
+    stats: adminProcedureWithFeature("feedback:view").query(async ({ ctx }) => {
       const baseCondition = eq(feedback.isDeleted, false);
 
       const [total] = await ctx.db.select({ count: count() }).from(feedback).where(baseCondition);
@@ -645,7 +619,7 @@ export const feedbackRouter = createTRPCRouter({
      * @example
      * await trpc.feedback.admin.delete({ id: "uuid" });
      */
-    delete: adminProcedureWithFeature("users:manage")
+    delete: adminProcedureWithFeature("feedback:manage")
       .input(z.object({ id: z.string().uuid() }))
       .mutation(async ({ ctx, input }) => {
         const adminId = ctx.session.user.id;
@@ -696,7 +670,7 @@ export const feedbackRouter = createTRPCRouter({
      * const result = await trpc.feedback.admin.bulkDelete({ ids: ["uuid1", "uuid2"] });
      * console.log(`Deleted ${result.actual} out of ${result.requested} items`);
      */
-    bulkDelete: adminProcedureWithFeature("users:manage")
+    bulkDelete: adminProcedureWithFeature("feedback:manage")
       .input(
         z.object({
           ids: z
