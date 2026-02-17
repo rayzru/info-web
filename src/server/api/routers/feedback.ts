@@ -282,6 +282,7 @@ export const feedbackRouter = createTRPCRouter({
           userRoles: ctx.session?.user?.roles,
         });
 
+        logger.info("[Feedback Admin List] Before findMany");
         const items = await ctx.db.query.feedback.findMany({
           where: whereClause,
           with: {
@@ -302,22 +303,29 @@ export const feedbackRouter = createTRPCRouter({
           limit,
           offset,
         });
+        logger.info("[Feedback Admin List] After findMany", { itemsCount: items.length });
 
+        logger.info("[Feedback Admin List] Before total count");
         const [totalResult] = await ctx.db
           .select({ count: count() })
           .from(feedback)
           .where(whereClause);
+        logger.info("[Feedback Admin List] After total count", { total: totalResult?.count ?? 0 });
 
         // Count by status for filters
+        logger.info("[Feedback Admin List] Before new count");
         const [newCount] = await ctx.db
           .select({ count: count() })
           .from(feedback)
           .where(and(eq(feedback.status, "new"), eq(feedback.isDeleted, false)));
+        logger.info("[Feedback Admin List] After new count", { newCount: newCount?.count ?? 0 });
 
+        logger.info("[Feedback Admin List] Before in_progress count");
         const [inProgressCount] = await ctx.db
           .select({ count: count() })
           .from(feedback)
           .where(and(eq(feedback.status, "in_progress"), eq(feedback.isDeleted, false)));
+        logger.info("[Feedback Admin List] After in_progress count", { inProgressCount: inProgressCount?.count ?? 0 });
 
         // DEBUG: Log query results
         logger.info("[Feedback Admin List] Results", {
