@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 import { LatestNews } from "~/components/latest-news";
 import { LatestPublications } from "~/components/latest-publications";
-import { UpcomingEvents } from "~/components/upcoming-events";
+import { WeeklyAgenda } from "~/components/weekly-agenda";
 import { api } from "~/trpc/server";
 
 import { DirectoryContent } from "./info/directory-content";
@@ -37,19 +37,13 @@ export default async function Home() {
   const entries = await api.directory.list({ limit: 20 });
 
   // Prefetch content for widgets to check if they're empty
-  const [news, events, publications] = await Promise.all([
+  const [news, publications] = await Promise.all([
     api.news.latest({ limit: 4 }),
-    api.publications.upcomingEvents({ limit: 4 }),
     api.publications.latest({ limit: 4 }),
   ]);
 
   const hasNews = news.length > 0;
-  const hasEvents = events.length > 0;
   const hasPublications = publications.length > 0;
-  const hasAnyWidget = hasNews || hasEvents || hasPublications;
-
-  // Count non-empty sections for grid
-  const widgetCount = [hasNews, hasEvents, hasPublications].filter(Boolean).length;
 
   return (
     <div className="container py-8">
@@ -57,32 +51,24 @@ export default async function Home() {
         <DirectoryContent initialTags={tags} initialEntries={entries} />
       </Suspense>
 
-      {/* News, Events, Publications - side by side on desktop */}
-      {hasAnyWidget && (
-        <div
-          className={`grid gap-6 py-8 ${
-            widgetCount === 3 ? "lg:grid-cols-3" : widgetCount === 2 ? "lg:grid-cols-2" : ""
-          }`}
-        >
-          {hasNews && (
-            <Suspense fallback={<WidgetColumnSkeleton title="Новости" />}>
-              <LatestNews variant="column" />
-            </Suspense>
-          )}
+      {/* Calendar | News | Publications — 3-column grid */}
+      <div className="grid gap-6 py-8 lg:grid-cols-3">
+        <Suspense fallback={<WidgetColumnSkeleton title="Календарь" />}>
+          <WeeklyAgenda />
+        </Suspense>
 
-          {hasEvents && (
-            <Suspense fallback={<WidgetColumnSkeleton title="Мероприятия" />}>
-              <UpcomingEvents variant="column" />
-            </Suspense>
-          )}
+        {hasNews && (
+          <Suspense fallback={<WidgetColumnSkeleton title="Новости" />}>
+            <LatestNews variant="column" />
+          </Suspense>
+        )}
 
-          {hasPublications && (
-            <Suspense fallback={<WidgetColumnSkeleton title="Публикации" />}>
-              <LatestPublications variant="column" />
-            </Suspense>
-          )}
-        </div>
-      )}
+        {hasPublications && (
+          <Suspense fallback={<WidgetColumnSkeleton title="Публикации" />}>
+            <LatestPublications variant="column" />
+          </Suspense>
+        )}
+      </div>
     </div>
   );
 }

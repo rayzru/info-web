@@ -746,6 +746,48 @@ export const publicationsRouter = createTRPCRouter({
     }),
 
   /**
+   * Get events for the next 7 days (weekly agenda for homepage)
+   * Returns events grouped by day, using Moscow timezone (UTC+3)
+   */
+  weeklyAgenda: publicProcedure.query(async ({ ctx }) => {
+    const now = new Date();
+    const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const items = await ctx.db.query.publications.findMany({
+      where: and(
+        eq(publications.status, "published"),
+        eq(publications.type, "event"),
+        or(isNull(publications.publishAt), lte(publications.publishAt, now)),
+        // Event starts within the next 7 days
+        and(gte(publications.eventStartAt, now), lte(publications.eventStartAt, weekLater))
+      ),
+      with: {
+        author: {
+          columns: { id: true, name: true, image: true },
+        },
+        building: true,
+      },
+      orderBy: [publications.eventStartAt],
+    });
+
+    // Group by day in Moscow timezone (UTC+3)
+    const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
+    const grouped: Record<string, typeof items> = {};
+
+    for (const event of items) {
+      if (!event.eventStartAt) continue;
+      const localDate = new Date(event.eventStartAt.getTime() + TZ_OFFSET_MS);
+      const day = localDate.toISOString().slice(0, 10); // YYYY-MM-DD
+      if (!grouped[day]) grouped[day] = [];
+      grouped[day]?.push(event);
+    }
+
+    return Object.entries(grouped)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, events]) => ({ date, events }));
+  }),
+
+  /**
    * Get a single publication by ID
    */
   byId: publicProcedure.input(z.object({ id: z.string().uuid() })).query(async ({ ctx, input }) => {
