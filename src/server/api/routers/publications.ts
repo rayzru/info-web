@@ -1,18 +1,11 @@
 import type { JSONContent } from "@tiptap/react";
-import { logger } from "~/lib/logger";
-
-
 import { TRPCError } from "@trpc/server";
-
 import { and, count, desc, eq, gte, inArray, isNull, lte, ne, or, sql } from "drizzle-orm";
-
 import { z } from "zod";
 
-
+import { logger } from "~/lib/logger";
 import { deleteImage } from "~/lib/upload/image-processor";
-
 import {
-
   eventRecurrenceTypeEnum,
   publications,
   publicationStatusEnum,
@@ -26,9 +19,7 @@ import {
 } from "~/server/db/schema";
 import { sendTelegramNotificationAsync } from "~/server/notifications/telegram";
 
-
 import {
-
   adminProcedureWithFeature,
   createTRPCRouter,
   protectedProcedure,
@@ -751,15 +742,15 @@ export const publicationsRouter = createTRPCRouter({
    */
   weeklyAgenda: publicProcedure.query(async ({ ctx }) => {
     const now = new Date();
-    const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const twoWeeksLater = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
     const items = await ctx.db.query.publications.findMany({
       where: and(
         eq(publications.status, "published"),
         eq(publications.type, "event"),
         or(isNull(publications.publishAt), lte(publications.publishAt, now)),
-        // Event starts within the next 7 days
-        and(gte(publications.eventStartAt, now), lte(publications.eventStartAt, weekLater))
+        // Event starts within the next 14 days
+        and(gte(publications.eventStartAt, now), lte(publications.eventStartAt, twoWeeksLater))
       ),
       with: {
         author: {
