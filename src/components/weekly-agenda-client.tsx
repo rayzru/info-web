@@ -7,15 +7,16 @@ import Link from "next/link";
 
 import { cn } from "~/lib/utils";
 
-// Warm color palette (5 colors cycling)
+// Warm color palette (7 colors cycling)
+// hex values mirror Tailwind *-500 at default palette
 const EVENT_COLORS = [
-  { dot: "bg-amber-500", bar: "bg-amber-500", barLight: "bg-amber-400" },
-  { dot: "bg-orange-500", bar: "bg-orange-500", barLight: "bg-orange-400" },
-  { dot: "bg-rose-500", bar: "bg-rose-500", barLight: "bg-rose-400" },
-  { dot: "bg-pink-500", bar: "bg-pink-500", barLight: "bg-pink-400" },
-  { dot: "bg-red-500", bar: "bg-red-500", barLight: "bg-red-400" },
-  { dot: "bg-fuchsia-500", bar: "bg-fuchsia-500", barLight: "bg-fuchsia-400" },
-  { dot: "bg-yellow-500", bar: "bg-yellow-500", barLight: "bg-yellow-400" },
+  { dot: "bg-amber-500",   bar: "bg-amber-500",   hex: "#f59e0b" },
+  { dot: "bg-orange-500",  bar: "bg-orange-500",  hex: "#f97316" },
+  { dot: "bg-rose-500",    bar: "bg-rose-500",    hex: "#f43f5e" },
+  { dot: "bg-pink-500",    bar: "bg-pink-500",    hex: "#ec4899" },
+  { dot: "bg-red-500",     bar: "bg-red-500",     hex: "#ef4444" },
+  { dot: "bg-fuchsia-500", bar: "bg-fuchsia-500", hex: "#d946ef" },
+  { dot: "bg-yellow-500",  bar: "bg-yellow-500",  hex: "#eab308" },
 ] as const;
 
 // eventId → Set of dates this event appears on (for hover highlight)
@@ -199,8 +200,8 @@ export function WeeklyAgendaClient({
                     const endAt = event.eventEndAt ? new Date(event.eventEndAt) : null;
 
                     const isEventHighlighted =
-                      highlightedEventIds?.has(event.id) ??
-                      (hoveredEventId ? hoveredEventId === event.id : false);
+                      (highlightedEventIds?.has(event.id) ?? false) ||
+                      hoveredEventId === event.id;
 
                     return (
                       <Link
@@ -208,10 +209,9 @@ export function WeeklyAgendaClient({
                         href={`/events/${event.id}`}
                         className={cn(
                           "bg-card group flex overflow-hidden rounded-lg border transition-all",
-                          isEventHighlighted
-                            ? "shadow-md ring-1 ring-inset ring-border"
-                            : "hover:shadow-sm",
+                          isEventHighlighted ? "shadow-md" : "hover:shadow-sm",
                         )}
+                        style={isEventHighlighted ? { outline: `2px solid ${color.hex}`, outlineOffset: "-1px" } : undefined}
                         onMouseEnter={() => setHoveredEventId(event.id)}
                         onMouseLeave={() => setHoveredEventId(null)}
                       >
