@@ -105,10 +105,15 @@ export async function WeeklyAgenda() {
     }
   }
 
-  // Serialize agenda for client (Date → ISO string)
-  const clientAgenda: AgendaDay[] = agenda.map(({ date, events }) => ({
-    date,
-    events: events.map((event) => ({
+  // For all-day range events: show card only once (on earliest visible day).
+  // Dots cover all days in range (handled above via dotMap/eventDateMap).
+  const shownInAgenda = new Set<string>();
+
+  // Serialize agenda for client — deduplicate multi-day all-day events
+  const clientAgendaMap: Record<string, ReturnType<typeof buildAgendaEvent>[]> = {};
+
+  function buildAgendaEvent(event: (typeof agenda)[number]["events"][number]) {
+    return {
       id: event.id,
       title: event.title,
       eventAllDay: event.eventAllDay,
@@ -117,8 +122,25 @@ export async function WeeklyAgenda() {
       eventLocation: event.eventLocation ?? null,
       eventRecurrenceType: event.eventRecurrenceType ?? null,
       colorIndex: eventColorMap.get(event.id) ?? 0,
-    })),
-  }));
+    };
+  }
+
+  for (const { date, events } of agenda) {
+    for (const event of events) {
+      // All-day range events: only show card on the first day they appear in the window
+      if (event.eventAllDay && event.eventEndAt) {
+        if (shownInAgenda.has(event.id)) continue;
+        shownInAgenda.add(event.id);
+      }
+      if (!clientAgendaMap[date]) clientAgendaMap[date] = [];
+      clientAgendaMap[date]!.push(buildAgendaEvent(event));
+    }
+  }
+
+  const clientAgenda: AgendaDay[] = Object.entries(clientAgendaMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .filter(([, events]) => events.length > 0)
+    .map(([date, events]) => ({ date, events }));
 
   return (
     <section>
