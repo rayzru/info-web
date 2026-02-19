@@ -149,8 +149,6 @@ export default function EditEventPage() {
 
   // Recurrence state
   const [eventRecurrenceType, setEventRecurrenceType] = useState<EventRecurrenceType>("none");
-  const [eventRecurrenceStartDay, setEventRecurrenceStartDay] = useState<string>("");
-  const [eventRecurrenceEndDay, setEventRecurrenceEndDay] = useState<string>("");
   const [linkedArticleId, setLinkedArticleId] = useState<string>("");
 
   // Check if user is admin
@@ -195,9 +193,7 @@ export default function EditEventPage() {
       setPublishToTelegram(event.publishToTelegram);
       setEventAllDay(event.eventAllDay);
       // Recurrence fields
-      setEventRecurrenceType(event.eventRecurrenceType! ?? "none");
-      setEventRecurrenceStartDay(event.eventRecurrenceStartDay?.toString() ?? "");
-      setEventRecurrenceEndDay(event.eventRecurrenceEndDay?.toString() ?? "");
+      setEventRecurrenceType(event.eventRecurrenceType ?? "none");
       setLinkedArticleId(event.linkedArticleId ?? "");
       setIsInitialized(true);
     }
@@ -297,10 +293,6 @@ export default function EditEventPage() {
       eventOrganizerPhone: validData.eventOrganizerPhone,
       // Recurrence fields
       eventRecurrenceType: eventRecurrenceType !== "none" ? eventRecurrenceType : null,
-      eventRecurrenceStartDay: eventRecurrenceStartDay
-        ? parseInt(eventRecurrenceStartDay, 10)
-        : null,
-      eventRecurrenceEndDay: eventRecurrenceEndDay ? parseInt(eventRecurrenceEndDay, 10) : null,
       linkedArticleId: linkedArticleId || null,
     });
   };
@@ -563,43 +555,24 @@ export default function EditEventPage() {
                   </Select>
                 </div>
 
-                {eventRecurrenceType === "monthly" && (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="recurrenceStartDay">Начало периода (день месяца)</Label>
-                      <Input
-                        id="recurrenceStartDay"
-                        type="number"
-                        min="1"
-                        max="31"
-                        value={eventRecurrenceStartDay}
-                        onChange={(e) => setEventRecurrenceStartDay(e.target.value)}
-                        placeholder="Например: 18"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="recurrenceEndDay">Конец периода (день месяца)</Label>
-                      <Input
-                        id="recurrenceEndDay"
-                        type="number"
-                        min="1"
-                        max="31"
-                        value={eventRecurrenceEndDay}
-                        onChange={(e) => setEventRecurrenceEndDay(e.target.value)}
-                        placeholder="Например: 26"
-                      />
-                    </div>
-                  </div>
+                {eventRecurrenceType === "monthly" && eventStartAt && (
+                  <p className="text-muted-foreground bg-muted rounded-md p-3 text-sm">
+                    {eventEndAt && eventStartAt.getDate() !== eventEndAt.getDate()
+                      ? `${eventStartAt.getDate()} — ${eventEndAt.getDate()} числа каждого месяца`
+                      : `${eventStartAt.getDate()} числа каждого месяца`}
+                  </p>
                 )}
 
-                {eventRecurrenceType !== "none" &&
-                  eventRecurrenceStartDay &&
-                  eventRecurrenceEndDay && (
-                    <p className="text-muted-foreground bg-muted rounded-md p-3 text-sm">
-                      Событие будет повторяться ежемесячно с {eventRecurrenceStartDay} по{" "}
-                      {eventRecurrenceEndDay} число
-                    </p>
-                  )}
+                {eventRecurrenceType === "yearly" && eventStartAt && (
+                  <p className="text-muted-foreground bg-muted rounded-md p-3 text-sm">
+                    {new Intl.DateTimeFormat("ru-RU", {
+                      day: "numeric",
+                      month: "long",
+                      timeZone: "Europe/Moscow",
+                    }).format(eventStartAt)}{" "}
+                    каждый год
+                  </p>
+                )}
               </CardContent>
             </Card>
 

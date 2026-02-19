@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { motion } from "motion/react";
 import { MapPin } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 
 import { cn } from "~/lib/utils";
@@ -11,13 +11,13 @@ import { cn } from "~/lib/utils";
 // Warm color palette (7 colors cycling)
 // hex values mirror Tailwind *-500 at default palette
 const EVENT_COLORS = [
-  { dot: "bg-amber-500",   bar: "bg-amber-500",   hex: "#f59e0b" },
-  { dot: "bg-orange-500",  bar: "bg-orange-500",  hex: "#f97316" },
-  { dot: "bg-rose-500",    bar: "bg-rose-500",    hex: "#f43f5e" },
-  { dot: "bg-pink-500",    bar: "bg-pink-500",    hex: "#ec4899" },
-  { dot: "bg-red-500",     bar: "bg-red-500",     hex: "#ef4444" },
+  { dot: "bg-amber-500", bar: "bg-amber-500", hex: "#f59e0b" },
+  { dot: "bg-orange-500", bar: "bg-orange-500", hex: "#f97316" },
+  { dot: "bg-rose-500", bar: "bg-rose-500", hex: "#f43f5e" },
+  { dot: "bg-pink-500", bar: "bg-pink-500", hex: "#ec4899" },
+  { dot: "bg-red-500", bar: "bg-red-500", hex: "#ef4444" },
   { dot: "bg-fuchsia-500", bar: "bg-fuchsia-500", hex: "#d946ef" },
-  { dot: "bg-yellow-500",  bar: "bg-yellow-500",  hex: "#eab308" },
+  { dot: "bg-yellow-500", bar: "bg-yellow-500", hex: "#eab308" },
 ] as const;
 
 // eventId → Set of dates this event appears on (for hover highlight)
@@ -31,8 +31,6 @@ export interface AgendaEvent {
   eventEndAt: string | null; // ISO string
   eventLocation: string | null;
   eventRecurrenceType: string | null;
-  eventRecurrenceStartDay: number | null;
-  eventRecurrenceEndDay: number | null;
   colorIndex: number;
 }
 
@@ -66,16 +64,15 @@ export function WeeklyAgendaClient({
 }: WeeklyAgendaClientProps) {
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
   const [hoveredEventId, setHoveredEventId] = useState<string | null>(null);
+  const [hoveredEventColor, setHoveredEventColor] = useState<string | null>(null);
 
   // Which dates are highlighted (from hovering an event card)
   const highlightedDates = hoveredEventId ? new Set(eventDateMap[hoveredEventId] ?? []) : null;
 
-  // Which events are highlighted (from hovering a date cell)
+  // Which events are highlighted (from hovering a date cell) — ALL events on that date
   const highlightedEventIds = hoveredDate
     ? new Set(
-        agenda
-          .filter((a) => a.date === hoveredDate)
-          .flatMap((a) => a.events.map((e) => e.id)),
+        agenda.filter((a) => a.date === hoveredDate).flatMap((a) => a.events.map((e) => e.id))
       )
     : null;
 
@@ -89,13 +86,13 @@ export function WeeklyAgendaClient({
       {/* Week strip — 2 weeks */}
       <div className="mb-4 mt-3 select-none">
         {/* Day-of-week header row (shown once) */}
-        <div className="grid grid-cols-7 gap-1 mb-1">
+        <div className="mb-1 grid grid-cols-7 gap-1">
           {dayHeaders.map((name, i) => (
             <div key={name} className="flex justify-center">
               <span
                 className={cn(
                   "text-[10px] capitalize",
-                  i >= 5 ? "text-red-400 dark:text-red-500" : "text-muted-foreground",
+                  i >= 5 ? "text-red-400 dark:text-red-500" : "text-muted-foreground"
                 )}
               >
                 {name}
@@ -106,7 +103,7 @@ export function WeeklyAgendaClient({
 
         {/* Two rows of date cells */}
         {[week1, week2].map((row, rowIdx) => (
-          <div key={rowIdx} className="grid grid-cols-7 gap-1 mb-1">
+          <div key={rowIdx} className="mb-1 grid grid-cols-7 gap-1">
             {row.map(({ dateStr, dayNum, isToday, isWeekend }) => {
               const dots = dotMap[dateStr] ?? [];
               const isHighlighted = highlightedDates?.has(dateStr) ?? false;
@@ -115,16 +112,19 @@ export function WeeklyAgendaClient({
               return (
                 <div
                   key={dateStr}
-                  className="flex flex-col items-center gap-1 rounded-lg py-1 transition-colors cursor-default"
+                  className="flex cursor-default flex-col items-center gap-1 rounded-lg py-1 transition-colors"
                   onMouseEnter={() => setHoveredDate(dateStr)}
                   onMouseLeave={() => setHoveredDate(null)}
                 >
                   <motion.div
                     animate={
                       isHighlighted
-                        ? { scale: 1.15, boxShadow: "0 0 0 2px currentColor" }
+                        ? {
+                            scale: 1.18,
+                            boxShadow: `0 0 0 2.5px ${hoveredEventColor ?? "#f59e0b"}`,
+                          }
                         : isHovered
-                          ? { scale: 1.08 }
+                          ? { scale: 1.12, boxShadow: "0 0 0 2px rgba(0,0,0,0.25)" }
                           : { scale: 1, boxShadow: "none" }
                     }
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -132,11 +132,13 @@ export function WeeklyAgendaClient({
                       "flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium",
                       isToday
                         ? "bg-primary text-primary-foreground"
-                        : isHovered || isHighlighted
-                          ? "bg-muted ring-primary/40 ring-2"
-                          : isWeekend
-                            ? "text-red-400 dark:text-red-500"
-                            : "text-foreground",
+                        : isHighlighted
+                          ? "bg-muted"
+                          : isHovered
+                            ? "bg-accent text-accent-foreground"
+                            : isWeekend
+                              ? "text-red-400 dark:text-red-500"
+                              : "text-foreground"
                     )}
                   >
                     {dayNum}
@@ -146,15 +148,16 @@ export function WeeklyAgendaClient({
                     {dots.slice(0, 3).map((colorIdx, i) => (
                       <motion.div
                         key={i}
-                        animate={
-                          isHovered || isHighlighted
-                            ? { scale: 1.4 }
-                            : { scale: 1 }
-                        }
-                        transition={{ type: "spring", stiffness: 400, damping: 20, delay: i * 0.03 }}
+                        animate={isHovered || isHighlighted ? { scale: 1.4 } : { scale: 1 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 20,
+                          delay: i * 0.03,
+                        }}
                         className={cn(
                           "h-1.5 w-1.5 rounded-full",
-                          EVENT_COLORS[colorIdx % EVENT_COLORS.length]?.dot,
+                          EVENT_COLORS[colorIdx % EVENT_COLORS.length]?.dot
                         )}
                       />
                     ))}
@@ -182,11 +185,7 @@ export function WeeklyAgendaClient({
             const isToday = dayDate.toDateString() === today.toDateString();
             const isTomorrow = dayDate.toDateString() === tomorrow.toDateString();
 
-            const dayLabel = isToday
-              ? "Сегодня"
-              : isTomorrow
-                ? "Завтра"
-                : formatDayLabel(dayDate);
+            const dayLabel = isToday ? "Сегодня" : isTomorrow ? "Завтра" : formatDayLabel(dayDate);
 
             return (
               <div key={date}>
@@ -199,7 +198,7 @@ export function WeeklyAgendaClient({
                         ? "text-red-500"
                         : isTomorrow
                           ? "text-orange-500"
-                          : "text-muted-foreground",
+                          : "text-muted-foreground"
                     )}
                   >
                     {dayLabel}
@@ -215,27 +214,32 @@ export function WeeklyAgendaClient({
                     const endAt = event.eventEndAt ? new Date(event.eventEndAt) : null;
 
                     const isEventHighlighted =
-                      (highlightedEventIds?.has(event.id) ?? false) ||
-                      hoveredEventId === event.id;
+                      (highlightedEventIds?.has(event.id) ?? false) || hoveredEventId === event.id;
 
                     return (
                       <motion.div
                         key={event.id}
                         animate={
                           isEventHighlighted
-                            ? { outline: `2px solid ${color.hex}`, outlineOffset: -1 }
-                            : { outline: "2px solid transparent", outlineOffset: -1 }
+                            ? { outline: `2px solid ${color.hex}`, outlineOffset: -1, scale: 1.01 }
+                            : { outline: "2px solid transparent", outlineOffset: -1, scale: 1 }
                         }
                         transition={{ duration: 0.15 }}
                         className="rounded-lg"
-                        onMouseEnter={() => setHoveredEventId(event.id)}
-                        onMouseLeave={() => setHoveredEventId(null)}
+                        onMouseEnter={() => {
+                          setHoveredEventId(event.id);
+                          setHoveredEventColor(color.hex);
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredEventId(null);
+                          setHoveredEventColor(null);
+                        }}
                       >
                         <Link
                           href={`/events/${event.id}`}
                           className={cn(
                             "bg-card group flex overflow-hidden rounded-lg border transition-shadow",
-                            isEventHighlighted ? "shadow-md" : "hover:shadow-sm",
+                            isEventHighlighted ? "shadow-lg" : "hover:shadow-sm"
                           )}
                         >
                           {/* Color bar */}

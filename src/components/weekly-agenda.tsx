@@ -10,7 +10,7 @@ const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
 
 function getDayName(dateStr: string): string {
   return new Intl.DateTimeFormat("ru-RU", { weekday: "short", timeZone: "UTC" }).format(
-    new Date(dateStr + "T12:00:00Z"),
+    new Date(dateStr + "T12:00:00Z")
   );
 }
 
@@ -101,23 +101,7 @@ export async function WeeklyAgenda() {
         }
       }
 
-      // For monthly recurrence with a day range, mark dots on all days in range
-      if (
-        event.eventRecurrenceType === "monthly" &&
-        event.eventRecurrenceStartDay &&
-        event.eventRecurrenceEndDay
-      ) {
-        const start = event.eventRecurrenceStartDay;
-        const end = event.eventRecurrenceEndDay;
-        for (const { dateStr, dayNum } of weekDayNums) {
-          if (dateStr === date) continue;
-          if (dayNum >= start && dayNum <= end) {
-            if (!dotMap[dateStr]) dotMap[dateStr] = [];
-            dotMap[dateStr]?.push(colorIdx);
-            eventDateMap[event.id]?.push(dateStr);
-          }
-        }
-      }
+      // Recurrence dot expansion handled by router (eventDateMap already populated)
     }
   }
 
@@ -132,8 +116,6 @@ export async function WeeklyAgenda() {
       eventEndAt: event.eventEndAt ? event.eventEndAt.toISOString() : null,
       eventLocation: event.eventLocation ?? null,
       eventRecurrenceType: event.eventRecurrenceType ?? null,
-      eventRecurrenceStartDay: event.eventRecurrenceStartDay ?? null,
-      eventRecurrenceEndDay: event.eventRecurrenceEndDay ?? null,
       colorIndex: eventColorMap.get(event.id) ?? 0,
     })),
   }));

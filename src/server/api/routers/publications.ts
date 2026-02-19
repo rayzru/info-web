@@ -50,10 +50,7 @@ const eventFieldsSchema = z.object({
   eventOrganizerPhone: z.string().max(20).optional(),
   // Recurrence fields
   eventRecurrenceType: eventRecurrenceTypeSchema.optional(),
-  eventRecurrenceInterval: z.number().int().min(1).max(365).optional(),
-  eventRecurrenceDayOfWeek: z.number().int().min(0).max(6).optional(),
-  eventRecurrenceStartDay: z.number().int().min(1).max(31).optional(),
-  eventRecurrenceEndDay: z.number().int().min(1).max(31).optional(),
+  eventRecurrenceRule: z.string().max(500).optional(),
   eventRecurrenceUntil: z.date().optional(),
   linkedArticleId: z.string().uuid().optional(),
 });
@@ -120,10 +117,7 @@ const updatePublicationSchema = z.object({
   eventOrganizerPhone: z.string().max(20).nullable().optional(),
   // Event recurrence fields
   eventRecurrenceType: eventRecurrenceTypeSchema.nullable().optional(),
-  eventRecurrenceInterval: z.number().int().min(1).max(365).nullable().optional(),
-  eventRecurrenceDayOfWeek: z.number().int().min(0).max(6).nullable().optional(),
-  eventRecurrenceStartDay: z.number().int().min(1).max(31).nullable().optional(),
-  eventRecurrenceEndDay: z.number().int().min(1).max(31).nullable().optional(),
+  eventRecurrenceRule: z.string().max(500).nullable().optional(),
   eventRecurrenceUntil: z.date().nullable().optional(),
   linkedArticleId: z.string().uuid().nullable().optional(),
 });
@@ -351,10 +345,7 @@ export const publicationsRouter = createTRPCRouter({
         eventOrganizerPhone: input.eventOrganizerPhone,
         // Event recurrence fields
         eventRecurrenceType: input.eventRecurrenceType,
-        eventRecurrenceInterval: input.eventRecurrenceInterval,
-        eventRecurrenceDayOfWeek: input.eventRecurrenceDayOfWeek,
-        eventRecurrenceStartDay: input.eventRecurrenceStartDay,
-        eventRecurrenceEndDay: input.eventRecurrenceEndDay,
+        eventRecurrenceRule: input.eventRecurrenceRule,
         eventRecurrenceUntil: input.eventRecurrenceUntil,
         linkedArticleId: input.linkedArticleId,
       })
