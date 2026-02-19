@@ -115,6 +115,8 @@ export const publications = createTable(
     publishToTelegram: boolean("publish_to_telegram").notNull().default(false), // Опубликовать в Telegram (только админы)
 
     // ========== Event-specific fields (type: "event") ==========
+    // Весь день (без конкретного времени)
+    eventAllDay: boolean("event_all_day").notNull().default(false),
     // Дата и время начала события
     eventStartAt: timestamp("event_start_at", { withTimezone: true }),
     // Дата и время окончания события (опционально)

@@ -117,6 +117,7 @@ export default function NewEventPage() {
   const [isUrgent, setIsUrgent] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [publishToTelegram, setPublishToTelegram] = useState(false);
+  const [eventAllDay, setEventAllDay] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
   // Recurrence state
@@ -161,6 +162,7 @@ export default function NewEventPage() {
       description: description.trim() || undefined,
       coverImage: coverImage || undefined,
       publishAt,
+      eventAllDay,
       eventStartAt,
       eventEndAt,
       eventLocation: eventLocation.trim() || undefined,
@@ -216,6 +218,7 @@ export default function NewEventPage() {
       isAnonymous: validData.isAnonymous,
       publishAt: validData.publishAt,
       publishToTelegram: validData.publishToTelegram,
+      eventAllDay,
       eventStartAt: validData.eventStartAt,
       eventEndAt: validData.eventEndAt,
       eventLocation: validData.eventLocation,
@@ -310,27 +313,50 @@ export default function NewEventPage() {
                 <CardDescription>Когда состоится мероприятие</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Switch id="allDay" checked={eventAllDay} onCheckedChange={setEventAllDay} />
+                  <Label htmlFor="allDay">Весь день (без конкретного времени)</Label>
+                </div>
                 <div className="space-y-2">
-                  <Label>Начало мероприятия *</Label>
-                  <DateTimePicker
-                    value={eventStartAt}
-                    onChange={setEventStartAt}
-                    placeholder="Выберите дату и время начала"
-                    className={errors.eventStartAt ? "border-destructive" : ""}
-                  />
+                  <Label>{eventAllDay ? "Дата начала *" : "Начало мероприятия *"}</Label>
+                  {eventAllDay ? (
+                    <DatePicker
+                      value={eventStartAt}
+                      onChange={setEventStartAt}
+                      placeholder="Выберите дату начала"
+                      className={errors.eventStartAt ? "border-destructive" : ""}
+                    />
+                  ) : (
+                    <DateTimePicker
+                      value={eventStartAt}
+                      onChange={setEventStartAt}
+                      placeholder="Выберите дату и время начала"
+                      className={errors.eventStartAt ? "border-destructive" : ""}
+                    />
+                  )}
                   {errors.eventStartAt && (
                     <p className="text-destructive text-sm">{errors.eventStartAt}</p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label>Окончание мероприятия</Label>
-                  <DateTimePicker
-                    value={eventEndAt}
-                    onChange={setEventEndAt}
-                    placeholder="Выберите дату и время окончания"
-                    fromDate={eventStartAt}
-                    className={errors.eventEndAt ? "border-destructive" : ""}
-                  />
+                  <Label>{eventAllDay ? "Дата окончания" : "Окончание мероприятия"}</Label>
+                  {eventAllDay ? (
+                    <DatePicker
+                      value={eventEndAt}
+                      onChange={setEventEndAt}
+                      placeholder="Выберите дату окончания"
+                      fromDate={eventStartAt}
+                      className={errors.eventEndAt ? "border-destructive" : ""}
+                    />
+                  ) : (
+                    <DateTimePicker
+                      value={eventEndAt}
+                      onChange={setEventEndAt}
+                      placeholder="Выберите дату и время окончания"
+                      fromDate={eventStartAt}
+                      className={errors.eventEndAt ? "border-destructive" : ""}
+                    />
+                  )}
                   {errors.eventEndAt && (
                     <p className="text-destructive text-sm">{errors.eventEndAt}</p>
                   )}

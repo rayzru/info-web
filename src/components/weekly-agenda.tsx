@@ -64,6 +64,9 @@ export async function WeeklyAgenda() {
   // eventDateMap: eventId → dateStr[] (all dates this event has a dot on, for hover highlight)
   const eventDateMap: Record<string, string[]> = {};
 
+  // Track which events have already had their extra dates added (for all-day range & recurrence)
+  const processedEventExtraDates = new Set<string>();
+
   for (const { date, events } of agenda) {
     for (const event of events) {
       const colorIdx = eventColorMap.get(event.id) ?? 0;
@@ -73,6 +76,30 @@ export async function WeeklyAgenda() {
 
       if (!eventDateMap[event.id]) eventDateMap[event.id] = [];
       eventDateMap[event.id]?.push(date);
+
+      // For all-day events with a date range, mark dots on all days in [startDate, endDate]
+      // (the router already grouped the event onto each day, but dotMap/eventDateMap need it too)
+      if (
+        event.eventAllDay &&
+        event.eventStartAt &&
+        event.eventEndAt &&
+        !processedEventExtraDates.has(event.id)
+      ) {
+        processedEventExtraDates.add(event.id);
+        const startDay = new Date(event.eventStartAt.getTime() + TZ_OFFSET_MS)
+          .toISOString()
+          .slice(0, 10);
+        const endDay = new Date(event.eventEndAt.getTime() + TZ_OFFSET_MS)
+          .toISOString()
+          .slice(0, 10);
+        for (const { dateStr } of weekDayNums) {
+          if (dateStr >= startDay && dateStr <= endDay && dateStr !== date) {
+            if (!dotMap[dateStr]) dotMap[dateStr] = [];
+            dotMap[dateStr]?.push(colorIdx);
+            eventDateMap[event.id]?.push(dateStr);
+          }
+        }
+      }
 
       // For monthly recurrence with a day range, mark dots on all days in range
       if (
@@ -100,6 +127,7 @@ export async function WeeklyAgenda() {
     events: events.map((event) => ({
       id: event.id,
       title: event.title,
+      eventAllDay: event.eventAllDay,
       eventStartAt: event.eventStartAt ? event.eventStartAt.toISOString() : null,
       eventEndAt: event.eventEndAt ? event.eventEndAt.toISOString() : null,
       eventLocation: event.eventLocation ?? null,

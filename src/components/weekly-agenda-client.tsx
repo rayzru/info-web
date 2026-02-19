@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { motion } from "motion/react";
 import { MapPin } from "lucide-react";
 import Link from "next/link";
 
@@ -25,6 +26,7 @@ type EventDateMap = Record<string, string[]>;
 export interface AgendaEvent {
   id: string;
   title: string;
+  eventAllDay: boolean;
   eventStartAt: string | null; // ISO string
   eventEndAt: string | null; // ISO string
   eventLocation: string | null;
@@ -117,9 +119,17 @@ export function WeeklyAgendaClient({
                   onMouseEnter={() => setHoveredDate(dateStr)}
                   onMouseLeave={() => setHoveredDate(null)}
                 >
-                  <div
+                  <motion.div
+                    animate={
+                      isHighlighted
+                        ? { scale: 1.15, boxShadow: "0 0 0 2px currentColor" }
+                        : isHovered
+                          ? { scale: 1.08 }
+                          : { scale: 1, boxShadow: "none" }
+                    }
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium transition-all",
+                      "flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium",
                       isToday
                         ? "bg-primary text-primary-foreground"
                         : isHovered || isHighlighted
@@ -130,15 +140,20 @@ export function WeeklyAgendaClient({
                     )}
                   >
                     {dayNum}
-                  </div>
+                  </motion.div>
                   {/* Event dots */}
                   <div className="flex h-2 items-center gap-0.5">
                     {dots.slice(0, 3).map((colorIdx, i) => (
-                      <div
+                      <motion.div
                         key={i}
+                        animate={
+                          isHovered || isHighlighted
+                            ? { scale: 1.4 }
+                            : { scale: 1 }
+                        }
+                        transition={{ type: "spring", stiffness: 400, damping: 20, delay: i * 0.03 }}
                         className={cn(
-                          "h-1.5 w-1.5 rounded-full transition-all",
-                          (isHovered || isHighlighted) ? "scale-125" : "",
+                          "h-1.5 w-1.5 rounded-full",
                           EVENT_COLORS[colorIdx % EVENT_COLORS.length]?.dot,
                         )}
                       />
@@ -204,45 +219,60 @@ export function WeeklyAgendaClient({
                       hoveredEventId === event.id;
 
                     return (
-                      <Link
+                      <motion.div
                         key={event.id}
-                        href={`/events/${event.id}`}
-                        className={cn(
-                          "bg-card group flex overflow-hidden rounded-lg border transition-all",
-                          isEventHighlighted ? "shadow-md" : "hover:shadow-sm",
-                        )}
-                        style={isEventHighlighted ? { outline: `2px solid ${color.hex}`, outlineOffset: "-1px" } : undefined}
+                        animate={
+                          isEventHighlighted
+                            ? { outline: `2px solid ${color.hex}`, outlineOffset: -1 }
+                            : { outline: "2px solid transparent", outlineOffset: -1 }
+                        }
+                        transition={{ duration: 0.15 }}
+                        className="rounded-lg"
                         onMouseEnter={() => setHoveredEventId(event.id)}
                         onMouseLeave={() => setHoveredEventId(null)}
                       >
-                        {/* Color bar */}
-                        <div className={cn("w-1 shrink-0 transition-all", color.bar)} />
+                        <Link
+                          href={`/events/${event.id}`}
+                          className={cn(
+                            "bg-card group flex overflow-hidden rounded-lg border transition-shadow",
+                            isEventHighlighted ? "shadow-md" : "hover:shadow-sm",
+                          )}
+                        >
+                          {/* Color bar */}
+                          <div className={cn("w-1 shrink-0 transition-all", color.bar)} />
 
-                        {/* Content */}
-                        <div className="flex min-w-0 flex-1 flex-col gap-1 p-3">
-                          {/* Title — primary focus, up to 2 lines */}
-                          <p className="group-hover:text-primary line-clamp-2 text-sm font-medium leading-snug transition-colors">
-                            {event.title}
-                          </p>
+                          {/* Content */}
+                          <div className="flex min-w-0 flex-1 flex-col gap-1 p-3">
+                            {/* Title — primary focus, up to 2 lines */}
+                            <p className="group-hover:text-primary line-clamp-2 text-sm font-medium leading-snug transition-colors">
+                              {event.title}
+                            </p>
 
-                          {/* Bottom row: date/time + location */}
-                          <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
-                            {startAt && (
-                              <span>
-                                {endAt
-                                  ? `${formatDateTime(startAt)} — ${formatDateTime(endAt)}`
-                                  : formatDateTime(startAt)}
-                              </span>
-                            )}
-                            {event.eventLocation && (
-                              <span className="flex items-center gap-1 truncate">
-                                <MapPin className="h-3 w-3 shrink-0" />
-                                {event.eventLocation}
-                              </span>
-                            )}
+                            {/* Bottom row: date/time + location */}
+                            <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+                              {event.eventAllDay && startAt ? (
+                                <span>
+                                  {endAt && formatDateOnly(startAt) !== formatDateOnly(endAt)
+                                    ? `${formatDateOnly(startAt)} — ${formatDateOnly(endAt)}`
+                                    : formatDateOnly(startAt)}
+                                </span>
+                              ) : startAt ? (
+                                <span>
+                                  {endAt
+                                    ? `${formatDateTime(startAt)} — ${formatDateTime(endAt)}`
+                                    : formatDateTime(startAt)}
+                                </span>
+                              ) : null}
+                              {event.eventLocation && (
+                                <span className="flex items-center gap-1 truncate">
+                                  <MapPin className="h-3 w-3 shrink-0" />
+                                  {event.eventLocation}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </Link>
+                        </Link>
+                      </motion.div>
                     );
                   })}
                 </div>
@@ -270,6 +300,14 @@ function formatDateTime(date: Date): string {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Europe/Moscow",
+  }).format(date);
+}
+
+function formatDateOnly(date: Date): string {
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "short",
     timeZone: "Europe/Moscow",
   }).format(date);
 }

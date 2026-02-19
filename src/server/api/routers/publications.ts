@@ -38,6 +38,7 @@ const eventRecurrenceTypeSchema = z.enum(eventRecurrenceTypeEnum.enumValues);
 
 // Event-specific fields schema
 const eventFieldsSchema = z.object({
+  eventAllDay: z.boolean().default(false),
   eventStartAt: z.date().optional(),
   eventEndAt: z.date().optional(),
   eventLocation: z.string().max(500).optional(),
@@ -107,6 +108,7 @@ const updatePublicationSchema = z.object({
   publishToTelegram: z.boolean().optional(),
   tagIds: z.array(z.string()).optional(),
   // Event-specific fields
+  eventAllDay: z.boolean().optional(),
   eventStartAt: z.date().nullable().optional(),
   eventEndAt: z.date().nullable().optional(),
   eventLocation: z.string().max(500).nullable().optional(),
@@ -337,6 +339,7 @@ export const publicationsRouter = createTRPCRouter({
         publishToTelegram: isAdmin ? input.publishToTelegram : false, // Only admins can publish to TG
         authorId: userId,
         // Event-specific fields
+        eventAllDay: input.eventAllDay ?? false,
         eventStartAt: input.eventStartAt,
         eventEndAt: input.eventEndAt,
         eventLocation: input.eventLocation,
@@ -749,8 +752,15 @@ export const publicationsRouter = createTRPCRouter({
         eq(publications.status, "published"),
         eq(publications.type, "event"),
         or(isNull(publications.publishAt), lte(publications.publishAt, now)),
-        // Event starts within the next 14 days
-        and(gte(publications.eventStartAt, now), lte(publications.eventStartAt, twoWeeksLater))
+        // Event overlaps the next 14 days:
+        // starts before twoWeeksLater AND (ends after now OR has no end and starts after now)
+        and(
+          lte(publications.eventStartAt, twoWeeksLater),
+          or(
+            gte(publications.eventEndAt, now),
+            and(isNull(publications.eventEndAt), gte(publications.eventStartAt, now))
+          )
+        )
       ),
       with: {
         author: {
@@ -765,12 +775,39 @@ export const publicationsRouter = createTRPCRouter({
     const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
     const grouped: Record<string, typeof items> = {};
 
+    const addToDay = (day: string, event: (typeof items)[number]) => {
+      if (!grouped[day]) grouped[day] = [];
+      // Avoid duplicates for multi-day events
+      if (!grouped[day]?.some((e) => e.id === event.id)) {
+        grouped[day]?.push(event);
+      }
+    };
+
     for (const event of items) {
       if (!event.eventStartAt) continue;
-      const localDate = new Date(event.eventStartAt.getTime() + TZ_OFFSET_MS);
-      const day = localDate.toISOString().slice(0, 10); // YYYY-MM-DD
-      if (!grouped[day]) grouped[day] = [];
-      grouped[day]?.push(event);
+      const startLocal = new Date(event.eventStartAt.getTime() + TZ_OFFSET_MS);
+      const startDay = startLocal.toISOString().slice(0, 10);
+
+      if (event.eventAllDay && event.eventEndAt) {
+        // For all-day range events: add to every day in [startDay, endDay]
+        const endLocal = new Date(event.eventEndAt.getTime() + TZ_OFFSET_MS);
+        const cursor = new Date(startLocal);
+        cursor.setUTCHours(0, 0, 0, 0);
+        const endDate = new Date(endLocal);
+        endDate.setUTCHours(0, 0, 0, 0);
+        const todayStr = now.toISOString().slice(0, 10);
+        const twoWeeksLaterStr = twoWeeksLater.toISOString().slice(0, 10);
+        while (cursor <= endDate) {
+          const day = cursor.toISOString().slice(0, 10);
+          // Only include days within the 14-day window
+          if (day >= todayStr && day <= twoWeeksLaterStr) {
+            addToDay(day, event);
+          }
+          cursor.setUTCDate(cursor.getUTCDate() + 1);
+        }
+      } else {
+        addToDay(startDay, event);
+      }
     }
 
     return Object.entries(grouped)
