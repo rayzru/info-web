@@ -71,37 +71,37 @@ export async function WeeklyAgenda() {
     for (const event of events) {
       const colorIdx = eventColorMap.get(event.id) ?? 0;
 
-      if (!dotMap[date]) dotMap[date] = [];
-      dotMap[date]?.push(colorIdx);
+      // All-day range events: handle dots + eventDateMap once via expansion below,
+      // not per-day (router returns the event on every day of the range, causing duplicates)
+      const isAllDayRange = event.eventAllDay && !!event.eventEndAt;
 
-      if (!eventDateMap[event.id]) eventDateMap[event.id] = [];
-      eventDateMap[event.id]?.push(date);
+      if (!isAllDayRange) {
+        // Single-day or timed events: mark dot on this day normally
+        if (!dotMap[date]) dotMap[date] = [];
+        dotMap[date]?.push(colorIdx);
 
-      // For all-day events with a date range, mark dots on all days in [startDate, endDate]
-      // (the router already grouped the event onto each day, but dotMap/eventDateMap need it too)
-      if (
-        event.eventAllDay &&
-        event.eventStartAt &&
-        event.eventEndAt &&
-        !processedEventExtraDates.has(event.id)
-      ) {
+        if (!eventDateMap[event.id]) eventDateMap[event.id] = [];
+        eventDateMap[event.id]?.push(date);
+      }
+
+      // For all-day range events: mark dots on every day in [startDate, endDate] exactly once
+      if (isAllDayRange && event.eventStartAt && !processedEventExtraDates.has(event.id)) {
         processedEventExtraDates.add(event.id);
         const startDay = new Date(event.eventStartAt.getTime() + TZ_OFFSET_MS)
           .toISOString()
           .slice(0, 10);
-        const endDay = new Date(event.eventEndAt.getTime() + TZ_OFFSET_MS)
+        const endDay = new Date(event.eventEndAt!.getTime() + TZ_OFFSET_MS)
           .toISOString()
           .slice(0, 10);
+        if (!eventDateMap[event.id]) eventDateMap[event.id] = [];
         for (const { dateStr } of weekDayNums) {
-          if (dateStr >= startDay && dateStr <= endDay && dateStr !== date) {
+          if (dateStr >= startDay && dateStr <= endDay) {
             if (!dotMap[dateStr]) dotMap[dateStr] = [];
             dotMap[dateStr]?.push(colorIdx);
             eventDateMap[event.id]?.push(dateStr);
           }
         }
       }
-
-      // Recurrence dot expansion handled by router (eventDateMap already populated)
     }
   }
 

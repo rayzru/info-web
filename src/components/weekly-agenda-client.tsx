@@ -69,10 +69,14 @@ export function WeeklyAgendaClient({
   // Which dates are highlighted (from hovering an event card)
   const highlightedDates = hoveredEventId ? new Set(eventDateMap[hoveredEventId] ?? []) : null;
 
-  // Which events are highlighted (from hovering a date cell) — ALL events on that date
+  // Which events are highlighted (from hovering a date cell) — ALL events whose dot appears on that date.
+  // Uses eventDateMap (eventId → dates[]) in reverse: find all eventIds that include hoveredDate.
+  // This correctly handles multi-day all-day events whose card lives on a different day.
   const highlightedEventIds = hoveredDate
     ? new Set(
-        agenda.filter((a) => a.date === hoveredDate).flatMap((a) => a.events.map((e) => e.id))
+        Object.entries(eventDateMap)
+          .filter(([, dates]) => dates.includes(hoveredDate))
+          .map(([eventId]) => eventId)
       )
     : null;
 
