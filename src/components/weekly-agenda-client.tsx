@@ -31,6 +31,7 @@ export interface AgendaEvent {
   eventEndAt: string | null; // ISO string
   eventLocation: string | null;
   eventRecurrenceType: string | null;
+  eventRecurrenceRule: string | null;
   colorIndex: number;
 }
 
