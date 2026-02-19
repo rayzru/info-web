@@ -4,9 +4,10 @@ import { LayoutDashboard, LogOut, Shield } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 
+import { CABINET_ITEMS } from "~/lib/navigation";
 import { getRankConfig } from "~/lib/ranks";
 import { cn } from "~/lib/utils";
-import { CABINET_ITEMS } from "~/lib/navigation";
+
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
@@ -42,9 +43,7 @@ export function UserNav({ user, isAdmin }: UserNavProps) {
             )}
           >
             <AvatarImage src={user.image ?? undefined} />
-            <AvatarFallback className="text-[10px]">
-              {user.name?.slice(0, 2)}
-            </AvatarFallback>
+            <AvatarFallback className="text-[10px]">{user.name?.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <span className="max-w-36 truncate text-sm">{user.name ?? "Кабинет"}</span>
         </Button>

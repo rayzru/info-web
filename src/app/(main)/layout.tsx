@@ -61,9 +61,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
         data-wrapper=""
         className="min-w-xs container m-auto grid max-w-7xl flex-1 grid-cols-12 gap-4 px-5"
       >
-        <main className="col-span-full">
-          {children}
-        </main>
+        <main className="col-span-full">{children}</main>
       </div>
       <SiteFooter />
     </div>

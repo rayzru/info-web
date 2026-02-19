@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { NAV_GROUPS } from "~/lib/navigation";
-import { cn } from "~/lib/utils";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -14,6 +12,8 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "~/components/ui/navigation-menu";
+import { NAV_GROUPS } from "~/lib/navigation";
+import { cn } from "~/lib/utils";
 
 export function NavLinks() {
   const pathname = usePathname();
@@ -61,7 +61,7 @@ export function NavLinks() {
                 {group.title}
               </NavigationMenuTrigger>
               <NavigationMenuContent>
-                <ul className="grid w-105 gap-1 p-3 sm:grid-cols-2">
+                <ul className="w-105 grid gap-1 p-3 sm:grid-cols-2">
                   {group.items.map((item) => {
                     const Icon = item.icon;
                     const itemActive =

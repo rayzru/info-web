@@ -138,7 +138,12 @@ export async function LatestPublications({ variant = "grid" }: LatestPublication
 
   return (
     <section className="py-8">
-      <SectionHeader icon={MessageSquare} title="Публикации" href="/publications" linkLabel="Все публикации" />
+      <SectionHeader
+        icon={MessageSquare}
+        title="Публикации"
+        href="/publications"
+        linkLabel="Все публикации"
+      />
 
       {/* Publications Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -206,4 +211,3 @@ export async function LatestPublications({ variant = "grid" }: LatestPublication
     </section>
   );
 }
-

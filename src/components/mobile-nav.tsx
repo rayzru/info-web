@@ -2,12 +2,7 @@
 
 import { type MouseEvent, useState } from "react";
 
-import {
-  Menu,
-  Monitor,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { Menu, Monitor, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -69,7 +64,6 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
 
           {/* Main navigation - scrollable */}
           <nav className="min-h-0 flex-1 overflow-y-auto p-2">
-
             {/* Content groups from NAV_GROUPS */}
             {NAV_GROUPS.map((group) => (
               <div key={group.title} className="mb-1">
@@ -78,7 +72,11 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
                 </div>
                 <div className="flex flex-col gap-0.5">
                   {group.direct && group.href ? (
-                    <Link href={group.href} data-testid={group.testId} onClick={() => setOpen(false)}>
+                    <Link
+                      href={group.href}
+                      data-testid={group.testId}
+                      onClick={() => setOpen(false)}
+                    >
                       <Button
                         variant={isActive(group.href) ? "secondary" : "ghost"}
                         className={cn(
@@ -94,7 +92,12 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
                       const Icon = item.icon;
                       const active = isActive(item.href);
                       return (
-                        <Link key={item.href} href={item.href} data-testid={item.testId} onClick={() => setOpen(false)}>
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          data-testid={item.testId}
+                          onClick={() => setOpen(false)}
+                        >
                           <Button
                             variant={active ? "secondary" : "ghost"}
                             className={cn(
