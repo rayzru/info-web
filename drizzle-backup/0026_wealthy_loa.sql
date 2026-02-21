@@ -1,0 +1,1 @@
+ALTER TYPE "public"."feedback_history_action_enum" ADD VALUE 'deleted';

@@ -361,7 +361,7 @@ export default function PropertyHistoryPage() {
 
       {/* Document count indicator */}
       {firstClaim?.documents && firstClaim.documents.length > 0 && (
-        <div className="text-muted-foreground flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <FileText className="h-4 w-4" />
           <span>Загружено документов: {firstClaim.documents.length}</span>
         </div>
