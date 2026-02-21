@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 
 import type { JSONContent } from "@tiptap/react";
+
+import { ContentSearch, type LinkedContent } from "~/components/content-search";
+import { StandardEditor } from "~/components/editor/rich-editor";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -44,7 +47,6 @@ import {
 } from "~/components/ui/select";
 import { Separator } from "~/components/ui/separator";
 import { Switch } from "~/components/ui/switch";
-import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/hooks/use-toast";
 import { EVENT_RECURRENCE_TYPE_LABELS, type EventRecurrenceType } from "~/server/db/schema";
 import { api } from "~/trpc/react";
@@ -56,7 +58,7 @@ const eventFormSchema = z
       .string()
       .min(1, "Введите название мероприятия")
       .max(255, "Название слишком длинное (макс. 255 символов)"),
-    description: z.string().max(5000, "Описание слишком длинное").optional(),
+    description: z.custom<JSONContent>().optional(),
     coverImage: z.string().max(500).optional(),
     publishAt: z.date().optional(),
     eventStartAt: z.date({ error: "Укажите дату и время начала" }),
@@ -100,24 +102,6 @@ const eventFormSchema = z
 type EventFormData = z.infer<typeof eventFormSchema>;
 type FormErrors = Partial<Record<keyof EventFormData | "root", string>>;
 
-// Extract text from TipTap JSON content
-function extractTextFromContent(content: JSONContent | null): string {
-  if (!content) return "";
-
-  let text = "";
-
-  function traverse(node: JSONContent) {
-    if (node.type === "text" && node.text) {
-      text += node.text;
-    }
-    if (node.content) {
-      node.content.forEach(traverse);
-    }
-  }
-
-  traverse(content);
-  return text;
-}
 
 export default function EditEventPage() {
   const router = useRouter();
@@ -129,7 +113,7 @@ export default function EditEventPage() {
 
   // Form state
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState<JSONContent>({ type: "doc", content: [] });
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [publishAt, setPublishAt] = useState<Date | undefined>();
   const [eventStartAt, setEventStartAt] = useState<Date | undefined>();
@@ -145,11 +129,10 @@ export default function EditEventPage() {
   const [publishToTelegram, setPublishToTelegram] = useState(false);
   const [eventAllDay, setEventAllDay] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // Recurrence state
   const [eventRecurrenceType, setEventRecurrenceType] = useState<EventRecurrenceType>("none");
-  const [linkedArticleId, setLinkedArticleId] = useState<string>("");
+  const [linkedContentIds, setLinkedContentIds] = useState<LinkedContent[]>([]);
 
   // Check if user is admin
   const isAdmin =
@@ -160,44 +143,35 @@ export default function EditEventPage() {
   // Get buildings for selector
   const { data: buildings } = api.profile.getAvailableBuildings.useQuery();
 
-  // Get articles for linked article selector
-  const { data: articlesData } = api.knowledge.admin.list.useQuery({
-    page: 1,
-    limit: 50,
-    status: "published",
-  });
-
   // Fetch existing event data
   const { data: event, isLoading: isLoadingEvent } = api.publications.byId.useQuery(
     { id },
     { enabled: !!id }
   );
 
-  // Initialize form with event data
+  // Initialize form with event data (runs once when event loads)
   useEffect(() => {
-    if (event && !isInitialized) {
-      setTitle(event.title);
-      setDescription(extractTextFromContent(event.content));
-      setCoverImage(event.coverImage ?? null);
-      setPublishAt(event.publishAt ? new Date(event.publishAt) : undefined);
-      setEventStartAt(event.eventStartAt ? new Date(event.eventStartAt) : undefined);
-      setEventEndAt(event.eventEndAt ? new Date(event.eventEndAt) : undefined);
-      setEventLocation(event.eventLocation ?? "");
-      setEventMaxAttendees(event.eventMaxAttendees?.toString() ?? "");
-      setEventExternalUrl(event.eventExternalUrl ?? "");
-      setEventOrganizer(event.eventOrganizer ?? "");
-      setEventOrganizerPhone(event.eventOrganizerPhone ?? "");
-      setBuildingId(event.buildingId ?? "");
-      setIsUrgent(event.isUrgent);
-      setIsAnonymous(event.isAnonymous);
-      setPublishToTelegram(event.publishToTelegram);
-      setEventAllDay(event.eventAllDay);
-      // Recurrence fields
-      setEventRecurrenceType(event.eventRecurrenceType ?? "none");
-      setLinkedArticleId(event.linkedArticleId ?? "");
-      setIsInitialized(true);
-    }
-  }, [event, isInitialized]);
+    if (!event) return;
+    setTitle(event.title);
+    setDescription(event.content ?? { type: "doc", content: [] });
+    setCoverImage(event.coverImage ?? null);
+    setPublishAt(event.publishAt ? new Date(event.publishAt) : undefined);
+    setEventStartAt(event.eventStartAt ? new Date(event.eventStartAt) : undefined);
+    setEventEndAt(event.eventEndAt ? new Date(event.eventEndAt) : undefined);
+    setEventLocation(event.eventLocation ?? "");
+    setEventMaxAttendees(event.eventMaxAttendees?.toString() ?? "");
+    setEventExternalUrl(event.eventExternalUrl ?? "");
+    setEventOrganizer(event.eventOrganizer ?? "");
+    setEventOrganizerPhone(event.eventOrganizerPhone ?? "");
+    setBuildingId(event.buildingId ?? "");
+    setIsUrgent(event.isUrgent);
+    setIsAnonymous(event.isAnonymous);
+    setPublishToTelegram(event.publishToTelegram);
+    setEventAllDay(event.eventAllDay);
+    // Recurrence fields
+    setEventRecurrenceType(event.eventRecurrenceType ?? "none");
+    setLinkedContentIds((event.linkedContentIds as LinkedContent[]) ?? []);
+  }, [event?.id]); // Re-run only when a different event is loaded
 
   // Update mutation
   const updateMutation = api.publications.update.useMutation({
@@ -222,7 +196,6 @@ export default function EditEventPage() {
 
     const formData = {
       title: title.trim(),
-      description: description.trim() || undefined,
       coverImage: coverImage || undefined,
       publishAt,
       eventStartAt,
@@ -266,17 +239,7 @@ export default function EditEventPage() {
     updateMutation.mutate({
       id,
       title: validData.title,
-      content: validData.description
-        ? {
-            type: "doc",
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: validData.description }],
-              },
-            ],
-          }
-        : { type: "doc", content: [] },
+      content: description,
       coverImage: validData.coverImage,
       buildingId: validData.buildingId || undefined,
       isUrgent: validData.isUrgent,
@@ -292,8 +255,8 @@ export default function EditEventPage() {
       eventOrganizer: validData.eventOrganizer,
       eventOrganizerPhone: validData.eventOrganizerPhone,
       // Recurrence fields
-      eventRecurrenceType: eventRecurrenceType !== "none" ? eventRecurrenceType : null,
-      linkedArticleId: linkedArticleId || null,
+      eventRecurrenceType: eventRecurrenceType,
+      linkedContentIds: linkedContentIds.length > 0 ? linkedContentIds : null,
     });
   };
 
@@ -449,18 +412,13 @@ export default function EditEventPage() {
                   {errors.title && <p className="text-destructive text-sm">{errors.title}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Описание</Label>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                  <Label>Описание</Label>
+                  <StandardEditor
+                    content={description}
+                    onChange={setDescription}
                     placeholder="Подробности о мероприятии..."
-                    rows={6}
-                    className={errors.description ? "border-destructive" : ""}
+                    minHeight="200px"
                   />
-                  {errors.description && (
-                    <p className="text-destructive text-sm">{errors.description}</p>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -539,11 +497,12 @@ export default function EditEventPage() {
                 <div className="space-y-2">
                   <Label>Тип повторения</Label>
                   <Select
+                    key={eventRecurrenceType}
                     value={eventRecurrenceType}
                     onValueChange={(v) => setEventRecurrenceType(v as EventRecurrenceType)}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Без повторения" />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(EVENT_RECURRENCE_TYPE_LABELS).map(([value, label]) => (
@@ -576,35 +535,23 @@ export default function EditEventPage() {
               </CardContent>
             </Card>
 
-            {/* Linked Article */}
+            {/* Linked Content */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
-                  Связанная статья
+                  Связанный контент
                 </CardTitle>
-                <CardDescription>Ссылка на статью базы знаний</CardDescription>
+                <CardDescription>
+                  Ссылки на новости, публикации, события или статьи базы знаний
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <Select
-                  value={linkedArticleId || "none"}
-                  onValueChange={(v) => setLinkedArticleId(v === "none" ? "" : v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите статью (опционально)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Без связанной статьи</SelectItem>
-                    {articlesData?.articles.map((article) => (
-                      <SelectItem key={article.id} value={article.id}>
-                        {article.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-muted-foreground mt-2 text-xs">
-                  Подробная инструкция будет показана в карточке события
-                </p>
+                <ContentSearch
+                  value={linkedContentIds}
+                  onChange={setLinkedContentIds}
+                  placeholder="Поиск по названию..."
+                />
               </CardContent>
             </Card>
 

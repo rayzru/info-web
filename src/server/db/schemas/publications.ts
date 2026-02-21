@@ -146,8 +146,8 @@ export const publications = createTable(
     eventRecurrenceRule: varchar("event_recurrence_rule", { length: 500 }),
     // Дата окончания повторений (null = бессрочно) — для SQL фильтрации без парсинга RRULE
     eventRecurrenceUntil: timestamp("event_recurrence_until", { withTimezone: true }),
-    // Ссылка на статью базы знаний (howto)
-    linkedArticleId: uuid("linked_article_id"),
+    // Связанный контент (ссылки на новости, публикации, события, базу знаний)
+    linkedContentIds: jsonb("linked_content_ids").$type<{ id: string; type: string; title?: string }[]>(),
 
     // Author
     authorId: varchar("author_id", { length: 255 })

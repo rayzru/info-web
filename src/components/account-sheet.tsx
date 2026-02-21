@@ -1,6 +1,7 @@
 "use client";
 
 import { type MouseEvent, useState } from "react";
+
 import {
   Bell,
   Building2,
@@ -22,6 +23,7 @@ import { useTheme } from "next-themes";
 import { getRankConfig } from "~/lib/ranks";
 import { cn } from "~/lib/utils";
 import { type Theme, useThemeStore } from "~/stores/theme-store";
+
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
@@ -82,7 +84,7 @@ export function AccountSheet({ user, isAdmin }: AccountSheetProps) {
         <Button variant="ghost" size="icon" className="lg:hidden">
           <Avatar
             className={cn(
-              "h-7 w-7 ring-2 ring-offset-1 ring-offset-background",
+              "ring-offset-background h-7 w-7 ring-2 ring-offset-1",
               rankConfig.ringColor
             )}
           >
@@ -99,7 +101,7 @@ export function AccountSheet({ user, isAdmin }: AccountSheetProps) {
             <div className="flex items-center gap-3">
               <Avatar
                 className={cn(
-                  "h-10 w-10 ring-2 ring-offset-2 ring-offset-background",
+                  "ring-offset-background h-10 w-10 ring-2 ring-offset-2",
                   rankConfig.ringColor
                 )}
               >
@@ -110,9 +112,7 @@ export function AccountSheet({ user, isAdmin }: AccountSheetProps) {
                 <SheetTitle className="text-base font-medium">
                   {user.name ?? "Пользователь"}
                 </SheetTitle>
-                {isAdmin && (
-                  <span className="text-muted-foreground text-xs">Администратор</span>
-                )}
+                {isAdmin && <span className="text-muted-foreground text-xs">Администратор</span>}
               </div>
             </div>
           </SheetHeader>

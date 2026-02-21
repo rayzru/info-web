@@ -2,12 +2,12 @@ import {
   BookMarked,
   BookOpen,
   Calendar,
-  FileText,
+  HandHelping,
   Info,
   Map,
   Megaphone,
-  MessageSquareText,
   Newspaper,
+  Sparkles,
   Users,
 } from "lucide-react";
 
@@ -53,13 +53,6 @@ export const NAV_GROUPS: NavGroup[] = [
         description: "Объявления жителей: продажа, аренда, услуги",
         testId: "nav-listings",
       },
-      {
-        title: "Публикации",
-        href: "/community",
-        icon: FileText,
-        description: "Обсуждения, вопросы и предложения жителей",
-        testId: "nav-community",
-      },
     ],
   },
   {
@@ -92,6 +85,13 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "Сообщество",
     items: [
       {
+        title: "О проекте",
+        href: "/community",
+        icon: Sparkles,
+        description: "Цели, история и команда платформы sr2.ru",
+        testId: "nav-community-about",
+      },
+      {
         title: "Чаты",
         href: "/community/chats",
         icon: Users,
@@ -104,6 +104,20 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: BookMarked,
         description: "Правила проживания и внутренний распорядок",
         testId: "nav-rules",
+      },
+      {
+        title: "Как пользоваться",
+        href: "/community/guide",
+        icon: BookOpen,
+        description: "Регистрация, подтверждение собственности, публикации",
+        testId: "nav-community-guide",
+      },
+      {
+        title: "Как помочь",
+        href: "/community/contribute",
+        icon: HandHelping,
+        description: "Как поддержать развитие платформы",
+        testId: "nav-community-contribute",
       },
     ],
   },

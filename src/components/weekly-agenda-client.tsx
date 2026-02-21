@@ -8,16 +8,16 @@ import Link from "next/link";
 
 import { cn } from "~/lib/utils";
 
-// Warm color palette (7 colors cycling)
-// hex values mirror Tailwind *-500 at default palette
+// 7 colors evenly spaced across the hue wheel at 360/7 ≈ 51° apart
+// hsl(h, 75%, 52%) — same saturation/lightness, only hue varies
 const EVENT_COLORS = [
-  { dot: "bg-amber-500", bar: "bg-amber-500", hex: "#f59e0b" },
-  { dot: "bg-orange-500", bar: "bg-orange-500", hex: "#f97316" },
-  { dot: "bg-rose-500", bar: "bg-rose-500", hex: "#f43f5e" },
-  { dot: "bg-pink-500", bar: "bg-pink-500", hex: "#ec4899" },
-  { dot: "bg-red-500", bar: "bg-red-500", hex: "#ef4444" },
-  { dot: "bg-fuchsia-500", bar: "bg-fuchsia-500", hex: "#d946ef" },
-  { dot: "bg-yellow-500", bar: "bg-yellow-500", hex: "#eab308" },
+  "hsl(  0, 75%, 52%)", // red
+  "hsl( 51, 75%, 52%)", // yellow-green
+  "hsl(103, 75%, 42%)", // green (lightness down slightly — greens read bright)
+  "hsl(154, 75%, 42%)", // teal
+  "hsl(205, 75%, 52%)", // sky-blue
+  "hsl(257, 75%, 62%)", // violet (lightness up — purples read dark)
+  "hsl(308, 75%, 55%)", // pink-magenta
 ] as const;
 
 // eventId → Set of dates this event appears on (for hover highlight)
@@ -126,10 +126,10 @@ export function WeeklyAgendaClient({
                       isHighlighted
                         ? {
                             scale: 1.18,
-                            boxShadow: `0 0 0 2.5px ${hoveredEventColor ?? "#f59e0b"}`,
+                            boxShadow: `0 0 0 1px ${hoveredEventColor ?? "#f59e0b"}`,
                           }
                         : isHovered
-                          ? { scale: 1.12, boxShadow: "0 0 0 2px rgba(0,0,0,0.25)" }
+                          ? { scale: 1.12, boxShadow: "0 0 0 1px rgba(0,0,0,0.15)" }
                           : { scale: 1, boxShadow: "none" }
                     }
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -160,10 +160,8 @@ export function WeeklyAgendaClient({
                           damping: 20,
                           delay: i * 0.03,
                         }}
-                        className={cn(
-                          "h-1.5 w-1.5 rounded-full",
-                          EVENT_COLORS[colorIdx % EVENT_COLORS.length]?.dot
-                        )}
+                        className="h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: EVENT_COLORS[colorIdx % EVENT_COLORS.length] }}
                       />
                     ))}
                   </div>
@@ -226,14 +224,14 @@ export function WeeklyAgendaClient({
                         key={event.id}
                         animate={
                           isEventHighlighted
-                            ? { outline: `2px solid ${color.hex}`, outlineOffset: -1, scale: 1.01 }
+                            ? { outline: `2px solid ${color}`, outlineOffset: -1, scale: 1.01 }
                             : { outline: "2px solid transparent", outlineOffset: -1, scale: 1 }
                         }
                         transition={{ duration: 0.15 }}
                         className="rounded-lg"
                         onMouseEnter={() => {
                           setHoveredEventId(event.id);
-                          setHoveredEventColor(color.hex);
+                          setHoveredEventColor(color);
                         }}
                         onMouseLeave={() => {
                           setHoveredEventId(null);
@@ -248,7 +246,7 @@ export function WeeklyAgendaClient({
                           )}
                         >
                           {/* Color bar */}
-                          <div className={cn("w-1 shrink-0 transition-all", color.bar)} />
+                          <div className="w-1 shrink-0 transition-all" style={{ backgroundColor: color }} />
 
                           {/* Content */}
                           <div className="flex min-w-0 flex-1 flex-col gap-1 p-3">

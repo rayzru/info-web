@@ -844,6 +844,138 @@ export const publicationsRouter = createTRPCRouter({
   }),
 
   /**
+   * Get events for a given month (Moscow time).
+   * Returns all events (non-recurring + recurring) that have at least one occurrence in the month.
+   */
+  monthlyEvents: publicProcedure
+    .input(
+      z.object({
+        year: z.number().int().min(2020).max(2100),
+        month: z.number().int().min(1).max(12), // 1-based
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { year, month } = input;
+      // Moscow is UTC+3; month boundaries in UTC
+      const MOSCOW_OFFSET_SECONDS = 3 * 60 * 60;
+      // Start of month in Moscow = UTC midnight of the 1st minus 3h (UTC+3)
+      const monthStart = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0) - MOSCOW_OFFSET_SECONDS * 1000);
+      const monthEnd = new Date(Date.UTC(year, month, 1, 0, 0, 0) - MOSCOW_OFFSET_SECONDS * 1000); // exclusive
+
+      const now = new Date();
+
+      const items = await ctx.db.query.publications.findMany({
+        where: and(
+          eq(publications.status, "published"),
+          eq(publications.type, "event"),
+          or(isNull(publications.publishAt), lte(publications.publishAt, now)),
+          or(
+            // Non-recurring: overlaps with the month window
+            and(
+              or(
+                eq(publications.eventRecurrenceType, "none"),
+                isNull(publications.eventRecurrenceType),
+              ),
+              lte(publications.eventStartAt, monthEnd),
+              or(
+                gte(publications.eventEndAt, monthStart),
+                and(isNull(publications.eventEndAt), gte(publications.eventStartAt, monthStart)),
+              ),
+            ),
+            // Recurring: series started before month end and hasn't ended before month start
+            and(
+              not(eq(publications.eventRecurrenceType, "none")),
+              isNotNull(publications.eventRecurrenceType),
+              lte(publications.eventStartAt, monthEnd),
+              or(
+                isNull(publications.eventRecurrenceUntil),
+                gte(publications.eventRecurrenceUntil, monthStart),
+              ),
+            ),
+          ),
+        ),
+        with: {
+          author: { columns: { id: true, name: true, image: true } },
+          building: true,
+        },
+        orderBy: [publications.eventStartAt],
+      });
+
+      // Expand recurring events and determine their occurrence date(s) in this month
+      const result: Array<{
+        id: string;
+        title: string;
+        eventAllDay: boolean;
+        eventStartAt: Date | null;
+        eventEndAt: Date | null;
+        eventLocation: string | null;
+        eventRecurrenceType: string | null;
+        eventRecurrenceRule: string | null;
+        occurrenceDate: string; // YYYY-MM-DD (Moscow)
+      }> = [];
+
+      const toMoscow = (d: Date) => toMoscowDateStr(d);
+
+      // YYYY-MM-DD boundaries for this month
+      const monthStartStr = `${year}-${String(month).padStart(2, "0")}-01`;
+      const nextMonth = month === 12 ? { y: year + 1, m: 1 } : { y: year, m: month + 1 };
+      const monthEndStr = `${nextMonth.y}-${String(nextMonth.m).padStart(2, "0")}-01`; // exclusive
+
+      for (const event of items) {
+        if (!event.eventStartAt) continue;
+
+        const baseRow = {
+          id: event.id,
+          title: event.title,
+          eventAllDay: event.eventAllDay,
+          eventStartAt: event.eventStartAt,
+          eventEndAt: event.eventEndAt,
+          eventLocation: event.eventLocation ?? null,
+          eventRecurrenceType: event.eventRecurrenceType ?? null,
+          eventRecurrenceRule: event.eventRecurrenceRule ?? null,
+        };
+
+        if (event.eventRecurrenceType && event.eventRecurrenceType !== "none" && event.eventRecurrenceRule) {
+          const ruleOptions = RRule.parseString(event.eventRecurrenceRule);
+          ruleOptions.dtstart = buildRRuleDtstart(event.eventStartAt);
+          const rule = new RRule(ruleOptions);
+          const occurrences = rule.between(monthStart, monthEnd, true);
+          for (const occ of occurrences) {
+            const dateStr = toMoscow(occ);
+            if (dateStr >= monthStartStr && dateStr < monthEndStr) {
+              // Deduplicate: only add one entry per event per day
+              if (!result.some((r) => r.id === event.id && r.occurrenceDate === dateStr)) {
+                result.push({ ...baseRow, occurrenceDate: dateStr });
+              }
+            }
+          }
+          continue;
+        }
+
+        // Non-recurring
+        const startStr = toMoscow(event.eventStartAt);
+        const endStr = event.eventEndAt ? toMoscow(event.eventEndAt) : startStr;
+
+        // For all-day ranges spanning multiple days, emit entry for the start day
+        const occDate = startStr >= monthStartStr ? startStr : monthStartStr;
+        if (occDate >= monthStartStr && occDate < monthEndStr) {
+          result.push({ ...baseRow, occurrenceDate: startStr >= monthStartStr ? startStr : monthStartStr });
+        }
+        void endStr; // endStr is used implicitly for range check above
+      }
+
+      // Sort by occurrence date then by time
+      result.sort((a, b) => {
+        if (a.occurrenceDate !== b.occurrenceDate) return a.occurrenceDate.localeCompare(b.occurrenceDate);
+        const at = a.eventStartAt?.getTime() ?? 0;
+        const bt = b.eventStartAt?.getTime() ?? 0;
+        return at - bt;
+      });
+
+      return result;
+    }),
+
+  /**
    * Get a single publication by ID
    */
   byId: publicProcedure.input(z.object({ id: z.string().uuid() })).query(async ({ ctx, input }) => {

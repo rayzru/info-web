@@ -148,6 +148,8 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
       toast({ title: "Обращение обновлено" });
       utils.feedback.admin.list.invalidate();
       utils.feedback.admin.byId.invalidate({ id: feedbackId! });
+      utils.admin.dashboardStats.invalidate();
+      utils.admin.navCounts.invalidate();
       onSuccess();
     },
     onError: (error) => {
@@ -160,6 +162,8 @@ function ViewDialog({ feedbackId, open, onOpenChange, onSuccess }: ViewDialogPro
       toast({ title: "Ответ отправлен" });
       utils.feedback.admin.list.invalidate();
       utils.feedback.admin.byId.invalidate({ id: feedbackId! });
+      utils.admin.dashboardStats.invalidate();
+      utils.admin.navCounts.invalidate();
       setResponse("");
       onSuccess();
     },
@@ -508,6 +512,8 @@ export default function AdminFeedbackPage() {
       setDeleteId(null);
       setShowDeleteDialog(false);
       void utils.feedback.admin.list.invalidate();
+      void utils.admin.dashboardStats.invalidate();
+      void utils.admin.navCounts.invalidate();
       void refetch();
     },
     onError: (error) => {
@@ -528,6 +534,8 @@ export default function AdminFeedbackPage() {
       setSelectedFeedbackIds(new Set());
       setShowBulkDeleteDialog(false);
       void utils.feedback.admin.list.invalidate();
+      void utils.admin.dashboardStats.invalidate();
+      void utils.admin.navCounts.invalidate();
       void refetch();
     },
     onError: (error) => {
