@@ -1,5 +1,77 @@
 # sr2-t3
 
+## 0.5.0
+
+### Minor Changes
+
+- f4acb94: v0.5.0 — Навигация, главная страница, погода, календарь событий
+
+  **Навигация**
+  - Полный рефакторинг навигации: новый файл `src/lib/navigation.ts` как единый источник конфигурации
+  - Группы меню: Лента (Новости, Публикации соседей, События), Объявления, Справочная, ЖК, Контакты
+  - Редизайн мобильной навигации — новая структура с группами
+  - Редизайн десктопной навигации — выпадающее меню с иконками и описаниями
+  - Новый логотип-компонент `NavLogo`
+
+  **Реструктуризация маршрутов**
+  - `/community/*` → `/larina-45/*` (О нас, Чаты, Правила, Руководство, Как помочь)
+  - `/listings/*` → `/a/*` (Объявления): `/a/aparts`, `/a/parking`, `/a/services`, `/a/catalog`
+  - `/map` → `/larina-45/map`
+  - Новый маршрут `/live` — публикации соседей
+  - Новый маршрут `/howtos` → Знания
+
+  **Главная страница**
+  - Новая секция контента под поиском: лента, дата+агенда, погода+статистика
+  - `HomeContentSection` — 3-колоночный грид с анимацией появления через `AnimatePresence`
+  - `TodayDateWidget` — виджет текущей даты (московское время)
+  - `StatsWidget` — статистика платформы (пользователи, новости, публикации за 30 дней)
+  - Карточки ленты с иконками-превью: обложка новости, BookOpen для знаний, инициал для публикаций
+  - Fallback для отсутствующих изображений (`FeedNewsThumb`)
+  - Новый tRPC роутер `stats`
+
+  **Погода**
+  - Полный редизайн виджета `Weather`: анимация дуги солнца (SunArc), индикатор ветра (WindCompass), молния при грозе (ThunderFlash)
+  - Визуализация данных: влажность, давление, UV-индекс, видимость
+  - Storybook stories для всех состояний виджета
+
+  **Календарь событий**
+  - Новый компонент `WeeklyAgenda` с полоской текущей недели (7 дней) и точками событий
+  - Поддержка RRULE для повторяющихся событий (rrule пакет)
+  - Расширение схемы событий: поле `rrule`, поле `allDay`, диапазоны дат
+  - Новые утилиты дат с поддержкой московского времени (`src/lib/date-utils.ts`)
+  - Фиксы: дубликаты точек, однодневное отображение range-событий, hover-эффекты
+
+  **UI Kit / Storybook**
+  - Добавлен Storybook 10 (`@storybook/nextjs-vite`)
+  - Stories: Button, Avatar, Badge, Card, Input, EmptyStateCard, SectionHeader, Separator, Skeleton, WeatherWidget
+  - Новый компонент `SectionHeader` — унифицированный заголовок секции с иконкой и ссылкой
+
+  **Прочее**
+  - `account-sheet.tsx` — новый компонент боковой панели аккаунта
+  - `content-search.tsx` — новый компонент поиска контента
+  - `events-calendar.tsx` — новый компонент календаря событий
+  - Обновлён `sitemap.ts` с новыми маршрутами
+  - Обновлён `site-footer.tsx`
+
+### Patch Changes
+
+- 104149d: feat(claims): add document status indicators and warnings
+
+  **Admin Panel:**
+  - Show document count badge on all claims (desktop + mobile)
+  - Display "0" for claims without documents (muted color)
+  - Unified Badge format across desktop and mobile views
+
+  **User Experience:**
+  - Alert during claim creation warning about document importance
+  - Explain that verification without documents requires in-person meeting
+  - Show success message when documents are uploaded
+  - Display amber alert in user cabinet when admin requests documents
+  - Show document count in property history page
+
+  **Backend:**
+  - Added documents to propertyHistory query for user cabinet display
+
 ## 0.4.6
 
 ### Patch Changes
