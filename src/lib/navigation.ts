@@ -2,13 +2,18 @@ import {
   BookMarked,
   BookOpen,
   Calendar,
+  Car,
   HandHelping,
+  Home,
   Info,
   Map,
   Megaphone,
+  MessageSquare,
   Newspaper,
+  Package,
   Sparkles,
   Users,
+  Wrench,
 } from "lucide-react";
 
 export interface NavItem {
@@ -30,7 +35,7 @@ export interface NavGroup {
 
 export const NAV_GROUPS: NavGroup[] = [
   {
-    title: "Жизнь ЖК",
+    title: "Лента",
     items: [
       {
         title: "Новости",
@@ -40,23 +45,56 @@ export const NAV_GROUPS: NavGroup[] = [
         testId: "nav-news",
       },
       {
+        title: "Публикации соседей",
+        href: "/live",
+        icon: MessageSquare,
+        description: "Истории, обсуждения и жизнь жителей",
+        testId: "nav-live",
+      },
+      {
         title: "События",
         href: "/events",
         icon: Calendar,
         description: "Мероприятия, собрания, ежемесячные напоминания",
         testId: "nav-events",
       },
+    ],
+  },
+  {
+    title: "Объявления",
+    items: [
       {
-        title: "Объявления",
-        href: "/listings",
-        icon: Megaphone,
-        description: "Объявления жителей: продажа, аренда, услуги",
-        testId: "nav-listings",
+        title: "Квартиры",
+        href: "/a/aparts",
+        icon: Home,
+        description: "Аренда и продажа квартир в жилом комплексе",
+        testId: "nav-a-aparts",
+      },
+      {
+        title: "Паркинг",
+        href: "/a/parking",
+        icon: Car,
+        description: "Аренда и продажа парковочных мест",
+        testId: "nav-a-parking",
+      },
+      {
+        title: "Услуги",
+        href: "/a/services",
+        icon: Wrench,
+        description: "Услуги от жителей и для жителей",
+        testId: "nav-a-services",
+      },
+      {
+        title: "Барахолка",
+        href: "/a/catalog",
+        icon: Package,
+        description: "Купля-продажа вещей между жителями",
+        testId: "nav-a-catalog",
       },
     ],
   },
   {
-    title: "Инфо",
+    title: "Справочная",
     items: [
       {
         title: "Справочная",
@@ -66,55 +104,55 @@ export const NAV_GROUPS: NavGroup[] = [
         testId: "nav-info",
       },
       {
-        title: "Как это работает",
+        title: "Знания",
         href: "/howtos",
         icon: BookOpen,
         description: "Инструкции, руководства и полезные гайды",
         testId: "nav-howtos",
       },
-      {
-        title: "Карта",
-        href: "/map",
-        icon: Map,
-        description: "Интерактивная карта ЖК и инфраструктуры",
-        testId: "nav-map",
-      },
     ],
   },
   {
-    title: "Сообщество",
+    title: "ЖК",
     items: [
       {
-        title: "О проекте",
-        href: "/community",
+        title: "О нас",
+        href: "/larina-45",
         icon: Sparkles,
         description: "Цели, история и команда платформы sr2.ru",
         testId: "nav-community-about",
       },
       {
+        title: "Карта",
+        href: "/larina-45/map",
+        icon: Map,
+        description: "Интерактивная карта ЖК и инфраструктуры",
+        testId: "nav-map",
+      },
+      {
         title: "Чаты",
-        href: "/community/chats",
+        href: "/larina-45/chats",
         icon: Users,
         description: "Ссылки на чаты строений и общий чат ЖК",
         testId: "nav-chats",
       },
       {
         title: "Правила",
-        href: "/community/rules",
+        href: "/larina-45/rules",
         icon: BookMarked,
         description: "Правила проживания и внутренний распорядок",
         testId: "nav-rules",
       },
       {
         title: "Как пользоваться",
-        href: "/community/guide",
+        href: "/larina-45/guide",
         icon: BookOpen,
         description: "Регистрация, подтверждение собственности, публикации",
         testId: "nav-community-guide",
       },
       {
         title: "Как помочь",
-        href: "/community/contribute",
+        href: "/larina-45/contribute",
         icon: HandHelping,
         description: "Как поддержать развитие платформы",
         testId: "nav-community-contribute",

@@ -2,9 +2,8 @@ import { Suspense } from "react";
 
 import type { Metadata } from "next";
 
-import { LatestNews } from "~/components/latest-news";
-import { LatestPublications } from "~/components/latest-publications";
-import { WeeklyAgenda } from "~/components/weekly-agenda";
+import { HomeContentSection } from "~/components/home-content-section";
+import { fetchWeather } from "~/lib/weather";
 import { api } from "~/trpc/server";
 
 import { DirectoryContent } from "./info/directory-content";
@@ -32,43 +31,29 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  // Prefetch root tags for initial render
-  const tags = await api.directory.getTags({ parentId: null });
-  const entries = await api.directory.list({ limit: 20 });
-
-  // Prefetch content for widgets to check if they're empty
-  const [news, publications] = await Promise.all([
-    api.news.latest({ limit: 4 }),
-    api.publications.latest({ limit: 4 }),
+  // Prefetch root tags and directory entries for DirectoryContent
+  const [tags, entries, weather, stats] = await Promise.all([
+    api.directory.getTags({ parentId: null }),
+    api.directory.list({ limit: 20 }),
+    fetchWeather(),
+    api.stats.summary(),
   ]);
 
-  const hasNews = news.length > 0;
-  const hasPublications = publications.length > 0;
+  const contentSection = (
+    <Suspense fallback={<HomeContentSkeleton />}>
+      <HomeContentSection weather={weather} stats={stats} />
+    </Suspense>
+  );
 
   return (
     <div className="container py-8">
       <Suspense fallback={<DirectoryContentSkeleton />}>
-        <DirectoryContent initialTags={tags} initialEntries={entries} />
+        <DirectoryContent
+          initialTags={tags}
+          initialEntries={entries}
+          contentSlot={contentSection}
+        />
       </Suspense>
-
-      {/* Calendar | News | Publications — 3-column grid */}
-      <div className="grid gap-6 py-8 lg:grid-cols-3">
-        <Suspense fallback={<WidgetColumnSkeleton title="Календарь" />}>
-          <WeeklyAgenda />
-        </Suspense>
-
-        {hasNews && (
-          <Suspense fallback={<WidgetColumnSkeleton title="Новости" />}>
-            <LatestNews variant="column" />
-          </Suspense>
-        )}
-
-        {hasPublications && (
-          <Suspense fallback={<WidgetColumnSkeleton title="Публикации" />}>
-            <LatestPublications variant="column" />
-          </Suspense>
-        )}
-      </div>
     </div>
   );
 }
@@ -88,26 +73,17 @@ function DirectoryContentSkeleton() {
   );
 }
 
-function WidgetColumnSkeleton({ title }: { title: string }) {
+function HomeContentSkeleton() {
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="bg-muted h-5 w-5 animate-pulse rounded" />
+    <div className="mt-8 grid gap-6 lg:grid-cols-3">
+      {Array.from({ length: 3 }).map((_, col) => (
+        <div key={col} className="space-y-3">
           <div className="bg-muted h-6 w-24 animate-pulse rounded" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-muted h-16 animate-pulse rounded-lg" />
+          ))}
         </div>
-        <div className="bg-muted h-6 w-16 animate-pulse rounded" />
-      </div>
-      <div className="space-y-3">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="overflow-hidden rounded-lg border">
-            <div className="space-y-2 p-3">
-              <div className="bg-muted h-4 w-full animate-pulse rounded" />
-              <div className="bg-muted h-3 w-2/3 animate-pulse rounded" />
-            </div>
-          </div>
-        ))}
-      </div>
+      ))}
     </div>
   );
 }

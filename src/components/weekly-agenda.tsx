@@ -1,7 +1,5 @@
-import { Calendar } from "lucide-react";
 import { RRule } from "rrule";
 
-import { SectionHeader } from "~/components/ui/section-header";
 import { buildRRuleDtstart, toMoscowDateStr } from "~/lib/date-utils";
 import { api } from "~/trpc/server";
 
@@ -184,7 +182,6 @@ export async function WeeklyAgenda() {
 
   return (
     <section>
-      <SectionHeader icon={Calendar} title="Календарь" href="/events" />
       <WeeklyAgendaClient
         weekDays={weekDays}
         agenda={clientAgenda}
